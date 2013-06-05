@@ -13,5 +13,17 @@ id="org.apache.cordova.core">
         </config-file>
 
         <source-file src="FileUtils.java" target-dir="org/apache/cordova/core" />
-       </platform>
+    </platform>
+    
+    <!-- ios -->
+    <platform name="ios">    
+        <config-file target="config.xml" parent="/*">
+            <feature name="File">
+                <param name="ios-package" value="CDVFile" /> 
+            </feature>
+        </config-file>
+        <header-file src="src/ios/CDVFile.h" />
+        <source-file src="src/ios/CDVFile.m" />
+    </platform>    
+    
 </plugin>
