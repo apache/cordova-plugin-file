@@ -80,6 +80,10 @@ id="org.apache.cordova.core.FileUtils"
             <plugin name="File" value="org.apache.cordova.core.FileUtils"/>
         </config-file>
 
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+        </config-file>
+        
         <source-file src="FileUtils.java" target-dir="org/apache/cordova/core" />
     </platform>
     
