@@ -2,10 +2,78 @@
 
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
 xmlns:android="http://schemas.android.com/apk/res/android"
-id="org.apache.cordova.core">
+id="org.apache.cordova.core.FileUtils"
     version="0.1.0">
     <name>File</name>
 
+    <js-module src="www/DirectoryEntry.js" name="DirectoryEntry">
+        <clobbers target="window.DirectoryEntry" />
+    </js-module>
+    
+    <js-module src="www/DirectoryReader.js" name="DirectoryReader">
+        <clobbers target="window.DirectoryReader" />
+    </js-module> 
+    
+    <js-module src="www/Entry.js" name="Entry">
+        <clobbers target="window.Entry" />
+    </js-module>       
+
+    <js-module src="www/File.js" name="File">
+        <clobbers target="window.File" />
+    </js-module>
+
+    <js-module src="www/FileEntry.js" name="FileEntry">
+        <clobbers target="window.FileEntry" />
+    </js-module>
+
+    <js-module src="www/FileError.js" name="FileError">
+        <clobbers target="window.FileError" />
+    </js-module>
+
+    <js-module src="www/FileReader.js" name="FileReader">
+        <clobbers target="window.FileReader" />
+    </js-module>
+
+    <js-module src="www/FileSystem.js" name="FileSystem">
+        <clobbers target="window.FileSystem" />
+    </js-module>
+    
+    <js-module src="www/FileUploadOptions.js" name="FileUploadOptions">
+        <clobbers target="window.FileUploadOptions" />
+    </js-module>
+    
+    <js-module src="www/FileUploadResult.js" name="FileUploadResult">
+        <clobbers target="window.FileUploadResult" />
+    </js-module>
+
+    <js-module src="www/FileWriter.js" name="FileWriter">
+        <clobbers target="window.FileWriter" />
+    </js-module>
+    
+    <js-module src="www/Flags.js" name="Flags">
+        <clobbers target="window.Flags" />
+    </js-module>    
+
+    <js-module src="www/LocalFileSystem.js" name="LocalFileSystem">
+        <clobbers target="window.LocalFileSystem" />
+    </js-module>
+ 
+    <js-module src="www/Metadata.js" name="Metadata">
+        <clobbers target="window.Metadata" />
+    </js-module>
+
+    <js-module src="www/ProgressEvent.js" name="ProgressEvent">
+        <clobbers target="window.ProgressEvent" />
+    </js-module>
+
+    <js-module src="www/requestFileSystem.js" name="requestFileSystem">
+        <clobbers target="window.requestFileSystem" />
+    </js-module>
+    
+    <js-module src="www/resolveLocalFileSystemURI.js" name="resolveLocalFileSystemURI">
+        <clobbers target="window.resolveLocalFileSystemURI" />
+    </js-module>
+                                           
     <!-- android -->
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/cordova/plugins">
@@ -13,5 +81,22 @@ id="org.apache.cordova.core">
         </config-file>
 
         <source-file src="FileUtils.java" target-dir="org/apache/cordova/core" />
-       </platform>
+    </platform>
+    
+    <!-- ios -->
+    <platform name="ios">    
+        <config-file target="config.xml" parent="/*">
+            <feature name="File">
+                <param name="ios-package" value="CDVFile" /> 
+            </feature>
+        </config-file>
+        <header-file src="src/ios/CDVFile.h" />
+        <source-file src="src/ios/CDVFile.m" />
+        
+        <!-- ios specific file apis -->
+        <js-module src="www/ios/Entry.js" name="File">
+            <merges target="window.Entry" />
+        </js-module>
+    </platform>    
+    
 </plugin>
