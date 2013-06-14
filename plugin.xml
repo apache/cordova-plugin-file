@@ -102,5 +102,16 @@ id="org.apache.cordova.core.FileUtils"
             <merges target="window.Entry" />
         </js-module>
     </platform>    
-    
+
+     <!-- wp7 -->
+    <platform name="wp7">
+        <config-file target="config.xml" parent="/*">
+            <feature name="File">
+                <param name="wp-package" value="File"/>
+            </feature>
+        </config-file>
+
+        <source-file src="src/wp7/File.cs" />
+    </platform>
+
 </plugin>
