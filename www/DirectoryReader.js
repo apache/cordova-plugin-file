@@ -20,7 +20,7 @@
 */
 
 var exec = require('cordova/exec'),
-    FileError = require('cordova/plugin/FileError') ;
+    FileError = require('org.apache.cordova.core.FileUtils.FileError') ;
 
 /**
  * An interface that lists the files and directories in a directory.

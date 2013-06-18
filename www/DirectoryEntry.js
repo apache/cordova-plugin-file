@@ -22,9 +22,9 @@
 var argscheck = require('cordova/argscheck'),
     utils = require('cordova/utils'),
     exec = require('cordova/exec'),
-    Entry = require('cordova/plugin/Entry'),
-    FileError = require('cordova/plugin/FileError'),
-    DirectoryReader = require('cordova/plugin/DirectoryReader');
+    Entry = require('org.apache.cordova.core.FileUtils.Entry'),
+    FileError = require('org.apache.cordova.core.FileUtils.FileError'),
+    DirectoryReader = require('org.apache.cordova.core.FileUtils.DirectoryReader');
 
 /**
  * An interface representing a directory on the file system.

@@ -21,10 +21,10 @@
 
 var utils = require('cordova/utils'),
     exec = require('cordova/exec'),
-    Entry = require('cordova/plugin/Entry'),
-    FileWriter = require('cordova/plugin/FileWriter'),
-    File = require('cordova/plugin/File'),
-    FileError = require('cordova/plugin/FileError');
+    Entry = require('org.apache.cordova.core.FileUtils.Entry'),
+    FileWriter = require('org.apache.cordova.core.FileUtils.FileWriter'),
+    File = require('org.apache.cordova.core.FileUtils.File'),
+    FileError = require('org.apache.cordova.core.FileUtils.FileError');
 
 /**
  * An interface representing a file on the file system.

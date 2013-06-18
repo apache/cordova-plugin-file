@@ -20,9 +20,9 @@
 */
 
 var argscheck = require('cordova/argscheck'),
-    DirectoryEntry = require('cordova/plugin/DirectoryEntry'),
-    FileEntry = require('cordova/plugin/FileEntry'),
-    FileError = require('cordova/plugin/FileError'),
+    DirectoryEntry = require('org.apache.cordova.core.FileUtils.DirectoryEntry'),
+    FileEntry = require('org.apache.cordova.core.FileUtils.FileEntry'),
+    FileError = require('org.apache.cordova.core.FileUtils.FileError'),
     exec = require('cordova/exec');
 
 /**

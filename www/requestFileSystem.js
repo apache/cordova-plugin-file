@@ -20,8 +20,8 @@
 */
 
 var argscheck = require('cordova/argscheck'),
-    FileError = require('cordova/plugin/FileError'),
-    FileSystem = require('cordova/plugin/FileSystem'),
+    FileError = require('org.apache.cordova.core.FileUtils.FileError'),
+    FileSystem = require('org.apache.cordova.core.FileUtils.FileSystem'),
     exec = require('cordova/exec');
 
 /**

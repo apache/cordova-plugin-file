@@ -21,8 +21,8 @@
 
 var argscheck = require('cordova/argscheck'),
     exec = require('cordova/exec'),
-    FileError = require('cordova/plugin/FileError'),
-    Metadata = require('cordova/plugin/Metadata');
+    FileError = require('org.apache.cordova.core.FileUtils.FileError'),
+    Metadata = require('org.apache.cordova.core.FileUtils.Metadata');
 
 /**
  * Represents a file or directory on the local file system.
