@@ -27,7 +27,7 @@
 #import <AssetsLibrary/ALAssetsLibrary.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <Cordova/CDVAvailability.h>
-#import "sys/xattr.h"
+#import <sys/xattr.h>
 
 extern NSString * const NSURLIsExcludedFromBackupKey __attribute__((weak_import));
 
