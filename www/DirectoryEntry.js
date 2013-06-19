@@ -93,7 +93,7 @@ DirectoryEntry.prototype.removeRecursively = function(successCallback, errorCall
 DirectoryEntry.prototype.getFile = function(path, options, successCallback, errorCallback) {
     argscheck.checkArgs('sOFF', 'DirectoryEntry.getFile', arguments);
     var win = successCallback && function(result) {
-        var FileEntry = require('cordova/plugin/FileEntry');
+        var FileEntry = require('org.apache.cordova.core.FileUtils.FileEntry');
         var entry = new FileEntry(result.name, result.fullPath);
         successCallback(entry);
     };
