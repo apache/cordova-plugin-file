@@ -75,8 +75,10 @@ id="org.apache.cordova.core.FileUtils" version="0.1.0">
                                            
     <!-- android -->
     <platform name="android">
-        <config-file target="config.xml" parent="/*">
-            <plugin name="File" value="org.apache.cordova.core.FileUtils"/>
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="File" >
+                <param name="android-package" value="org.apache.cordova.core.FileUtils"/>
+            </feature>
         </config-file>
 
         <config-file target="AndroidManifest.xml" parent="/*">
