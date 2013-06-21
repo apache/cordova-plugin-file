@@ -2933,7 +2933,7 @@ describe('File API', function() {
         });
         it("file.spec.83 should be able to read native blob objects", function() {
             // Skip test if blobs are not supported (e.g.: Android 2.3).
-            if (typeof Blob == 'undefined') {
+            if (typeof window.Blob == 'undefined' || typeof window.Uint8Array == 'undefined') {
                 return;
             }
             var contents = 'asdf';
@@ -3049,6 +3049,10 @@ describe('File API', function() {
             });
         });
         it("file.spec.87 should read file properly, readAsArrayBuffer", function() {
+            // Skip test if ArrayBuffers are not supported (e.g.: Android 2.3).
+            if (typeof window.ArrayBuffer == 'undefined') {
+                return;
+            }
             runReaderTest('readAsArrayBuffer', true, function(evt, fileData, fileDataAsBinaryString) {
                 expect(arrayBufferEqualsString(evt.target.result, fileDataAsBinaryString)).toBe(true);
             });
@@ -3085,6 +3089,10 @@ describe('File API', function() {
             }, -10, -5);
         });
         it("file.spec.94 should read sliced file properly, readAsArrayBuffer", function() {
+            // Skip test if ArrayBuffers are not supported (e.g.: Android 2.3).
+            if (typeof window.ArrayBuffer == 'undefined') {
+                return;
+            }
             runReaderTest('readAsArrayBuffer', true, function(evt, fileData, fileDataAsBinaryString) {
                 expect(arrayBufferEqualsString(evt.target.result, fileDataAsBinaryString.slice(0, -1))).toBe(true);
             }, 0, -1);
@@ -3473,6 +3481,10 @@ describe('File API', function() {
             });
         });
         it("file.spec.104 should be able to write binary data from an ArrayBuffer", function() {
+            // Skip test if ArrayBuffers are not supported (e.g.: Android 2.3).
+            if (typeof window.ArrayBuffer == 'undefined') {
+                return;
+            }
             var fileName = "bufferwriter.bin",
                 filePath = root.fullPath + '/' + fileName,
                 theWriter,
@@ -3515,6 +3527,10 @@ describe('File API', function() {
             });
         });
         it("file.spec.105 should be able to write binary data from a Blob", function() {
+            // Skip test if Blobs are not supported (e.g.: Android 2.3).
+            if (typeof window.Blob == 'undefined' || typeof window.ArrayBuffer == 'undefined') {
+                return;
+            }
             var fileName = "blobwriter.bin",
                 filePath = root.fullPath + '/' + fileName,
                 theWriter,
