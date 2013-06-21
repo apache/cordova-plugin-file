@@ -18,15 +18,11 @@
  */
 
 #import "CDVFile.h"
-#import <Cordova/NSArray+Comparisons.h>
-#import <Cordova/NSDictionary+Extensions.h>
-#import <Cordova/CDVJSON.h>
-#import <Cordova/NSData+Base64.h>
+#import <Cordova/CDV.h>
 #import <AssetsLibrary/ALAsset.h>
 #import <AssetsLibrary/ALAssetRepresentation.h>
 #import <AssetsLibrary/ALAssetsLibrary.h>
 #import <MobileCoreServices/MobileCoreServices.h>
-#import <Cordova/CDVAvailability.h>
 #import <sys/xattr.h>
 
 extern NSString * const NSURLIsExcludedFromBackupKey __attribute__((weak_import));

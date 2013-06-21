@@ -99,7 +99,7 @@ id="org.apache.cordova.core.FileUtils" version="0.1.0">
         <source-file src="src/ios/CDVFile.m" />
         
         <!-- ios specific file apis -->
-        <js-module src="www/ios/Entry.js" name="Entry">
+        <js-module src="www/ios/Entry.js" name="Entry1">
             <merges target="window.Entry" />
         </js-module>
     </platform>    
