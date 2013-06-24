@@ -113,6 +113,12 @@ id="org.apache.cordova.core.FileUtils" version="0.1.0">
         </config-file>
 
         <source-file src="src/wp7/File.cs" />
+
+        <!-- wp specific file apis -->
+        <js-module src="www/wp/FileUploadOptions.js" name="FileUploadOptions1">
+            <merges target="window.FileUploadOptions" />
+        </js-module>
+
     </platform>
 
     <!-- wp8 -->
@@ -124,6 +130,12 @@ id="org.apache.cordova.core.FileUtils" version="0.1.0">
         </config-file>
 
         <source-file src="src/wp8/File.cs" />
+
+        <!-- wp specific file apis -->
+        <js-module src="www/wp/FileUploadOptions.js" name="FileUploadOptions1">
+            <merges target="window.FileUploadOptions" />
+        </js-module>
+
     </platform>
 
 </plugin>
