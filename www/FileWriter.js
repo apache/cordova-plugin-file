@@ -20,8 +20,8 @@
 */
 
 var exec = require('cordova/exec'),
-    FileError = require('org.apache.cordova.core.FileUtils.FileError'),
-    ProgressEvent = require('org.apache.cordova.core.FileUtils.ProgressEvent');
+    FileError = require('org.apache.cordova.core.file.FileError'),
+    ProgressEvent = require('org.apache.cordova.core.file.ProgressEvent');
 
 /**
  * This class writes to the mobile device file system.

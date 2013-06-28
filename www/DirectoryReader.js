@@ -20,7 +20,7 @@
 */
 
 var exec = require('cordova/exec'),
-    FileError = require('org.apache.cordova.core.FileUtils.FileError') ;
+    FileError = require('org.apache.cordova.core.file.FileError') ;
 
 /**
  * An interface that lists the files and directories in a directory.
@@ -41,10 +41,10 @@ DirectoryReader.prototype.readEntries = function(successCallback, errorCallback)
         for (var i=0; i<result.length; i++) {
             var entry = null;
             if (result[i].isDirectory) {
-                entry = new (require('org.apache.cordova.core.FileUtils.DirectoryEntry'))();
+                entry = new (require('org.apache.cordova.core.file.DirectoryEntry'))();
             }
             else if (result[i].isFile) {
-                entry = new (require('org.apache.cordova.core.FileUtils.FileEntry'))();
+                entry = new (require('org.apache.cordova.core.file.FileEntry'))();
             }
             entry.isDirectory = result[i].isDirectory;
             entry.isFile = result[i].isFile;

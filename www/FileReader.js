@@ -22,9 +22,9 @@
 var exec = require('cordova/exec'),
     modulemapper = require('cordova/modulemapper'),
     utils = require('cordova/utils'),
-    File = require('org.apache.cordova.core.FileUtils.File'),
-    FileError = require('org.apache.cordova.core.FileUtils.FileError'),
-    ProgressEvent = require('org.apache.cordova.core.FileUtils.ProgressEvent'),
+    File = require('org.apache.cordova.core.file.File'),
+    FileError = require('org.apache.cordova.core.file.FileError'),
+    ProgressEvent = require('org.apache.cordova.core.file.ProgressEvent'),
     origFileReader = modulemapper.getOriginalSymbol(this, 'FileReader');
 
 /**

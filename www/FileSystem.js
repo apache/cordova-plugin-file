@@ -19,7 +19,7 @@
  *
 */
 
-var DirectoryEntry = require('org.apache.cordova.core.FileUtils.DirectoryEntry');
+var DirectoryEntry = require('org.apache.cordova.core.file.DirectoryEntry');
 
 /**
  * An interface representing a file system

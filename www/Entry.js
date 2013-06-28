@@ -21,8 +21,8 @@
 
 var argscheck = require('cordova/argscheck'),
     exec = require('cordova/exec'),
-    FileError = require('org.apache.cordova.core.FileUtils.FileError'),
-    Metadata = require('org.apache.cordova.core.FileUtils.Metadata');
+    FileError = require('org.apache.cordova.core.file.FileError'),
+    Metadata = require('org.apache.cordova.core.file.Metadata');
 
 /**
  * Represents a file or directory on the local file system.
@@ -107,7 +107,7 @@ Entry.prototype.moveTo = function(parent, newName, successCallback, errorCallbac
             if (entry) {
                 if (successCallback) {
                     // create appropriate Entry object
-                    var result = (entry.isDirectory) ? new (require('org.apache.cordova.core.FileUtils.DirectoryEntry'))(entry.name, entry.fullPath) : new (require('org.apache.cordova.core.FileUtils.FileEntry'))(entry.name, entry.fullPath);
+                    var result = (entry.isDirectory) ? new (require('org.apache.cordova.core.file.DirectoryEntry'))(entry.name, entry.fullPath) : new (require('org.apache.cordova.core.file.FileEntry'))(entry.name, entry.fullPath);
                     successCallback(result);
                 }
             }
@@ -148,7 +148,7 @@ Entry.prototype.copyTo = function(parent, newName, successCallback, errorCallbac
             if (entry) {
                 if (successCallback) {
                     // create appropriate Entry object
-                    var result = (entry.isDirectory) ? new (require('org.apache.cordova.core.FileUtils.DirectoryEntry'))(entry.name, entry.fullPath) : new (require('org.apache.cordova.core.FileUtils.FileEntry'))(entry.name, entry.fullPath);
+                    var result = (entry.isDirectory) ? new (require('org.apache.cordova.core.file.DirectoryEntry'))(entry.name, entry.fullPath) : new (require('org.apache.cordova.core.file.FileEntry'))(entry.name, entry.fullPath);
                     successCallback(result);
                 }
             }
@@ -207,7 +207,7 @@ Entry.prototype.remove = function(successCallback, errorCallback) {
 Entry.prototype.getParent = function(successCallback, errorCallback) {
     argscheck.checkArgs('FF', 'Entry.getParent', arguments);
     var win = successCallback && function(result) {
-        var DirectoryEntry = require('org.apache.cordova.core.FileUtils.DirectoryEntry');
+        var DirectoryEntry = require('org.apache.cordova.core.file.DirectoryEntry');
         var entry = new DirectoryEntry(result.name, result.fullPath);
         successCallback(entry);
     };

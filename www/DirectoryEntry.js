@@ -22,9 +22,9 @@
 var argscheck = require('cordova/argscheck'),
     utils = require('cordova/utils'),
     exec = require('cordova/exec'),
-    Entry = require('org.apache.cordova.core.FileUtils.Entry'),
-    FileError = require('org.apache.cordova.core.FileUtils.FileError'),
-    DirectoryReader = require('org.apache.cordova.core.FileUtils.DirectoryReader');
+    Entry = require('org.apache.cordova.core.file.Entry'),
+    FileError = require('org.apache.cordova.core.file.FileError'),
+    DirectoryReader = require('org.apache.cordova.core.file.DirectoryReader');
 
 /**
  * An interface representing a directory on the file system.
@@ -93,7 +93,7 @@ DirectoryEntry.prototype.removeRecursively = function(successCallback, errorCall
 DirectoryEntry.prototype.getFile = function(path, options, successCallback, errorCallback) {
     argscheck.checkArgs('sOFF', 'DirectoryEntry.getFile', arguments);
     var win = successCallback && function(result) {
-        var FileEntry = require('org.apache.cordova.core.FileUtils.FileEntry');
+        var FileEntry = require('org.apache.cordova.core.file.FileEntry');
         var entry = new FileEntry(result.name, result.fullPath);
         successCallback(entry);
     };
