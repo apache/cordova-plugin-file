@@ -1128,7 +1128,7 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
     NSInteger end = [[command argumentAtIndex:3] integerValue];
 
     // TODO: implement
-    if (![@"UTF-8" isEqualToString : encoding]) {
+    if ([@"UTF-8" caseInsensitiveCompare : encoding] != NSOrderedSame) {
         NSLog(@"Only UTF-8 encodings are currently supported by readAsText");
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:ENCODING_ERR];
         [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
@@ -1328,8 +1328,8 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
     } else if ([argData isKindOfClass:[NSData class]]) {
         [self writeToFile:fullPath withData:argData append:YES callback:callbackId];
     } else {
-       CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid parameter type"];
-      [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid parameter type"];
+        [self.commandDelegate sendPluginResult:result callbackId:callbackId];
     }
 
 }
