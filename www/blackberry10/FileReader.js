@@ -20,7 +20,7 @@
 */
 
 var origFileReader = window.FileReader,
-    fileUtils = require('org.apache.cordova.core.FileUtils.BB10Utils'),
+    fileUtils = require('org.apache.cordova.core.file.BB10Utils'),
     utils = require('cordova/utils');
 
 var FileReader = function() {

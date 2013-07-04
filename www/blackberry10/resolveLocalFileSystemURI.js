@@ -19,8 +19,8 @@
  *
 */
 
-var fileUtils = require('org.apache.cordova.core.FileUtils.BB10Utils'),
-    FileError = require('org.apache.cordova.core.FileUtils.FileError');
+var fileUtils = require('org.apache.cordova.core.file.BB10Utils'),
+    FileError = require('org.apache.cordova.core.file.FileError');
 
 module.exports = function (uri, success, fail) {
     var type,

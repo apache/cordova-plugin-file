@@ -19,9 +19,9 @@
  *
 */
 
-var FileError = require('org.apache.cordova.core.FileUtils.FileError'),
-    ProgressEvent = require('org.apache.cordova.core.FileUtils.ProgressEvent'),
-    fileUtils = require('org.apache.cordova.core.FileUtils.BB10Utils'),
+var FileError = require('org.apache.cordova.core.file.FileError'),
+    ProgressEvent = require('org.apache.cordova.core.file.ProgressEvent'),
+    fileUtils = require('org.apache.cordova.core.file.BB10Utils'),
     utils = require('cordova/utils');
 
 function FileWriter (file) {
