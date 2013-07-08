@@ -29,7 +29,7 @@ function FileWriter (file) {
     this.file = file;
     this.events = {};
     this.pending = [];
-    fileUtils.getEntryForURI(file.fullPath, function (entry) {
+    resolveLocalFileSystemURI("filesystem:local:///persistent/" + file.fullPath, function (entry) {
         entry.nativeEntry.createWriter(function (writer) {
             var i,
                 event;
