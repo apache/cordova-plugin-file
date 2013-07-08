@@ -24,24 +24,29 @@ function convertPath(url) {
 }
 
 module.exports = {
-
     createEntry: function (entry) {
         var cordovaEntry;
         if (entry.isFile) {
-            cordovaEntry = new window.FileEntry(entry.name, convertPath(entry.toURL()));
+            cordovaEntry = new window.FileEntry(entry.name, entry.fullPath, entry.filesystem);
         } else {
-            cordovaEntry = new window.DirectoryEntry(entry.name, convertPath(entry.toURL()));
+            cordovaEntry = new window.DirectoryEntry(entry.name, entry.fullPath, entry.filesystem);
         }
         cordovaEntry.nativeEntry = entry;
         return cordovaEntry;
     },
 
-    getEntryForURI: function (uri, success, fail) {
-        //TODO: account for local vs file system
-        window.resolveLocalFileSystemURI(uri, success, fail);
+    createFile: function (file) {
+        var cordovaFile = new File(file.name, file.fullPath, file.type, file.lastModifiedDate, file.size);
+        cordovaFile.nativeFile = file;
+        cordovaFile.fullPath = file.name;
+        return cordovaFile;
     },
 
     getFileSystemName: function (fs) {
-        return (fs.name.indexOf('Persistent') != -1) ? 'persistent' : 'temporary';
+        return ((fs.name.indexOf('Persistent') != -1) || (fs.name === "persistent")) ? 'persistent' : 'temporary';
+    },
+
+    isOutsideSandbox: function (path) {
+        return (path.indexOf("accounts/1000/") === 0 || path.indexOf("/accounts/1000/") === 0);
     }
 };

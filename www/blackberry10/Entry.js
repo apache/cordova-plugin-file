@@ -25,10 +25,14 @@ var argscheck = require('cordova/argscheck'),
     fileUtils = require('./BB10Utils');
 
 function Entry(isFile, isDirectory, name, fullPath, fileSystem) {
+    var strippedPath;
+    if (fullPath && fullPath.charAt(fullPath.length - 1) === '/') {
+        strippedPath = fullPath.slice(0, -1);
+    }
     this.isFile = !!isFile;
     this.isDirectory = !!isDirectory;
     this.name = name || '';
-    this.fullPath = fullPath || '';
+    this.fullPath = typeof strippedPath !== "undefined" ? strippedPath : (fullPath || '');
     this.filesystem = fileSystem || null;
 }
 
@@ -88,7 +92,11 @@ Entry.prototype.copyTo = function(parent, newName, successCallback, errorCallbac
 };
 
 Entry.prototype.toURL = function() {
-    return this.fullPath;
+    var nativeURI = this.nativeEntry.toURL();
+    if (nativeURI.charAt(nativeURI.length - 1) === '/') {
+        return nativeURI.slice(0, -1);
+    }
+    return nativeURI;
 };
 
 Entry.prototype.toURI = function(mimeType) {

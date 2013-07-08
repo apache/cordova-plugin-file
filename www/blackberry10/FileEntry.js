@@ -22,10 +22,11 @@
 var utils = require('cordova/utils'),
     Entry = require('./BB10Entry'),
     FileWriter = require('./BB10FileWriter'),
-    File = require('./File'),
+    File = require('./BB10File'),
+    fileUtils = require('./BB10Utils'),
     FileError = require('./FileError'),
-    FileEntry = function (name, fullPath) {
-        FileEntry.__super__.constructor.apply(this, [true, false, name, fullPath]);
+    FileEntry = function (name, fullPath, fileSystem) {
+        FileEntry.__super__.constructor.apply(this, [true, false, name, fullPath, fileSystem]);
     };
 
 utils.extend(FileEntry, Entry);
@@ -39,7 +40,8 @@ FileEntry.prototype.createWriter = function(successCallback, errorCallback) {
 FileEntry.prototype.file = function(successCallback, errorCallback) {
     var fullPath = this.fullPath,
         success = function (file) {
-            successCallback(new File(file.name, fullPath, file.type, file.lastModifiedDate, file.size));
+            file.fullPath = fullPath;
+            successCallback(fileUtils.createFile(file));
         };
     this.nativeEntry.file(success, errorCallback);
 };
