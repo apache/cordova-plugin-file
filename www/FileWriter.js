@@ -97,26 +97,27 @@ FileWriter.prototype.abort = function() {
  */
 FileWriter.prototype.write = function(data) {
 
-    var isBinary = false;
+    var that=this;
+    var supportsBinary = (typeof window.Blob !== 'undefined' && typeof window.ArrayBuffer !== 'undefined');
+    var isBinary;
 
-    // If we don't have Blob or ArrayBuffer support, don't bother.
-    if (typeof window.Blob !== 'undefined' && typeof window.ArrayBuffer !== 'undefined') {
-
-        // Check to see if the incoming data is a blob
-        if (data instanceof Blob) {
-            var that=this;
-            var fileReader = new FileReader();
-            fileReader.onload = function() {
-                // Call this method again, with the arraybuffer as argument
-                FileWriter.prototype.write.call(that, this.result);
-            };
+    // Check to see if the incoming data is a blob
+    if (data instanceof File || (supportsBinary && data instanceof Blob)) {
+        var fileReader = new FileReader();
+        fileReader.onload = function() {
+            // Call this method again, with the arraybuffer as argument
+            FileWriter.prototype.write.call(that, this.result);
+        };
+        if (supportsBinary) {
             fileReader.readAsArrayBuffer(data);
-            return;
+        } else {
+            fileReader.readAsText(data);
         }
-
-        // Mark data type for safer transport over the binary bridge
-        isBinary = (data instanceof ArrayBuffer);
+        return;
     }
+
+    // Mark data type for safer transport over the binary bridge
+    isBinary = supportsBinary && (data instanceof ArrayBuffer);
 
     // Throw an exception if we are already writing a file
     if (this.readyState === FileWriter.WRITING) {
