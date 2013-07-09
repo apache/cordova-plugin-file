@@ -20,9 +20,9 @@
 */
 
 var argscheck = require('cordova/argscheck'),
-    FileError = require('org.apache.cordova.core.file.FileError'),
-    Metadata = require('org.apache.cordova.core.file.Metadata'),
-    fileUtils = require('org.apache.cordova.core.file.BB10Utils');
+    FileError = require('./FileError'),
+    Metadata = require('./Metadata'),
+    fileUtils = require('./BB10Utils');
 
 function Entry(isFile, isDirectory, name, fullPath, fileSystem) {
     this.isFile = !!isFile;

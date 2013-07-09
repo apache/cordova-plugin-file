@@ -19,9 +19,9 @@
  *
 */
 
-var fileUtils = require('org.apache.cordova.core.file.BB10Utils'),
-    FileError = require('org.apache.cordova.core.file.FileError'),
-    FileSystem = require('org.apache.cordova.core.file.BB10FileSystem');
+var fileUtils = require('./BB10Utils'),
+    FileError = require('./FileError'),
+    FileSystem = require('./BB10FileSystem');
 
 module.exports = function (type, size, success, fail) {
     if (size >= 1000000000000000) {

@@ -19,8 +19,8 @@
  *
 */
 
-var FileError = require('org.apache.cordova.core.file.FileError'),
-    fileUtils = require('org.apache.cordova.core.file.BB10Utils');
+var FileError = require('./FileError'),
+    fileUtils = require('./BB10Utils');
 
 function DirectoryReader(path) {
     this.path = path;

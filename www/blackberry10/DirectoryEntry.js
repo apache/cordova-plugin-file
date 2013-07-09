@@ -21,10 +21,10 @@
 
 var argscheck = require('cordova/argscheck'),
     utils = require('cordova/utils'),
-    Entry = require('org.apache.cordova.core.file.BB10Entry'),
-    FileError = require('org.apache.cordova.core.file.FileError'),
-    DirectoryReader = require('org.apache.cordova.core.file.BB10DirectoryReader'),
-    fileUtils = require('org.apache.cordova.core.file.BB10Utils'),
+    Entry = require('./BB10Entry'),
+    FileError = require('./FileError'),
+    DirectoryReader = require('./BB10DirectoryReader'),
+    fileUtils = require('./BB10Utils'),
     DirectoryEntry = function (name, fullPath) {
         DirectoryEntry.__super__.constructor.call(this, false, true, name, fullPath);
     };

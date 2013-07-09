@@ -20,10 +20,10 @@
 */
 
 var utils = require('cordova/utils'),
-    Entry = require('org.apache.cordova.core.file.BB10Entry'),
-    FileWriter = require('org.apache.cordova.core.file.BB10FileWriter'),
-    File = require('org.apache.cordova.core.file.File'),
-    FileError = require('org.apache.cordova.core.file.FileError'),
+    Entry = require('./BB10Entry'),
+    FileWriter = require('./BB10FileWriter'),
+    File = require('./File'),
+    FileError = require('./FileError'),
     FileEntry = function (name, fullPath) {
         FileEntry.__super__.constructor.apply(this, [true, false, name, fullPath]);
     };
