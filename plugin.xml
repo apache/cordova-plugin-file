@@ -85,6 +85,11 @@
             <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
         </config-file>
 
+        <source-file src="src/android/EncodingException.java" target-dir="src/org/apache/cordova/core" />
+        <source-file src="src/android/FileExistsException.java" target-dir="src/org/apache/cordova/core" />
+        <source-file src="src/android/InvalidModificationException.java" target-dir="src/org/apache/cordova/core" />
+        <source-file src="src/android/NoModificationAllowedException.java" target-dir="src/org/apache/cordova/core" />
+        <source-file src="src/android/TypeMismatchException.java" target-dir="src/org/apache/cordova/core" />
         <source-file src="src/android/FileUtils.java" target-dir="src/org/apache/cordova/core" />
     </platform>
     

@@ -30,11 +30,7 @@ import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
 import org.apache.cordova.DirectoryManager;
 import org.apache.cordova.FileHelper;
-import org.apache.cordova.file.EncodingException;
-import org.apache.cordova.file.FileExistsException;
-import org.apache.cordova.file.InvalidModificationException;
-import org.apache.cordova.file.NoModificationAllowedException;
-import org.apache.cordova.file.TypeMismatchException;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
