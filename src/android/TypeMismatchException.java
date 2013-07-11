@@ -18,7 +18,7 @@
 */
 
 
-package org.apache.cordova.file;
+package org.apache.cordova.core;
 
 public class TypeMismatchException extends Exception {
 
