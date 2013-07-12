@@ -788,7 +788,8 @@ namespace WPCordovaClassLib.Cordova.Commands
             string filePath = optStrings[0];
             string data = optStrings[1];
             int position = int.Parse(optStrings[2]);
-            string callbackId = optStrings[3];
+            bool isBinary = bool.Parse(optStrings[3]);
+            string callbackId = optStrings[4];
 
             try
             {
