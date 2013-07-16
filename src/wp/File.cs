@@ -779,10 +779,9 @@ namespace WPCordovaClassLib.Cordova.Commands
             }
         }
 
-        //write:["filePath","data","position"],
+        //write:[filePath,data,position,isBinary,callbackId]
         public void write(string options)
         {
-            // TODO: try/catch
             string[] optStrings = getOptionStrings(options);
 
             string filePath = optStrings[0];
