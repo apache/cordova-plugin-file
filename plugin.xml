@@ -109,6 +109,7 @@
         </js-module>
         
         <framework src="AssetsLibrary.framework" />
+        <framework src="MobileCoreServices.framework" />
     </platform>    
 
     <!-- wp7 -->
