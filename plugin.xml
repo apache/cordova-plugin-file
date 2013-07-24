@@ -107,6 +107,8 @@
         <js-module src="www/ios/Entry.js" name="Entry1">
             <merges target="window.Entry" />
         </js-module>
+        
+        <framework src="AssetsLibrary.framework" />
     </platform>    
 
     <!-- wp7 -->
