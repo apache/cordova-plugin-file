@@ -181,4 +181,11 @@
         </js-module>
     </platform>
 
+    <!-- windows8 -->
+    <platform name="windows8">
+        <js-module src="src/windows8/FileProxy.js" name="FileProxy">
+            <merges target="" />
+        </js-module>
+    </platform>
+
 </plugin>
