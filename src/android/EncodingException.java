@@ -17,7 +17,7 @@
        under the License.
 */
 
-package org.apache.cordova.core;
+package org.apache.cordova.file;
 
 public class EncodingException extends Exception {
 

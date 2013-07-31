@@ -16,7 +16,7 @@
        specific language governing permissions and limitations
        under the License.
  */
-package org.apache.cordova.core;
+package org.apache.cordova.file;
 
 import android.database.Cursor;
 import android.net.Uri;
