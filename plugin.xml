@@ -5,7 +5,7 @@
       version="0.1.0">
     <name>File</name>
     <description>Cordova File Plugin</description>
-    <license>Apache</license>
+    <license>Apache 2.0</license>
     <keywords>cordova,file</keywords>
 
     <js-module src="www/DirectoryEntry.js" name="DirectoryEntry">
