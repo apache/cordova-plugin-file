@@ -233,19 +233,14 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
         // see if exists and is file or dir
         BOOL bExists = [fileMgr fileExistsAtPath:path isDirectory:&isDir];
         if (bExists) {
-            // see if it contains docs path
-            NSRange range = [path rangeOfString:self.appDocsPath];
+            // see if it contains docs path or temp path
             NSString* foundFullPath = nil;
-            // there's probably an api or easier way to figure out the path type but I can't find it!
-            if ((range.location != NSNotFound) && (range.length == [self.appDocsPath length])) {
+            if ([path hasPrefix:self.appDocsPath]) {
                 foundFullPath = self.appDocsPath;
-            } else {
-                // see if it contains the temp path
-                range = [path rangeOfString:self.appTempPath];
-                if ((range.location != NSNotFound) && (range.length == [self.appTempPath length])) {
-                    foundFullPath = self.appTempPath;
-                }
+            } else if ([path hasPrefix:self.appTempPath]) {
+                foundFullPath = self.appTempPath;
             }
+
             if (foundFullPath == nil) {
                 // error SECURITY_ERR - not one of the two paths types supported
                 result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:SECURITY_ERR];
