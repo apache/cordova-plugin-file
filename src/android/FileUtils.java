@@ -487,12 +487,13 @@ public class FileUtils extends CordovaPlugin {
                 throw new NoModificationAllowedException("Couldn't create the destination directory");
             }
         }
+        
 
         for (File file : srcDir.listFiles()) {
+            File destination = new File(destinationDir.getAbsoluteFile() + File.separator + file.getName());
             if (file.isDirectory()) {
-                copyDirectory(file, destinationDir);
+                copyDirectory(file, destination);
             } else {
-                File destination = new File(destinationDir.getAbsoluteFile() + File.separator + file.getName());
                 copyFile(file, destination);
             }
         }
