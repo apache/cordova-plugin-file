@@ -913,11 +913,6 @@ public class FileUtils extends CordovaPlugin {
         return getEntry(new File(path));
     }
 
-
-    //--------------------------------------------------------------------------
-    // LOCAL METHODS
-    //--------------------------------------------------------------------------
-
     /**
      * Read the contents of a file.
      * This is done in a background thread; the result is sent to the callback.
