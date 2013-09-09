@@ -20,6 +20,7 @@
 
 package org.apache.cordova.file;
 
+@SuppressWarnings("serial")
 public class TypeMismatchException extends Exception {
 
     public TypeMismatchException(String message) {

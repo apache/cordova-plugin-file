@@ -19,6 +19,7 @@
 
 package org.apache.cordova.file;
 
+@SuppressWarnings("serial")
 public class FileExistsException extends Exception {
 
     public FileExistsException(String msg) {

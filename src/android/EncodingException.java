@@ -19,6 +19,7 @@
 
 package org.apache.cordova.file;
 
+@SuppressWarnings("serial")
 public class EncodingException extends Exception {
 
     public EncodingException(String message) {

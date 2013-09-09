@@ -19,6 +19,7 @@
 
 package org.apache.cordova.file;
 
+@SuppressWarnings("serial")
 public class NoModificationAllowedException extends Exception {
 
     public NoModificationAllowedException(String message) {

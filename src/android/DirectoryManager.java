@@ -18,11 +18,10 @@
 */
 package org.apache.cordova.file;
 
-import java.io.File;
-
-import android.content.Context;
 import android.os.Environment;
 import android.os.StatFs;
+
+import java.io.File;
 
 /**
  * This class provides file directory utilities.
