@@ -95,6 +95,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <source-file src="src/android/NoModificationAllowedException.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/TypeMismatchException.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/FileUtils.java" target-dir="src/org/apache/cordova/file" />
+        <source-file src="src/android/FileHelper.java" target-dir="src/org/apache/cordova/file" />
     </platform>
 
     <!-- ios -->
