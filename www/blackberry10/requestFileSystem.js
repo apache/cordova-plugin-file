@@ -24,13 +24,19 @@ var fileUtils = require('./BB10Utils'),
     FileSystem = require('./BB10FileSystem');
 
 module.exports = function (type, size, success, fail) {
+    var cordovaFs,
+        cordovaFsRoot;
     if (size >= 1000000000000000) {
         fail(new FileError(FileError.QUOTA_EXCEEDED_ERR));
     } else if (type !== 1 && type !== 0) {
         fail(new FileError(FileError.SYNTAX_ERR));
     } else {
         window.webkitRequestFileSystem(type, size, function (fs) {
-            success((new FileSystem(fileUtils.getFileSystemName(fs), fileUtils.createEntry(fs.root))));
+            cordovaFsRoot = fileUtils.createEntry(fs.root);
+            cordovaFs = new FileSystem(fileUtils.getFileSystemName(fs), cordovaFsRoot);
+            cordovaFsRoot.filesystem = cordovaFs;
+            cordovaFs._size = size;
+            success(cordovaFs);
         }, function (error) {
             fail(new FileError(error));
         });

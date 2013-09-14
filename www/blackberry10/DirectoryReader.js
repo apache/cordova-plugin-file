@@ -24,10 +24,12 @@ var FileError = require('./FileError'),
 
 function DirectoryReader(path) {
     this.path = path;
+    this.nativeReader = null;
 }
 
 DirectoryReader.prototype.readEntries = function(successCallback, errorCallback) {
-    var win = typeof successCallback !== 'function' ? null : function(result) {
+    var self = this,
+        win = typeof successCallback !== 'function' ? null : function(result) {
             var retVal = [];
             for (var i=0; i<result.length; i++) {
                 retVal.push(fileUtils.createEntry(result[i]));
@@ -37,11 +39,16 @@ DirectoryReader.prototype.readEntries = function(successCallback, errorCallback)
         fail = typeof errorCallback !== 'function' ? null : function(code) {
             errorCallback(new FileError(code));
         };
-    fileUtils.getEntryForURI(this.path, function (entry) {
-        entry.nativeEntry.createReader().readEntries(win, fail);
-    }, function () {
-        fail(FileError.NOT_FOUND_ERR);
-    });
+    if (this.nativeReader) {
+        this.nativeReader.readEntries(win, fail);
+    } else {
+        resolveLocalFileSystemURI("filesystem:local:///persistent/" + this.path, function (entry) {
+            self.nativeReader = entry.nativeEntry.createReader()
+            self.nativeReader.readEntries(win, fail);
+        }, function () {
+            fail(FileError.NOT_FOUND_ERR);
+        });
+    }
 };
 
 module.exports = DirectoryReader;

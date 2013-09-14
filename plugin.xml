@@ -12,14 +12,14 @@ xmlns:android="http://schemas.android.com/apk/res/android"
     <js-module src="www/DirectoryEntry.js" name="DirectoryEntry">
         <clobbers target="window.DirectoryEntry" />
     </js-module>
-    
+
     <js-module src="www/DirectoryReader.js" name="DirectoryReader">
         <clobbers target="window.DirectoryReader" />
-    </js-module> 
-    
+    </js-module>
+
     <js-module src="www/Entry.js" name="Entry">
         <clobbers target="window.Entry" />
-    </js-module>       
+    </js-module>
 
     <js-module src="www/File.js" name="File">
         <clobbers target="window.File" />
@@ -40,11 +40,11 @@ xmlns:android="http://schemas.android.com/apk/res/android"
     <js-module src="www/FileSystem.js" name="FileSystem">
         <clobbers target="window.FileSystem" />
     </js-module>
-    
+
     <js-module src="www/FileUploadOptions.js" name="FileUploadOptions">
         <clobbers target="window.FileUploadOptions" />
     </js-module>
-    
+
     <js-module src="www/FileUploadResult.js" name="FileUploadResult">
         <clobbers target="window.FileUploadResult" />
     </js-module>
@@ -52,15 +52,15 @@ xmlns:android="http://schemas.android.com/apk/res/android"
     <js-module src="www/FileWriter.js" name="FileWriter">
         <clobbers target="window.FileWriter" />
     </js-module>
-    
+
     <js-module src="www/Flags.js" name="Flags">
         <clobbers target="window.Flags" />
-    </js-module>    
+    </js-module>
 
     <js-module src="www/LocalFileSystem.js" name="LocalFileSystem">
         <clobbers target="window.LocalFileSystem" />
     </js-module>
- 
+
     <js-module src="www/Metadata.js" name="Metadata">
         <clobbers target="window.Metadata" />
     </js-module>
@@ -72,11 +72,11 @@ xmlns:android="http://schemas.android.com/apk/res/android"
     <js-module src="www/requestFileSystem.js" name="requestFileSystem">
         <clobbers target="window.requestFileSystem" />
     </js-module>
-    
+
     <js-module src="www/resolveLocalFileSystemURI.js" name="resolveLocalFileSystemURI">
         <clobbers target="window.resolveLocalFileSystemURI" />
     </js-module>
-                                           
+
     <!-- android -->
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
@@ -96,25 +96,25 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <source-file src="src/android/TypeMismatchException.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/FileUtils.java" target-dir="src/org/apache/cordova/file" />
     </platform>
-    
+
     <!-- ios -->
-    <platform name="ios">    
+    <platform name="ios">
         <config-file target="config.xml" parent="/*">
             <feature name="File">
-                <param name="ios-package" value="CDVFile" /> 
+                <param name="ios-package" value="CDVFile" />
             </feature>
         </config-file>
         <header-file src="src/ios/CDVFile.h" />
         <source-file src="src/ios/CDVFile.m" />
-        
+
         <!-- ios specific file apis -->
         <js-module src="www/ios/Entry.js" name="Entry1">
             <merges target="window.Entry" />
         </js-module>
-        
+
         <framework src="AssetsLibrary.framework" />
         <framework src="MobileCoreServices.framework" />
-    </platform>    
+    </platform>
 
     <!-- wp7 -->
     <platform name="wp7">
@@ -164,7 +164,10 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         </js-module>
         <js-module src="www/blackberry10/Entry.js" name="BB10Entry">
             <clobbers target="window.Entry" />
-        </js-module>       
+        </js-module>
+        <js-module src="www/blackberry10/File.js" name="BB10File">
+            <clobbers target="window.File" />
+        </js-module>
         <js-module src="www/blackberry10/FileEntry.js" name="BB10FileEntry">
             <clobbers target="window.FileEntry" />
         </js-module>
@@ -183,6 +186,8 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <js-module src="www/blackberry10/resolveLocalFileSystemURI.js" name="BB10resolveLocalFileSystemURI">
             <clobbers target="window.resolveLocalFileSystemURI" />
         </js-module>
+
+        <source-file src="src/blackberry10/index.js"></source-file>
     </platform>
 
     <!-- windows8 -->
