@@ -842,4 +842,4 @@ module.exports = {
 
 };
 
-require("cordova/commandProxy").add("File",module.exports);
+require("cordova/windows8/commandProxy").add("File",module.exports);
