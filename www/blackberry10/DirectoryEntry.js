@@ -33,7 +33,7 @@ utils.extend(DirectoryEntry, Entry);
 
 function err(sandboxState, errorCallback) {
     return function (e) {
-        cordova.exec(null, null, "org.apache.cordova.core.file", "setSandbox", [sandboxState]);
+        cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);
         errorCallback(e);
     }
 };
@@ -50,22 +50,22 @@ DirectoryEntry.prototype.getDirectory = function (path, options, successCallback
         sandboxState = sandboxed;
     }, function (e) {
         console.log("[ERROR]: Could not retrieve sandbox state ", e);
-    }, "org.apache.cordova.core.file", "isSandboxed");
+    }, "org.apache.cordova.file", "isSandboxed");
 
     argscheck.checkArgs('sOFF', 'DirectoryEntry.getDirectory', arguments);
 
     if (fileUtils.isOutsideSandbox(path)) {
-        cordova.exec(null, null, "org.apache.cordova.core.file", "setSandbox", [false]);
+        cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [false]);
         window.webkitRequestFileSystem(window.PERSISTENT, this.filesystem._size, function (fs) {
-            cordova.exec(null, null, "org.apache.cordova.core.file", "setSandbox", [sandboxState]);
+            cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);
             fs.root.getDirectory(currentPath + '/' + path, options, function (entry) {
                 successCallback(fileUtils.createEntry(entry));
             }, err(sandboxState, errorCallback));
         }, err(sandboxState, errorCallback));
     } else {
-        cordova.exec(null, null, "org.apache.cordova.core.file", "setSandbox", [true]);
+        cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [true]);
         window.webkitRequestFileSystem(fileUtils.getFileSystemName(this.filesystem) === "persistent" ? window.PERSISTENT : window.TEMPORARY, this.filesystem._size, function (fs) {
-            cordova.exec(null, null, "org.apache.cordova.core.file", "setSandbox", [sandboxState]);
+            cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);
             fs.root.getDirectory(currentPath + '/' + path, options, function (entry) {
                 successCallback(fileUtils.createEntry(entry));
             }, err(sandboxState, errorCallback));
@@ -86,22 +86,22 @@ DirectoryEntry.prototype.getFile = function (path, options, successCallback, err
         sandboxState = sandboxed;
     }, function (e) {
         console.log("[ERROR]: Could not retrieve sandbox state ", e);
-    }, "org.apache.cordova.core.file", "isSandboxed");
+    }, "org.apache.cordova.file", "isSandboxed");
 
     argscheck.checkArgs('sOFF', 'DirectoryEntry.getFile', arguments);
 
     if (fileUtils.isOutsideSandbox(path)) {
-        cordova.exec(null, null, "org.apache.cordova.core.file", "setSandbox", [false]);
+        cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [false]);
         window.webkitRequestFileSystem(window.PERSISTENT, this.filesystem._size, function (fs) {
-            cordova.exec(null, null, "org.apache.cordova.core.file", "setSandbox", [sandboxState]);
+            cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);
             fs.root.getFile(currentPath + '/' + path, options, function (entry) {
                 successCallback(fileUtils.createEntry(entry));
             }, err(sandboxState, errorCallback));
         }, err(sandboxState, errorCallback));
     } else {
-        cordova.exec(null, null, "org.apache.cordova.core.file", "setSandbox", [true]);
+        cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [true]);
         window.webkitRequestFileSystem(fileUtils.getFileSystemName(this.filesystem) === "persistent" ? window.PERSISTENT: window.TEMPORARY, this.filesystem._size, function (fs) {
-            cordova.exec(null, null, "org.apache.cordova.core.file", "setSandbox", [sandboxState]);
+            cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);
             fs.root.getFile(currentPath + '/' + path, options, function (entry) {
                 successCallback(fileUtils.createEntry(entry));
             }, err(sandboxState, errorCallback));

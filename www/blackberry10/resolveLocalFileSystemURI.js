@@ -35,12 +35,12 @@ module.exports = function (uri, success, fail) {
         sandboxState = sandboxed;
     }, function (e) {
         console.log("[ERROR]: Could not retrieve sandbox state ", e);
-    }, "org.apache.cordova.core.file", "isSandboxed");
+    }, "org.apache.cordova.file", "isSandboxed");
 
     if (fileUtils.isOutsideSandbox(stripURI(decodedURI))) {
-        cordova.exec(null, null, "org.apache.cordova.core.file", "setSandbox", [false]);
+        cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [false]);
     } else {
-        cordova.exec(null, null, "org.apache.cordova.core.file", "setSandbox", [true]);
+        cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [true]);
     }
     window.webkitResolveLocalFileSystemURL(decodedURI, function (entry) {
         success(fileUtils.createEntry(entry));
@@ -51,5 +51,5 @@ module.exports = function (uri, success, fail) {
             fail(e);
         });
     });
-    cordova.exec(null, null, "org.apache.cordova.core.file", "setSandbox", [sandboxState]);
+    cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);
 };
