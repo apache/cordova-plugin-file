@@ -1016,12 +1016,21 @@ public class FileUtils extends CordovaPlugin {
             rawData = data.getBytes();
         }
         ByteArrayInputStream in = new ByteArrayInputStream(rawData);
-        FileOutputStream out = new FileOutputStream(filename, append);
-        byte buff[] = new byte[rawData.length];
-        in.read(buff, 0, buff.length);
-        out.write(buff, 0, rawData.length);
-        out.flush();
-        out.close();
+        try
+        {
+            FileOutputStream out = new FileOutputStream(filename, append);
+            byte buff[] = new byte[rawData.length];
+            in.read(buff, 0, buff.length);
+            out.write(buff, 0, rawData.length);
+            out.flush();
+            out.close();
+        }
+        catch (NullPointerException e)
+        {
+            // This is a bug in the Android implementation of the Java Stack
+            NoModificationAllowedException realException = new NoModificationAllowedException(filename);
+            throw realException;
+        }
 
         return rawData.length;
     }
