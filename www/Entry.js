@@ -107,7 +107,7 @@ Entry.prototype.moveTo = function(parent, newName, successCallback, errorCallbac
             if (entry) {
                 if (successCallback) {
                     // create appropriate Entry object
-                    var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath) : new (require('org.apache.cordova.core.file.FileEntry'))(entry.name, entry.fullPath);
+                    var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath) : new (require('org.apache.cordova.file.FileEntry'))(entry.name, entry.fullPath);
                     successCallback(result);
                 }
             }
@@ -148,7 +148,7 @@ Entry.prototype.copyTo = function(parent, newName, successCallback, errorCallbac
             if (entry) {
                 if (successCallback) {
                     // create appropriate Entry object
-                    var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath) : new (require('org.apache.cordova.core.file.FileEntry'))(entry.name, entry.fullPath);
+                    var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath) : new (require('org.apache.cordova.file.FileEntry'))(entry.name, entry.fullPath);
                     successCallback(result);
                 }
             }
