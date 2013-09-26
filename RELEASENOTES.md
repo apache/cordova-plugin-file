@@ -24,3 +24,17 @@
 * [CB-4656] Don't add newlines in data urls within readAsDataUrl.
 * [CB-4514] Making DirectoryCopy Recursive
 * [iOS] Simplify the code in resolveLocalFileSystemURI
+
+### 0.2.3 (Sept 25, 2013)
+* CB-4889 bumping&resetting version
+* [CB-4903] File Plugin not loading Windows8
+* [CB-4903] File Plugin not loading Windows8
+* CB-4889 renaming references
+* CB-4889 renaming org.apache.cordova.core.file to org.apache.cordova.file
+* Rename CHANGELOG.md -> RELEASENOTES.md
+* [CB-4771] Expose TEMPORARY and PERSISTENT constants on window.
+* Fix compiler/lint warnings
+* [CB-4764] Move DirectoryManager.java into file plugin
+* [CB-4763] Copy FileHelper.java into the plugin.
+* [CB-2901] [BlackBerry10] Automatically unsandbox filesystem if path is not in app sandbox
+* [CB-4752] Incremented plugin version on dev branch.
