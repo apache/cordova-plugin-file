@@ -72,10 +72,8 @@ public class FileUtils extends CordovaPlugin {
     public static int RESOURCE = 2;
     public static int APPLICATION = 3;
 
-    /**
-     * Constructor.
-     */
-    public FileUtils() {
+    private interface FileOp {
+        void run(  ) throws Exception;
     }
 
     /**
@@ -86,142 +84,269 @@ public class FileUtils extends CordovaPlugin {
      * @param callbackContext	The callback context used when calling back into JavaScript.
      * @return 			True if the action was valid, false otherwise.
      */
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        try {
-            if (action.equals("testSaveLocationExists")) {
-                boolean b = DirectoryManager.testSaveLocationExists();
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, b));
-            }
-            else if (action.equals("getFreeDiskSpace")) {
-                long l = DirectoryManager.getFreeDiskSpace(false);
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, l));
-            }
-            else if (action.equals("testFileExists")) {
-                boolean b = DirectoryManager.testFileExists(args.getString(0));
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, b));
-            }
-            else if (action.equals("testDirectoryExists")) {
-                boolean b = DirectoryManager.testFileExists(args.getString(0));
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, b));
-            }
-            else if (action.equals("readAsText")) {
-                String encoding = args.getString(1);
-                int start = args.getInt(2);
-                int end = args.getInt(3);
-
-                this.readFileAs(args.getString(0), start, end, callbackContext, encoding, PluginResult.MESSAGE_TYPE_STRING);
-            }
-            else if (action.equals("readAsDataURL")) {
-                int start = args.getInt(1);
-                int end = args.getInt(2);
-
-                this.readFileAs(args.getString(0), start, end, callbackContext, null, -1);
-            }
-            else if (action.equals("readAsArrayBuffer")) {
-                int start = args.getInt(1);
-                int end = args.getInt(2);
-
-                this.readFileAs(args.getString(0), start, end, callbackContext, null, PluginResult.MESSAGE_TYPE_ARRAYBUFFER);
-            }
-            else if (action.equals("readAsBinaryString")) {
-                int start = args.getInt(1);
-                int end = args.getInt(2);
-
-                this.readFileAs(args.getString(0), start, end, callbackContext, null, PluginResult.MESSAGE_TYPE_BINARYSTRING);
-            }
-            else if (action.equals("write")) {
-                long fileSize = this.write(args.getString(0), args.getString(1), args.getInt(2), args.getBoolean(3));
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, fileSize));
-            }
-            else if (action.equals("truncate")) {
-                long fileSize = this.truncateFile(args.getString(0), args.getLong(1));
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, fileSize));
-            }
-            else if (action.equals("requestFileSystem")) {
-                long size = args.optLong(1);
-                if (size != 0 && size > (DirectoryManager.getFreeDiskSpace(true) * 1024)) {
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, FileUtils.QUOTA_EXCEEDED_ERR));
-                } else {
-                    JSONObject obj = requestFileSystem(args.getInt(0));
+    public boolean execute(String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
+        if (action.equals("testSaveLocationExists")) {
+            threadhelper( new FileOp( ){
+                public void run() {
+                    boolean b = DirectoryManager.testSaveLocationExists();
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, b));
+                }
+            },callbackContext);
+        }
+        else if (action.equals("getFreeDiskSpace")) {
+            threadhelper( new FileOp( ){
+                public void run() {
+                    long l = DirectoryManager.getFreeDiskSpace(false);
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, l));
+                }
+            },callbackContext);
+        }
+        else if (action.equals("testFileExists")) {
+            final String fname=args.getString(0);
+            threadhelper( new FileOp( ){
+                public void run() {
+                    boolean b = DirectoryManager.testFileExists(fname);
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, b));
+                }
+            }, callbackContext);
+        }
+        else if (action.equals("testDirectoryExists")) {
+            final String fname=args.getString(0);
+            threadhelper( new FileOp( ){
+                public void run() {
+                    boolean b = DirectoryManager.testFileExists(fname);
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, b));
+                }
+            }, callbackContext);
+        }
+        else if (action.equals("readAsText")) {
+            final String encoding = args.getString(1);
+            final int start = args.getInt(2);
+            final int end = args.getInt(3);
+            final String fname=args.getString(0);
+            threadhelper( new FileOp( ){
+                public void run() {
+                    readFileAs(fname, start, end, callbackContext, encoding, PluginResult.MESSAGE_TYPE_STRING);
+                }
+            }, callbackContext);
+        }
+        else if (action.equals("readAsDataURL")) {
+            final int start = args.getInt(1);
+            final int end = args.getInt(2);
+            final String fname=args.getString(0);
+            threadhelper( new FileOp( ){
+                public void run()  {
+                    readFileAs(fname, start, end, callbackContext, null, -1);
+                }
+            }, callbackContext);
+        }
+        else if (action.equals("readAsArrayBuffer")) {
+            final int start = args.getInt(1);
+            final int end = args.getInt(2);
+            final String fname=args.getString(0);
+            threadhelper( new FileOp( ){
+                public void run()  {
+                    readFileAs(fname, start, end, callbackContext, null, PluginResult.MESSAGE_TYPE_ARRAYBUFFER);
+                }
+            },callbackContext);
+        }
+        else if (action.equals("readAsBinaryString")) {
+            final int start = args.getInt(1);
+            final int end = args.getInt(2);
+            final String fname=args.getString(0);
+            threadhelper( new FileOp( ){
+                public void run()  {
+                    readFileAs(fname, start, end, callbackContext, null, PluginResult.MESSAGE_TYPE_BINARYSTRING);
+                }
+            }, callbackContext);
+        }
+        else if (action.equals("write")) {
+            final String fname=args.getString(0);
+            final String data=args.getString(1);
+            final int offset=args.getInt(2);
+            final Boolean isBinary=args.getBoolean(3);
+            threadhelper( new FileOp( ){
+                public void run() throws FileNotFoundException, IOException, NoModificationAllowedException {
+                    long fileSize = write(fname, data, offset, isBinary);
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, fileSize));
+                }
+            }, callbackContext);
+        }
+        else if (action.equals("truncate")) {
+            final String fname=args.getString(0);
+            final int offset=args.getInt(1);
+            threadhelper( new FileOp( ){
+                public void run( ) throws FileNotFoundException, IOException, NoModificationAllowedException {
+                    long fileSize = truncateFile(fname, offset);
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, fileSize));
+                }
+            }, callbackContext);
+        }
+        else if (action.equals("requestFileSystem")) {
+            final int fstype=args.getInt(0);
+            final long size = args.optLong(1);
+            threadhelper( new FileOp( ){
+                public void run() throws IOException, JSONException {
+                    if (size != 0 && size > (DirectoryManager.getFreeDiskSpace(true) * 1024)) {
+                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, FileUtils.QUOTA_EXCEEDED_ERR));
+                    } else {
+                        JSONObject obj = requestFileSystem(fstype);
+                        callbackContext.success(obj);
+                    }
+                }
+            }, callbackContext);
+        }
+        else if (action.equals("resolveLocalFileSystemURI")) {
+            final String fname=args.getString(0);
+            threadhelper( new FileOp( ){
+                public void run() throws IOException, JSONException {
+                    JSONObject obj = resolveLocalFileSystemURI(fname);
                     callbackContext.success(obj);
                 }
-            }
-            else if (action.equals("resolveLocalFileSystemURI")) {
-                JSONObject obj = resolveLocalFileSystemURI(args.getString(0));
-                callbackContext.success(obj);
-            }
-            else if (action.equals("getMetadata")) {
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, getMetadata(args.getString(0))));
-            }
-            else if (action.equals("getFileMetadata")) {
-                JSONObject obj = getFileMetadata(args.getString(0));
-                callbackContext.success(obj);
-            }
-            else if (action.equals("getParent")) {
-                JSONObject obj = getParent(args.getString(0));
-                callbackContext.success(obj);
-            }
-            else if (action.equals("getDirectory")) {
-                JSONObject obj = getFile(args.getString(0), args.getString(1), args.optJSONObject(2), true);
-                callbackContext.success(obj);
-            }
-            else if (action.equals("getFile")) {
-                JSONObject obj = getFile(args.getString(0), args.getString(1), args.optJSONObject(2), false);
-                callbackContext.success(obj);
-            }
-            else if (action.equals("remove")) {
-                boolean success;
-
-                success = remove(args.getString(0));
-
-                if (success) {
-                    notifyDelete(args.getString(0));
-                    callbackContext.success();
-                } else {
-                    callbackContext.error(FileUtils.NO_MODIFICATION_ALLOWED_ERR);
+            },callbackContext);
+        }
+        else if (action.equals("getMetadata")) {
+            final String fname=args.getString(0);
+            threadhelper( new FileOp( ){
+                public void run() throws FileNotFoundException, JSONException {
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, getMetadata(fname)));
                 }
-            }
-            else if (action.equals("removeRecursively")) {
-                boolean success = removeRecursively(args.getString(0));
-                if (success) {
-                    callbackContext.success();
-                } else {
-                    callbackContext.error(FileUtils.NO_MODIFICATION_ALLOWED_ERR);
+            }, callbackContext);
+        }
+        else if (action.equals("getFileMetadata")) {
+            final String fname=args.getString(0);
+            threadhelper( new FileOp( ){
+                public void run() throws FileNotFoundException, JSONException {
+                    JSONObject obj = getFileMetadata(fname);
+                    callbackContext.success(obj);
                 }
-            }
-            else if (action.equals("moveTo")) {
-                JSONObject entry = transferTo(args.getString(0), args.getString(1), args.getString(2), true);
-                callbackContext.success(entry);
-            }
-            else if (action.equals("copyTo")) {
-                JSONObject entry = transferTo(args.getString(0), args.getString(1), args.getString(2), false);
-                callbackContext.success(entry);
-            }
-            else if (action.equals("readEntries")) {
-                JSONArray entries = readEntries(args.getString(0));
-                callbackContext.success(entries);
-            }
-            else {
-                return false;
-            }
-        } catch (FileNotFoundException e) {
-            callbackContext.error(FileUtils.NOT_FOUND_ERR);
-        } catch (FileExistsException e) {
-            callbackContext.error(FileUtils.PATH_EXISTS_ERR);
-        } catch (NoModificationAllowedException e) {
-            callbackContext.error(FileUtils.NO_MODIFICATION_ALLOWED_ERR);
-        } catch (InvalidModificationException e) {
-            callbackContext.error(FileUtils.INVALID_MODIFICATION_ERR);
-        } catch (MalformedURLException e) {
-            callbackContext.error(FileUtils.ENCODING_ERR);
-        } catch (IOException e) {
-            callbackContext.error(FileUtils.INVALID_MODIFICATION_ERR);
-        } catch (EncodingException e) {
-            callbackContext.error(FileUtils.ENCODING_ERR);
-        } catch (TypeMismatchException e) {
-            callbackContext.error(FileUtils.TYPE_MISMATCH_ERR);
+            },callbackContext);
+        }
+        else if (action.equals("getParent")) {
+            final String fname=args.getString(0);
+            threadhelper( new FileOp( ){
+                public void run() throws JSONException {
+                    JSONObject obj = getParent(fname);
+                    callbackContext.success(obj);
+                }
+            },callbackContext);
+        }
+        else if (action.equals("getDirectory")) {
+            final String dirname=args.getString(0);
+            final String fname=args.getString(1);
+            threadhelper( new FileOp( ){
+                public void run() throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
+                   JSONObject obj = getFile(dirname, fname, args.optJSONObject(2), true);
+                   callbackContext.success(obj);
+                }
+            },callbackContext);
+        }
+        else if (action.equals("getFile")) {
+            final String dirname=args.getString(0);
+            final String fname=args.getString(1);
+            threadhelper( new FileOp( ){
+                public void run() throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
+                    JSONObject obj = getFile(dirname, fname, args.optJSONObject(2), false);
+                    callbackContext.success(obj);
+                }
+            },callbackContext);
+        }
+        else if (action.equals("remove")) {
+            final String fname=args.getString(0);
+            threadhelper( new FileOp( ){
+                public void run() throws NoModificationAllowedException, InvalidModificationException {
+                    boolean success= remove(fname);
+                    if (success) {
+                        notifyDelete(fname);
+                        callbackContext.success();
+                    } else {
+                        callbackContext.error(FileUtils.NO_MODIFICATION_ALLOWED_ERR);
+                    }
+                }
+            },callbackContext);
+        }
+        else if (action.equals("removeRecursively")) {
+            final String fname=args.getString(0);
+            threadhelper( new FileOp( ){
+                public void run() throws FileExistsException {
+                    boolean success = removeRecursively(fname);
+                    if (success) {
+                        callbackContext.success();
+                    } else {
+                        callbackContext.error(FileUtils.NO_MODIFICATION_ALLOWED_ERR);
+                    }
+                }
+            },callbackContext);
+        }
+        else if (action.equals("moveTo")) {
+            final String fname=args.getString(0);
+            final String newParent=args.getString(1);
+            final String newName=args.getString(2);
+            threadhelper( new FileOp( ){
+                public void run() throws JSONException, NoModificationAllowedException, IOException, InvalidModificationException, EncodingException, FileExistsException {
+                    JSONObject entry = transferTo(fname, newParent, newName, true);
+                    callbackContext.success(entry);
+                }
+            },callbackContext);
+        }
+        else if (action.equals("copyTo")) {
+            final String fname=args.getString(0);
+            final String newParent=args.getString(1);
+            final String newName=args.getString(2);
+            threadhelper( new FileOp( ){
+                public void run() throws JSONException, NoModificationAllowedException, IOException, InvalidModificationException, EncodingException, FileExistsException {
+                    JSONObject entry = transferTo(fname, newParent, newName, false);
+                    callbackContext.success(entry);
+                }
+            },callbackContext);
+        }
+        else if (action.equals("readEntries")) {
+            final String fname=args.getString(0);
+            threadhelper( new FileOp( ){
+                public void run() throws FileNotFoundException, JSONException {
+                    JSONArray entries = readEntries(fname);
+                    callbackContext.success(entries);
+                }
+            },callbackContext);
+        }
+        else {
+            return false;
         }
         return true;
+    }
+
+    /* helper to execute functions async and handle the result codes
+     *
+     */
+    private void threadhelper(final FileOp f, final CallbackContext callbackContext){
+        cordova.getThreadPool().execute(new Runnable() {
+            public void run() {
+                try {
+                    f.run();
+                } catch ( Exception e) {
+                    e.printStackTrace();
+                    if( e instanceof EncodingException){
+                        callbackContext.error(FileUtils.ENCODING_ERR);
+                    } else if(e instanceof FileNotFoundException) {
+                        callbackContext.error(FileUtils.NOT_FOUND_ERR);
+                    } else if(e instanceof FileExistsException) {
+                        callbackContext.error(FileUtils.PATH_EXISTS_ERR);
+                    } else if(e instanceof NoModificationAllowedException ) {
+                        callbackContext.error(FileUtils.NO_MODIFICATION_ALLOWED_ERR);
+                    } else if(e instanceof InvalidModificationException ) {
+                        callbackContext.error(FileUtils.INVALID_MODIFICATION_ERR);
+                    } else if(e instanceof MalformedURLException ) {
+                        callbackContext.error(FileUtils.ENCODING_ERR);
+                    } else if(e instanceof IOException ) {
+                        callbackContext.error(FileUtils.INVALID_MODIFICATION_ERR);
+                    } else if(e instanceof EncodingException ) {
+                        callbackContext.error(FileUtils.ENCODING_ERR);
+                    } else if(e instanceof TypeMismatchException ) {
+                        callbackContext.error(FileUtils.TYPE_MISMATCH_ERR);
+                    }
+                }
+            }
+        });
     }
 
     /**
