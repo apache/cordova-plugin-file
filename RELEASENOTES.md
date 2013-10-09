@@ -38,3 +38,8 @@
 * [CB-4763] Copy FileHelper.java into the plugin.
 * [CB-2901] [BlackBerry10] Automatically unsandbox filesystem if path is not in app sandbox
 * [CB-4752] Incremented plugin version on dev branch.
+
+### 0.2.4 (Oct 9, 2013)
+* CB-5020 - File plugin should execute on a separate thread
+* [CB-4915] Incremented plugin version on dev branch.
+* CB-4504: Updating FileUtils.java to compensate for Java porting failures in the Android SDK. This fails because Java knows nothing about android_asset not being an actual filesystem
