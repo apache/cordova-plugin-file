@@ -19,6 +19,8 @@
  *
 */
 
+var fileUtils = require('./BB10Utils');
+
 /**
  * Constructor.
  * name {DOMString} name of the file, without path information
