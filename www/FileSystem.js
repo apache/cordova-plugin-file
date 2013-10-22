@@ -31,7 +31,7 @@ var DirectoryEntry = require('./DirectoryEntry');
 var FileSystem = function(name, root) {
     this.name = name || null;
     if (root) {
-        this.root = new DirectoryEntry(root.name, root.fullPath);
+        this.root = new DirectoryEntry(root.name, root.fullPath, this);
     }
 };
 

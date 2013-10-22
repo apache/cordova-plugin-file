@@ -37,6 +37,9 @@ var argscheck = require('cordova/argscheck'),
  * @param fullPath
  *            {DOMString} the absolute full path to the file or directory
  *            (readonly)
+ * @param fileSystem
+ *            {FileSystem} the filesystem on which this entry resides
+ *            (readonly)
  */
 function Entry(isFile, isDirectory, name, fullPath, fileSystem) {
     this.isFile = !!isFile;
@@ -107,7 +110,7 @@ Entry.prototype.moveTo = function(parent, newName, successCallback, errorCallbac
             if (entry) {
                 if (successCallback) {
                     // create appropriate Entry object
-                    var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath) : new (require('org.apache.cordova.file.FileEntry'))(entry.name, entry.fullPath);
+                    var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath, entry.filesystem) : new (require('org.apache.cordova.file.FileEntry'))(entry.name, entry.fullPath, entry.filesystem);
                     successCallback(result);
                 }
             }
@@ -148,7 +151,7 @@ Entry.prototype.copyTo = function(parent, newName, successCallback, errorCallbac
             if (entry) {
                 if (successCallback) {
                     // create appropriate Entry object
-                    var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath) : new (require('org.apache.cordova.file.FileEntry'))(entry.name, entry.fullPath);
+                    var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath, entry.filesystem) : new (require('org.apache.cordova.file.FileEntry'))(entry.name, entry.fullPath, entry.filesystem);
                     successCallback(result);
                 }
             }
@@ -206,9 +209,10 @@ Entry.prototype.remove = function(successCallback, errorCallback) {
  */
 Entry.prototype.getParent = function(successCallback, errorCallback) {
     argscheck.checkArgs('FF', 'Entry.getParent', arguments);
+    var fs = this.filesystem;
     var win = successCallback && function(result) {
         var DirectoryEntry = require('./DirectoryEntry');
-        var entry = new DirectoryEntry(result.name, result.fullPath);
+        var entry = new DirectoryEntry(result.name, result.fullPath, fs);
         successCallback(entry);
     };
     var fail = errorCallback && function(code) {

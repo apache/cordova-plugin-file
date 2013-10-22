@@ -33,10 +33,10 @@ var argscheck = require('cordova/argscheck'),
  * {boolean} isDirectory always true (readonly)
  * {DOMString} name of the directory, excluding the path leading to it (readonly)
  * {DOMString} fullPath the absolute full path to the directory (readonly)
- * TODO: implement this!!! {FileSystem} filesystem on which the directory resides (readonly)
+ * {FileSystem} filesystem on which the directory resides (readonly)
  */
-var DirectoryEntry = function(name, fullPath) {
-     DirectoryEntry.__super__.constructor.call(this, false, true, name, fullPath);
+var DirectoryEntry = function(name, fullPath, fileSystem) {
+     DirectoryEntry.__super__.constructor.call(this, false, true, name, fullPath, fileSystem);
 };
 
 utils.extend(DirectoryEntry, Entry);
@@ -58,8 +58,9 @@ DirectoryEntry.prototype.createReader = function() {
  */
 DirectoryEntry.prototype.getDirectory = function(path, options, successCallback, errorCallback) {
     argscheck.checkArgs('sOFF', 'DirectoryEntry.getDirectory', arguments);
+    var fs = this.filesystem;
     var win = successCallback && function(result) {
-        var entry = new DirectoryEntry(result.name, result.fullPath);
+        var entry = new DirectoryEntry(result.name, result.fullPath, fs);
         successCallback(entry);
     };
     var fail = errorCallback && function(code) {
@@ -92,9 +93,10 @@ DirectoryEntry.prototype.removeRecursively = function(successCallback, errorCall
  */
 DirectoryEntry.prototype.getFile = function(path, options, successCallback, errorCallback) {
     argscheck.checkArgs('sOFF', 'DirectoryEntry.getFile', arguments);
+    var fs = this.filesystem;
     var win = successCallback && function(result) {
         var FileEntry = require('./FileEntry');
-        var entry = new FileEntry(result.name, result.fullPath);
+        var entry = new FileEntry(result.name, result.fullPath, fs);
         successCallback(entry);
     };
     var fail = errorCallback && function(code) {
