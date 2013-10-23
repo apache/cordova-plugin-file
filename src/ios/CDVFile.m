@@ -235,10 +235,17 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
         if (bExists) {
             // see if it contains docs path or temp path
             NSString* foundFullPath = nil;
+            NSString* privAppDocsPath = [NSString stringWithFormat:@"/private%@", self.appDocsPath];
+            NSString* privAppTempPath = [NSString stringWithFormat:@"/private%@", self.appTempPath];
+            
             if ([path hasPrefix:self.appDocsPath]) {
                 foundFullPath = self.appDocsPath;
+            } else if ([path hasPrefix:privAppDocsPath]) {
+                foundFullPath = privAppDocsPath;
             } else if ([path hasPrefix:self.appTempPath]) {
                 foundFullPath = self.appTempPath;
+            } else if ([path hasPrefix:privAppTempPath]) {
+                foundFullPath = privAppTempPath;
             }
 
             if (foundFullPath == nil) {
