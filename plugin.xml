@@ -102,6 +102,18 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <source-file src="src/android/DirectoryManager.java" target-dir="src/org/apache/cordova/file" />
     </platform>
 
+    <!-- ubuntu -->
+    <platform name="ubuntu">
+        <header-file src="src/ubuntu/file.h" />
+        <source-file src="src/ubuntu/file.cpp" />
+        <js-module src="www/ubuntu/Entry.js" name="Entry1">
+            <merges target="window.Entry" />
+        </js-module>
+        <js-module src="www/ubuntu/FileWriter.js" name="FileWriter1">
+            <merges target="window.FileWriter" />
+        </js-module>
+    </platform>
+
     <!-- ios -->
     <platform name="ios">
         <config-file target="config.xml" parent="/*">
