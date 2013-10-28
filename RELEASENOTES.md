@@ -43,3 +43,9 @@
 * CB-5020 - File plugin should execute on a separate thread
 * [CB-4915] Incremented plugin version on dev branch.
 * CB-4504: Updating FileUtils.java to compensate for Java porting failures in the Android SDK. This fails because Java knows nothing about android_asset not being an actual filesystem
+
+ ### 0.2.5 (Oct 28, 2013)
+* CB-5129: Add a consistent filesystem attribute to FileEntry and DirectoryEntry objects
+* CB-5128: added repo + issue tag to plugin.xml for file plugin
+* CB-5015 [BlackBerry10] Add missing dependency for File.slice
+* [CB-5010] Incremented plugin version on dev branch.
