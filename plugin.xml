@@ -82,6 +82,9 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <clobbers target="window.resolveLocalFileSystemURI" />
     </js-module>
 
+    <js-module src="test/tests.js" name="tests">
+    </js-module>
+
     <!-- android -->
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
