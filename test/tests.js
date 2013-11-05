@@ -2062,9 +2062,13 @@ describe('File API', function() {
             window.requestFileSystem(window.PERSISTENT, 0, function(fs) {
                 runReaderTest(fs.root,'readAsDataURL', true, function(evt, fileData, fileDataAsBinaryString) {
                     expect(evt.target.result.substr(0,23)).toBe("data:text/plain;base64,");
-                    // TODO: See if this line is running in existing mobile spec tests
-                    // It fails with INVALID_CHARACTER_ERR on Safari 6.1
-                    expect(evt.target.result.slice(23)).toBe(atob(fileData));
+                    // btoa is not suitable for Unicode strings. See:
+                    // https://developer.mozilla.org/en-US/docs/Web/API/Window.btoa#Unicode_Strings
+                    // This comparison target was generated with the following Python code instead:
+                    //
+                    // fd = '\xe2\x82\xac\xc3\xab - There is an exception to every rule.  Except this one.' + 'bin:\x01\x00'
+                    // print fd.encode('base64').replace('\n','')
+                    expect(evt.target.result.slice(23)).toBe('4oKsw6sgLSBUaGVyZSBpcyBhbiBleGNlcHRpb24gdG8gZXZlcnkgcnVsZS4gIEV4Y2VwdCB0aGlzIG9uZS5iaW46AQA=');
                     done();
                 }, done);
             });
@@ -2125,9 +2129,13 @@ describe('File API', function() {
             window.requestFileSystem(window.PERSISTENT, 0, function(fs) {
                 runReaderTest(fs.root, 'readAsDataURL', true, function(evt, fileData, fileDataAsBinaryString) {
                     expect(evt.target.result.slice(0, 23)).toBe("data:text/plain;base64,");
-                    // TODO: See if this line is running in existing mobile spec tests
-                    // It fails with INVALID_CHARACTER_ERR on Safari 6.1
-                    expect(evt.target.result.slice(23)).toBe(atob(fileDataAsBinaryString.slice( 10, -3)));
+                    // btoa is not suitable for Unicode strings. See:
+                    // https://developer.mozilla.org/en-US/docs/Web/API/Window.btoa#Unicode_Strings
+                    // This comparison target was generated with the following Python code instead:
+                    //
+                    // fd = '\xe2\x82\xac\xc3\xab - There is an exception to every rule.  Except this one.' + 'bin:\x01\x00'
+                    // print fd[10,-3].encode('base64').strip()
+                    expect(evt.target.result.slice(23)).toBe('ZXJlIGlzIGFuIGV4Y2VwdGlvbiB0byBldmVyeSBydWxlLiAgRXhjZXB0IHRoaXMgb25lLmJpbg==');
                     done();
                 }, done, 10, -3);
             });
