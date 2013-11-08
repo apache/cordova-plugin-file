@@ -25,8 +25,8 @@ var exec = require('cordova/exec'),
 /**
  * An interface that lists the files and directories in a directory.
  */
-function DirectoryReader(path) {
-    this.path = path || null;
+function DirectoryReader(localURL) {
+    this.localURL = localURL || null;
     this.hasReadEntries = false;
 }
 
@@ -65,7 +65,7 @@ DirectoryReader.prototype.readEntries = function(successCallback, errorCallback)
     var fail = typeof errorCallback !== 'function' ? null : function(code) {
         errorCallback(new FileError(code));
     };
-    exec(win, fail, "File", "readEntries", [this.path]);
+    exec(win, fail, "File", "readEntries", [this.localURL]);
 };
 
 module.exports = DirectoryReader;

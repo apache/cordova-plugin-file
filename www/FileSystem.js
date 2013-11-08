@@ -35,4 +35,8 @@ var FileSystem = function(name, root) {
     }
 };
 
+FileSystem.prototype.__format__ = function(fullPath) {
+    return fullPath;
+};
+
 module.exports = FileSystem;

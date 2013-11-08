@@ -51,7 +51,7 @@ FileEntry.prototype.createWriter = function(successCallback, errorCallback) {
     this.file(function(filePointer) {
         var writer = new FileWriter(filePointer);
 
-        if (writer.fileName === null || writer.fileName === "") {
+        if (writer.localURL === null || writer.localURL === "") {
             errorCallback && errorCallback(new FileError(FileError.INVALID_STATE_ERR));
         } else {
             successCallback && successCallback(writer);
@@ -66,14 +66,15 @@ FileEntry.prototype.createWriter = function(successCallback, errorCallback) {
  * @param {Function} errorCallback is called with a FileError
  */
 FileEntry.prototype.file = function(successCallback, errorCallback) {
+    var localURL = this.filesystem.__format__(this.fullPath);
     var win = successCallback && function(f) {
-        var file = new File(f.name, f.fullPath, f.type, f.lastModifiedDate, f.size);
+        var file = new File(f.name, localURL, f.type, f.lastModifiedDate, f.size);
         successCallback(file);
     };
     var fail = errorCallback && function(code) {
         errorCallback(new FileError(code));
     };
-    exec(win, fail, "File", "getFileMetadata", [this.fullPath]);
+    exec(win, fail, "File", "getFileMetadata", [localURL]);
 };
 
 

@@ -38,7 +38,7 @@ var FileWriter = function(file) {
     this.fileName = "";
     this.length = 0;
     if (file) {
-        this.fileName = file.fullPath || file;
+        this.localURL = file.localURL || file;
         this.length = file.size || 0;
     }
     // default is to write at the beginning of the file
@@ -184,7 +184,7 @@ FileWriter.prototype.write = function(data) {
             if (typeof me.onwriteend === "function") {
                 me.onwriteend(new ProgressEvent("writeend", {"target":me}));
             }
-        }, "File", "write", [this.fileName, data, this.position, isBinary]);
+        }, "File", "write", [this.localURL, data, this.position, isBinary]);
 };
 
 /**
@@ -291,7 +291,7 @@ FileWriter.prototype.truncate = function(size) {
             if (typeof me.onwriteend === "function") {
                 me.onwriteend(new ProgressEvent("writeend", {"target":me}));
             }
-        }, "File", "truncate", [this.fileName, size]);
+        }, "File", "truncate", [this.localURL, size]);
 };
 
 module.exports = FileWriter;
