@@ -25,6 +25,8 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <sys/xattr.h>
 
+static CDVFile *filePlugin = nil;
+
 @interface CDVFilesystemURL : NSObject  {
     NSURL *url_;
     CDVFileSystemType fileSystemType_;
@@ -71,6 +73,56 @@ extern NSString * const NSURLIsExcludedFromBackupKey __attribute__((weak_import)
 NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 NSString* const kCDVAssetsLibraryScheme = @"assets-library";
 
+@interface CDVFilesystemURLProtocol : NSURLProtocol
+@end
+
+@implementation CDVFilesystemURLProtocol
+
+NSString* const kCDVFilesystemURLPrefix = @"filesystem";
+
++ (BOOL)canInitWithRequest:(NSURLRequest*)request
+{
+    NSURL* url = [request URL];
+    return [[url scheme] isEqualToString:kCDVFilesystemURLPrefix];
+}
+
++ (NSURLRequest*)canonicalRequestForRequest:(NSURLRequest*)request
+{
+    return request;
+}
+
++ (BOOL)requestIsCacheEquivalent:(NSURLRequest*)requestA toRequest:(NSURLRequest*)requestB
+{
+    return [[[requestA URL] resourceSpecifier] isEqualToString:[[requestB URL] resourceSpecifier]];
+}
+
+- (void)startLoading
+{
+    NSURL *url = [[self request] URL];
+    NSString *pathString = [url relativePath];
+    pathString = [filePlugin fileSystemPathForLocalURI:url];
+    [CDVFile readFileWithPath:pathString start:0 end:-1 callback:^void(NSData *data, NSString *mimetype, CDVFileError error) {
+        if (!error) {
+            NSURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:200 HTTPVersion:@"HTTP/1.1"headerFields:@{@"Content-Type": mimetype}];
+            [[self client] URLProtocol:self didReceiveResponse:response cacheStoragePolicy:NSURLCacheStorageNotAllowed];
+            [[self client] URLProtocol:self didLoadData:data];
+            [[self client] URLProtocolDidFinishLoading:self];
+        } else {
+            NSURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url statusCode:404 HTTPVersion:@"HTTP/1.1"headerFields:@{}];
+            [[self client] URLProtocol:self didReceiveResponse:response cacheStoragePolicy:NSURLCacheStorageNotAllowed];
+            [[self client] URLProtocolDidFinishLoading:self];
+        }
+    }];
+}
+
+- (void)stopLoading
+{
+    // do any cleanup here
+}
+
+@end
+
+
 @implementation CDVFile
 
 @synthesize appDocsPath, appLibraryPath, appTempPath, persistentPath, temporaryPath, userHasAllowed;
@@ -79,6 +131,9 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
 {
     self = (CDVFile*)[super initWithWebView:theWebView];
     if (self) {
+        filePlugin = self;
+        [NSURLProtocol registerClass:[CDVFilesystemURLProtocol class]];
+
         // get the documents directory path
         NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         self.appDocsPath = [paths objectAtIndex:0];
