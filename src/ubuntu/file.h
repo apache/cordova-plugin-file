@@ -68,7 +68,6 @@ private:
     QMimeDatabase _db;
     const QString _persistentDir;
     QNetworkAccessManager _manager;
-    int lastRequestId;
 };
 
 #endif

@@ -24,10 +24,6 @@ var exec = require('cordova/exec'),
     ProgressEvent = require('./ProgressEvent');
 
 function write(data) {
-console.log(19);
-console.log(91);
-console.log(19);
-
     var that=this;
     var supportsBinary = (typeof window.Blob !== 'undefined' && typeof window.ArrayBuffer !== 'undefined');
     var isBinary;

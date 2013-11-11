@@ -63,8 +63,8 @@ const QString FileError::kPathExistsErr("FileError.PATH_EXISTS_ERR");
 
 File::File(Cordova *cordova) :
     CPlugin(cordova),
-    _persistentDir(QDir::homePath() + "/.local/share/cordova-ubuntu/persistent/" + QString(cordova->get_app_dir().toUtf8().toBase64())),
-    lastRequestId(1) {
+    _persistentDir(QString("%1/.local/share/%2/persistent").arg(QDir::homePath()).arg(QCoreApplication::applicationName())) {
+    QDir::root().mkpath(QDir(_persistentDir).absolutePath());
 }
 
 void File::requestFileSystem(int scId, int ecId, unsigned short type, unsigned long long size) {
@@ -76,13 +76,10 @@ void File::requestFileSystem(int scId, int ecId, unsigned short type, unsigned l
         return;
     }
 
-    if (type == 0) {
+    if (type == 0)
         dir = QDir::temp();
-    }
-    else {
+    else
         dir = QDir(_persistentDir);
-        QDir::root().mkpath(dir.absolutePath());
-    }
 
     if (type > 1) {
         this->callback(ecId, FileError::kSyntaxErr);
