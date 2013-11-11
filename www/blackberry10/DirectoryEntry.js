@@ -44,7 +44,14 @@ DirectoryEntry.prototype.createReader = function () {
 
 DirectoryEntry.prototype.getDirectory = function (path, options, successCallback, errorCallback) {
     var sandboxState,
-        currentPath = this.nativeEntry.fullPath;
+        currentPath = this.nativeEntry.fullPath,
+        fullPath;
+
+    if (path.indexOf("/") === 0) {
+        fullPath = path;
+    } else {
+        fullPath = currentPath + "/" + path;
+    }
 
     cordova.exec(function (sandboxed) {
         sandboxState = sandboxed;
@@ -54,11 +61,11 @@ DirectoryEntry.prototype.getDirectory = function (path, options, successCallback
 
     argscheck.checkArgs('sOFF', 'DirectoryEntry.getDirectory', arguments);
 
-    if (fileUtils.isOutsideSandbox(path)) {
+    if (fileUtils.isOutsideSandbox(fullPath)) {
         cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [false]);
         window.webkitRequestFileSystem(window.PERSISTENT, this.filesystem._size, function (fs) {
             cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);
-            fs.root.getDirectory(currentPath + '/' + path, options, function (entry) {
+            fs.root.getDirectory(fullPath, options, function (entry) {
                 successCallback(fileUtils.createEntry(entry));
             }, err(sandboxState, errorCallback));
         }, err(sandboxState, errorCallback));
@@ -66,7 +73,7 @@ DirectoryEntry.prototype.getDirectory = function (path, options, successCallback
         cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [true]);
         window.webkitRequestFileSystem(fileUtils.getFileSystemName(this.filesystem) === "persistent" ? window.PERSISTENT : window.TEMPORARY, this.filesystem._size, function (fs) {
             cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);
-            fs.root.getDirectory(currentPath + '/' + path, options, function (entry) {
+            fs.root.getDirectory(fullPath, options, function (entry) {
                 successCallback(fileUtils.createEntry(entry));
             }, err(sandboxState, errorCallback));
         }, err(sandboxState, errorCallback));
@@ -80,7 +87,14 @@ DirectoryEntry.prototype.removeRecursively = function (successCallback, errorCal
 
 DirectoryEntry.prototype.getFile = function (path, options, successCallback, errorCallback) {
     var sandboxState,
-        currentPath = this.nativeEntry.fullPath;
+        currentPath = this.nativeEntry.fullPath,
+        fullPath;
+
+    if (path.indexOf("/") === 0) {
+        fullPath = path;
+    } else {
+        fullPath = currentPath + "/" + path;
+    }
 
     cordova.exec(function (sandboxed) {
         sandboxState = sandboxed;
@@ -90,11 +104,11 @@ DirectoryEntry.prototype.getFile = function (path, options, successCallback, err
 
     argscheck.checkArgs('sOFF', 'DirectoryEntry.getFile', arguments);
 
-    if (fileUtils.isOutsideSandbox(path)) {
+    if (fileUtils.isOutsideSandbox(fullPath)) {
         cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [false]);
         window.webkitRequestFileSystem(window.PERSISTENT, this.filesystem._size, function (fs) {
             cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);
-            fs.root.getFile(currentPath + '/' + path, options, function (entry) {
+            fs.root.getFile(fullPath, options, function (entry) {
                 successCallback(fileUtils.createEntry(entry));
             }, err(sandboxState, errorCallback));
         }, err(sandboxState, errorCallback));
@@ -102,7 +116,7 @@ DirectoryEntry.prototype.getFile = function (path, options, successCallback, err
         cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [true]);
         window.webkitRequestFileSystem(fileUtils.getFileSystemName(this.filesystem) === "persistent" ? window.PERSISTENT: window.TEMPORARY, this.filesystem._size, function (fs) {
             cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);
-            fs.root.getFile(currentPath + '/' + path, options, function (entry) {
+            fs.root.getFile(fullPath, options, function (entry) {
                 successCallback(fileUtils.createEntry(entry));
             }, err(sandboxState, errorCallback));
         }, err(sandboxState, errorCallback));
