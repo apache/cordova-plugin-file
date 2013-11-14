@@ -22,6 +22,7 @@
 var PLAT;
 (function getPlatform() {
     var platforms = {
+        amazon_fireos: /cordova-amazon-fireos/,
         android: /Android/,
         ios: /(iPad)|(iPhone)|(iPod)/,
         blackberry10: /(BB10)/,
@@ -76,7 +77,7 @@ if (!window._doNotWriteCordovaScript) {
 }
 
 function backHome() {
-    if (window.device && device.platform && device.platform.toLowerCase() == 'android') {
+    if (window.device && device.platform && (device.platform.toLowerCase() == 'android' || device.platform.toLowerCase() == 'amazon-fireos')) {
         navigator.app.backHistory();
     }
     else {
