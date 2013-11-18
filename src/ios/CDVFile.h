@@ -39,7 +39,8 @@ typedef int CDVFileError;
 
 enum CDVFileSystemType {
     TEMPORARY = 0,
-    PERSISTENT = 1
+    PERSISTENT = 1,
+    ASSETS_LIBRARY = 2,
 };
 typedef int CDVFileSystemType;
 
@@ -52,13 +53,12 @@ extern NSString* const kCDVAssetsLibraryPrefix;
     NSString* persistentPath;
     NSString* temporaryPath;
 
+    NSMutableArray* fileSystems_;
     BOOL userHasAllowed;
 }
+
 - (NSNumber*)checkFreeDiskSpace:(NSString*)appPath;
-- (NSString*)getAppPath:(NSString*)pathFragment;
-- (NSDictionary*)getDirectoryEntry:(NSString*)fullPath isDirectory:(BOOL)isDir; //DEPRECATE HARD
 - (NSDictionary*)makeEntryForPath:(NSString*)fullPath fileSystem:(int)fsType isDirectory:(BOOL)isDir;
-- (NSString *)fileSystemPathForLocalURI:(NSURL *)uri;
 
 /* Exec API */
 - (void)requestFileSystem:(CDVInvokedUrlCommand*)command;
@@ -81,22 +81,15 @@ extern NSString* const kCDVAssetsLibraryPrefix;
 - (void)testDirectoryExists:(CDVInvokedUrlCommand*)command;
 - (void)getFreeDiskSpace:(CDVInvokedUrlCommand*)command;
 - (void)truncate:(CDVInvokedUrlCommand*)command;
-
-- (CDVPluginResult*)doRemove:(NSString*)fullPath;
-- (BOOL)canCopyMoveSrc:(NSString*)src ToDestination:(NSString*)dest;
 - (void)doCopyMove:(CDVInvokedUrlCommand*)command isCopy:(BOOL)bCopy;
-- (void)readFileWithPath:(NSString*)path start:(NSInteger)start end:(NSInteger)end callback:(void (^)(NSData*, NSString*, CDVFileError))callback;
-- (NSString*)getMimeTypeFromPath:(NSString*)fullPath;
-
-- (void)writeToFile:(NSString*)fileName withData:(NSData*)data append:(BOOL)shouldAppend callback:(NSString*)callbackId;
-- (void)writeToFile:(NSString*)fileName withString:(NSString*)data encoding:(NSStringEncoding)encoding append:(BOOL)shouldAppend callback:(NSString*)callbackId;
-- (unsigned long long)truncateFile:(NSString*)filePath atPosition:(unsigned long long)pos;
 
 @property (nonatomic, strong) NSString* appDocsPath;
 @property (nonatomic, strong) NSString* appLibraryPath;
 @property (nonatomic, strong) NSString* appTempPath;
 @property (nonatomic, strong) NSString* persistentPath;
 @property (nonatomic, strong) NSString* temporaryPath;
+@property (nonatomic, strong) NSMutableArray* fileSystems;
+
 @property BOOL userHasAllowed;
 
 @end
