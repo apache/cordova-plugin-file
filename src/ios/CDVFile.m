@@ -25,6 +25,43 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <sys/xattr.h>
 
+@interface CDVFilesystemURL : NSObject  {
+    NSURL *url_;
+    CDVFileSystemType fileSystemType_;
+    NSString *fullPath_;
+    NSString *fileSystemPath_;
+}
+
+- (id) initWithString:(NSString*)strURL;
+- (id) initWithURL:(NSURL*)URL;
+
+@property (atomic) NSURL *url;
+@property (atomic) CDVFileSystemType fileSystemType;
+@property (atomic) NSString *fullPath;
+@property (atomic) NSString *fileSystemPath;
+
+@end
+
+@implementation CDVFilesystemURL
+@synthesize url=url_;
+@synthesize fileSystemType=fileSystemType_;
+@synthesize fullPath=fullPath_, fileSystemPath=fileSystemPath_;
+
+- (id) initWithString:(NSString *)strURL
+{
+  NSURL *decodedURL = [NSURL URLWithString:strURL];
+  return [self initWithURL:decodedURL];
+}
+
+-(id) initWithURL:(NSURL *)URL
+{
+  url_ = URL;
+  fileSystemType_ = -42;
+  return self;
+}
+
+@end
+
 extern NSString * const NSURLIsExcludedFromBackupKey __attribute__((weak_import));
 
 #ifndef __IPHONE_5_1
@@ -32,6 +69,7 @@ extern NSString * const NSURLIsExcludedFromBackupKey __attribute__((weak_import)
 #endif
 
 NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
+NSString* const kCDVAssetsLibraryScheme = @"assets-library";
 
 @implementation CDVFile
 
@@ -58,6 +96,116 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
     return self;
 }
 
+- (void)updateFileSystemURL:(CDVFilesystemURL *)fsURL;
+{
+    fsURL.fileSystemType = [self filesystemTypeForLocalURI:fsURL.url];
+    fsURL.fileSystemPath = [self fileSystemPathForLocalURI:fsURL.url];
+    fsURL.fullPath = [self fullPathForFileSystemPath:fsURL.fileSystemPath];
+}
+    
+- (CDVFilesystemURL *)fileSystemURLWithString:(NSString *)strURL
+{
+    CDVFilesystemURL* fsURL = [[CDVFilesystemURL alloc] initWithString:strURL];
+    if (fsURL) {
+        [self updateFileSystemURL:fsURL];
+    }
+    return fsURL;
+}
+    
+- (CDVFilesystemURL *)fileSystemURLWithURL:(NSURL *)URL
+{
+    CDVFilesystemURL* fsURL = [[CDVFilesystemURL alloc] initWithURL:URL];
+    if (fsURL) {
+        [self updateFileSystemURL:fsURL];
+    }
+    return fsURL;
+}
+    
+/*
+ * IN
+ *  NSString localURI
+ * OUT
+ *  NSString full local filesystem path for the represented file or directory, or nil if no such path is possible
+ *  The file or directory does not necessarily have to exist. nil is returned if the filesystem type is not recognized,
+ *  or if the URL is malformed.
+ * The incoming URI should be properly escaped (no raw spaces, etc. URI percent-encoding is expected).
+ */
+- (NSString *)fileSystemPathForLocalURI:(NSURL *)uri
+{
+    NSString *path = nil;
+    int fsType = [self filesystemTypeForLocalURI:uri];
+    NSString *fullPath = [self fullPathForLocalURI:uri];
+    if (fsType == TEMPORARY) {
+        path = [NSString stringWithFormat:@"%@%@", self.appTempPath, fullPath];
+    } else if (fsType == PERSISTENT) {
+        path = [NSString stringWithFormat:@"%@%@", self.appDocsPath, fullPath];
+    } else {
+        return nil;
+    }
+    if ([path hasSuffix:@"/"]) {
+      path = [path substringToIndex:([path length]-1)];
+    }
+
+    return path;
+}
+
+/*
+ * IN
+ *  NSString localURI
+ * OUT
+ *  NSString full local filesystem path for the represented file or directory, or nil if no such path is possible
+ *  The file or directory does not necessarily have to exist. nil is returned if the filesystem type is not recognized,
+ *  or if the URL is malformed.
+ * The incoming URI should be properly escaped (no raw spaces, etc. URI percent-encoding is expected).
+ */
+- (NSString *)fullPathForFileSystemPath:(NSString *)fsPath
+{
+    if ([fsPath hasPrefix:self.appTempPath]) {
+        return [fsPath substringFromIndex:[self.appTempPath length]];
+    } else if ([fsPath hasPrefix:self.appDocsPath]) {
+        return [fsPath substringFromIndex:[self.appDocsPath length]];
+    }
+    return nil;
+}
+
+
+/*
+ * IN
+ *  NSString localURI
+ * OUT
+ *  NSString fullPath component suitable for an Entry object.
+ * The incoming URI should be properly escaped. The returned fullPath is unescaped.
+ */
+- (NSString *)fullPathForLocalURI:(NSURL *)uri
+{
+    int fsType = [self filesystemTypeForLocalURI:uri];
+    if (fsType == TEMPORARY) {
+        return [[uri path] substringFromIndex:10];
+    } else if (fsType == PERSISTENT) {
+        return [[uri path] substringFromIndex:11];
+    }
+    return nil;
+}
+
+/*
+ * IN
+ *  NSString localURI
+ * OUT
+ *  int FileSystem type for this URI, or -1 if it is not recognized.
+ */
+- (CDVFileSystemType)filesystemTypeForLocalURI:(NSURL *)uri
+{
+    if ([[uri scheme] isEqualToString:@"filesystem"] && [[uri host] isEqualToString:@"localhost"]) {
+        if ([[uri path] hasPrefix:@"/temporary"]) {
+            return TEMPORARY;
+        } else if ([[uri path] hasPrefix:@"/persistent"]) {
+            return PERSISTENT;
+        }
+    }
+    return -1;
+}
+
+
 - (NSNumber*)checkFreeDiskSpace:(NSString*)appPath
 {
     NSFileManager* fMgr = [[NSFileManager alloc] init];
@@ -70,7 +218,8 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
     return pNumAvail;
 }
 
-// figure out if the pathFragment represents a persistent of temporary directory and return the full application path.
+// figure out if the (device local file sytstem) pathFragment represents a persistent or temporary directory
+// and return the full application path.
 // returns nil if path is not persistent or temporary
 - (NSString*)getAppPath:(NSString*)pathFragment
 {
@@ -92,31 +241,6 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
     }
     return appPath;
 }
-
-/* get the full path to this resource
- * IN
- *	NSString* pathFragment - full Path from File or Entry object (includes system path info)
- * OUT
- *	NSString* fullPath - full iOS path to this resource,  nil if not found
- */
-
-/*  Was here in order to NOT have to return full path, but W3C synchronous DirectoryEntry.toURI() killed that idea since I can't call into iOS to
- * resolve full URI.  Leaving this code here in case W3C spec changes.
--(NSString*) getFullPath: (NSString*)pathFragment
-{
-    return pathFragment;
-    NSString* fullPath = nil;
-    NSString *appPath = [ self getAppPath: pathFragment];
-    if (appPath){
-
-        // remove last component from appPath
-        NSRange range = [appPath rangeOfString:@"/" options: NSBackwardsSearch];
-        NSString* newPath = [appPath substringToIndex:range.location];
-        // add pathFragment to get test Path
-        fullPath = [newPath stringByAppendingPathComponent:pathFragment];
-    }
-    return fullPath;
-} */
 
 /* Request the File System info
  *
@@ -151,8 +275,7 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NOT_FOUND_ERR];
         NSLog(@"iOS only supports TEMPORARY and PERSISTENT file systems");
     } else {
-        // NSString* fullPath = [NSString stringWithFormat:@"/%@", (type == 0 ? [self.appTempPath lastPathComponent] : [self.appDocsPath lastPathComponent])];
-        NSString* fullPath = (type == 0 ? self.appTempPath  : self.appDocsPath);
+        NSString* fullPath = @"/";
         // check for avail space for size request
         NSNumber* pNumAvail = [self checkFreeDiskSpace:fullPath];
         // NSLog(@"Free space: %@", [NSString stringWithFormat:@"%qu", [ pNumAvail unsignedLongLongValue ]]);
@@ -161,7 +284,7 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
         } else {
             NSMutableDictionary* fileSystem = [NSMutableDictionary dictionaryWithCapacity:2];
             [fileSystem setObject:(type == TEMPORARY ? kW3FileTemporary : kW3FilePersistent) forKey:@"name"];
-            NSDictionary* dirEntry = [self getDirectoryEntry:fullPath isDirectory:YES];
+            NSDictionary* dirEntry = [self makeEntryForPath:fullPath fileSystem:type isDirectory:YES];
             [fileSystem setObject:dirEntry forKey:@"root"];
             result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:fileSystem];
         }
@@ -169,40 +292,47 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
 
-/* Creates a dictionary representing an Entry Object
+/* Creates and returns a dictionary representing an Entry Object
  *
  * IN:
  * NSString* fullPath of the entry
- * FileSystem type
+ * int fsType - FileSystem type
  * BOOL isDirectory - YES if this is a directory, NO if is a file
  * OUT:
- * NSDictionary*
- Entry object
+ * NSDictionary* Entry object
  *		bool as NSNumber isDirectory
  *		bool as NSNumber isFile
  *		NSString*  name - last part of path
  *		NSString* fullPath
- *		fileSystem = FileSystem object - !! ignored because creates circular reference FileSystem contains DirectoryEntry which contains FileSystem.....!!
+ *		filesystem = FileSystem type -- actual filesystem will be created on the JS side if necessary, to avoid
+ *         creating circular reference (FileSystem contains DirectoryEntry which contains FileSystem.....!!)
  */
-- (NSDictionary*)getDirectoryEntry:(NSString*)fullPath isDirectory:(BOOL)isDir
+- (NSDictionary*)makeEntryForPath:(NSString*)fullPath fileSystem:(int)fsType isDirectory:(BOOL)isDir
 {
-    NSMutableDictionary* dirEntry = [NSMutableDictionary dictionaryWithCapacity:4];
+    NSMutableDictionary* dirEntry = [NSMutableDictionary dictionaryWithCapacity:5];
     NSString* lastPart = [fullPath lastPathComponent];
-
+    if (isDir && ![fullPath hasSuffix:@"/"]) {
+        fullPath = [fullPath stringByAppendingString:@"/"];
+    }
     [dirEntry setObject:[NSNumber numberWithBool:!isDir]  forKey:@"isFile"];
     [dirEntry setObject:[NSNumber numberWithBool:isDir]  forKey:@"isDirectory"];
-    // NSURL* fileUrl = [NSURL fileURLWithPath:fullPath];
-    // [dirEntry setObject: [fileUrl absoluteString] forKey: @"fullPath"];
     [dirEntry setObject:fullPath forKey:@"fullPath"];
     [dirEntry setObject:lastPart forKey:@"name"];
+    [dirEntry setObject: [NSNumber numberWithInt:fsType] forKey: @"filesystem"];
 
     return dirEntry;
+}
+
+/* STRONGLY DEPRECATED */
+- (NSDictionary*)getDirectoryEntry:(NSString*)fullPath isDirectory:(BOOL)isDir
+{
+  return [self makeEntryForPath:fullPath fileSystem:42 isDirectory:isDir];
 }
 
 /*
  * Given a URI determine the File System information associated with it and return an appropriate W3C entry object
  * IN
- *	NSString* fileURI  - currently requires full file URI
+ *	NSString* localURI: Should be an escaped local filesystem URI
  * OUT
  *	Entry object
  *		bool isDirectory
@@ -214,59 +344,49 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 - (void)resolveLocalFileSystemURI:(CDVInvokedUrlCommand*)command
 {
     // arguments
-    NSString* inputUri = [command.arguments objectAtIndex:0];
-
-    // don't know if string is encoded or not so unescape
-    NSString* cleanUri = [inputUri stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-    // now escape in order to create URL
-    NSString* strUri = [cleanUri stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-    NSURL* testUri = [NSURL URLWithString:strUri];
-    CDVPluginResult* result = nil;
-
-    if (!testUri) {
-        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:ENCODING_ERR];
-    } else if ([testUri isFileURL]) {
-        NSFileManager* fileMgr = [[NSFileManager alloc] init];
-        NSString* path = [testUri path];
-        // NSLog(@"url path: %@", path);
-        BOOL isDir = NO;
-        // see if exists and is file or dir
-        BOOL bExists = [fileMgr fileExistsAtPath:path isDirectory:&isDir];
-        if (bExists) {
-            // see if it contains docs path or temp path
-            NSString* foundFullPath = nil;
-            if ([path hasPrefix:self.appDocsPath]) {
-                foundFullPath = self.appDocsPath;
-            } else if ([path hasPrefix:self.appTempPath]) {
-                foundFullPath = self.appTempPath;
-            }
-
-            if (foundFullPath == nil) {
-                // error SECURITY_ERR - not one of the two paths types supported
-                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:SECURITY_ERR];
-            } else {
-                NSDictionary* fileSystem = [self getDirectoryEntry:path isDirectory:isDir];
-                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:fileSystem];
-            }
-        } else {
-            // return NOT_FOUND_ERR
-            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NOT_FOUND_ERR];
-        }
-    } else if ([strUri hasPrefix:@"assets-library://"]) {
-        NSDictionary* fileSystem = [self getDirectoryEntry:strUri isDirectory:NO];
-        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:fileSystem];
-    } else {
-        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:ENCODING_ERR];
-    }
-
+    CDVFilesystemURL* inputUri = [self fileSystemURLWithString:[command.arguments objectAtIndex:0]];
+    CDVPluginResult* result = [self entryForLocalURI:inputUri];
     if (result != nil) {
         [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
     }
 }
 
+/*
+ * IN
+ *  NSString localURI
+ * OUT
+ *  CDVPluginResult result containing a file or directoryEntry for the localURI, or an error if the
+ *   URI represents a non-existent path, or is unrecognized or otherwise malformed.
+ */
+- (CDVPluginResult *)entryForLocalURI:(CDVFilesystemURL *)url;
+{
+    CDVPluginResult* result = nil;
+    if ([[url.url scheme] isEqualToString:@"assets-library"]) {
+        NSDictionary* fileSystem = [self getDirectoryEntry:[url.url absoluteString] isDirectory:NO];
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:fileSystem];
+    } else {
+        if (url.fileSystemType == -1) {
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:ENCODING_ERR];
+        } else {
+            NSFileManager* fileMgr = [[NSFileManager alloc] init];
+            BOOL isDir = NO;
+            // see if exists and is file or dir
+            BOOL bExists = [fileMgr fileExistsAtPath:url.fileSystemPath isDirectory:&isDir];
+            if (bExists) {
+                NSDictionary* fileSystem = [self makeEntryForPath:url.fullPath fileSystem:url.fileSystemType isDirectory:isDir];
+                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:fileSystem];
+            } else {
+                // return NOT_FOUND_ERR
+                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NOT_FOUND_ERR];
+            }
+        }
+    }
+    return result;
+}
+
 /* Part of DirectoryEntry interface,  creates or returns the specified directory
  * IN:
- *	NSString* fullPath - full path for this directory
+ *	NSString* localURI - local filesystem URI for this directory
  *	NSString* path - directory to be created/returned; may be full path or relative path
  *	NSDictionary* - Flags object
  *		boolean as NSNumber create -
@@ -310,9 +430,9 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 
 /* Part of DirectoryEntry interface,  creates or returns the specified file
  * IN:
- *	NSString* fullPath - full path for this file
- *	NSString* path - file to be created/returned; may be full path or relative path
- *	NSDictionary* - Flags object
+ *	NSString* baseURI - local filesytem URI for the base directory to search
+ *	NSString* requestedPath - file to be created/returned; may be absolute path or relative path
+ *	NSDictionary* options - Flags object
  *		boolean as NSNumber create -
  *			if create is true and file does not exist, create file and return File entry
  *			if create is true and exclusive is true and file does exist, return error
@@ -320,18 +440,16 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
  *			if create is false and the path represents a directory, return error
  *		boolean as NSNumber exclusive - used in conjunction with create
  *			if exclusive is true and create is true - specifies failure if file already exists
- *
- *
  */
 - (void)getFile:(CDVInvokedUrlCommand*)command
 {
-    // arguments are URL encoded
-    NSString* fullPath = [command.arguments objectAtIndex:0];
+    NSString* baseURIstr = [command.arguments objectAtIndex:0];
+    CDVFilesystemURL* baseURI = [self fileSystemURLWithString:baseURIstr];
     NSString* requestedPath = [command.arguments objectAtIndex:1];
     NSDictionary* options = [command.arguments objectAtIndex:2 withDefault:nil];
 
     // return unsupported result for assets-library URLs
-    if ([fullPath hasPrefix:kCDVAssetsLibraryPrefix]) {
+    if ([[baseURI.url scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_MALFORMED_URL_EXCEPTION messageAsString:@"getFile not supported for assets-library URLs."];
         [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
         return;
@@ -358,22 +476,12 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
     if ([requestedPath rangeOfString:@":"].location != NSNotFound) {
         errorCode = ENCODING_ERR;
     } else {
-        // was full or relative path provided?
-        NSRange range = [requestedPath rangeOfString:fullPath];
-        BOOL bIsFullPath = range.location != NSNotFound;
-
-        NSString* reqFullPath = nil;
-
-        if (!bIsFullPath) {
-            reqFullPath = [fullPath stringByAppendingPathComponent:requestedPath];
-        } else {
-            reqFullPath = requestedPath;
-        }
-
+        CDVFilesystemURL* requestedURL = [self fileSystemURLWithURL:[NSURL URLWithString:[requestedPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding] relativeToURL:baseURI.url]]; /* TODO: UGLY - FIX */
+        
         // NSLog(@"reqFullPath = %@", reqFullPath);
         NSFileManager* fileMgr = [[NSFileManager alloc] init];
         BOOL bIsDir;
-        BOOL bExists = [fileMgr fileExistsAtPath:reqFullPath isDirectory:&bIsDir];
+        BOOL bExists = [fileMgr fileExistsAtPath:requestedURL.fileSystemPath isDirectory:&bIsDir];
         if (bExists && (create == NO) && (bIsDir == !bDirRequest)) {
             // path exists and is of requested type  - return TYPE_MISMATCH_ERR
             errorCode = TYPE_MISMATCH_ERR;
@@ -392,10 +500,10 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
             if (!bExists && (create == YES)) {
                 if (bDirRequest) {
                     // create the dir
-                    bSuccess = [fileMgr createDirectoryAtPath:reqFullPath withIntermediateDirectories:NO attributes:nil error:&pError];
+                    bSuccess = [fileMgr createDirectoryAtPath:requestedURL.fileSystemPath withIntermediateDirectories:NO attributes:nil error:&pError];
                 } else {
                     // create the empty file
-                    bSuccess = [fileMgr createFileAtPath:reqFullPath contents:nil attributes:nil];
+                    bSuccess = [fileMgr createFileAtPath:requestedURL.fileSystemPath contents:nil attributes:nil];
                 }
             }
             if (!bSuccess) {
@@ -406,7 +514,7 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
             } else {
                 // NSLog(@"newly created file/dir (%@) exists: %d", reqFullPath, [fileMgr fileExistsAtPath:reqFullPath]);
                 // file existed or was created
-                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[self getDirectoryEntry:reqFullPath isDirectory:bDirRequest]];
+                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[self makeEntryForPath:requestedURL.fullPath fileSystem:baseURI.fileSystemType isDirectory:bDirRequest]];
             }
         } // are all possible conditions met?
     }
@@ -424,44 +532,36 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
  * If this Entry is the root of its filesystem, its parent is itself.
  * IN:
  * NSArray* arguments
- *	0 - NSString* fullPath
+ *	0 - NSString* localURI
  * NSMutableDictionary* options
  *	empty
  */
 - (void)getParent:(CDVInvokedUrlCommand*)command
 {
     // arguments are URL encoded
-    NSString* fullPath = [command.arguments objectAtIndex:0];
+    CDVFilesystemURL* localURI = [self fileSystemURLWithString:[command.arguments objectAtIndex:0]];
 
     // we don't (yet?) support getting the parent of an asset
-    if ([fullPath hasPrefix:kCDVAssetsLibraryPrefix]) {
+    if ([[localURI.url scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NOT_READABLE_ERR];
         [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
         return;
     }
 
     CDVPluginResult* result = nil;
-    NSString* newPath = nil;
-
-    if ([fullPath isEqualToString:self.appDocsPath] || [fullPath isEqualToString:self.appTempPath]) {
+    CDVFilesystemURL *newURI = nil;
+    if ([localURI.fullPath isEqualToString:@""]) {
         // return self
-        newPath = fullPath;
+        newURI = localURI;
     } else {
-        // since this call is made from an existing Entry object - the parent should already exist so no additional error checking
-        // remove last component and return Entry
-        NSRange range = [fullPath rangeOfString:@"/" options:NSBackwardsSearch];
-        newPath = [fullPath substringToIndex:range.location];
+        newURI = [self fileSystemURLWithURL:[localURI.url URLByDeletingLastPathComponent]]; /* TODO: UGLY - FIX */
     }
-
-    if (newPath) {
-        NSFileManager* fileMgr = [[NSFileManager alloc] init];
-        BOOL bIsDir;
-        BOOL bExists = [fileMgr fileExistsAtPath:newPath isDirectory:&bIsDir];
-        if (bExists) {
-            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[self getDirectoryEntry:newPath isDirectory:bIsDir]];
-        }
-    }
-    if (!result) {
+    NSFileManager* fileMgr = [[NSFileManager alloc] init];
+    BOOL bIsDir;
+    BOOL bExists = [fileMgr fileExistsAtPath:newURI.fileSystemPath isDirectory:&bIsDir];
+    if (bExists) {
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[self makeEntryForPath:newURI.fullPath fileSystem:newURI.fileSystemType isDirectory:bIsDir]];
+    } else {
         // invalid path or file does not exist
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NOT_FOUND_ERR];
     }
@@ -475,10 +575,12 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 - (void)getMetadata:(CDVInvokedUrlCommand*)command
 {
     // arguments
-    NSString* argPath = [command.arguments objectAtIndex:0];
+    NSString* localURIstr = [command.arguments objectAtIndex:0];
+    CDVFilesystemURL* localURI = [self fileSystemURLWithString:localURIstr];
+    
     __block CDVPluginResult* result = nil;
 
-    if ([argPath hasPrefix:kCDVAssetsLibraryPrefix]) {
+    if ([[localURI.url scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
         // In this case, we need to use an asynchronous method to retrieve the file.
         // Because of this, we can't just assign to `result` and send it at the end of the method.
         // Instead, we return after calling the asynchronous method and send `result` in each of the blocks.
@@ -502,16 +604,14 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
         };
 
         ALAssetsLibrary* assetsLibrary = [[ALAssetsLibrary alloc] init];
-        [assetsLibrary assetForURL:[NSURL URLWithString:argPath] resultBlock:resultBlock failureBlock:failureBlock];
+        [assetsLibrary assetForURL:[NSURL URLWithString:localURIstr] resultBlock:resultBlock failureBlock:failureBlock];
         return;
     }
-
-    NSString* testPath = argPath; // [self getFullPath: argPath];
 
     NSFileManager* fileMgr = [[NSFileManager alloc] init];
     NSError* __autoreleasing error = nil;
 
-    NSDictionary* fileAttribs = [fileMgr attributesOfItemAtPath:testPath error:&error];
+    NSDictionary* fileAttribs = [fileMgr attributesOfItemAtPath:localURI.fileSystemPath error:&error];
 
     if (fileAttribs) {
         NSDate* modDate = [fileAttribs fileModificationDate];
@@ -542,13 +642,15 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 - (void)setMetadata:(CDVInvokedUrlCommand*)command
 {
     // arguments
-    NSString* filePath = [command.arguments objectAtIndex:0];
+    CDVFilesystemURL* localURI = [self fileSystemURLWithString:[command.arguments objectAtIndex:0]];
     NSDictionary* options = [command.arguments objectAtIndex:1 withDefault:nil];
+
     CDVPluginResult* result = nil;
     BOOL ok = NO;
 
     // setMetadata doesn't make sense for asset library files
-    if (![filePath hasPrefix:kCDVAssetsLibraryPrefix]) {
+    if (![[localURI.url scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
+        NSString* filePath = localURI.fileSystemPath;
         // we only care about this iCloud key for now.
         // set to 1/true to skip backup, set to 0/false to back it up (effectively removing the attribute)
         NSString* iCloudBackupExtendedAttributeKey = @"com.apple.MobileBackup";
@@ -582,7 +684,7 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 /* removes the directory or file entry
  * IN:
  * NSArray* arguments
- *	0 - NSString* fullPath
+ *	0 - NSString* localURI
  *
  * returns NO_MODIFICATION_ALLOWED_ERR  if is top level directory or no permission to delete dir
  * returns INVALID_MODIFICATION_ERR if is non-empty dir or asset library file
@@ -591,24 +693,24 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 - (void)remove:(CDVInvokedUrlCommand*)command
 {
     // arguments
-    NSString* fullPath = [command.arguments objectAtIndex:0];
+    CDVFilesystemURL* localURI = [self fileSystemURLWithString:[command.arguments objectAtIndex:0]];
     CDVPluginResult* result = nil;
     CDVFileError errorCode = 0;  // !! 0 not currently defined
 
     // return error for assets-library URLs
-    if ([fullPath hasPrefix:kCDVAssetsLibraryPrefix]) {
+    if ([[localURI.url scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
         errorCode = INVALID_MODIFICATION_ERR;
-    } else if ([fullPath isEqualToString:self.appDocsPath] || [fullPath isEqualToString:self.appTempPath]) {
+    } else if ([localURI.fullPath isEqualToString:@""]) {
         // error if try to remove top level (documents or tmp) dir
         errorCode = NO_MODIFICATION_ALLOWED_ERR;
     } else {
         NSFileManager* fileMgr = [[NSFileManager alloc] init];
         BOOL bIsDir = NO;
-        BOOL bExists = [fileMgr fileExistsAtPath:fullPath isDirectory:&bIsDir];
+        BOOL bExists = [fileMgr fileExistsAtPath:localURI.fileSystemPath isDirectory:&bIsDir];
         if (!bExists) {
             errorCode = NOT_FOUND_ERR;
         }
-        if (bIsDir && ([[fileMgr contentsOfDirectoryAtPath:fullPath error:nil] count] != 0)) {
+        if (bIsDir && ([[fileMgr contentsOfDirectoryAtPath:localURI.fileSystemPath error:nil] count] != 0)) {
             // dir is not empty
             errorCode = INVALID_MODIFICATION_ERR;
         }
@@ -617,7 +719,7 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:errorCode];
     } else {
         // perform actual remove
-        result = [self doRemove:fullPath];
+        result = [self doRemove:localURI.fileSystemPath];
     }
     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
@@ -625,7 +727,7 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 /* recursively removes the directory
  * IN:
  * NSArray* arguments
- *	0 - NSString* fullPath
+ *	0 - NSString* localURI
  *
  * returns NO_MODIFICATION_ALLOWED_ERR  if is top level directory or no permission to delete dir
  * returns NOT_FOUND_ERR if file or dir is not found
@@ -633,22 +735,21 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 - (void)removeRecursively:(CDVInvokedUrlCommand*)command
 {
     // arguments
-    NSString* fullPath = [command.arguments objectAtIndex:0];
+    CDVFilesystemURL* localURI = [self fileSystemURLWithString:[command.arguments objectAtIndex:0]];
 
     // return unsupported result for assets-library URLs
-    if ([fullPath hasPrefix:kCDVAssetsLibraryPrefix]) {
+    if ([[localURI.url scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_MALFORMED_URL_EXCEPTION messageAsString:@"removeRecursively not supported for assets-library URLs."];
         [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
         return;
     }
 
     CDVPluginResult* result = nil;
-
     // error if try to remove top level (documents or tmp) dir
-    if ([fullPath isEqualToString:self.appDocsPath] || [fullPath isEqualToString:self.appTempPath]) {
+    if ([localURI.fullPath isEqualToString:@""]) {
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NO_MODIFICATION_ALLOWED_ERR];
     } else {
-        result = [self doRemove:fullPath];
+        result = [self doRemove:localURI.fileSystemPath];
     }
     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
@@ -674,7 +775,7 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
         } else {
             // see if we can give a useful error
             CDVFileError errorCode = ABORT_ERR;
-            NSLog(@"error getting metadata: %@", [pError localizedDescription]);
+            NSLog(@"error removing filesystem entry at %@: %@", fullPath, [pError localizedDescription]);
             if ([pError code] == NSFileNoSuchFileError) {
                 errorCode = NOT_FOUND_ERR;
             } else if ([pError code] == NSFileWriteNoPermissionError) {
@@ -732,44 +833,45 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 /* Copy/move a file or directory to a new location
  * IN:
  * NSArray* arguments
- *	0 - NSString* fullPath of entry
- *  1 - NSString* newName the new name of the entry, defaults to the current name
- *	NSMutableDictionary* options - DirectoryEntry to which to copy the entry
+ *	0 - NSString* URL of entry to copy
+ *  1 - NSString* URL of the directory into which to copy/move the entry
+ *  2 - Optionally, the new name of the entry, defaults to the current name
  *	BOOL - bCopy YES if copy, NO if move
- *
  */
 - (void)doCopyMove:(CDVInvokedUrlCommand*)command isCopy:(BOOL)bCopy
 {
     NSArray* arguments = command.arguments;
 
     // arguments
-    NSString* srcFullPath = [arguments objectAtIndex:0];
-    NSString* destRootPath = [arguments objectAtIndex:1];
-    // optional argument
-    NSString* newName = ([arguments count] > 2) ? [arguments objectAtIndex:2] : [srcFullPath lastPathComponent];          // use last component from appPath if new name not provided
+    NSString* srcURLstr = [arguments objectAtIndex:0];
+    NSString* destURLstr = [arguments objectAtIndex:1];
 
     __block CDVPluginResult* result = nil;
     CDVFileError errCode = 0;  // !! Currently 0 is not defined, use this to signal error !!
 
-    /*NSString* destRootPath = nil;
-    NSString* key = @"fullPath";
-    if([options valueForKeyIsString:key]){
-       destRootPath = [options objectForKey:@"fullPath"];
-    }*/
-
-    if (!destRootPath) {
-        // no destination provided
+    if (!srcURLstr || !destURLstr) {
+        // either no source or no destination provided
         errCode = NOT_FOUND_ERR;
-    } else if ([newName rangeOfString:@":"].location != NSNotFound) {
+    } else {
+    CDVFilesystemURL* srcURL = [self fileSystemURLWithString:srcURLstr];
+    CDVFilesystemURL* destURL = [self fileSystemURLWithString:destURLstr];
+    NSString* srcFullPath = srcURL.fileSystemPath;
+    NSString* destRootPath = destURL.fileSystemPath;
+    
+    // optional argument; use last component from srcFullPath if new name not provided
+    NSString* newName = ([arguments count] > 2) ? [arguments objectAtIndex:2] : [srcFullPath lastPathComponent];
+    if ([newName rangeOfString:@":"].location != NSNotFound) {
         // invalid chars in new name
         errCode = ENCODING_ERR;
     } else {
-        NSString* newFullPath = [destRootPath stringByAppendingPathComponent:newName];
+        NSString* newFileSystemPath = [destRootPath stringByAppendingPathComponent:newName];
+        NSString* newFullPath = [self fullPathForFileSystemPath:newFileSystemPath];
+        
         NSFileManager* fileMgr = [[NSFileManager alloc] init];
-        if ([newFullPath isEqualToString:srcFullPath]) {
+        if ([newFileSystemPath isEqualToString:srcFullPath]) {
             // source and destination can not be the same
             errCode = INVALID_MODIFICATION_ERR;
-        } else if ([srcFullPath hasPrefix:kCDVAssetsLibraryPrefix]) {
+        } else if ([[srcURL.url scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
             if (bCopy) {
                 // Copying (as opposed to moving) an assets library file is okay.
                 // In this case, we need to use an asynchronous method to retrieve the file.
@@ -783,7 +885,7 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
                             result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NOT_FOUND_ERR];
                             [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
                             return;
-                        } else if ([fileMgr fileExistsAtPath:newFullPath]) {
+                        } else if ([fileMgr fileExistsAtPath:newFileSystemPath]) {
                             // A file already exists at the destination path.
                             result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:PATH_EXISTS_ERR];
                             [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
@@ -795,8 +897,8 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
                         Byte* buffer = (Byte*)malloc([assetRepresentation size]);
                         NSUInteger bufferSize = [assetRepresentation getBytes:buffer fromOffset:0.0 length:[assetRepresentation size] error:nil];
                         NSData* data = [NSData dataWithBytesNoCopy:buffer length:bufferSize freeWhenDone:YES];
-                        [data writeToFile:newFullPath atomically:YES];
-                        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[self getDirectoryEntry:newFullPath isDirectory:NO]];
+                        [data writeToFile:newFileSystemPath atomically:YES];
+                        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[self getDirectoryEntry:newFileSystemPath isDirectory:NO]];
                         [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
                     } else {
                         // We couldn't find the asset.  Send the appropriate error.
@@ -823,7 +925,7 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
             BOOL bNewIsDir = NO;
             BOOL bSrcExists = [fileMgr fileExistsAtPath:srcFullPath isDirectory:&bSrcIsDir];
             BOOL bDestExists = [fileMgr fileExistsAtPath:destRootPath isDirectory:&bDestIsDir];
-            BOOL bNewExists = [fileMgr fileExistsAtPath:newFullPath isDirectory:&bNewIsDir];
+            BOOL bNewExists = [fileMgr fileExistsAtPath:newFileSystemPath isDirectory:&bNewIsDir];
             if (!bSrcExists || !bDestExists) {
                 // the source or the destination root does not exist
                 errCode = NOT_FOUND_ERR;
@@ -834,14 +936,14 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
                 NSError* __autoreleasing error = nil;
                 BOOL bSuccess = NO;
                 if (bCopy) {
-                    if (bSrcIsDir && ![self canCopyMoveSrc:srcFullPath ToDestination:newFullPath] /*[newFullPath hasPrefix:srcFullPath]*/) {
+                    if (bSrcIsDir && ![self canCopyMoveSrc:srcFullPath ToDestination:newFileSystemPath]) {
                         // can't copy dir into self
                         errCode = INVALID_MODIFICATION_ERR;
                     } else if (bNewExists) {
                         // the full destination should NOT already exist if a copy
                         errCode = PATH_EXISTS_ERR;
                     } else {
-                        bSuccess = [fileMgr copyItemAtPath:srcFullPath toPath:newFullPath error:&error];
+                        bSuccess = [fileMgr copyItemAtPath:srcFullPath toPath:newFileSystemPath error:&error];
                     }
                 } else { // move
                     // iOS requires that destination must not exist before calling moveTo
@@ -850,35 +952,35 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
                     if (!bSrcIsDir && (bNewExists && bNewIsDir)) {
                         // can't move a file to directory
                         errCode = INVALID_MODIFICATION_ERR;
-                    } else if (bSrcIsDir && ![self canCopyMoveSrc:srcFullPath ToDestination:newFullPath]) {    // [newFullPath hasPrefix:srcFullPath]){
+                    } else if (bSrcIsDir && ![self canCopyMoveSrc:srcFullPath ToDestination:newFileSystemPath]) {
                         // can't move a dir into itself
                         errCode = INVALID_MODIFICATION_ERR;
                     } else if (bNewExists) {
-                        if (bNewIsDir && ([[fileMgr contentsOfDirectoryAtPath:newFullPath error:NULL] count] != 0)) {
+                        if (bNewIsDir && ([[fileMgr contentsOfDirectoryAtPath:newFileSystemPath error:NULL] count] != 0)) {
                             // can't move dir to a dir that is not empty
                             errCode = INVALID_MODIFICATION_ERR;
-                            newFullPath = nil;  // so we won't try to move
+                            newFileSystemPath = nil;  // so we won't try to move
                         } else {
                             // remove destination so can perform the moveItemAtPath
-                            bSuccess = [fileMgr removeItemAtPath:newFullPath error:NULL];
+                            bSuccess = [fileMgr removeItemAtPath:newFileSystemPath error:NULL];
                             if (!bSuccess) {
                                 errCode = INVALID_MODIFICATION_ERR; // is this the correct error?
-                                newFullPath = nil;
+                                newFileSystemPath = nil;
                             }
                         }
-                    } else if (bNewIsDir && [newFullPath hasPrefix:srcFullPath]) {
+                    } else if (bNewIsDir && [newFileSystemPath hasPrefix:srcFullPath]) {
                         // can't move a directory inside itself or to any child at any depth;
                         errCode = INVALID_MODIFICATION_ERR;
-                        newFullPath = nil;
+                        newFileSystemPath = nil;
                     }
 
-                    if (newFullPath != nil) {
-                        bSuccess = [fileMgr moveItemAtPath:srcFullPath toPath:newFullPath error:&error];
+                    if (newFileSystemPath != nil) {
+                        bSuccess = [fileMgr moveItemAtPath:srcFullPath toPath:newFileSystemPath error:&error];
                     }
                 }
                 if (bSuccess) {
                     // should verify it is there and of the correct type???
-                    NSDictionary* newEntry = [self getDirectoryEntry:newFullPath isDirectory:bSrcIsDir];  // should be the same type as source
+                    NSDictionary* newEntry = [self makeEntryForPath:newFullPath fileSystem:srcURL.fileSystemType isDirectory:bSrcIsDir];  // should be the same type as source
                     result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:newEntry];
                 } else {
                     errCode = INVALID_MODIFICATION_ERR; // catch all
@@ -895,112 +997,76 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
             }
         }
     }
+    }
     if (errCode > 0) {
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:errCode];
     }
     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
 
-/* return the URI to the entry
- * IN:
- * NSArray* arguments
- *	0 - NSString* fullPath of entry
- *	1 - desired mime type of entry - ignored - always returns file://
- */
-
-/*  Not needed since W3C toURI is synchronous.  Leaving code here for now in case W3C spec changes.....
-- (void) toURI:(CDVInvokedUrlCommand*)command
-{
-    NSString* callbackId = command.callbackId;
-    NSString* argPath = [command.arguments objectAtIndex:0];
-    PluginResult* result = nil;
-    NSString* jsString = nil;
-
-    NSString* fullPath = [self getFullPath: argPath];
-    if (fullPath) {
-        // do we need to make sure the file actually exists?
-        // create file uri
-        NSString* strUri = [fullPath stringByReplacingPercentEscapesUsingEncoding: NSUTF8StringEncoding];
-        NSURL* fileUrl = [NSURL fileURLWithPath:strUri];
-        if (fileUrl) {
-            result = [PluginResult resultWithStatus:CDVCommandStatus_OK messageAsString: [fileUrl absoluteString]];
-            jsString = [result toSuccessCallbackString:callbackId];
-        } // else NOT_FOUND_ERR
-    }
-    if(!jsString) {
-        // was error
-        result = [PluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt: NOT_FOUND_ERR cast:  @"window.localFileSystem._castError"];
-        jsString = [result toErrorCallbackString:callbackId];
-    }
-
-    [self writeJavascript:jsString];
-}*/
 - (void)getFileMetadata:(CDVInvokedUrlCommand*)command
 {
     // arguments
-    NSString* argPath = [command.arguments objectAtIndex:0];
-
+    NSString* localURIstr = [command.arguments objectAtIndex:0];
+    CDVFilesystemURL* localURI = [self fileSystemURLWithString:localURIstr];
+    
     __block CDVPluginResult* result = nil;
 
-    NSString* fullPath = argPath; // [self getFullPath: argPath];
-
-    if (fullPath) {
-        if ([fullPath hasPrefix:kCDVAssetsLibraryPrefix]) {
-            // In this case, we need to use an asynchronous method to retrieve the file.
-            // Because of this, we can't just assign to `result` and send it at the end of the method.
-            // Instead, we return after calling the asynchronous method and send `result` in each of the blocks.
-            ALAssetsLibraryAssetForURLResultBlock resultBlock = ^(ALAsset* asset) {
-                if (asset) {
-                    // We have the asset!  Populate the dictionary and send it off.
-                    NSMutableDictionary* fileInfo = [NSMutableDictionary dictionaryWithCapacity:5];
-                    ALAssetRepresentation* assetRepresentation = [asset defaultRepresentation];
-                    [fileInfo setObject:[NSNumber numberWithUnsignedLongLong:[assetRepresentation size]] forKey:@"size"];
-                    [fileInfo setObject:argPath forKey:@"fullPath"];
-                    NSString* filename = [assetRepresentation filename];
-                    [fileInfo setObject:filename forKey:@"name"];
-                    [fileInfo setObject:[self getMimeTypeFromPath:filename] forKey:@"type"];
-                    NSDate* creationDate = [asset valueForProperty:ALAssetPropertyDate];
-                    NSNumber* msDate = [NSNumber numberWithDouble:[creationDate timeIntervalSince1970] * 1000];
-                    [fileInfo setObject:msDate forKey:@"lastModifiedDate"];
-
-                    result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:fileInfo];
-                    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-                } else {
-                    // We couldn't find the asset.  Send the appropriate error.
-                    result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NOT_FOUND_ERR];
-                    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-                }
-            };
-            ALAssetsLibraryAccessFailureBlock failureBlock = ^(NSError* error) {
-                // Retrieving the asset failed for some reason.  Send the appropriate error.
-                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsString:[error localizedDescription]];
-                [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-            };
-
-            ALAssetsLibrary* assetsLibrary = [[ALAssetsLibrary alloc] init];
-            [assetsLibrary assetForURL:[NSURL URLWithString:argPath] resultBlock:resultBlock failureBlock:failureBlock];
-            return;
-        } else {
-            NSFileManager* fileMgr = [[NSFileManager alloc] init];
-            BOOL bIsDir = NO;
-            // make sure it exists and is not a directory
-            BOOL bExists = [fileMgr fileExistsAtPath:fullPath isDirectory:&bIsDir];
-            if (!bExists || bIsDir) {
-                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NOT_FOUND_ERR];
-            } else {
-                // create dictionary of file info
-                NSError* __autoreleasing error = nil;
-                NSDictionary* fileAttrs = [fileMgr attributesOfItemAtPath:fullPath error:&error];
+    if ([[localURI.url scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
+        // In this case, we need to use an asynchronous method to retrieve the file.
+        // Because of this, we can't just assign to `result` and send it at the end of the method.
+        // Instead, we return after calling the asynchronous method and send `result` in each of the blocks.
+        ALAssetsLibraryAssetForURLResultBlock resultBlock = ^(ALAsset* asset) {
+            if (asset) {
+                // We have the asset!  Populate the dictionary and send it off.
                 NSMutableDictionary* fileInfo = [NSMutableDictionary dictionaryWithCapacity:5];
-                [fileInfo setObject:[NSNumber numberWithUnsignedLongLong:[fileAttrs fileSize]] forKey:@"size"];
-                [fileInfo setObject:argPath forKey:@"fullPath"];
-                [fileInfo setObject:@"" forKey:@"type"];  // can't easily get the mimetype unless create URL, send request and read response so skipping
-                [fileInfo setObject:[argPath lastPathComponent] forKey:@"name"];
-                NSDate* modDate = [fileAttrs fileModificationDate];
-                NSNumber* msDate = [NSNumber numberWithDouble:[modDate timeIntervalSince1970] * 1000];
+                ALAssetRepresentation* assetRepresentation = [asset defaultRepresentation];
+                [fileInfo setObject:[NSNumber numberWithUnsignedLongLong:[assetRepresentation size]] forKey:@"size"];
+                [fileInfo setObject:localURIstr forKey:@"fullPath"];
+                NSString* filename = [assetRepresentation filename];
+                [fileInfo setObject:filename forKey:@"name"];
+                [fileInfo setObject:[self getMimeTypeFromPath:filename] forKey:@"type"];
+                NSDate* creationDate = [asset valueForProperty:ALAssetPropertyDate];
+                NSNumber* msDate = [NSNumber numberWithDouble:[creationDate timeIntervalSince1970] * 1000];
                 [fileInfo setObject:msDate forKey:@"lastModifiedDate"];
+                
                 result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:fileInfo];
+                [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+            } else {
+                // We couldn't find the asset.  Send the appropriate error.
+                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NOT_FOUND_ERR];
+                [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
             }
+        };
+        ALAssetsLibraryAccessFailureBlock failureBlock = ^(NSError* error) {
+            // Retrieving the asset failed for some reason.  Send the appropriate error.
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsString:[error localizedDescription]];
+            [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+        };
+        
+        ALAssetsLibrary* assetsLibrary = [[ALAssetsLibrary alloc] init];
+        [assetsLibrary assetForURL:[NSURL URLWithString:localURIstr] resultBlock:resultBlock failureBlock:failureBlock];
+        return;
+    } else {
+        NSFileManager* fileMgr = [[NSFileManager alloc] init];
+        BOOL bIsDir = NO;
+        // make sure it exists and is not a directory
+        BOOL bExists = [fileMgr fileExistsAtPath:localURI.fileSystemPath isDirectory:&bIsDir];
+        if (!bExists || bIsDir) {
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NOT_FOUND_ERR];
+        } else {
+            // create dictionary of file info
+            NSError* __autoreleasing error = nil;
+            NSDictionary* fileAttrs = [fileMgr attributesOfItemAtPath:localURI.fileSystemPath error:&error];
+            NSMutableDictionary* fileInfo = [NSMutableDictionary dictionaryWithCapacity:5];
+            [fileInfo setObject:[NSNumber numberWithUnsignedLongLong:[fileAttrs fileSize]] forKey:@"size"];
+            [fileInfo setObject:localURIstr forKey:@"fullPath"];
+            [fileInfo setObject:@"" forKey:@"type"];  // can't easily get the mimetype unless create URL, send request and read response so skipping
+            [fileInfo setObject:[localURIstr lastPathComponent] forKey:@"name"];
+            NSDate* modDate = [fileAttrs fileModificationDate];
+            NSNumber* msDate = [NSNumber numberWithDouble:[modDate timeIntervalSince1970] * 1000];
+            [fileInfo setObject:msDate forKey:@"lastModifiedDate"];
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:fileInfo];
         }
     }
     if (!result) {
@@ -1011,21 +1077,19 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 
 - (void)readEntries:(CDVInvokedUrlCommand*)command
 {
-    // arguments
-    NSString* fullPath = [command.arguments objectAtIndex:0];
+    CDVFilesystemURL* localURI = [self fileSystemURLWithString:[command.arguments objectAtIndex:0]];
+    CDVPluginResult *result;
 
+    if ([[localURI.url scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
     // return unsupported result for assets-library URLs
-    if ([fullPath hasPrefix:kCDVAssetsLibraryPrefix]) {
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_MALFORMED_URL_EXCEPTION messageAsString:@"readEntries not supported for assets-library URLs."];
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_MALFORMED_URL_EXCEPTION messageAsString:@"readEntries not supported for assets-library URLs."];
         [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
         return;
     }
 
-    CDVPluginResult* result = nil;
-
     NSFileManager* fileMgr = [[NSFileManager alloc] init];
     NSError* __autoreleasing error = nil;
-    NSArray* contents = [fileMgr contentsOfDirectoryAtPath:fullPath error:&error];
+    NSArray* contents = [fileMgr contentsOfDirectoryAtPath:localURI.fileSystemPath error:&error];
 
     if (contents) {
         NSMutableArray* entries = [NSMutableArray arrayWithCapacity:1];
@@ -1033,10 +1097,10 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
             // create an Entry (as JSON) for each file/dir
             for (NSString* name in contents) {
                 // see if is dir or file
-                NSString* entryPath = [fullPath stringByAppendingPathComponent:name];
+                NSString* entryPath = [localURI.fileSystemPath stringByAppendingPathComponent:name];
                 BOOL bIsDir = NO;
                 [fileMgr fileExistsAtPath:entryPath isDirectory:&bIsDir];
-                NSDictionary* entryDict = [self getDirectoryEntry:entryPath isDirectory:bIsDir];
+                NSDictionary* entryDict = [self makeEntryForPath:[self fullPathForFileSystemPath:entryPath] fileSystem:localURI.fileSystemType isDirectory:bIsDir];
                 [entries addObject:entryDict];
             }
         }
@@ -1045,7 +1109,6 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
         // assume not found but could check error for more specific error conditions
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NOT_FOUND_ERR];
     }
-
     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
 
@@ -1067,7 +1130,7 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
                         NSUInteger bufferSize = [assetRepresentation getBytes:buffer fromOffset:0.0 length:[assetRepresentation size] error:nil];
                         NSData* data = [NSData dataWithBytesNoCopy:buffer length:bufferSize freeWhenDone:YES];
                         NSString* MIMEType = (__bridge_transfer NSString*)UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)[assetRepresentation UTI], kUTTagClassMIMEType);
-
+                        
                         callback(data, MIMEType, NO_ERROR);
                     } else {
                         callback(nil, nil, NOT_FOUND_ERR);
@@ -1078,7 +1141,7 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
                     NSLog(@"Error: %@", error);
                     callback(nil, nil, SECURITY_ERR);
                 };
-
+                
                 ALAssetsLibrary* assetsLibrary = [[ALAssetsLibrary alloc] init];
                 [assetsLibrary assetForURL:[NSURL URLWithString:path] resultBlock:resultBlock failureBlock:failureBlock];
             } else {
@@ -1090,16 +1153,16 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
                 if (start > 0) {
                     [file seekToFileOffset:start];
                 }
-
+                
                 NSData* readData;
                 if (end < 0) {
                     readData = [file readDataToEndOfFile];
                 } else {
                     readData = [file readDataOfLength:(end - start)];
                 }
-
+                
                 [file closeFile];
-
+                
                 callback(readData, mimeType, readData != nil ? NO_ERROR : NOT_FOUND_ERR);
             }
         }];
@@ -1117,7 +1180,7 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 - (void)readAsText:(CDVInvokedUrlCommand*)command
 {
     // arguments
-    NSString* path = [command argumentAtIndex:0];
+    CDVFilesystemURL* localURI = [self fileSystemURLWithString:[command argumentAtIndex:0]];
     NSString* encoding = [command argumentAtIndex:1];
     NSInteger start = [[command argumentAtIndex:2] integerValue];
     NSInteger end = [[command argumentAtIndex:3] integerValue];
@@ -1130,7 +1193,7 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
         return;
     }
 
-    [self readFileWithPath:path start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
+    [self readFileWithPath:localURI.fileSystemPath start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
         CDVPluginResult* result = nil;
         if (data != nil) {
             NSString* str = [[NSString alloc] initWithBytesNoCopy:(void*)[data bytes] length:[data length] encoding:NSUTF8StringEncoding freeWhenDone:NO];
@@ -1162,11 +1225,11 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 
 - (void)readAsDataURL:(CDVInvokedUrlCommand*)command
 {
-    NSString* path = [command argumentAtIndex:0];
+    CDVFilesystemURL* localURI = [self fileSystemURLWithString:[command argumentAtIndex:0]];
     NSInteger start = [[command argumentAtIndex:1] integerValue];
     NSInteger end = [[command argumentAtIndex:2] integerValue];
 
-    [self readFileWithPath:path start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
+    [self readFileWithPath:localURI.fileSystemPath start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
         CDVPluginResult* result = nil;
         if (data != nil) {
             // TODO: Would be faster to base64 encode directly to the final string.
@@ -1190,11 +1253,11 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 
 - (void)readAsArrayBuffer:(CDVInvokedUrlCommand*)command
 {
-    NSString* path = [command argumentAtIndex:0];
+    CDVFilesystemURL* localURI = [self fileSystemURLWithString:[command argumentAtIndex:0]];
     NSInteger start = [[command argumentAtIndex:1] integerValue];
     NSInteger end = [[command argumentAtIndex:2] integerValue];
 
-    [self readFileWithPath:path start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
+    [self readFileWithPath:localURI.fileSystemPath start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
         CDVPluginResult* result = nil;
         if (data != nil) {
             result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArrayBuffer:data];
@@ -1208,11 +1271,11 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 
 - (void)readAsBinaryString:(CDVInvokedUrlCommand*)command
 {
-    NSString* path = [command argumentAtIndex:0];
+    CDVFilesystemURL* localURI = [self fileSystemURLWithString:[command argumentAtIndex:0]];
     NSInteger start = [[command argumentAtIndex:1] integerValue];
     NSInteger end = [[command argumentAtIndex:2] integerValue];
 
-    [self readFileWithPath:path start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
+    [self readFileWithPath:localURI.fileSystemPath start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
         CDVPluginResult* result = nil;
         if (data != nil) {
             NSString* payload = [[NSString alloc] initWithBytesNoCopy:(void*)[data bytes] length:[data length] encoding:NSASCIIStringEncoding freeWhenDone:NO];
@@ -1257,19 +1320,17 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 - (void)truncate:(CDVInvokedUrlCommand*)command
 {
     // arguments
-    NSString* argPath = [command.arguments objectAtIndex:0];
+    CDVFilesystemURL* localURI = [self fileSystemURLWithString:[command argumentAtIndex:0]];
     unsigned long long pos = (unsigned long long)[[command.arguments objectAtIndex:1] longLongValue];
 
     // assets-library files can't be truncated
-    if ([argPath hasPrefix:kCDVAssetsLibraryPrefix]) {
+    if ([[localURI.url scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NO_MODIFICATION_ALLOWED_ERR];
         [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
         return;
     }
 
-    NSString* appFile = argPath; // [self getFullPath:argPath];
-
-    unsigned long long newPos = [self truncateFile:appFile atPosition:pos];
+    unsigned long long newPos = [self truncateFile:localURI.fileSystemPath atPosition:pos];
     CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:newPos];
 
     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
@@ -1293,7 +1354,7 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 /* write
  * IN:
  * NSArray* arguments
- *  0 - NSString* file path to write to
+ *  0 - NSString* localURI of file to write to
  *  1 - NSString* or NSData* data to write
  *  2 - NSNumber* position to begin writing
  */
@@ -1303,25 +1364,24 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
     NSArray* arguments = command.arguments;
 
     // arguments
-    NSString* argPath = [arguments objectAtIndex:0];
+    NSString* localURIstr = [arguments objectAtIndex:0];
+    CDVFilesystemURL* localURI = [self fileSystemURLWithString:localURIstr];
     id argData = [arguments objectAtIndex:1];
     unsigned long long pos = (unsigned long long)[[arguments objectAtIndex:2] longLongValue];
 
     // text can't be written into assets-library files
-    if ([argPath hasPrefix:kCDVAssetsLibraryPrefix]) {
+    if ([[localURI.url scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NO_MODIFICATION_ALLOWED_ERR];
         [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
         return;
     }
 
-    NSString* fullPath = argPath; // [self getFullPath:argPath];
-
-    [self truncateFile:fullPath atPosition:pos];
+    [self truncateFile:localURI.fileSystemPath atPosition:pos];
 
     if ([argData isKindOfClass:[NSString class]]) {
-        [self writeToFile:fullPath withString:argData encoding:NSUTF8StringEncoding append:YES callback:callbackId];
+        [self writeToFile:localURI.fileSystemPath withString:argData encoding:NSUTF8StringEncoding append:YES callback:callbackId];
     } else if ([argData isKindOfClass:[NSData class]]) {
-        [self writeToFile:fullPath withData:argData append:YES callback:callbackId];
+        [self writeToFile:localURI.fileSystemPath withData:argData append:YES callback:callbackId];
     } else {
         CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid parameter type"];
         [self.commandDelegate sendPluginResult:result callbackId:callbackId];
@@ -1367,6 +1427,8 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 {
     [self writeToFile:filePath withData:[stringData dataUsingEncoding:encoding allowLossyConversion:YES] append:shouldAppend callback:callbackId];
 }
+
+#pragma mark Undocumented Filesystem API
 
 - (void)testFileExists:(CDVInvokedUrlCommand*)command
 {
