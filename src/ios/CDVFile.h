@@ -44,7 +44,42 @@ enum CDVFileSystemType {
 };
 typedef int CDVFileSystemType;
 
-extern NSString* const kCDVAssetsLibraryPrefix;
+@interface CDVFilesystemURL : NSObject  {
+    NSURL *_url;
+    CDVFileSystemType _fileSystemType;
+    NSString *_fullPath;
+}
+
+- (id) initWithString:(NSString*)strURL;
+- (id) initWithURL:(NSURL*)URL;
++ (CDVFilesystemURL *)fileSystemURLWithString:(NSString *)strURL;
++ (CDVFilesystemURL *)fileSystemURLWithURL:(NSURL *)URL;
+
+
+@property (atomic) NSURL *url;
+@property (atomic) CDVFileSystemType fileSystemType;
+@property (atomic) NSString *fullPath;
+
+@end
+
+@interface CDVFilesystemURLProtocol : NSURLProtocol
+@end
+
+@protocol CDVFileSystem
+- (CDVPluginResult *)entryForLocalURI:(CDVFilesystemURL *)url;
+- (CDVPluginResult *)getFileForURL:(CDVFilesystemURL *)baseURI requestedPath:(NSString *)requestedPath options:(NSDictionary *)options;
+- (CDVPluginResult*)getParentForURL:(CDVFilesystemURL *)localURI;
+- (void)getMetadataForURL:(CDVFilesystemURL *)url callback:(void (^)(CDVPluginResult *))callback;
+- (CDVPluginResult*)setMetadataForURL:(CDVFilesystemURL *)localURI withObject:(NSDictionary *)options;
+- (CDVPluginResult *)removeFileAtURL:(CDVFilesystemURL *)localURI;
+- (CDVPluginResult *)recursiveRemoveFileAtURL:(CDVFilesystemURL *)localURI;
+- (CDVPluginResult *)readEntriesAtURL:(CDVFilesystemURL *)localURI;
+- (CDVPluginResult *)truncateFileAtURL:(CDVFilesystemURL *)localURI atPosition:(unsigned long long)pos;
+- (CDVPluginResult *)writeToFileAtURL:(CDVFilesystemURL *)localURL withData:(NSData*)encData append:(BOOL)shouldAppend;
+- (void)copyFileToURL:(CDVFilesystemURL *)destURL withName:(NSString *)newName fromFileSystem:(NSObject<CDVFileSystem> *)srcFs atURL:(CDVFilesystemURL *)srcURL copy:(BOOL)bCopy callback:(void (^)(CDVPluginResult *))callback;
+- (void)readFileAtURL:(CDVFilesystemURL *)localURL start:(NSInteger)start end:(NSInteger)end callback:(void (^)(NSData*, NSString* mimeType, CDVFileError))callback;
+- (void)getFileMetadataForURL:(CDVFilesystemURL *)localURL callback:(void (^)(CDVPluginResult *))callback;
+@end
 
 @interface CDVFile : CDVPlugin {
     NSString* appDocsPath;
