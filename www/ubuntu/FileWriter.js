@@ -127,4 +127,4 @@ module.exports = {
     write: write
 };
 
-require("cordova/commandProxy").add("FileWriter", module.exports);
+require("cordova/exec/proxy").add("FileWriter", module.exports);
