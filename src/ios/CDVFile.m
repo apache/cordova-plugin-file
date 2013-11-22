@@ -22,7 +22,7 @@
 #import "CDVLocalFilesystem.h"
 #import "CDVAssetLibraryFilesystem.h"
 
-static CDVFile *filePlugin = nil;
+CDVFile *filePlugin = nil;
 
 extern NSString * const NSURLIsExcludedFromBackupKey __attribute__((weak_import));
 
@@ -185,6 +185,28 @@ NSString* const kCDVFilesystemURLPrefix = @"filesystem";
     return self;
 }
 
+- (NSObject<CDVFileSystem> *)filesystemForURL:(CDVFilesystemURL *)localURL {
+    if (localURL.fileSystemType == -1) return nil;
+    @try {
+        return [self.fileSystems objectAtIndex:localURL.fileSystemType];
+    }
+    @catch (NSException *e) {
+        return nil;
+    }
+}
+
+- (CDVFilesystemURL *)fileSystemURLforLocalPath:(NSString *)localPath
+{
+    CDVFilesystemURL *localURL = nil;
+    // Try all installed filesystems, in order. If any one supports mapping from
+    // path to URL, and returns a URL, then use it.
+    for (id object in self.fileSystems) {
+        localURL = [object fileSystemURLforLocalPath:localPath];
+        if (localURL)
+            return localURL;
+    }
+    return nil;
+}
 
 - (NSNumber*)checkFreeDiskSpace:(NSString*)appPath
 {
@@ -277,6 +299,13 @@ NSString* const kCDVFilesystemURLPrefix = @"filesystem";
     [dirEntry setObject: [NSNumber numberWithInt:fsType] forKey: @"filesystem"];
 
     return dirEntry;
+}
+
+- (NSDictionary *)makeEntryForURL:(NSURL *)URL
+{
+    CDVFilesystemURL *fsURL = [CDVFilesystemURL fileSystemURLWithURL:URL];
+    CDVLocalFilesystem *fs = [self.fileSystems objectAtIndex:fsURL.fileSystemType];
+    return [fs makeEntryForLocalURL:fsURL];
 }
 
 /*
@@ -784,6 +813,13 @@ NSString* const kCDVFilesystemURLPrefix = @"filesystem";
     CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:strFreeSpace];
 
     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+}
+
+#pragma mark Compatibility with older File API
+
+- (NSString*)getMimeTypeFromPath:(NSString*)fullPath
+{
+    return [CDVLocalFilesystem getMimeTypeFromPath:fullPath];
 }
 
 @end

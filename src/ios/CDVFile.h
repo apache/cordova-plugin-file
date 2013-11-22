@@ -79,6 +79,13 @@ typedef int CDVFileSystemType;
 - (void)copyFileToURL:(CDVFilesystemURL *)destURL withName:(NSString *)newName fromFileSystem:(NSObject<CDVFileSystem> *)srcFs atURL:(CDVFilesystemURL *)srcURL copy:(BOOL)bCopy callback:(void (^)(CDVPluginResult *))callback;
 - (void)readFileAtURL:(CDVFilesystemURL *)localURL start:(NSInteger)start end:(NSInteger)end callback:(void (^)(NSData*, NSString* mimeType, CDVFileError))callback;
 - (void)getFileMetadataForURL:(CDVFilesystemURL *)localURL callback:(void (^)(CDVPluginResult *))callback;
+
+- (NSDictionary *)makeEntryForLocalURL:(CDVFilesystemURL *)url;
+
+@optional
+- (NSString *)filesystemPathForURL:(CDVFilesystemURL *)localURI;
+- (CDVFilesystemURL *)URLforFilesystemPath:(NSString *)path;
+
 @end
 
 @interface CDVFile : CDVPlugin {
@@ -94,6 +101,9 @@ typedef int CDVFileSystemType;
 
 - (NSNumber*)checkFreeDiskSpace:(NSString*)appPath;
 - (NSDictionary*)makeEntryForPath:(NSString*)fullPath fileSystem:(int)fsType isDirectory:(BOOL)isDir;
+- (NSDictionary *)makeEntryForURL:(NSURL *)URL;
+
+- (NSObject<CDVFileSystem> *)filesystemForURL:(CDVFilesystemURL *)localURL;
 
 /* Exec API */
 - (void)requestFileSystem:(CDVInvokedUrlCommand*)command;
@@ -117,6 +127,9 @@ typedef int CDVFileSystemType;
 - (void)getFreeDiskSpace:(CDVInvokedUrlCommand*)command;
 - (void)truncate:(CDVInvokedUrlCommand*)command;
 - (void)doCopyMove:(CDVInvokedUrlCommand*)command isCopy:(BOOL)bCopy;
+
+/* Compatibilty with older File API */
+- (NSString*)getMimeTypeFromPath:(NSString*)fullPath;
 
 @property (nonatomic, strong) NSString* appDocsPath;
 @property (nonatomic, strong) NSString* appLibraryPath;

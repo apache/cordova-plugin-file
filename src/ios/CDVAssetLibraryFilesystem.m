@@ -31,8 +31,12 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
 @implementation CDVAssetLibraryFilesystem
 - (CDVPluginResult *)entryForLocalURI:(CDVFilesystemURL *)url
 {
-    NSDictionary* fileSystem = [self makeEntryForPath:[url.url absoluteString] fileSystem:ASSETS_LIBRARY isDirectory:NO];
-    return [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:fileSystem];
+    NSDictionary* entry = [self makeEntryForLocalURL:url];
+    return [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:entry];
+}
+
+- (NSDictionary *)makeEntryForLocalURL:(CDVFilesystemURL *)url {
+    return [self makeEntryForPath:[url.url absoluteString] fileSystem:ASSETS_LIBRARY isDirectory:NO];
 }
 
 - (NSDictionary*)makeEntryForPath:(NSString*)fullPath fileSystem:(int)fsType isDirectory:(BOOL)isDir

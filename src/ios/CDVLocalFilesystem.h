@@ -20,11 +20,14 @@
 #import "CDVFile.h"
 
 @interface CDVLocalFilesystem : NSObject<CDVFileSystem> {
+    NSString *_name;
     NSString *_fsRoot;
 }
 
 - (id) initWithName:(NSString *)name root:(NSString *)fsRoot;
++ (NSString*)getMimeTypeFromPath:(NSString*)fullPath;
 
+@property (nonatomic,strong) NSString *name;
 @property (nonatomic,strong) NSString *fsRoot;
 
 @end
