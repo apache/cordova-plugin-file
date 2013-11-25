@@ -18,15 +18,15 @@
  */
 package org.apache.cordova.file;
 
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginResult;
 
 import org.json.JSONArray;
@@ -42,9 +42,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 
 /**
  * This class provides SD card file and directory services to JavaScript.
@@ -75,7 +75,41 @@ public class FileUtils extends CordovaPlugin {
     private interface FileOp {
         void run(  ) throws Exception;
     }
+    
+    private ArrayList<Filesystem> filesystems;
 
+    @Override
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+    	super.initialize(cordova, webView);
+    	this.filesystems = new ArrayList<Filesystem>();
+    	
+    	File fp;
+    	String tempRoot;
+    	String persistentRoot;
+    	if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+    		persistentRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
+    		tempRoot = Environment.getExternalStorageDirectory().getAbsolutePath() +
+    				"/Android/data/" + cordova.getActivity().getPackageName() + "/cache/";
+    	} else {
+    		persistentRoot = "/data/data/" + cordova.getActivity().getPackageName();
+    		tempRoot = "/data/data/" + cordova.getActivity().getPackageName() + "/cache/";
+    	}
+    	// Create the cache dir if it doesn't exist.
+    	fp = new File(tempRoot);
+    	fp.mkdirs();
+    	this.filesystems.add(new LocalFilesystem(cordova, "temporary", tempRoot));
+    	this.filesystems.add(new LocalFilesystem(cordova, "persistent", persistentRoot));
+    	this.filesystems.add(new ContentFilesystem(cordova));
+    }
+    
+    public Filesystem filesystemForURL(LocalFilesystemURL localURL) {
+    	try {
+    		return this.filesystems.get(localURL.filesystemType);
+    	} catch (ArrayIndexOutOfBoundsException e) {
+    		return null;
+    	}
+    }
+    
     /**
      * Executes the request and returns whether the action was valid.
      *
@@ -377,45 +411,21 @@ public class FileUtils extends CordovaPlugin {
      * @throws IOException if the user can't read the file
      * @throws JSONException
      */
-    @SuppressWarnings("deprecation")
     private JSONObject resolveLocalFileSystemURI(String url) throws IOException, JSONException {
         String decoded = URLDecoder.decode(url, "UTF-8");
 
-        File fp = null;
-
-        // Handle the special case where you get an Android content:// uri.
-        if (decoded.startsWith("content:")) {
-            Cursor cursor = this.cordova.getActivity().managedQuery(Uri.parse(decoded), new String[] { MediaStore.Images.Media.DATA }, null, null, null);
-            // Note: MediaStore.Images/Audio/Video.Media.DATA is always "_data"
-            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            cursor.moveToFirst();
-            fp = new File(cursor.getString(column_index));
-        } else {
-            // Test to see if this is a valid URL first
-            @SuppressWarnings("unused")
-            URL testUrl = new URL(decoded);
-
-            if (decoded.startsWith("file://")) {
-                int questionMark = decoded.indexOf("?");
-                if (questionMark < 0) {
-                    fp = new File(decoded.substring(7, decoded.length()));
-                } else {
-                    fp = new File(decoded.substring(7, questionMark));
-                }
-            } else {
-                fp = new File(decoded);
-            }
+        try {
+        	LocalFilesystemURL inputURL = new LocalFilesystemURL(decoded);
+        	Filesystem fs = this.filesystemForURL(inputURL);
+        	if (fs == null) {
+        		throw new MalformedURLException("Unrecognized filesystem URL");
+        	}
+        	return fs.getEntryForLocalURL(inputURL);
+        } catch (IllegalArgumentException e) {
+        	throw new IOException();
         }
-
-        if (!fp.exists()) {
-            throw new FileNotFoundException();
-        }
-        if (!fp.canRead()) {
-            throw new IOException();
-        }
-        return getEntry(fp);
-    }
-
+    }   
+    
     /**
      * Read the list of files from this directory.
      *
@@ -1001,10 +1011,27 @@ public class FileUtils extends CordovaPlugin {
         else {
             throw new IOException("No filesystem of type requested");
         }
-
+        fs.put("root", makeEntryForPath("/", type, true));
         return fs;
     }
 
+    public static JSONObject makeEntryForPath(String path, int fsType, Boolean isDir) throws JSONException {
+        JSONObject entry = new JSONObject();
+
+        int end = path.endsWith("/") ? 1 : 0;
+        String[] parts = path.substring(0,path.length()-end).split("/",1);
+        String name = parts[parts.length-1];
+        entry.put("isFile", !isDir);
+        entry.put("isDirectory", isDir);
+        entry.put("name", name);
+        entry.put("fullPath", path);
+        // The file system can't be specified, as it would lead to an infinite loop,
+        // but the filesystem type can
+        entry.put("filesystem", fsType);
+
+        return entry;
+    	
+    }
     /**
      * Returns a JSON object representing the given File.
      *
@@ -1012,17 +1039,9 @@ public class FileUtils extends CordovaPlugin {
      * @return a JSON representation of the given File
      * @throws JSONException
      */
+    @Deprecated
     public static JSONObject getEntry(File file) throws JSONException {
-        JSONObject entry = new JSONObject();
-
-        entry.put("isFile", file.isFile());
-        entry.put("isDirectory", file.isDirectory());
-        entry.put("name", file.getName());
-        entry.put("fullPath", "file://" + file.getAbsolutePath());
-        // The file system can't be specified, as it would lead to an infinite loop.
-        // entry.put("filesystem", null);
-
-        return entry;
+        return makeEntryForPath(file.getAbsolutePath(), 0, file.isDirectory());
     }
 
     /**
