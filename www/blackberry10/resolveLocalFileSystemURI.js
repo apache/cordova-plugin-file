@@ -48,7 +48,9 @@ module.exports = function (uri, success, fail) {
         window.webkitResolveLocalFileSystemURL(decodedURI + '/', function (entry) {
             success(fileUtils.createEntry(entry));
         }, function (e) {
-            fail(e);
+            if (typeof fail === "function") {
+                fail(e);
+            }
         });
     });
     cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);

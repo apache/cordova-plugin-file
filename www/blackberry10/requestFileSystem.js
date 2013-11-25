@@ -27,9 +27,13 @@ module.exports = function (type, size, success, fail) {
     var cordovaFs,
         cordovaFsRoot;
     if (size >= 1000000000000000) {
-        fail(new FileError(FileError.QUOTA_EXCEEDED_ERR));
+        if (typeof fail === "function") {
+            fail(new FileError(FileError.QUOTA_EXCEEDED_ERR));
+        }
     } else if (type !== 1 && type !== 0) {
-        fail(new FileError(FileError.SYNTAX_ERR));
+        if (typeof fail === "function") {
+            fail(new FileError(FileError.SYNTAX_ERR));
+        }
     } else {
         window.webkitRequestFileSystem(type, size, function (fs) {
             cordovaFsRoot = fileUtils.createEntry(fs.root);
@@ -38,7 +42,9 @@ module.exports = function (type, size, success, fail) {
             cordovaFs._size = size;
             success(cordovaFs);
         }, function (error) {
-            fail(new FileError(error));
+            if (typeof fail === "function") {
+                fail(new FileError(error));
+            }
         });
     }
 };
