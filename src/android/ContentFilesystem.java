@@ -49,5 +49,10 @@ public class ContentFilesystem implements Filesystem {
     	  throw new IOException();
       }
 	}
+	@Override
+	public JSONObject getFileForLocalURL(LocalFilesystemURL inputURL,
+			String fileName, JSONObject options, boolean directory) throws IOException {
+		throw new IOException("Cannot create content url");
+	}
 
 }
