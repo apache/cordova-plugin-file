@@ -418,11 +418,11 @@ public class FileUtils extends CordovaPlugin {
         	LocalFilesystemURL inputURL = new LocalFilesystemURL(decoded);
         	Filesystem fs = this.filesystemForURL(inputURL);
         	if (fs == null) {
-        		throw new MalformedURLException("Unrecognized filesystem URL");
+        		throw new MalformedURLException("No installed handlers for this URL");
         	}
         	return fs.getEntryForLocalURL(inputURL);
         } catch (IllegalArgumentException e) {
-        	throw new IOException();
+        	throw new MalformedURLException("Unrecognized filesystem URL");
         }
     }   
     
@@ -804,7 +804,7 @@ public class FileUtils extends CordovaPlugin {
     /**
      * Creates or looks up a file.
      *
-     * @param dirPath base directory
+     * @param baseURLstr base directory
      * @param fileName file/directory to lookup or create
      * @param options specify whether to create or not
      * @param directory if true look up directory, if false look up file
@@ -815,72 +815,19 @@ public class FileUtils extends CordovaPlugin {
      * @throws EncodingException
      * @throws JSONException
      */
-    private JSONObject getFile(String dirPath, String fileName, JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
-        boolean create = false;
-        boolean exclusive = false;
-        if (options != null) {
-            create = options.optBoolean("create");
-            if (create) {
-                exclusive = options.optBoolean("exclusive");
-            }
+    private JSONObject getFile(String baseURLstr, String fileName, JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
+        try {
+        	LocalFilesystemURL inputURL = new LocalFilesystemURL(baseURLstr);
+        	Filesystem fs = this.filesystemForURL(inputURL);
+        	if (fs == null) {
+        		throw new MalformedURLException("No installed handlers for this URL");
+        	}
+        	return fs.getFileForLocalURL(inputURL, fileName, options, directory);
+        
+        } catch (IllegalArgumentException e) {
+        	throw new MalformedURLException("Unrecognized filesystem URL");
         }
 
-        // Check for a ":" character in the file to line up with BB and iOS
-        if (fileName.contains(":")) {
-            throw new EncodingException("This file has a : in it's name");
-        }
-
-        File fp = createFileObject(dirPath, fileName);
-
-        if (create) {
-            if (exclusive && fp.exists()) {
-                throw new FileExistsException("create/exclusive fails");
-            }
-            if (directory) {
-                fp.mkdir();
-            } else {
-                fp.createNewFile();
-            }
-            if (!fp.exists()) {
-                throw new FileExistsException("create fails");
-            }
-        }
-        else {
-            if (!fp.exists()) {
-                throw new FileNotFoundException("path does not exist");
-            }
-            if (directory) {
-                if (fp.isFile()) {
-                    throw new TypeMismatchException("path doesn't exist or is file");
-                }
-            } else {
-                if (fp.isDirectory()) {
-                    throw new TypeMismatchException("path doesn't exist or is directory");
-                }
-            }
-        }
-
-        // Return the directory
-        return getEntry(fp);
-    }
-
-    /**
-     * If the path starts with a '/' just return that file object. If not construct the file
-     * object from the path passed in and the file name.
-     *
-     * @param dirPath root directory
-     * @param fileName new file name
-     * @return
-     */
-    private File createFileObject(String dirPath, String fileName) {
-        File fp = null;
-        if (fileName.startsWith("/")) {
-            fp = new File(fileName);
-        } else {
-            dirPath = FileHelper.getRealPath(dirPath, cordova);
-            fp = new File(dirPath + File.separator + fileName);
-        }
-        return fp;
     }
 
     /**
