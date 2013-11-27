@@ -71,5 +71,10 @@ public class ContentFilesystem implements Filesystem {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	@Override
+	public JSONObject getFileMetadataForLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

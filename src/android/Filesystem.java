@@ -3,6 +3,7 @@ package org.apache.cordova.file;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.apache.cordova.CordovaInterface;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,5 +20,7 @@ public interface Filesystem {
 	boolean recursiveRemoveFileAtLocalURL(LocalFilesystemURL inputURL) throws FileExistsException, NoModificationAllowedException;
 
 	JSONArray readEntriesAtLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException;
+
+	JSONObject getFileMetadataForLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException;
 
 }
