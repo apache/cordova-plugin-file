@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,7 +37,6 @@ public class LocalFilesystem implements Filesystem {
         int end = path.endsWith("/") ? 1 : 0;
         String[] parts = path.substring(0,path.length()-end).split("/");
         String name = parts[parts.length-1];
-        Log.d("FILEDEBUG", name);
         entry.put("isFile", !isDir);
         entry.put("isDirectory", isDir);
         entry.put("name", name);
@@ -65,7 +65,7 @@ public class LocalFilesystem implements Filesystem {
     	  entry.put("isFile", fp.isFile());
     	  entry.put("isDirectory", fp.isDirectory());
     	  entry.put("name", fp.getName());
-    	  entry.put("fullPath", "file://" + fp.getAbsolutePath());
+    	  entry.put("fullPath", inputURL.fullPath);
     	  // The file system can't be specified, as it would lead to an infinite loop.
     	  // But we can specify the type of FS, and the rest can be reconstructed in JS.
     	  entry.put("filesystem", inputURL.filesystemType);
@@ -179,6 +179,39 @@ public class LocalFilesystem implements Filesystem {
         } else {
             return true;
         }
+	}
+
+	@Override
+	public JSONArray readEntriesAtLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException {
+        File fp = new File(filesystemPathForURL(inputURL));
+
+        if (!fp.exists()) {
+            // The directory we are listing doesn't exist so we should fail.
+            throw new FileNotFoundException();
+        }
+
+        JSONArray entries = new JSONArray();
+
+        if (fp.isDirectory()) {
+            File[] files = fp.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].canRead()) {
+                    try {
+						entries.put(makeEntryForPath(fullPathForFilesystemPath(files[i].getAbsolutePath()), inputURL.filesystemType, files[i].isDirectory()));
+					} catch (JSONException e) {
+					}
+                }
+            }
+        }
+
+        return entries;
+	}
+
+	private String fullPathForFilesystemPath(String absolutePath) {
+		if (absolutePath != null && absolutePath.startsWith(this.fsRoot)) {
+			return absolutePath.substring(this.fsRoot.length());
+		}
+		return null;
 	}
 
 }
