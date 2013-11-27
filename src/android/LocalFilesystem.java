@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.apache.cordova.CordovaInterface;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -212,6 +213,27 @@ public class LocalFilesystem implements Filesystem {
 			return absolutePath.substring(this.fsRoot.length());
 		}
 		return null;
+	}
+
+	@Override
+	public JSONObject getFileMetadataForLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException {
+        File file = new File(filesystemPathForURL(inputURL));
+
+        if (!file.exists()) {
+            throw new FileNotFoundException("File at " + inputURL.URL + " does not exist.");
+        }
+
+        JSONObject metadata = new JSONObject();
+        try {
+        	metadata.put("size", file.length());
+        	metadata.put("type", FileHelper.getMimeType(file.getAbsolutePath(), cordova));
+        	metadata.put("name", file.getName());
+        	metadata.put("fullPath", inputURL.fullPath);
+        	metadata.put("lastModifiedDate", file.lastModified());
+        } catch (JSONException e) {
+        	return null;
+        }
+        return metadata;
 	}
 
 }

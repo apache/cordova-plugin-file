@@ -242,15 +242,16 @@ public class FileUtils extends CordovaPlugin {
         else if (action.equals("getMetadata")) {
             final String fname=args.getString(0);
             threadhelper( new FileOp( ){
-                public void run() throws FileNotFoundException, JSONException {
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, getMetadata(fname)));
+                public void run() throws FileNotFoundException, JSONException, MalformedURLException {
+                    JSONObject obj = getFileMetadata(fname);
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, obj.getLong("lastModifiedDate")));
                 }
             }, callbackContext);
         }
         else if (action.equals("getFileMetadata")) {
             final String fname=args.getString(0);
             threadhelper( new FileOp( ){
-                public void run() throws FileNotFoundException, JSONException {
+                public void run() throws FileNotFoundException, JSONException, MalformedURLException {
                     JSONObject obj = getFileMetadata(fname);
                     callbackContext.success(obj);
                 }
@@ -891,45 +892,26 @@ public class FileUtils extends CordovaPlugin {
     }
 
     /**
-     * Look up metadata about this entry.
-     *
-     * @param filePath to entry
-     * @return a long
-     * @throws FileNotFoundException
-     */
-    private long getMetadata(String filePath) throws FileNotFoundException {
-        File file = createFileObject(filePath);
-
-        if (!file.exists()) {
-            throw new FileNotFoundException("Failed to find file in getMetadata");
-        }
-
-        return file.lastModified();
-    }
-
-    /**
      * Returns a File that represents the current state of the file that this FileEntry represents.
      *
      * @param filePath to entry
      * @return returns a JSONObject represent a W3C File object
      * @throws FileNotFoundException
      * @throws JSONException
+     * @throws MalformedURLException 
      */
-    private JSONObject getFileMetadata(String filePath) throws FileNotFoundException, JSONException {
-        File file = createFileObject(filePath);
-
-        if (!file.exists()) {
-            throw new FileNotFoundException("File: " + filePath + " does not exist.");
+    private JSONObject getFileMetadata(String baseURLstr) throws FileNotFoundException, JSONException, MalformedURLException {
+        try {
+        	LocalFilesystemURL inputURL = new LocalFilesystemURL(baseURLstr);
+        	Filesystem fs = this.filesystemForURL(inputURL);
+        	if (fs == null) {
+        		throw new MalformedURLException("No installed handlers for this URL");
+        	}
+        	return fs.getFileMetadataForLocalURL(inputURL);
+        
+        } catch (IllegalArgumentException e) {
+        	throw new MalformedURLException("Unrecognized filesystem URL");
         }
-
-        JSONObject metadata = new JSONObject();
-        metadata.put("size", file.length());
-        metadata.put("type", FileHelper.getMimeType(filePath, cordova));
-        metadata.put("name", file.getName());
-        metadata.put("fullPath", filePath);
-        metadata.put("lastModifiedDate", file.lastModified());
-
-        return metadata;
     }
 
     /**
