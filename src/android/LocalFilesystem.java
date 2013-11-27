@@ -148,4 +148,37 @@ public class LocalFilesystem implements Filesystem {
         return makeEntryForPath(requestedURL.fullPath, requestedURL.filesystemType, directory);
 	}
 
+	@Override
+	public boolean removeFileAtLocalURL(LocalFilesystemURL inputURL) throws InvalidModificationException {
+
+        File fp = new File(filesystemPathForURL(inputURL));
+
+        // You can't delete a directory that is not empty
+        if (fp.isDirectory() && fp.list().length > 0) {
+            throw new InvalidModificationException("You can't delete a directory that is not empty.");
+        }
+
+        return fp.delete();
+	}
+
+	@Override
+	public boolean recursiveRemoveFileAtLocalURL(LocalFilesystemURL inputURL) throws FileExistsException {
+        File directory = new File(filesystemPathForURL(inputURL));
+    	return removeDirRecursively(directory);
+	}
+	
+	protected boolean removeDirRecursively(File directory) throws FileExistsException {
+        if (directory.isDirectory()) {
+            for (File file : directory.listFiles()) {
+                removeDirRecursively(file);
+            }
+        }
+
+        if (!directory.delete()) {
+            throw new FileExistsException("could not delete: " + directory.getName());
+        } else {
+            return true;
+        }
+	}
+
 }

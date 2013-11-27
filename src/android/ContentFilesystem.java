@@ -54,5 +54,15 @@ public class ContentFilesystem implements Filesystem {
 			String fileName, JSONObject options, boolean directory) throws IOException {
 		throw new IOException("Cannot create content url");
 	}
+	@Override
+	public boolean removeFileAtLocalURL(LocalFilesystemURL inputURL)
+			throws NoModificationAllowedException {
+		throw new NoModificationAllowedException("Cannot remove content url");
+	}
+	@Override
+	public boolean recursiveRemoveFileAtLocalURL(LocalFilesystemURL inputURL)
+			throws NoModificationAllowedException {
+		throw new NoModificationAllowedException("Cannot remove content url");
+	}
 
 }

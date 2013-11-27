@@ -12,4 +12,8 @@ public interface Filesystem {
 	JSONObject getFileForLocalURL(LocalFilesystemURL inputURL, String fileName,
 			JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException;
 
+	boolean removeFileAtLocalURL(LocalFilesystemURL inputURL) throws InvalidModificationException, NoModificationAllowedException;
+
+	boolean recursiveRemoveFileAtLocalURL(LocalFilesystemURL inputURL) throws FileExistsException, NoModificationAllowedException;
+
 }

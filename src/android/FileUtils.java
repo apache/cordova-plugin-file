@@ -288,7 +288,7 @@ public class FileUtils extends CordovaPlugin {
         else if (action.equals("remove")) {
             final String fname=args.getString(0);
             threadhelper( new FileOp( ){
-                public void run() throws NoModificationAllowedException, InvalidModificationException {
+                public void run() throws NoModificationAllowedException, InvalidModificationException, MalformedURLException {
                     boolean success= remove(fname);
                     if (success) {
                         notifyDelete(fname);
@@ -302,7 +302,7 @@ public class FileUtils extends CordovaPlugin {
         else if (action.equals("removeRecursively")) {
             final String fname=args.getString(0);
             threadhelper( new FileOp( ){
-                public void run() throws FileExistsException {
+                public void run() throws FileExistsException, MalformedURLException, NoModificationAllowedException {
                     boolean success = removeRecursively(fname);
                     if (success) {
                         callbackContext.success();
@@ -743,16 +743,26 @@ public class FileUtils extends CordovaPlugin {
      * @param filePath the directory to be removed
      * @return a boolean representing success of failure
      * @throws FileExistsException
+     * @throws NoModificationAllowedException 
+     * @throws MalformedURLException 
      */
-    private boolean removeRecursively(String filePath) throws FileExistsException {
-        File fp = createFileObject(filePath);
+    private boolean removeRecursively(String baseURLstr) throws FileExistsException, NoModificationAllowedException, MalformedURLException {
+        try {
+        	LocalFilesystemURL inputURL = new LocalFilesystemURL(baseURLstr);
+        	// You can't delete the root directory.
+        	if ("".equals(inputURL.fullPath) || "/".equals(inputURL.fullPath)) {
+        		throw new NoModificationAllowedException("You can't delete the root directory");
+        	}
 
-        // You can't delete the root directory.
-        if (atRootDirectory(filePath)) {
-            return false;
+        	Filesystem fs = this.filesystemForURL(inputURL);
+        	if (fs == null) {
+        		throw new MalformedURLException("No installed handlers for this URL");
+        	}
+        	return fs.recursiveRemoveFileAtLocalURL(inputURL);
+        
+        } catch (IllegalArgumentException e) {
+        	throw new MalformedURLException("Unrecognized filesystem URL");
         }
-
-        return removeDirRecursively(fp);
     }
 
     /**
@@ -762,7 +772,9 @@ public class FileUtils extends CordovaPlugin {
      * @return a boolean representing success of failure
      * @throws FileExistsException
      */
+    /* TODO: Remove when no longer needed */
     private boolean removeDirRecursively(File directory) throws FileExistsException {
+    	
         if (directory.isDirectory()) {
             for (File file : directory.listFiles()) {
                 removeDirRecursively(file);
@@ -784,21 +796,26 @@ public class FileUtils extends CordovaPlugin {
      * @return a boolean representing success of failure
      * @throws NoModificationAllowedException
      * @throws InvalidModificationException
+     * @throws MalformedURLException 
      */
-    private boolean remove(String filePath) throws NoModificationAllowedException, InvalidModificationException {
-        File fp = createFileObject(filePath);
+    private boolean remove(String baseURLstr) throws NoModificationAllowedException, InvalidModificationException, MalformedURLException {
+        try {
+        	LocalFilesystemURL inputURL = new LocalFilesystemURL(baseURLstr);
+        	// You can't delete the root directory.
+        	if ("".equals(inputURL.fullPath) || "/".equals(inputURL.fullPath)) {
 
-        // You can't delete the root directory.
-        if (atRootDirectory(filePath)) {
-            throw new NoModificationAllowedException("You can't delete the root directory");
+        		throw new NoModificationAllowedException("You can't delete the root directory");
+        	}
+
+        	Filesystem fs = this.filesystemForURL(inputURL);
+        	if (fs == null) {
+        		throw new MalformedURLException("No installed handlers for this URL");
+        	}
+        	return fs.removeFileAtLocalURL(inputURL);
+        
+        } catch (IllegalArgumentException e) {
+        	throw new MalformedURLException("Unrecognized filesystem URL");
         }
-
-        // You can't delete a directory that is not empty
-        if (fp.isDirectory() && fp.list().length > 0) {
-            throw new InvalidModificationException("You can't delete a directory that is not empty.");
-        }
-
-        return fp.delete();
     }
 
     /**
@@ -854,6 +871,7 @@ public class FileUtils extends CordovaPlugin {
      * @param filePath to directory
      * @return true if we are at the root, false otherwise.
      */
+    /* TODO: Remove when no longer needed */
     private boolean atRootDirectory(String filePath) {
         filePath = FileHelper.getRealPath(filePath, cordova);
 
@@ -871,6 +889,7 @@ public class FileUtils extends CordovaPlugin {
      * @param filePath
      * @return
      */
+    /* TODO: Remove when no longer needed */
     private File createFileObject(String filePath) {
         filePath = FileHelper.getRealPath(filePath, cordova);
 
