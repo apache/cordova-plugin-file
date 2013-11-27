@@ -337,7 +337,7 @@ public class FileUtils extends CordovaPlugin {
         else if (action.equals("readEntries")) {
             final String fname=args.getString(0);
             threadhelper( new FileOp( ){
-                public void run() throws FileNotFoundException, JSONException {
+                public void run() throws FileNotFoundException, JSONException, MalformedURLException {
                     JSONArray entries = readEntries(fname);
                     callbackContext.success(entries);
                 }
@@ -433,27 +433,20 @@ public class FileUtils extends CordovaPlugin {
      * @return a JSONArray containing JSONObjects that represent Entry objects.
      * @throws FileNotFoundException if the directory is not found.
      * @throws JSONException
+     * @throws MalformedURLException 
      */
-    private JSONArray readEntries(String fileName) throws FileNotFoundException, JSONException {
-        File fp = createFileObject(fileName);
-
-        if (!fp.exists()) {
-            // The directory we are listing doesn't exist so we should fail.
-            throw new FileNotFoundException();
+    private JSONArray readEntries(String baseURLstr) throws FileNotFoundException, JSONException, MalformedURLException {
+        try {
+        	LocalFilesystemURL inputURL = new LocalFilesystemURL(baseURLstr);
+        	Filesystem fs = this.filesystemForURL(inputURL);
+        	if (fs == null) {
+        		throw new MalformedURLException("No installed handlers for this URL");
+        	}
+        	return fs.readEntriesAtLocalURL(inputURL);
+        
+        } catch (IllegalArgumentException e) {
+        	throw new MalformedURLException("Unrecognized filesystem URL");
         }
-
-        JSONArray entries = new JSONArray();
-
-        if (fp.isDirectory()) {
-            File[] files = fp.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].canRead()) {
-                    entries.put(getEntry(files[i]));
-                }
-            }
-        }
-
-        return entries;
     }
 
     /**

@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.apache.cordova.CordovaInterface;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,6 +64,12 @@ public class ContentFilesystem implements Filesystem {
 	public boolean recursiveRemoveFileAtLocalURL(LocalFilesystemURL inputURL)
 			throws NoModificationAllowedException {
 		throw new NoModificationAllowedException("Cannot remove content url");
+	}
+	@Override
+	public JSONArray readEntriesAtLocalURL(LocalFilesystemURL inputURL)
+			throws FileNotFoundException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
