@@ -1,8 +1,11 @@
 package org.apache.cordova.file;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 
 import org.apache.cordova.CordovaInterface;
 import org.json.JSONArray;
@@ -48,6 +51,10 @@ public class LocalFilesystem implements Filesystem {
 
         return entry;
     	
+    }
+    
+    public JSONObject makeEntryForFile(File file, int fsType) throws JSONException {
+    	return makeEntryForPath(this.fullPathForFilesystemPath(file.getAbsolutePath()), fsType, file.isDirectory());
     }
 
 	@Override
@@ -247,5 +254,295 @@ public class LocalFilesystem implements Filesystem {
     	}
     	return getEntryForLocalURL(newURL);
 	}
+
+    /**
+     * Check to see if the user attempted to copy an entry into its parent without changing its name,
+     * or attempted to copy a directory into a directory that it contains directly or indirectly.
+     *
+     * @param srcDir
+     * @param destinationDir
+     * @return
+     */
+    private boolean isCopyOnItself(String src, String dest) {
+
+        // This weird test is to determine if we are copying or moving a directory into itself.
+        // Copy /sdcard/myDir to /sdcard/myDir-backup is okay but
+        // Copy /sdcard/myDir to /sdcard/myDir/backup should throw an INVALID_MODIFICATION_ERR
+        if (dest.startsWith(src) && dest.indexOf(File.separator, src.length() - 1) != -1) {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Creates the destination File object based on name passed in
+     *
+     * @param newName for the file directory to be called, if null use existing file name
+     * @param fp represents the source file
+     * @param destination represents the destination file
+     * @return a File object that represents the destination
+     */
+    private File createDestination(String newName, File fp, File destination) {
+        File destFile = null;
+
+        // I know this looks weird but it is to work around a JSON bug.
+        if ("null".equals(newName) || "".equals(newName)) {
+            newName = null;
+        }
+
+        if (newName != null) {
+            destFile = new File(destination.getAbsolutePath() + File.separator + newName);
+        } else {
+            destFile = new File(destination.getAbsolutePath() + File.separator + fp.getName());
+        }
+        return destFile;
+    }
+
+    /**
+     * Copy a file
+     *
+     * @param srcFile file to be copied
+     * @param destFile destination to be copied to
+     * @return a FileEntry object
+     * @throws IOException
+     * @throws InvalidModificationException
+     * @throws JSONException
+     */
+    private JSONObject copyFile(File srcFile, File destFile, int fsType) throws IOException, InvalidModificationException, JSONException {
+        // Renaming a file to an existing directory should fail
+        if (destFile.exists() && destFile.isDirectory()) {
+            throw new InvalidModificationException("Can't rename a file to a directory");
+        }
+
+        copyAction(srcFile, destFile);
+
+        return makeEntryForFile(destFile, fsType);
+    }
+
+    /**
+     * Moved this code into it's own method so moveTo could use it when the move is across file systems
+     */
+    private void copyAction(File srcFile, File destFile)
+            throws FileNotFoundException, IOException {
+        FileInputStream istream = new FileInputStream(srcFile);
+        FileOutputStream ostream = new FileOutputStream(destFile);
+        FileChannel input = istream.getChannel();
+        FileChannel output = ostream.getChannel();
+
+        try {
+            input.transferTo(0, input.size(), output);
+        } finally {
+            istream.close();
+            ostream.close();
+            input.close();
+            output.close();
+        }
+    }
+
+    /**
+     * Copy a directory
+     *
+     * @param srcDir directory to be copied
+     * @param destinationDir destination to be copied to
+     * @return a DirectoryEntry object
+     * @throws JSONException
+     * @throws IOException
+     * @throws NoModificationAllowedException
+     * @throws InvalidModificationException
+     */
+    private JSONObject copyDirectory(File srcDir, File destinationDir, int fsType) throws JSONException, IOException, NoModificationAllowedException, InvalidModificationException {
+        // Renaming a file to an existing directory should fail
+        if (destinationDir.exists() && destinationDir.isFile()) {
+            throw new InvalidModificationException("Can't rename a file to a directory");
+        }
+
+        // Check to make sure we are not copying the directory into itself
+        if (isCopyOnItself(srcDir.getAbsolutePath(), destinationDir.getAbsolutePath())) {
+            throw new InvalidModificationException("Can't copy itself into itself");
+        }
+
+        // See if the destination directory exists. If not create it.
+        if (!destinationDir.exists()) {
+            if (!destinationDir.mkdir()) {
+                // If we can't create the directory then fail
+                throw new NoModificationAllowedException("Couldn't create the destination directory");
+            }
+        }
+        
+
+        for (File file : srcDir.listFiles()) {
+            File destination = new File(destinationDir.getAbsoluteFile() + File.separator + file.getName());
+            if (file.isDirectory()) {
+                copyDirectory(file, destination, fsType);
+            } else {
+                copyFile(file, destination, fsType);
+            }
+        }
+
+        return makeEntryForFile(destinationDir, fsType);
+    }
+
+    /**
+     * Move a file
+     *
+     * @param srcFile file to be copied
+     * @param destFile destination to be copied to
+     * @return a FileEntry object
+     * @throws IOException
+     * @throws InvalidModificationException
+     * @throws JSONException
+     */
+    private JSONObject moveFile(File srcFile, File destFile, int fsType) throws IOException, JSONException, InvalidModificationException {
+        // Renaming a file to an existing directory should fail
+        if (destFile.exists() && destFile.isDirectory()) {
+            throw new InvalidModificationException("Can't rename a file to a directory");
+        }
+
+        // Try to rename the file
+        if (!srcFile.renameTo(destFile)) {
+            // Trying to rename the file failed.  Possibly because we moved across file system on the device.
+            // Now we have to do things the hard way
+            // 1) Copy all the old file
+            // 2) delete the src file
+            copyAction(srcFile, destFile);
+            if (destFile.exists()) {
+                srcFile.delete();
+            } else {
+                throw new IOException("moved failed");
+            }
+        }
+
+        return makeEntryForFile(destFile, fsType);
+    }
+
+    /**
+     * Move a directory
+     *
+     * @param srcDir directory to be copied
+     * @param destinationDir destination to be copied to
+     * @return a DirectoryEntry object
+     * @throws JSONException
+     * @throws IOException
+     * @throws InvalidModificationException
+     * @throws NoModificationAllowedException
+     * @throws FileExistsException
+     */
+    private JSONObject moveDirectory(File srcDir, File destinationDir, int fsType) throws IOException, JSONException, InvalidModificationException, NoModificationAllowedException, FileExistsException {
+        // Renaming a file to an existing directory should fail
+        if (destinationDir.exists() && destinationDir.isFile()) {
+            throw new InvalidModificationException("Can't rename a file to a directory");
+        }
+
+        // Check to make sure we are not copying the directory into itself
+        if (isCopyOnItself(srcDir.getAbsolutePath(), destinationDir.getAbsolutePath())) {
+            throw new InvalidModificationException("Can't move itself into itself");
+        }
+
+        // If the destination directory already exists and is empty then delete it.  This is according to spec.
+        if (destinationDir.exists()) {
+            if (destinationDir.list().length > 0) {
+                throw new InvalidModificationException("directory is not empty");
+            }
+        }
+
+        // Try to rename the directory
+        if (!srcDir.renameTo(destinationDir)) {
+            // Trying to rename the directory failed.  Possibly because we moved across file system on the device.
+            // Now we have to do things the hard way
+            // 1) Copy all the old files
+            // 2) delete the src directory
+            copyDirectory(srcDir, destinationDir, fsType);
+            if (destinationDir.exists()) {
+                removeDirRecursively(srcDir);
+            } else {
+                throw new IOException("moved failed");
+            }
+        }
+
+        return makeEntryForFile(destinationDir, fsType);
+    }
+
+	
+	@Override
+	public JSONObject copyFileToURL(LocalFilesystemURL destURL, String newName,
+			Filesystem srcFs, LocalFilesystemURL srcURL, boolean move) throws IOException, InvalidModificationException, JSONException, NoModificationAllowedException, FileExistsException {
+		
+
+        String newFileName = this.filesystemPathForURL(srcURL);
+        String newParent = this.filesystemPathForURL(destURL);
+
+	    
+        File destinationDir = new File(newParent);
+        if (!destinationDir.exists()) {
+            // The destination does not exist so we should fail.
+            throw new FileNotFoundException("The source does not exist");
+        }
+
+
+	    if (LocalFilesystem.class.isInstance(srcFs)) {
+	    	
+	        /* Same FS, we can shortcut with NSFileManager operations */
+	    	
+
+	        File source = new File(newFileName);
+
+	        if (!source.exists()) {
+	            // The file/directory we are copying doesn't exist so we should fail.
+	            throw new FileNotFoundException("The source does not exist");
+	        }
+
+	        // Figure out where we should be copying to
+	        File destination = createDestination(newName, source, destinationDir);
+
+	        //Log.d(LOG_TAG, "Source: " + source.getAbsolutePath());
+	        //Log.d(LOG_TAG, "Destin: " + destination.getAbsolutePath());
+
+	        // Check to see if source and destination are the same file
+	        if (source.getAbsolutePath().equals(destination.getAbsolutePath())) {
+	            throw new InvalidModificationException("Can't copy a file onto itself");
+	        }
+
+	        if (source.isDirectory()) {
+	            if (move) {
+	                return moveDirectory(source, destination, destURL.filesystemType);
+	            } else {
+	                return copyDirectory(source, destination, destURL.filesystemType);
+	            }
+	        } else {
+	            if (move) {
+	                JSONObject newFileEntry = moveFile(source, destination, destURL.filesystemType);
+
+/*	                // If we've moved a file given its content URI, we need to clean up.
+	                // TODO: Move this to where it belongs, in cross-fs mv code below.
+	                if (srcURL.URL.getScheme().equals("content")) {
+	                    notifyDelete(fileName);
+	                }
+*/
+	                return newFileEntry;
+	            } else {
+	                return copyFile(source, destination, destURL.filesystemType);
+	            }
+	        }
+
+	    	
+	    } else {
+/*	        // Need to copy the hard way
+	    	srcFs.readFileAtURL(srcURL, 0, -1, new ReadFileCallback() {
+	    		void run(data, mimetype, errorcode) {
+	    			if (data != null) {
+	    				//write data to file
+	    				// send success message -- call original callback?
+	    			}
+	    			// error
+	    		}
+    		});
+	    	return null; // Async, will return later
+*/
+    	}
+		return null;	    
+	}
+
 
 }

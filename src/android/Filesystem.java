@@ -25,4 +25,7 @@ public interface Filesystem {
 
 	JSONObject getParentForLocalURL(LocalFilesystemURL inputURL) throws IOException;
 
+	JSONObject copyFileToURL(LocalFilesystemURL destURL, String newName,
+			Filesystem srcFs, LocalFilesystemURL srcURL, boolean move) throws IOException, InvalidModificationException, JSONException, NoModificationAllowedException, FileExistsException;
+
 }
