@@ -83,5 +83,13 @@ public class ContentFilesystem implements Filesystem {
 		// Can probably use same impl as LFS
 		return null;
 	}
+	@Override
+	public JSONObject copyFileToURL(LocalFilesystemURL destURL, String newName,
+			Filesystem srcFs, LocalFilesystemURL srcURL, boolean move)
+			throws IOException, InvalidModificationException, JSONException,
+			NoModificationAllowedException, FileExistsException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }
