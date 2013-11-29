@@ -86,25 +86,6 @@ public class LocalFilesystem implements Filesystem {
       }
 	}
 
-    /**
-     * If the path starts with a '/' just return that file object. If not construct the file
-     * object from the path passed in and the file name.
-     *
-     * @param dirPath root directory
-     * @param fileName new file name
-     * @return
-     */
-    private File createFileObject(String dirPath, String fileName) {
-        File fp = null;
-        if (fileName.startsWith("/")) {
-            fp = new File(this.fsRoot + fileName);
-        } else {
-            fp = new File(this.fsRoot + File.separator + dirPath + File.separator + fileName);
-        }
-        return fp;
-    }
-
-
 	@Override
 	public JSONObject getFileForLocalURL(LocalFilesystemURL inputURL,
 			String fileName, JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
@@ -575,7 +556,6 @@ public class LocalFilesystem implements Filesystem {
 	@Override
 	public long writeToFileAtURL(LocalFilesystemURL inputURL, String data,
 			int offset, boolean isBinary) throws IOException, NoModificationAllowedException {
-        File file = new File(filesystemPathForURL(inputURL));
 
         boolean append = false;
         if (offset > 0) {
