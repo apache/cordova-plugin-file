@@ -28,4 +28,13 @@ public interface Filesystem {
 	JSONObject copyFileToURL(LocalFilesystemURL destURL, String newName,
 			Filesystem srcFs, LocalFilesystemURL srcURL, boolean move) throws IOException, InvalidModificationException, JSONException, NoModificationAllowedException, FileExistsException;
 
+	void readFileAtURL(LocalFilesystemURL inputURL, int start, int end,
+			ReadFileCallback readFileCallback) throws IOException;
+
+	long writeToFileAtURL(LocalFilesystemURL inputURL, String data, int offset,
+			boolean isBinary) throws NoModificationAllowedException, IOException;
+
+	long truncateFileAtURL(LocalFilesystemURL inputURL, long size)
+			throws IOException, NoModificationAllowedException;
+
 }
