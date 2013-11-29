@@ -33,17 +33,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URLDecoder;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 
 /**
@@ -632,55 +626,23 @@ public class FileUtils extends CordovaPlugin {
      */
     private JSONObject requestFileSystem(int type) throws IOException, JSONException {
         JSONObject fs = new JSONObject();
+        LocalFilesystemURL rootURL;
         if (type == TEMPORARY) {
-            File fp;
             fs.put("name", "temporary");
-            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                fp = new File(Environment.getExternalStorageDirectory().getAbsolutePath() +
-                        "/Android/data/" + cordova.getActivity().getPackageName() + "/cache/");
-                // Create the cache dir if it doesn't exist.
-                fp.mkdirs();
-                fs.put("root", getEntry(Environment.getExternalStorageDirectory().getAbsolutePath() +
-                        "/Android/data/" + cordova.getActivity().getPackageName() + "/cache/"));
-            } else {
-                fp = new File("/data/data/" + cordova.getActivity().getPackageName() + "/cache/");
-                // Create the cache dir if it doesn't exist.
-                fp.mkdirs();
-                fs.put("root", getEntry("/data/data/" + cordova.getActivity().getPackageName() + "/cache/"));
-            }
+            rootURL = new LocalFilesystemURL("filesystem://localhost/temporary/");
         }
         else if (type == PERSISTENT) {
             fs.put("name", "persistent");
-            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                fs.put("root", getEntry(Environment.getExternalStorageDirectory()));
-            } else {
-                fs.put("root", getEntry("/data/data/" + cordova.getActivity().getPackageName()));
-            }
+            rootURL = new LocalFilesystemURL("filesystem://localhost/persistent/");
         }
         else {
             throw new IOException("No filesystem of type requested");
         }
-        fs.put("root", makeEntryForPath("/", type, true));
+        Filesystem rootFs = this.filesystemForURL(rootURL);
+        fs.put("root", rootFs.getEntryForLocalURL(rootURL));
         return fs;
     }
 
-    public static JSONObject makeEntryForPath(String path, int fsType, Boolean isDir) throws JSONException {
-        JSONObject entry = new JSONObject();
-
-        int end = path.endsWith("/") ? 1 : 0;
-        String[] parts = path.substring(0,path.length()-end).split("/",1);
-        String name = parts[parts.length-1];
-        entry.put("isFile", !isDir);
-        entry.put("isDirectory", isDir);
-        entry.put("name", name);
-        entry.put("fullPath", path);
-        // The file system can't be specified, as it would lead to an infinite loop,
-        // but the filesystem type can
-        entry.put("filesystem", fsType);
-
-        return entry;
-    	
-    }
     /**
      * Returns a JSON object representing the given File.
      *
@@ -690,18 +652,22 @@ public class FileUtils extends CordovaPlugin {
      */
     @Deprecated
     public static JSONObject getEntry(File file) throws JSONException {
-        return makeEntryForPath(file.getAbsolutePath(), 0, file.isDirectory());
-    }
-
-    /**
-     * Returns a JSON Object representing a directory on the device's file system
-     *
-     * @param path to the directory
-     * @return
-     * @throws JSONException
-     */
-    private JSONObject getEntry(String path) throws JSONException {
-        return getEntry(new File(path));
+        String path = file.getAbsolutePath();
+		Boolean isDir = file.isDirectory();
+		JSONObject entry = new JSONObject();
+		
+		int end = path.endsWith("/") ? 1 : 0;
+		String[] parts = path.substring(0,path.length()-end).split("/",1);
+		String name = parts[parts.length-1];
+		entry.put("isFile", !isDir);
+		entry.put("isDirectory", isDir);
+		entry.put("name", name);
+		entry.put("fullPath", path);
+		// The file system can't be specified, as it would lead to an infinite loop,
+		// but the filesystem type can
+		entry.put("filesystem", 0);
+		
+		return entry;
     }
 
     /**
