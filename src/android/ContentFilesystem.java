@@ -91,5 +91,21 @@ public class ContentFilesystem implements Filesystem {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	@Override
+	public void readFileAtURL(LocalFilesystemURL inputURL, int start, int end,
+			ReadFileCallback readFileCallback) throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public long writeToFileAtURL(LocalFilesystemURL inputURL, String data,
+			int offset, boolean isBinary) throws NoModificationAllowedException {
+        throw new NoModificationAllowedException("Couldn't write to file given its content URI");
+    }
+	@Override
+	public long truncateFileAtURL(LocalFilesystemURL inputURL, long size)
+			throws NoModificationAllowedException {
+        throw new NoModificationAllowedException("Couldn't truncate file given its content URI");
+	}
 
 }

@@ -1,10 +1,13 @@
 package org.apache.cordova.file;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 
 import org.apache.cordova.CordovaInterface;
@@ -542,6 +545,92 @@ public class LocalFilesystem implements Filesystem {
 */
     	}
 		return null;	    
+	}
+
+	@Override
+	public void readFileAtURL(LocalFilesystemURL inputURL, int start, int end,
+			ReadFileCallback readFileCallback) throws IOException {
+
+		int numBytesToRead = end - start;
+		byte[] bytes = new byte[numBytesToRead];
+		String contentType;
+		
+		File file = new File(this.filesystemPathForURL(inputURL));
+		InputStream inputStream = new FileInputStream(file);
+		
+		contentType = FileHelper.getMimeTypeForExtension(file.getAbsolutePath());
+		int numBytesRead = 0;
+
+		if (start > 0) {
+			inputStream.skip(start);
+		}
+
+		while (numBytesToRead > 0 && (numBytesRead = inputStream.read(bytes, numBytesRead, numBytesToRead)) >= 0) {
+			numBytesToRead -= numBytesRead;
+		}
+		inputStream.close();
+		readFileCallback.handleData(bytes, contentType);
+	}
+
+	@Override
+	public long writeToFileAtURL(LocalFilesystemURL inputURL, String data,
+			int offset, boolean isBinary) throws IOException, NoModificationAllowedException {
+        File file = new File(filesystemPathForURL(inputURL));
+
+        boolean append = false;
+        if (offset > 0) {
+            this.truncateFileAtURL(inputURL, offset);
+            append = true;
+        }
+
+        byte[] rawData;
+        if (isBinary) {
+            rawData = Base64.decode(data, Base64.DEFAULT);
+        } else {
+            rawData = data.getBytes();
+        }
+        ByteArrayInputStream in = new ByteArrayInputStream(rawData);
+        try
+        {
+            FileOutputStream out = new FileOutputStream(this.filesystemPathForURL(inputURL), append);
+            byte buff[] = new byte[rawData.length];
+            in.read(buff, 0, buff.length);
+            out.write(buff, 0, rawData.length);
+            out.flush();
+            out.close();
+        }
+        catch (NullPointerException e)
+        {
+            // This is a bug in the Android implementation of the Java Stack
+            NoModificationAllowedException realException = new NoModificationAllowedException(inputURL.toString());
+            throw realException;
+        }
+
+        return rawData.length;
+	}
+
+	@Override
+	public long truncateFileAtURL(LocalFilesystemURL inputURL, long size) throws IOException {
+        File file = new File(filesystemPathForURL(inputURL));
+
+        if (!file.exists()) {
+            throw new FileNotFoundException("File at " + inputURL.URL + " does not exist.");
+        }
+        
+        RandomAccessFile raf = new RandomAccessFile(filesystemPathForURL(inputURL), "rw");
+        try {
+            if (raf.length() >= size) {
+                FileChannel channel = raf.getChannel();
+                channel.truncate(size);
+                return size;
+            }
+
+            return raf.length();
+        } finally {
+            raf.close();
+        }
+
+
 	}
 
 

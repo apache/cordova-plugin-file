@@ -159,7 +159,7 @@ public class FileUtils extends CordovaPlugin {
             final int end = args.getInt(3);
             final String fname=args.getString(0);
             threadhelper( new FileOp( ){
-                public void run() {
+                public void run() throws MalformedURLException {
                     readFileAs(fname, start, end, callbackContext, encoding, PluginResult.MESSAGE_TYPE_STRING);
                 }
             }, callbackContext);
@@ -169,7 +169,7 @@ public class FileUtils extends CordovaPlugin {
             final int end = args.getInt(2);
             final String fname=args.getString(0);
             threadhelper( new FileOp( ){
-                public void run()  {
+                public void run() throws MalformedURLException  {
                     readFileAs(fname, start, end, callbackContext, null, -1);
                 }
             }, callbackContext);
@@ -179,7 +179,7 @@ public class FileUtils extends CordovaPlugin {
             final int end = args.getInt(2);
             final String fname=args.getString(0);
             threadhelper( new FileOp( ){
-                public void run()  {
+                public void run() throws MalformedURLException  {
                     readFileAs(fname, start, end, callbackContext, null, PluginResult.MESSAGE_TYPE_ARRAYBUFFER);
                 }
             },callbackContext);
@@ -189,7 +189,7 @@ public class FileUtils extends CordovaPlugin {
             final int end = args.getInt(2);
             final String fname=args.getString(0);
             threadhelper( new FileOp( ){
-                public void run()  {
+                public void run() throws MalformedURLException  {
                     readFileAs(fname, start, end, callbackContext, null, PluginResult.MESSAGE_TYPE_BINARYSTRING);
                 }
             }, callbackContext);
@@ -715,68 +715,55 @@ public class FileUtils extends CordovaPlugin {
      * @param encoding          The encoding to return contents as.  Typical value is UTF-8. (see http://www.iana.org/assignments/character-sets)
      * @param resultType        The desired type of data to send to the callback.
      * @return                  Contents of file.
+     * @throws MalformedURLException 
      */
-    public void readFileAs(final String filename, final int start, final int end, final CallbackContext callbackContext, final String encoding, final int resultType) {
-        this.cordova.getThreadPool().execute(new Runnable() {
-            public void run() {
-                try {
-                    byte[] bytes = readAsBinaryHelper(filename, start, end);
-                    
-                    PluginResult result;
-                    switch (resultType) {
-                        case PluginResult.MESSAGE_TYPE_STRING:
-                            result = new PluginResult(PluginResult.Status.OK, new String(bytes, encoding));
-                            break;
-                        case PluginResult.MESSAGE_TYPE_ARRAYBUFFER:
-                            result = new PluginResult(PluginResult.Status.OK, bytes);
-                            break;
-                        case PluginResult.MESSAGE_TYPE_BINARYSTRING:
-                            result = new PluginResult(PluginResult.Status.OK, bytes, true);
-                            break;
-                        default: // Base64.
-                            String contentType = FileHelper.getMimeType(filename, cordova);
-                            byte[] base64 = Base64.encode(bytes, Base64.NO_WRAP);
-                            String s = "data:" + contentType + ";base64," + new String(base64, "US-ASCII");
-                            result = new PluginResult(PluginResult.Status.OK, s);
+    public void readFileAs(final String srcURLstr, final int start, final int end, final CallbackContext callbackContext, final String encoding, final int resultType) throws MalformedURLException {
+        try {
+        	LocalFilesystemURL inputURL = new LocalFilesystemURL(srcURLstr);
+        	Filesystem fs = this.filesystemForURL(inputURL);
+        	if (fs == null) {
+        		throw new MalformedURLException("No installed handlers for this URL");
+        	}
+        
+            fs.readFileAtURL(inputURL, start, end, new ReadFileCallback() {
+            	public void handleData(byte[] bytes, String contentType) {
+            		try {
+            			PluginResult result;
+            			switch (resultType) {
+            			case PluginResult.MESSAGE_TYPE_STRING:
+            				result = new PluginResult(PluginResult.Status.OK, new String(bytes, encoding));
+            				break;
+            			case PluginResult.MESSAGE_TYPE_ARRAYBUFFER:
+            				result = new PluginResult(PluginResult.Status.OK, bytes);
+            				break;
+            			case PluginResult.MESSAGE_TYPE_BINARYSTRING:
+            				result = new PluginResult(PluginResult.Status.OK, bytes, true);
+            				break;
+            			default: // Base64.
+            			byte[] base64 = Base64.encode(bytes, Base64.NO_WRAP);
+            			String s = "data:" + contentType + ";base64," + new String(base64, "US-ASCII");
+            			result = new PluginResult(PluginResult.Status.OK, s);
+            			}
+
+            			callbackContext.sendPluginResult(result);
+            		} catch (IOException e) {
+            			Log.d(LOG_TAG, e.getLocalizedMessage());
+            			callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, NOT_READABLE_ERR));
                     }
+            	}
+            });
 
-                    callbackContext.sendPluginResult(result);
-                } catch (FileNotFoundException e) {
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, NOT_FOUND_ERR));
-                } catch (IOException e) {
-                    Log.d(LOG_TAG, e.getLocalizedMessage());
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, NOT_READABLE_ERR));
-                }
-            }
-        });
+
+        } catch (IllegalArgumentException e) {
+        	throw new MalformedURLException("Unrecognized filesystem URL");
+        } catch (FileNotFoundException e) {
+        	callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, NOT_FOUND_ERR));
+        } catch (IOException e) {
+        	Log.d(LOG_TAG, e.getLocalizedMessage());
+        	callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, NOT_READABLE_ERR));
+        }
     }
 
-    /**
-     * Read the contents of a file as binary.
-     * This is done synchronously; the result is returned.
-     *
-     * @param filename          The name of the file.
-     * @param start             Start position in the file.
-     * @param end               End position to stop at (exclusive).
-     * @return                  Contents of the file as a byte[].
-     * @throws IOException
-     */
-    private byte[] readAsBinaryHelper(String filename, int start, int end) throws IOException {
-        int numBytesToRead = end - start;
-        byte[] bytes = new byte[numBytesToRead];
-        InputStream inputStream = FileHelper.getInputStreamFromUriString(filename, cordova);
-        int numBytesRead = 0;
-
-        if (start > 0) {
-            inputStream.skip(start);
-        }
-
-        while (numBytesToRead > 0 && (numBytesRead = inputStream.read(bytes, numBytesRead, numBytesToRead)) >= 0) {
-            numBytesToRead -= numBytesRead;
-        }
-
-        return bytes;
-    }
 
     /**
      * Write contents of file.
@@ -789,43 +776,19 @@ public class FileUtils extends CordovaPlugin {
      * @throws NoModificationAllowedException
      */
     /**/
-    public long write(String filename, String data, int offset, boolean isBinary) throws FileNotFoundException, IOException, NoModificationAllowedException {
-        if (filename.startsWith("content://")) {
-            throw new NoModificationAllowedException("Couldn't write to file given its content URI");
+    public long write(String srcURLstr, String data, int offset, boolean isBinary) throws FileNotFoundException, IOException, NoModificationAllowedException {
+        try {
+        	LocalFilesystemURL inputURL = new LocalFilesystemURL(srcURLstr);
+        	Filesystem fs = this.filesystemForURL(inputURL);
+        	if (fs == null) {
+        		throw new MalformedURLException("No installed handlers for this URL");
+        	}
+        
+            long x = fs.writeToFileAtURL(inputURL, data, offset, isBinary); Log.d("TEST",srcURLstr + ": "+x); return x;
+        } catch (IllegalArgumentException e) {
+        	throw new MalformedURLException("Unrecognized filesystem URL");
         }
-
-        filename = FileHelper.getRealPath(filename, cordova);
-
-        boolean append = false;
-        if (offset > 0) {
-            this.truncateFile(filename, offset);
-            append = true;
-        }
-
-        byte[] rawData;
-        if (isBinary) {
-            rawData = Base64.decode(data, Base64.DEFAULT);
-        } else {
-            rawData = data.getBytes();
-        }
-        ByteArrayInputStream in = new ByteArrayInputStream(rawData);
-        try
-        {
-            FileOutputStream out = new FileOutputStream(filename, append);
-            byte buff[] = new byte[rawData.length];
-            in.read(buff, 0, buff.length);
-            out.write(buff, 0, rawData.length);
-            out.flush();
-            out.close();
-        }
-        catch (NullPointerException e)
-        {
-            // This is a bug in the Android implementation of the Java Stack
-            NoModificationAllowedException realException = new NoModificationAllowedException(filename);
-            throw realException;
-        }
-
-        return rawData.length;
+        
     }
 
     /**
@@ -836,24 +799,17 @@ public class FileUtils extends CordovaPlugin {
      * @throws FileNotFoundException, IOException
      * @throws NoModificationAllowedException
      */
-    private long truncateFile(String filename, long size) throws FileNotFoundException, IOException, NoModificationAllowedException {
-        if (filename.startsWith("content://")) {
-            throw new NoModificationAllowedException("Couldn't truncate file given its content URI");
-        }
-
-        filename = FileHelper.getRealPath(filename, cordova);
-
-        RandomAccessFile raf = new RandomAccessFile(filename, "rw");
+    private long truncateFile(String srcURLstr, long size) throws FileNotFoundException, IOException, NoModificationAllowedException {
         try {
-            if (raf.length() >= size) {
-                FileChannel channel = raf.getChannel();
-                channel.truncate(size);
-                return size;
-            }
-
-            return raf.length();
-        } finally {
-            raf.close();
+        	LocalFilesystemURL inputURL = new LocalFilesystemURL(srcURLstr);
+        	Filesystem fs = this.filesystemForURL(inputURL);
+        	if (fs == null) {
+        		throw new MalformedURLException("No installed handlers for this URL");
+        	}
+        
+            return fs.truncateFileAtURL(inputURL, size);
+        } catch (IllegalArgumentException e) {
+        	throw new MalformedURLException("Unrecognized filesystem URL");
         }
     }
 }
