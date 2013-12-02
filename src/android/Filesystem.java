@@ -37,4 +37,7 @@ public interface Filesystem {
 	long truncateFileAtURL(LocalFilesystemURL inputURL, long size)
 			throws IOException, NoModificationAllowedException;
 
+	// This method should return null if filesystem urls cannot be mapped to paths
+	String filesystemPathForURL(LocalFilesystemURL url);
+
 }
