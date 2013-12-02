@@ -76,5 +76,12 @@ public class ContentFilesystem implements Filesystem {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	@Override
+	public JSONObject getParentForLocalURL(LocalFilesystemURL inputURL)
+			throws IOException {
+		// TODO Auto-generated method stub
+		// Can probably use same impl as LFS
+		return null;
+	}
 
 }

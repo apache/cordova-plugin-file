@@ -236,4 +236,16 @@ public class LocalFilesystem implements Filesystem {
         return metadata;
 	}
 
+	@Override
+	public JSONObject getParentForLocalURL(LocalFilesystemURL inputURL) throws IOException {
+		LocalFilesystemURL newURL = new LocalFilesystemURL(inputURL.URL);
+
+    	if (!("".equals(inputURL.fullPath) || "/".equals(inputURL.fullPath))) {
+    		int end = inputURL.fullPath.endsWith("/") ? 1 : 0;
+            int lastPathStartsAt = inputURL.fullPath.lastIndexOf('/', inputURL.fullPath.length()-end)+1;
+    		newURL.fullPath = newURL.fullPath.substring(0,lastPathStartsAt);
+    	}
+    	return getEntryForLocalURL(newURL);
+	}
+
 }

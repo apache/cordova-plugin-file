@@ -23,4 +23,6 @@ public interface Filesystem {
 
 	JSONObject getFileMetadataForLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException;
 
+	JSONObject getParentForLocalURL(LocalFilesystemURL inputURL) throws IOException;
+
 }
