@@ -260,7 +260,7 @@ public class FileUtils extends CordovaPlugin {
         else if (action.equals("getParent")) {
             final String fname=args.getString(0);
             threadhelper( new FileOp( ){
-                public void run() throws JSONException {
+                public void run() throws JSONException, IOException {
                     JSONObject obj = getParent(fname);
                     callbackContext.success(obj);
                 }
@@ -848,47 +848,20 @@ public class FileUtils extends CordovaPlugin {
      * @param filePath
      * @return
      * @throws JSONException
+     * @throws IOException 
      */
-    private JSONObject getParent(String filePath) throws JSONException {
-        filePath = FileHelper.getRealPath(filePath, cordova);
-
-        if (atRootDirectory(filePath)) {
-            return getEntry(filePath);
+    private JSONObject getParent(String baseURLstr) throws JSONException, IOException {
+        try {
+        	LocalFilesystemURL inputURL = new LocalFilesystemURL(baseURLstr);
+        	Filesystem fs = this.filesystemForURL(inputURL);
+        	if (fs == null) {
+        		throw new MalformedURLException("No installed handlers for this URL");
+        	}
+        	return fs.getParentForLocalURL(inputURL);
+        
+        } catch (IllegalArgumentException e) {
+        	throw new MalformedURLException("Unrecognized filesystem URL");
         }
-        return getEntry(new File(filePath).getParent());
-    }
-
-    /**
-     * Checks to see if we are at the root directory.  Useful since we are
-     * not allow to delete this directory.
-     *
-     * @param filePath to directory
-     * @return true if we are at the root, false otherwise.
-     */
-    /* TODO: Remove when no longer needed */
-    private boolean atRootDirectory(String filePath) {
-        filePath = FileHelper.getRealPath(filePath, cordova);
-
-        if (filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + cordova.getActivity().getPackageName() + "/cache") ||
-                filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath()) ||
-                filePath.equals("/data/data/" + cordova.getActivity().getPackageName())) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Create a File object from the passed in path
-     *
-     * @param filePath
-     * @return
-     */
-    /* TODO: Remove when no longer needed */
-    private File createFileObject(String filePath) {
-        filePath = FileHelper.getRealPath(filePath, cordova);
-
-        File file = new File(filePath);
-        return file;
     }
 
     /**
