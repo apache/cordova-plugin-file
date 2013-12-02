@@ -108,4 +108,9 @@ public class ContentFilesystem implements Filesystem {
         throw new NoModificationAllowedException("Couldn't truncate file given its content URI");
 	}
 
+	@Override
+	public String filesystemPathForURL(LocalFilesystemURL url) {
+		return null;
+	}
+
 }

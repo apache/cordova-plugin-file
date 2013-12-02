@@ -18,6 +18,7 @@
  */
 package org.apache.cordova.file;
 
+import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
@@ -65,6 +66,9 @@ public class FileUtils extends CordovaPlugin {
     public static int PERSISTENT = 1;
     public static int RESOURCE = 2;
     public static int APPLICATION = 3;
+    
+    // This field exists only to support getEntry, below, which has been deprecated
+    private static FileUtils filePlugin;
 
     private interface FileOp {
         void run(  ) throws Exception;
@@ -94,6 +98,11 @@ public class FileUtils extends CordovaPlugin {
     	this.filesystems.add(new LocalFilesystem(cordova, "temporary", tempRoot));
     	this.filesystems.add(new LocalFilesystem(cordova, "persistent", persistentRoot));
     	this.filesystems.add(new ContentFilesystem(cordova));
+
+    	// Initialize static plugin reference for deprecated getEntry method
+    	if (filePlugin == null) {
+    		filePlugin = this;
+    	}
     }
     
     public Filesystem filesystemForURL(LocalFilesystemURL localURL) {
@@ -104,6 +113,20 @@ public class FileUtils extends CordovaPlugin {
     	}
     }
     
+    @Override
+    public Uri remapUri(Uri uri) {
+        try {
+        	LocalFilesystemURL inputURL = new LocalFilesystemURL(uri);
+        	Filesystem fs = this.filesystemForURL(inputURL);
+        	if (fs == null) {
+        		return null;
+        	}
+        	return Uri.parse("file:///" + fs.filesystemPathForURL(inputURL));
+        } catch (IllegalArgumentException e) {
+        	return null;
+        }
+    }
+
     /**
      * Executes the request and returns whether the action was valid.
      *
@@ -644,7 +667,10 @@ public class FileUtils extends CordovaPlugin {
     }
 
     /**
-     * Returns a JSON object representing the given File.
+     * Returns a JSON object representing the given File. Deprecated, as this is only used by
+     * FileTransfer, and because it is a static method that should really be an instance method,
+     * since it depends on the actual filesystem roots in use. Internal APIs should be modified
+     * to use URLs instead of raw FS paths wherever possible, when interfacing with this plugin.
      *
      * @param file the File to convert
      * @return a JSON representation of the given File
@@ -652,22 +678,22 @@ public class FileUtils extends CordovaPlugin {
      */
     @Deprecated
     public static JSONObject getEntry(File file) throws JSONException {
-        String path = file.getAbsolutePath();
-		Boolean isDir = file.isDirectory();
-		JSONObject entry = new JSONObject();
+		JSONObject entry;
 		
-		int end = path.endsWith("/") ? 1 : 0;
-		String[] parts = path.substring(0,path.length()-end).split("/",1);
-		String name = parts[parts.length-1];
-		entry.put("isFile", !isDir);
-		entry.put("isDirectory", isDir);
-		entry.put("name", name);
-		entry.put("fullPath", path);
-		// The file system can't be specified, as it would lead to an infinite loop,
-		// but the filesystem type can
-		entry.put("filesystem", 0);
-		
-		return entry;
+		if (filePlugin != null) {
+			LocalFilesystem fs;
+			fs = (LocalFilesystem) filePlugin.filesystems.get(0);
+			entry = fs.makeEntryForFile(file, 0);
+			if (entry != null) {
+				return entry;
+			}
+			fs = (LocalFilesystem) filePlugin.filesystems.get(1);
+			entry = fs.makeEntryForFile(file, 1);
+			if (entry != null) {
+				return entry;
+			}			
+		}
+		return null;
     }
 
     /**

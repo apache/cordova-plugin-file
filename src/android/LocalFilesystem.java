@@ -30,6 +30,7 @@ public class LocalFilesystem implements Filesystem {
 		this.cordova = cordova;
 	}
 
+	@Override
 	public String filesystemPathForURL(LocalFilesystemURL url) {
 	    String path = this.fsRoot + url.fullPath;
 	    if (path.endsWith("/")) {
@@ -37,7 +38,14 @@ public class LocalFilesystem implements Filesystem {
 	    }
 	    return path;
 	}
-	
+
+	private String fullPathForFilesystemPath(String absolutePath) {
+		if (absolutePath != null && absolutePath.startsWith(this.fsRoot)) {
+			return absolutePath.substring(this.fsRoot.length());
+		}
+		return null;
+	}
+
     public static JSONObject makeEntryForPath(String path, int fsType, Boolean isDir) throws JSONException {
         JSONObject entry = new JSONObject();
 
@@ -57,7 +65,11 @@ public class LocalFilesystem implements Filesystem {
     }
     
     public JSONObject makeEntryForFile(File file, int fsType) throws JSONException {
-    	return makeEntryForPath(this.fullPathForFilesystemPath(file.getAbsolutePath()), fsType, file.isDirectory());
+    	String path = this.fullPathForFilesystemPath(file.getAbsolutePath());
+    	if (path != null) {
+    		return makeEntryForPath(path, fsType, file.isDirectory());
+    	}
+    	return null;
     }
 
 	@Override
@@ -197,13 +209,6 @@ public class LocalFilesystem implements Filesystem {
         }
 
         return entries;
-	}
-
-	private String fullPathForFilesystemPath(String absolutePath) {
-		if (absolutePath != null && absolutePath.startsWith(this.fsRoot)) {
-			return absolutePath.substring(this.fsRoot.length());
-		}
-		return null;
 	}
 
 	@Override
