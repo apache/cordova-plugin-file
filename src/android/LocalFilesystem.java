@@ -537,19 +537,20 @@ public class LocalFilesystem implements Filesystem {
 		String contentType;
 		
 		File file = new File(this.filesystemPathForURL(inputURL));
-		InputStream inputStream = new FileInputStream(file);
-		
 		contentType = FileHelper.getMimeTypeForExtension(file.getAbsolutePath());
+		
+		InputStream inputStream = new FileInputStream(file);
 		int numBytesRead = 0;
-
-		if (start > 0) {
-			inputStream.skip(start);
+		try {
+			if (start > 0) {
+				inputStream.skip(start);
+			}
+			while (numBytesToRead > 0 && (numBytesRead = inputStream.read(bytes, numBytesRead, numBytesToRead)) >= 0) {
+				numBytesToRead -= numBytesRead;
+			}
+		} finally {
+			inputStream.close();
 		}
-
-		while (numBytesToRead > 0 && (numBytesRead = inputStream.read(bytes, numBytesRead, numBytesToRead)) >= 0) {
-			numBytesToRead -= numBytesRead;
-		}
-		inputStream.close();
 		readFileCallback.handleData(bytes, contentType);
 	}
 
@@ -572,12 +573,16 @@ public class LocalFilesystem implements Filesystem {
         ByteArrayInputStream in = new ByteArrayInputStream(rawData);
         try
         {
+        	byte buff[] = new byte[rawData.length];
             FileOutputStream out = new FileOutputStream(this.filesystemPathForURL(inputURL), append);
-            byte buff[] = new byte[rawData.length];
-            in.read(buff, 0, buff.length);
-            out.write(buff, 0, rawData.length);
-            out.flush();
-            out.close();
+            try {
+            	in.read(buff, 0, buff.length);
+            	out.write(buff, 0, rawData.length);
+            	out.flush();
+            } finally {
+            	// Always close the output
+            	out.close();
+            }
         }
         catch (NullPointerException e)
         {
