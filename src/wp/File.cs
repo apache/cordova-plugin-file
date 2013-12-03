@@ -803,6 +803,9 @@ namespace WPCordovaClassLib.Cordova.Commands
                     return;
                 }
 
+                char[] dataToWrite = isBinary ? JSON.JsonHelper.Deserialize<char[]>(data) :
+                    data.ToCharArray();
+
                 using (IsolatedStorageFile isoFile = IsolatedStorageFile.GetUserStoreForApplication())
                 {
                     // create the file if not exists
@@ -821,12 +824,12 @@ namespace WPCordovaClassLib.Cordova.Commands
                         using (BinaryWriter writer = new BinaryWriter(stream))
                         {
                             writer.Seek(0, SeekOrigin.End);
-                            writer.Write(data.ToCharArray());
+                            writer.Write(dataToWrite);
                         }
                     }
                 }
 
-                DispatchCommandResult(new PluginResult(PluginResult.Status.OK, data.Length), callbackId);
+                DispatchCommandResult(new PluginResult(PluginResult.Status.OK, dataToWrite.Length), callbackId);
             }
             catch (Exception ex)
             {
