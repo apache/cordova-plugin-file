@@ -657,30 +657,34 @@ namespace WPCordovaClassLib.Cordova.Commands
                     }
                     Encoding encoding = Encoding.GetEncoding(encStr);
 
-                    using (TextReader reader = new StreamReader(isoFile.OpenFile(filePath, FileMode.Open, FileAccess.Read), encoding))
+                    using (IsolatedStorageFileStream reader = isoFile.OpenFile(filePath, FileMode.Open, FileAccess.Read))
                     {
-                        text = reader.ReadToEnd();
                         if (startPos < 0)
                         {
-                            startPos = Math.Max(text.Length + startPos, 0);
+                            startPos = Math.Max((int)reader.Length + startPos, 0);
                         }
                         else if (startPos > 0)
                         {
-                            startPos = Math.Min(text.Length, startPos);
+                            startPos = Math.Min((int)reader.Length, startPos);
                         }
 
                         if (endPos > 0)
                         {
-                            endPos = Math.Min(text.Length, endPos);
+                            endPos = Math.Min((int)reader.Length, endPos);
                         }
                         else if (endPos < 0)
                         {
-                            endPos = Math.Max(endPos + text.Length, 0);
+                            endPos = Math.Max(endPos + (int)reader.Length, 0);
                         }
-                        
-                        
-                        text = text.Substring(startPos, endPos - startPos);
-                        
+
+
+                        var buffer = new byte[endPos - startPos];
+
+                        reader.Seek(startPos, SeekOrigin.Begin);
+                        reader.Read(buffer, 0, buffer.Length);
+
+                        text = encoding.GetString(buffer, 0, buffer.Length);
+                       
                     }
                 }
 
