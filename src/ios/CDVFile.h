@@ -20,6 +20,8 @@
 #import <Foundation/Foundation.h>
 #import <Cordova/CDVPlugin.h>
 
+NSString* const kCDVAssetsLibraryPrefix;
+
 enum CDVFileError {
     NO_ERROR = 0,
     NOT_FOUND_ERR = 1,
@@ -130,6 +132,7 @@ typedef int CDVFileSystemType;
 
 /* Compatibilty with older File API */
 - (NSString*)getMimeTypeFromPath:(NSString*)fullPath;
+- (NSDictionary *)getDirectoryEntry:(NSString *)target isDirectory:(BOOL)bDirRequest;
 
 @property (nonatomic, strong) NSString* appDocsPath;
 @property (nonatomic, strong) NSString* appLibraryPath;

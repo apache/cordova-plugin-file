@@ -822,4 +822,10 @@ NSString* const kCDVFilesystemURLPrefix = @"filesystem";
     return [CDVLocalFilesystem getMimeTypeFromPath:fullPath];
 }
 
+- (NSDictionary *)getDirectoryEntry:(NSString *)localPath isDirectory:(BOOL)bDirRequest
+{
+    CDVFilesystemURL *localURL = [self fileSystemURLforLocalPath:localPath];
+    return [self makeEntryForPath:localURL.fullPath fileSystem:localURL.fileSystemType isDirectory:bDirRequest];
+}
+
 @end
