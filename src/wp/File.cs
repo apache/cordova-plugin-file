@@ -803,8 +803,7 @@ namespace WPCordovaClassLib.Cordova.Commands
                     return;
                 }
 
-                char[] dataToWrite = isBinary ? JSON.JsonHelper.Deserialize<char[]>(data) :
-                    data.ToCharArray();
+                byte[] dataToWrite = isBinary ? Convert.FromBase64String(data) : Encoding.UTF8.GetBytes(data);
 
                 using (IsolatedStorageFile isoFile = IsolatedStorageFile.GetUserStoreForApplication())
                 {
