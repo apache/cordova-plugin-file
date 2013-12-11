@@ -201,7 +201,7 @@ NSString* const kCDVFilesystemURLPrefix = @"filesystem";
     // Try all installed filesystems, in order. If any one supports mapping from
     // path to URL, and returns a URL, then use it.
     for (id object in self.fileSystems) {
-        localURL = [object fileSystemURLforLocalPath:localPath];
+        localURL = [object URLforFilesystemPath:localPath];
         if (localURL)
             return localURL;
     }
@@ -826,6 +826,33 @@ NSString* const kCDVFilesystemURLPrefix = @"filesystem";
 {
     CDVFilesystemURL *localURL = [self fileSystemURLforLocalPath:localPath];
     return [self makeEntryForPath:localURL.fullPath fileSystem:localURL.fileSystemType isDirectory:bDirRequest];
+}
+
+#pragma mark Internal methods for testing
+// Internal methods for testing: Get the on-disk location of a local filesystem url.
+// [Currently used for testing file-transfer]
+- (NSString *)_filesystemPathForURL:(CDVFilesystemURL *)localURL
+{
+    CDVLocalFilesystem *fs = [self.fileSystems objectAtIndex:localURL.fileSystemType];
+    if ([fs respondsToSelector:@selector(filesystemPathForURL:)]) {
+       return [fs filesystemPathForURL:localURL];
+    }
+    return nil;
+}
+
+- (void)_getLocalFilesystemPath:(CDVInvokedUrlCommand*)command
+{
+    NSString* localURLstr = [command.arguments objectAtIndex:0];
+    CDVFilesystemURL* localURL = [CDVFilesystemURL fileSystemURLWithString:localURLstr];
+
+    NSString* fsPath = [self _filesystemPathForURL:localURL];
+    CDVPluginResult* result;
+    if (fsPath) {
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:fsPath];
+    } else {
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Cannot resolve URL to a file"];
+    }
+    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
 
 @end

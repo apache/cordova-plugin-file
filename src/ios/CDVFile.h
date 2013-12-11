@@ -104,6 +104,7 @@ typedef int CDVFileSystemType;
 - (NSNumber*)checkFreeDiskSpace:(NSString*)appPath;
 - (NSDictionary*)makeEntryForPath:(NSString*)fullPath fileSystem:(int)fsType isDirectory:(BOOL)isDir;
 - (NSDictionary *)makeEntryForURL:(NSURL *)URL;
+- (CDVFilesystemURL *)fileSystemURLforLocalPath:(NSString *)localPath;
 
 - (NSObject<CDVFileSystem> *)filesystemForURL:(CDVFilesystemURL *)localURL;
 
@@ -133,6 +134,9 @@ typedef int CDVFileSystemType;
 /* Compatibilty with older File API */
 - (NSString*)getMimeTypeFromPath:(NSString*)fullPath;
 - (NSDictionary *)getDirectoryEntry:(NSString *)target isDirectory:(BOOL)bDirRequest;
+
+/* Internal methods for testing */
+- (void)_getLocalFilesystemPath:(CDVInvokedUrlCommand*)command;
 
 @property (nonatomic, strong) NSString* appDocsPath;
 @property (nonatomic, strong) NSString* appLibraryPath;
