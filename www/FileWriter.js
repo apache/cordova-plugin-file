@@ -118,7 +118,7 @@ FileWriter.prototype.write = function(data) {
 
     // Mark data type for safer transport over the binary bridge
     isBinary = supportsBinary && (data instanceof ArrayBuffer);
-    if (isBinary) {
+    if (isBinary && ['windowsphone', 'windows8'].indexOf(cordova.platformId) >= 0) {
         // create a plain array, using the keys from the Uint8Array view so that we can serialize it
         data = Array.apply(null, new Uint8Array(data));
     }
