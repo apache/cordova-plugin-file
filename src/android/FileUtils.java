@@ -361,10 +361,36 @@ public class FileUtils extends CordovaPlugin {
                 }
             },callbackContext);
         }
+        else if (action.equals("_getLocalFilesystemPath")) {
+            // Internal method for testing: Get the on-disk location of a local filesystem url.
+            // [Currently used for testing file-transfer]
+            final String localURLstr = args.getString(0);
+            threadhelper( new FileOp( ){
+                public void run() throws FileNotFoundException, JSONException, MalformedURLException {
+                    String fname = _filesystemPathForURL(localURLstr);
+                    callbackContext.success(fname);
+                }
+            },callbackContext);
+        }
         else {
             return false;
         }
         return true;
+    }
+
+    /* Internal method for testing: Get the on-disk location of a local filesystem url.
+     */
+    protected String _filesystemPathForURL(String localURLstr) throws MalformedURLException {
+        try {
+            LocalFilesystemURL inputURL = new LocalFilesystemURL(localURLstr);
+            Filesystem fs = this.filesystemForURL(inputURL);
+            if (fs == null) {
+                throw new MalformedURLException("No installed handlers for this URL");
+            }
+            return fs.filesystemPathForURL(inputURL);
+        } catch (IllegalArgumentException e) {
+            throw new MalformedURLException("Unrecognized filesystem URL");
+        }
     }
 
     /* helper to execute functions async and handle the result codes
