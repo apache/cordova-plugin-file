@@ -265,6 +265,22 @@ public class FileUtils extends CordovaPlugin {
             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             cursor.moveToFirst();
             fp = new File(cursor.getString(column_index));
+            //here crashes for me if you try to select a file from library -> downloads
+            //e.g. The url looks like: 
+            //content://com.android.providers.downloads.documents/document/629
+            //
+            // The error or success callback are never being called
+            //but when looking with adb logcat I'm getting a NullPointerReference exception
+            //W/System.err( 5278): java.lang.NullPointerException
+            //W/System.err( 5278):    at java.io.File.fixSlashes(File.java:185)
+            //W/System.err( 5278):    at java.io.File.<init>(File.java:134)
+            //W/System.err( 5278):    at org.apache.cordova.file.FileUtils.resolveLocalFileSystemURI(FileUtils.java:392)
+            //W/System.err( 5278):    at org.apache.cordova.file.FileUtils.access$200(FileUtils.java:53)
+            //W/System.err( 5278):    at org.apache.cordova.file.FileUtils$12.run(FileUtils.java:203)
+            //W/System.err( 5278):    at org.apache.cordova.file.FileUtils$23.run(FileUtils.java:325)
+            //W/System.err( 5278):    at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1112)
+            //W/System.err( 5278):    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:587)
+            //W/System.err( 5278):    at java.lang.Thread.run(Thread.java:841)
         } else {
             // Test to see if this is a valid URL first
             @SuppressWarnings("unused")
