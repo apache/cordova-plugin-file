@@ -824,7 +824,7 @@ public class FileUtils extends CordovaPlugin {
 
         if (create) {
             if (exclusive && fp.exists()) {
-                throw new FileExistsException("create/exclusive fails");
+                throw new FileExistsException("create/exclusive fails: " + fp.getPath());
             }
             if (directory) {
                 fp.mkdir();
@@ -832,20 +832,20 @@ public class FileUtils extends CordovaPlugin {
                 fp.createNewFile();
             }
             if (!fp.exists()) {
-                throw new FileExistsException("create fails");
+                throw new FileExistsException("create fails: " + fp.getPath());
             }
         }
         else {
             if (!fp.exists()) {
-                throw new FileNotFoundException("path does not exist");
+                throw new FileNotFoundException("path does not exist: " + fp.getPath());
             }
             if (directory) {
                 if (fp.isFile()) {
-                    throw new TypeMismatchException("path doesn't exist or is file");
+                    throw new TypeMismatchException("path doesn't exist or is file: " + fp.getPath());
                 }
             } else {
                 if (fp.isDirectory()) {
-                    throw new TypeMismatchException("path doesn't exist or is directory");
+                    throw new TypeMismatchException("path doesn't exist or is directory: " + fp.getPath());
                 }
             }
         }
