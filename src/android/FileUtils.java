@@ -97,6 +97,7 @@ public class FileUtils extends CordovaPlugin {
     	fp.mkdirs();
     	this.filesystems.add(new LocalFilesystem(cordova, "temporary", tempRoot));
     	this.filesystems.add(new LocalFilesystem(cordova, "persistent", persistentRoot));
+    	this.filesystems.add(null);
     	this.filesystems.add(new ContentFilesystem(cordova));
 
     	// Initialize static plugin reference for deprecated getEntry method
@@ -121,7 +122,11 @@ public class FileUtils extends CordovaPlugin {
         	if (fs == null) {
         		return null;
         	}
-        	return Uri.parse("file:///" + fs.filesystemPathForURL(inputURL));
+        	String path = fs.filesystemPathForURL(inputURL);
+        	if (path != null) {
+        		return Uri.parse("file:///" + fs.filesystemPathForURL(inputURL));
+        	}
+        	return null;
         } catch (IllegalArgumentException e) {
         	return null;
         }

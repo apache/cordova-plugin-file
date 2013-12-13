@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.ContentResolver;
 import android.database.Cursor;
 import android.provider.MediaStore;
 
@@ -108,9 +109,24 @@ public class ContentFilesystem implements Filesystem {
         throw new NoModificationAllowedException("Couldn't truncate file given its content URI");
 	}
 
-	@Override
-	public String filesystemPathForURL(LocalFilesystemURL url) {
-		return null;
-	}
+    @Override
+    public String filesystemPathForURL(LocalFilesystemURL url) {
+        final String[] LOCAL_FILE_PROJECTION = { MediaStore.Images.Media.DATA };
 
+        ContentResolver contentResolver = this.cordova.getActivity().getContentResolver();
+        Cursor cursor = contentResolver.query(url.URL, LOCAL_FILE_PROJECTION, null, null, null);
+        if (cursor != null) {
+            try {
+                int columnIndex = cursor.getColumnIndex(LOCAL_FILE_PROJECTION[0]);
+                if (columnIndex != -1 && cursor.getCount() > 0) {
+                    cursor.moveToFirst();
+                    String path = cursor.getString(columnIndex);
+                    return path;
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        return null;
+    }
 }
