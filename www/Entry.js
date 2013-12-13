@@ -169,8 +169,11 @@ Entry.prototype.copyTo = function(parent, newName, successCallback, errorCallbac
  * Return a URL that can be used to identify this entry.
  */
 Entry.prototype.toURL = function() {
+    if (this.filesystem && this.filesystem.__format__) {
+      return this.filesystem.__format__(this.fullPath);
+    }
     // fullPath attribute contains the full URL
-    return this.fullPath;
+    return "file://localhost" + this.fullPath;
 };
 
 /**
