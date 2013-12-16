@@ -21,7 +21,8 @@
 
 module.exports = {
     __format__: function(fullPath) {
-        return 'filesystem://localhost/'+this.name+(fullPath[0]==='/'?'':'/')+encodeURI(fullPath);
+        var path = ('/'+this.name+(fullPath[0]==='/'?'':'/')+encodeURI(fullPath)).replace('//','/');
+        return 'filesystem://localhost' + path;
     }
 };
 

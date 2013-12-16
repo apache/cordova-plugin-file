@@ -323,9 +323,25 @@ NSString* const kCDVFilesystemURLPrefix = @"filesystem";
 - (void)resolveLocalFileSystemURI:(CDVInvokedUrlCommand*)command
 {
     // arguments
-    CDVFilesystemURL* inputURI = [CDVFilesystemURL fileSystemURLWithString:[command.arguments objectAtIndex:0]];
+    NSString* localURIstr = [command.arguments objectAtIndex:0];
     CDVPluginResult* result;
-    if (inputURI.fileSystemType == -1) {
+    CDVFilesystemURL* inputURI;
+    
+    /* Backwards-compatibility: Check for file:// urls */
+    if ([localURIstr hasPrefix:@"file://"]) {
+        /* This looks like a file url. Get the path, and see if any handlers recognize it. */
+        NSString* path;
+        NSRange questionMark = [localURIstr rangeOfString:@"?"];
+        if (questionMark.location == NSNotFound) {
+            path = [localURIstr substringFromIndex:7];
+        } else {
+            path = [localURIstr substringWithRange:NSMakeRange(7,questionMark.location-7)];
+        }
+        inputURI = [self fileSystemURLforLocalPath:path];
+    } else {
+        inputURI = [CDVFilesystemURL fileSystemURLWithString:localURIstr];
+    }
+    if (inputURI != nil && inputURI.fileSystemType == -1) {
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:ENCODING_ERR];
     } else {
         CDVLocalFilesystem *fs = [self.fileSystems objectAtIndex:inputURI.fileSystemType];

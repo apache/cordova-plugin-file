@@ -40,4 +40,6 @@ public interface Filesystem {
 	// This method should return null if filesystem urls cannot be mapped to paths
 	String filesystemPathForURL(LocalFilesystemURL url);
 
+	LocalFilesystemURL URLforFilesystemPath(String path);
+
 }

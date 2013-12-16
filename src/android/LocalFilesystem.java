@@ -46,6 +46,15 @@ public class LocalFilesystem implements Filesystem {
 		return null;
 	}
 
+	@Override
+	public LocalFilesystemURL URLforFilesystemPath(String path) {
+	    String fullPath = this.fullPathForFilesystemPath(path);
+	    if (fullPath != null) {
+	        return new LocalFilesystemURL("filesystem://localhost/"+this.name+"/"+fullPath);
+	    }
+	    return null;
+	}
+
     public static JSONObject makeEntryForPath(String path, int fsType, Boolean isDir) throws JSONException {
         JSONObject entry = new JSONObject();
 

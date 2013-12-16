@@ -398,7 +398,20 @@ public class FileUtils extends CordovaPlugin {
         }
     }
 
-    /* helper to execute functions async and handle the result codes
+    protected LocalFilesystemURL filesystemURLforLocalPath(String localPath) {
+    	LocalFilesystemURL localURL;
+		for (Filesystem fs: filesystems) {
+			if (fs != null) {
+		        localURL = fs.URLforFilesystemPath(localPath);
+		        if (localURL != null)
+		            return localURL;
+			}
+		}
+		return null;
+	}
+
+
+	/* helper to execute functions async and handle the result codes
      *
      */
     private void threadhelper(final FileOp f, final CallbackContext callbackContext){
@@ -462,9 +475,27 @@ public class FileUtils extends CordovaPlugin {
      */
     private JSONObject resolveLocalFileSystemURI(String url) throws IOException, JSONException {
         String decoded = URLDecoder.decode(url, "UTF-8");
+    	LocalFilesystemURL inputURL;
+    	if (url == null) {
+    		throw new MalformedURLException("Unrecognized filesystem URL");
+    	}
+    	
+		/* Backwards-compatibility: Check for file:// urls */
+    	if (decoded.startsWith("file://")) {
+    		/* This looks like a file url. Get the path, and see if any handlers recognize it. */
+    		String path;
+	        int questionMark = decoded.indexOf("?");
+	        if (questionMark < 0) {
+	            path = decoded.substring(7, decoded.length());
+	        } else {
+	            path = decoded.substring(7, questionMark);
+	        }
+    		inputURL = this.filesystemURLforLocalPath(path);
+    	} else {
+    		inputURL = new LocalFilesystemURL(decoded);
+    	}
 
         try {
-        	LocalFilesystemURL inputURL = new LocalFilesystemURL(decoded);
         	Filesystem fs = this.filesystemForURL(inputURL);
         	if (fs == null) {
         		throw new MalformedURLException("No installed handlers for this URL");

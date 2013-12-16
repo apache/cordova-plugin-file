@@ -129,4 +129,10 @@ public class ContentFilesystem implements Filesystem {
         }
         return null;
     }
+
+	@Override
+	public LocalFilesystemURL URLforFilesystemPath(String path) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
