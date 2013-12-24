@@ -22,36 +22,36 @@
 var fileUtils = require('./BB10Utils'),
     FileError = require('./FileError');
 
-function stripURI(uri) {
-    var rmFsLocal = uri.substring("filesystem:local:///".length);
-    return rmFsLocal.substring(rmFsLocal.indexOf('/') + 1);
-}
-
 module.exports = function (uri, success, fail) {
-    var sandboxState,
-        decodedURI = decodeURI(uri);
 
-    cordova.exec(function (sandboxed) {
-        sandboxState = sandboxed;
-    }, function (e) {
-        console.log("[ERROR]: Could not retrieve sandbox state ", e);
-    }, "org.apache.cordova.file", "isSandboxed");
+    var decodedURI = decodeURI(uri).replace(/filesystem:/, '').replace(/local:\/\//, '').replace(/file:\/\//, ''),
+        failNotFound = function () {
+            fail(FileError.NOT_FOUND_ERR);
+        },
+        resolveURI = function () {
+            window.webkitRequestFileSystem(
+                window.PERSISTENT,
+                //todo: match app quota (this is only used for sandboxed fs)
+                50*1024*1024,
+                function (fs) {
+                    fs.root.getFile(
+                        decodedURI,
+                        { create: false },
+                        function (entry) {
+                            success(fileUtils.createEntry(entry));
+                        },
+                        failNotFound
+                    );
+                },
+                failNotFound
+            );
+        };
 
-    if (fileUtils.isOutsideSandbox(stripURI(decodedURI))) {
-        cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [false]);
-    } else {
-        cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [true]);
-    }
-    window.webkitResolveLocalFileSystemURL(decodedURI, function (entry) {
-        success(fileUtils.createEntry(entry));
-    }, function (e) {
-        window.webkitResolveLocalFileSystemURL(decodedURI + '/', function (entry) {
-            success(fileUtils.createEntry(entry));
-        }, function (e) {
-            if (typeof fail === "function") {
-                fail(e);
-            }
-        });
-    });
-    cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);
+    cordova.exec(
+        resolveURI, 
+        failNotFound, 
+        'org.apache.cordova.file', 
+        'setSandbox', 
+        [!fileUtils.isOutsideSandbox(decodedURI)]
+    );
 };

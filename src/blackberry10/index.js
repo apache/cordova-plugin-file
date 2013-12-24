@@ -1,7 +1,7 @@
 module.exports = {
     setSandbox : function (success, fail, args, env) {
         require("lib/webview").setSandbox(JSON.parse(decodeURIComponent(args[0])));
-        new PluginResult(args, env).noResult(false);
+        new PluginResult(args, env).ok();
     },
 
     isSandboxed : function (success, fail, args, env) {
