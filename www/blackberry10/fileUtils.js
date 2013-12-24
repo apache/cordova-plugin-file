@@ -47,6 +47,6 @@ module.exports = {
     },
 
     isOutsideSandbox: function (path) {
-        return (path.indexOf("accounts/1000/") === 0 || path.indexOf("/accounts/1000/") === 0);
+        return (path.indexOf("accounts/1000") !== -1);
     }
 };
