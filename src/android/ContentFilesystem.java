@@ -1,8 +1,10 @@
 package org.apache.cordova.file;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.cordova.CordovaInterface;
 import org.json.JSONArray;
@@ -51,39 +53,63 @@ public class ContentFilesystem implements Filesystem {
     	  throw new IOException();
       }
 	}
+
 	@Override
 	public JSONObject getFileForLocalURL(LocalFilesystemURL inputURL,
 			String fileName, JSONObject options, boolean directory) throws IOException {
 		throw new IOException("Cannot create content url");
 	}
+
 	@Override
 	public boolean removeFileAtLocalURL(LocalFilesystemURL inputURL)
 			throws NoModificationAllowedException {
-		throw new NoModificationAllowedException("Cannot remove content url");
+
+		String filePath = filesystemPathForURL(inputURL);
+		File file = new File(filePath);
+		try {
+			this.cordova.getActivity().getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+					MediaStore.Images.Media.DATA + " = ?",
+					new String[] { filePath });
+		} catch (UnsupportedOperationException t) {
+			// Was seeing this on the File mobile-spec tests on 4.0.3 x86 emulator.
+			// The ContentResolver applies only when the file was registered in the
+			// first case, which is generally only the case with images.
+		}
+		return file.delete();
 	}
+
 	@Override
 	public boolean recursiveRemoveFileAtLocalURL(LocalFilesystemURL inputURL)
 			throws NoModificationAllowedException {
 		throw new NoModificationAllowedException("Cannot remove content url");
 	}
+
 	@Override
 	public JSONArray readEntriesAtLocalURL(LocalFilesystemURL inputURL)
 			throws FileNotFoundException {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 	@Override
 	public JSONObject getFileMetadataForLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 	@Override
 	public JSONObject getParentForLocalURL(LocalFilesystemURL inputURL)
 			throws IOException {
-		// TODO Auto-generated method stub
-		// Can probably use same impl as LFS
-		return null;
+		LocalFilesystemURL newURL = new LocalFilesystemURL(inputURL.URL);
+
+    	if (!("".equals(inputURL.fullPath) || "/".equals(inputURL.fullPath))) {
+    		int end = inputURL.fullPath.endsWith("/") ? 1 : 0;
+            int lastPathStartsAt = inputURL.fullPath.lastIndexOf('/', inputURL.fullPath.length()-end)+1;
+    		newURL.fullPath = newURL.fullPath.substring(0,lastPathStartsAt);
+    	}
+    	return getEntryForLocalURL(newURL);
 	}
+
 	@Override
 	public JSONObject copyFileToURL(LocalFilesystemURL destURL, String newName,
 			Filesystem srcFs, LocalFilesystemURL srcURL, boolean move)
@@ -92,12 +118,32 @@ public class ContentFilesystem implements Filesystem {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 	@Override
 	public void readFileAtURL(LocalFilesystemURL inputURL, int start, int end,
 			ReadFileCallback readFileCallback) throws IOException {
-		// TODO Auto-generated method stub
+		int numBytesToRead = end - start;
+		byte[] bytes = new byte[numBytesToRead];
+		String contentType;
 		
+		File file = new File(this.filesystemPathForURL(inputURL));
+		contentType = FileHelper.getMimeTypeForExtension(file.getAbsolutePath());
+		
+		InputStream inputStream = new FileInputStream(file);
+		int numBytesRead = 0;
+		try {
+			if (start > 0) {
+				inputStream.skip(start);
+			}
+			while (numBytesToRead > 0 && (numBytesRead = inputStream.read(bytes, numBytesRead, numBytesToRead)) >= 0) {
+				numBytesToRead -= numBytesRead;
+			}
+		} finally {
+			inputStream.close();
+		}
+		readFileCallback.handleData(bytes, contentType);
 	}
+
 	@Override
 	public long writeToFileAtURL(LocalFilesystemURL inputURL, String data,
 			int offset, boolean isBinary) throws NoModificationAllowedException {
@@ -134,5 +180,12 @@ public class ContentFilesystem implements Filesystem {
 	public LocalFilesystemURL URLforFilesystemPath(String path) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public boolean canRemoveFileAtLocalURL(LocalFilesystemURL inputURL) {
+		String path = filesystemPathForURL(inputURL);
+		File file = new File(path);
+		return file.exists();
 	}
 }

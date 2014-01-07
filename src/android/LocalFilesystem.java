@@ -83,8 +83,7 @@ public class LocalFilesystem implements Filesystem {
 
 	@Override
 	public JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException {
-      File fp = null;
-              fp = new File(this.fsRoot + inputURL.fullPath); //TODO: Proper fs.join
+      File fp = new File(this.fsRoot + inputURL.fullPath); //TODO: Proper fs.join
 
       if (!fp.exists()) {
           throw new FileNotFoundException();
@@ -282,7 +281,7 @@ public class LocalFilesystem implements Filesystem {
      * @param destination represents the destination file
      * @return a File object that represents the destination
      */
-    private File createDestination(String newName, File fp, File destination) {
+    private File createDestination(String newName, String oldName, File destination) {
         File destFile = null;
 
         // I know this looks weird but it is to work around a JSON bug.
@@ -293,7 +292,7 @@ public class LocalFilesystem implements Filesystem {
         if (newName != null) {
             destFile = new File(destination.getAbsolutePath() + File.separator + newName);
         } else {
-            destFile = new File(destination.getAbsolutePath() + File.separator + fp.getName());
+            destFile = new File(destination.getAbsolutePath() + File.separator + oldName);
         }
         return destFile;
     }
@@ -461,41 +460,32 @@ public class LocalFilesystem implements Filesystem {
 
         return makeEntryForFile(destinationDir, fsType);
     }
-
 	
 	@Override
 	public JSONObject copyFileToURL(LocalFilesystemURL destURL, String newName,
 			Filesystem srcFs, LocalFilesystemURL srcURL, boolean move) throws IOException, InvalidModificationException, JSONException, NoModificationAllowedException, FileExistsException {
-		
 
-        String newFileName = this.filesystemPathForURL(srcURL);
+		// Check to see if the destination directory exists
         String newParent = this.filesystemPathForURL(destURL);
-
-	    
         File destinationDir = new File(newParent);
         if (!destinationDir.exists()) {
             // The destination does not exist so we should fail.
             throw new FileNotFoundException("The source does not exist");
         }
-
+        
+        // Figure out where we should be copying to
+        String originalName = srcURL.URL.getLastPathSegment();
+        final File destination = createDestination(newName, originalName, destinationDir);
 
 	    if (LocalFilesystem.class.isInstance(srcFs)) {
-	    	
 	        /* Same FS, we can shortcut with NSFileManager operations */
-	    	
-
-	        File source = new File(newFileName);
+	        String srcFilesystemPath = this.filesystemPathForURL(srcURL);
+	        File source = new File(srcFilesystemPath);
 
 	        if (!source.exists()) {
 	            // The file/directory we are copying doesn't exist so we should fail.
 	            throw new FileNotFoundException("The source does not exist");
 	        }
-
-	        // Figure out where we should be copying to
-	        File destination = createDestination(newName, source, destinationDir);
-
-	        //Log.d(LOG_TAG, "Source: " + source.getAbsolutePath());
-	        //Log.d(LOG_TAG, "Destin: " + destination.getAbsolutePath());
 
 	        // Check to see if source and destination are the same file
 	        if (source.getAbsolutePath().equals(destination.getAbsolutePath())) {
@@ -510,36 +500,37 @@ public class LocalFilesystem implements Filesystem {
 	            }
 	        } else {
 	            if (move) {
-	                JSONObject newFileEntry = moveFile(source, destination, destURL.filesystemType);
-
-/*	                // If we've moved a file given its content URI, we need to clean up.
-	                // TODO: Move this to where it belongs, in cross-fs mv code below.
-	                if (srcURL.URL.getScheme().equals("content")) {
-	                    notifyDelete(fileName);
-	                }
-*/
-	                return newFileEntry;
+	                return moveFile(source, destination, destURL.filesystemType);
 	            } else {
 	                return copyFile(source, destination, destURL.filesystemType);
 	            }
 	        }
-
 	    	
 	    } else {
-/*	        // Need to copy the hard way
-	    	srcFs.readFileAtURL(srcURL, 0, -1, new ReadFileCallback() {
-	    		void run(data, mimetype, errorcode) {
-	    			if (data != null) {
-	    				//write data to file
-	    				// send success message -- call original callback?
+	        // Need to copy the hard way
+	    	// First, check to see that we can do it
+	    	if (!move || srcFs.canRemoveFileAtLocalURL(srcURL)) {
+	    		srcFs.readFileAtURL(srcURL, 0, -1, new ReadFileCallback() {
+	    			public void handleData(byte[] data, String contentType) throws IOException {
+	    				if (data != null) {
+	    					//write data to file
+	    					FileOutputStream os = new FileOutputStream(destination);
+	    					os.write(data);
+	    					os.close();
+	    				} else {
+	    					throw new IOException("Cannot read file at source URL");
+	    				}
 	    			}
-	    			// error
-	    		}
-    		});
-	    	return null; // Async, will return later
-*/
+	    		});
+				if (move) {
+					// Delete original
+					srcFs.removeFileAtLocalURL(srcURL);
+				}
+		        return makeEntryForFile(destination, destURL.filesystemType);
+	    	} else {
+	    		throw new NoModificationAllowedException("Cannot move file at source URL");
+	    	}
     	}
-		return null;	    
 	}
 
 	@Override
@@ -632,5 +623,11 @@ public class LocalFilesystem implements Filesystem {
 
 	}
 
+	@Override
+	public boolean canRemoveFileAtLocalURL(LocalFilesystemURL inputURL) {
+		String path = filesystemPathForURL(inputURL);
+		File file = new File(path);
+		return file.exists();
+	}
 
 }

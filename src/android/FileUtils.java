@@ -61,6 +61,8 @@ public class FileUtils extends CordovaPlugin {
     public static int QUOTA_EXCEEDED_ERR = 10;
     public static int TYPE_MISMATCH_ERR = 11;
     public static int PATH_EXISTS_ERR = 12;
+    
+    public static int UNKNOWN_ERR = 1000;
 
     public static int TEMPORARY = 0;
     public static int PERSISTENT = 1;
@@ -312,9 +314,8 @@ public class FileUtils extends CordovaPlugin {
             final String fname=args.getString(0);
             threadhelper( new FileOp( ){
                 public void run() throws NoModificationAllowedException, InvalidModificationException, MalformedURLException {
-                    boolean success= remove(fname);
+                    boolean success = remove(fname);
                     if (success) {
-                        notifyDelete(fname);
                         callbackContext.success();
                     } else {
                         callbackContext.error(FileUtils.NO_MODIFICATION_ALLOWED_ERR);
@@ -439,28 +440,12 @@ public class FileUtils extends CordovaPlugin {
                         callbackContext.error(FileUtils.ENCODING_ERR);
                     } else if(e instanceof TypeMismatchException ) {
                         callbackContext.error(FileUtils.TYPE_MISMATCH_ERR);
+                    } else {
+                    	callbackContext.error(FileUtils.UNKNOWN_ERR);
                     }
                 }
             }
         });
-    }
-
-    /**
-     * Need to check to see if we need to clean up the content store
-     *
-     * @param filePath the path to check
-     */
-    private void notifyDelete(String filePath) {
-        String newFilePath = FileHelper.getRealPath(filePath, cordova);
-        try {
-            this.cordova.getActivity().getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                    MediaStore.Images.Media.DATA + " = ?",
-                    new String[] { newFilePath });
-        } catch (UnsupportedOperationException t) {
-            // Was seeing this on the File mobile-spec tests on 4.0.3 x86 emulator.
-            // The ContentResolver applies only when the file was registered in the
-            // first case, which is generally only the case with images.
-        }
     }
 
     /**

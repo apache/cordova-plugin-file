@@ -42,4 +42,6 @@ public interface Filesystem {
 
 	LocalFilesystemURL URLforFilesystemPath(String path);
 
+	boolean canRemoveFileAtLocalURL(LocalFilesystemURL inputURL);
+
 }
