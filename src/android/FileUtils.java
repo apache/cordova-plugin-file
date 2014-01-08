@@ -20,7 +20,6 @@ package org.apache.cordova.file;
 
 import android.net.Uri;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 
@@ -34,9 +33,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -68,6 +69,7 @@ public class FileUtils extends CordovaPlugin {
     public static int PERSISTENT = 1;
     public static int RESOURCE = 2;
     public static int APPLICATION = 3;
+    public static int CONTENT = 4;
     
     // This field exists only to support getEntry, below, which has been deprecated
     private static FileUtils filePlugin;
@@ -99,8 +101,9 @@ public class FileUtils extends CordovaPlugin {
     	fp.mkdirs();
     	this.filesystems.add(new LocalFilesystem(cordova, "temporary", tempRoot));
     	this.filesystems.add(new LocalFilesystem(cordova, "persistent", persistentRoot));
-    	this.filesystems.add(null);
-    	this.filesystems.add(new ContentFilesystem(cordova));
+    	this.filesystems.add(null); // Hold for 'resource' FS
+    	this.filesystems.add(null); // Hold for 'application' FS
+    	this.filesystems.add(new ContentFilesystem(cordova, webView));
 
     	// Initialize static plugin reference for deprecated getEntry method
     	if (filePlugin == null) {
@@ -764,22 +767,35 @@ public class FileUtils extends CordovaPlugin {
         		throw new MalformedURLException("No installed handlers for this URL");
         	}
         
-            fs.readFileAtURL(inputURL, start, end, new ReadFileCallback() {
-            	public void handleData(byte[] bytes, String contentType) {
+            fs.readFileAtURL(inputURL, start, end, new Filesystem.ReadFileCallback() {
+                public void handleData(InputStream inputStream, String contentType) {
             		try {
+                        ByteArrayOutputStream os = new ByteArrayOutputStream();
+                        final int BUFFER_SIZE = 8192;
+                        byte[] buffer = new byte[BUFFER_SIZE];
+                        
+                        for (;;) {
+                            int bytesRead = inputStream.read(buffer, 0, BUFFER_SIZE);
+                            
+                            if (bytesRead <= 0) {
+                                break;
+                            }
+                            os.write(buffer, 0, bytesRead);
+                        }
+                                
             			PluginResult result;
             			switch (resultType) {
             			case PluginResult.MESSAGE_TYPE_STRING:
-            				result = new PluginResult(PluginResult.Status.OK, new String(bytes, encoding));
+                            result = new PluginResult(PluginResult.Status.OK, os.toString(encoding));
             				break;
             			case PluginResult.MESSAGE_TYPE_ARRAYBUFFER:
-            				result = new PluginResult(PluginResult.Status.OK, bytes);
+                            result = new PluginResult(PluginResult.Status.OK, os.toByteArray());
             				break;
             			case PluginResult.MESSAGE_TYPE_BINARYSTRING:
-            				result = new PluginResult(PluginResult.Status.OK, bytes, true);
+                            result = new PluginResult(PluginResult.Status.OK, os.toByteArray(), true);
             				break;
             			default: // Base64.
-            			byte[] base64 = Base64.encode(bytes, Base64.NO_WRAP);
+                        byte[] base64 = Base64.encode(os.toByteArray(), Base64.NO_WRAP);
             			String s = "data:" + contentType + ";base64," + new String(base64, "US-ASCII");
             			result = new PluginResult(PluginResult.Status.OK, s);
             			}

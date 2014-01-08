@@ -24,8 +24,8 @@ public class LocalFilesystemURL {
 		if (fsType == FileUtils.PERSISTENT) {
 			return URL.getPath().substring(11);
 		}
-		if (fsType == FileUtils.APPLICATION) {
-			return URL.getPath();
+		if (fsType == FileUtils.CONTENT) {
+			return '/' + URL.getHost() + URL.getPath();
 		}
 		return null;
 	}
@@ -41,7 +41,7 @@ public class LocalFilesystemURL {
 				}
 			}
 		} else if ("content".equals(URL.getScheme())) {
-			return FileUtils.APPLICATION;
+			return FileUtils.CONTENT;
 		}
 		return -1;
 	}
@@ -49,6 +49,5 @@ public class LocalFilesystemURL {
 	public LocalFilesystemURL(String strURL) {
 		this(Uri.parse(strURL));
 	}
-	
 	
 }
