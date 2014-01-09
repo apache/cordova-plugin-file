@@ -31,10 +31,10 @@ module.exports = function (uri, success, fail) {
         resolveURI = function () {
             window.webkitRequestFileSystem(
                 window.PERSISTENT,
-                //todo: match app quota (this is only used for sandboxed fs)
                 50*1024*1024,
                 function (fs) {
-                    fs.root.getFile(
+                    var op = decodedURI.slice(-1) === '/' ? 'getDirectory' : 'getFile';
+                    fs.root[op](
                         decodedURI,
                         { create: false },
                         function (entry) {
