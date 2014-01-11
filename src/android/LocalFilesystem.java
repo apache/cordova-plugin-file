@@ -51,7 +51,7 @@ public class LocalFilesystem extends Filesystem {
 	public LocalFilesystemURL URLforFilesystemPath(String path) {
 	    String fullPath = this.fullPathForFilesystemPath(path);
 	    if (fullPath != null) {
-	        return new LocalFilesystemURL("filesystem://localhost/"+this.name+"/"+fullPath);
+	        return new LocalFilesystemURL(LocalFilesystemURL.FILESYSTEM_PROTOCOL + "://localhost/"+this.name+"/"+fullPath);
 	    }
 	    return null;
 	}

@@ -702,11 +702,11 @@ public class FileUtils extends CordovaPlugin {
         LocalFilesystemURL rootURL;
         if (type == TEMPORARY) {
             fs.put("name", "temporary");
-            rootURL = new LocalFilesystemURL("filesystem://localhost/temporary/");
+            rootURL = new LocalFilesystemURL(LocalFilesystemURL.FILESYSTEM_PROTOCOL + "://localhost/temporary/");
         }
         else if (type == PERSISTENT) {
             fs.put("name", "persistent");
-            rootURL = new LocalFilesystemURL("filesystem://localhost/persistent/");
+            rootURL = new LocalFilesystemURL(LocalFilesystemURL.FILESYSTEM_PROTOCOL+ "://localhost/persistent/");
         }
         else {
             throw new IOException("No filesystem of type requested");

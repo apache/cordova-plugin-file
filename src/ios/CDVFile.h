@@ -21,6 +21,7 @@
 #import <Cordova/CDVPlugin.h>
 
 NSString* const kCDVAssetsLibraryPrefix;
+NSString* const kCDVFilesystemURLPrefix;
 
 enum CDVFileError {
     NO_ERROR = 0,

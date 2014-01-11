@@ -3,6 +3,9 @@ package org.apache.cordova.file;
 import android.net.Uri;
 
 public class LocalFilesystemURL {
+	
+	public static final String FILESYSTEM_PROTOCOL = "filesystem";
+	
 	public static final int TEMPORARY = 0;
 	public static final int PERSISTENT = 1;
 
@@ -31,7 +34,7 @@ public class LocalFilesystemURL {
 	}
 
 	private int filesystemTypeForLocalURL(Uri URL) {
-		if ("filesystem".equals(URL.getScheme()) && "localhost".equals(URL.getHost())) {
+		if (FILESYSTEM_PROTOCOL.equals(URL.getScheme()) && "localhost".equals(URL.getHost())) {
 			String path = URL.getPath();
 			if (path != null) {
 				if (path.startsWith("/temporary")) {

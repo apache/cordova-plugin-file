@@ -30,6 +30,8 @@ extern NSString * const NSURLIsExcludedFromBackupKey __attribute__((weak_import)
     NSString* const NSURLIsExcludedFromBackupKey = @"NSURLIsExcludedFromBackupKey";
 #endif
 
+NSString* const kCDVFilesystemURLPrefix = @"filesystem";
+
 @implementation CDVFilesystemURL
 @synthesize url=_url;
 @synthesize fileSystemType=_fileSystemType;
@@ -62,7 +64,7 @@ extern NSString * const NSURLIsExcludedFromBackupKey __attribute__((weak_import)
  */
 - (CDVFileSystemType)filesystemTypeForLocalURI:(NSURL *)uri
 {
-    if ([[uri scheme] isEqualToString:@"filesystem"] && [[uri host] isEqualToString:@"localhost"]) {
+    if ([[uri scheme] isEqualToString:kCDVFilesystemURLPrefix] && [[uri host] isEqualToString:@"localhost"]) {
         if ([[uri path] hasPrefix:@"/temporary"]) {
             return TEMPORARY;
         } else if ([[uri path] hasPrefix:@"/persistent"]) {
@@ -105,8 +107,6 @@ extern NSString * const NSURLIsExcludedFromBackupKey __attribute__((weak_import)
 @end
 
 @implementation CDVFilesystemURLProtocol
-
-NSString* const kCDVFilesystemURLPrefix = @"filesystem";
 
 + (BOOL)canInitWithRequest:(NSURLRequest*)request
 {

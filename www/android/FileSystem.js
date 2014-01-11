@@ -19,10 +19,12 @@
  *
 */
 
+FILESYSTEM_PROTOCOL = "filesystem";
+
 module.exports = {
     __format__: function(fullPath) {
         var path = ('/'+this.name+(fullPath[0]==='/'?'':'/')+encodeURI(fullPath)).replace('//','/');
-        return 'filesystem://localhost' + path;
+        return FILESYSTEM_PROTOCOL + '://localhost' + path;
     }
 };
 

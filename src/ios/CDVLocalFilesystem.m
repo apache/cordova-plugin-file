@@ -106,7 +106,7 @@
 {
     NSString *fullPath = [self fullPathForFileSystemPath:path];
     if (fullPath) {
-        return [CDVFilesystemURL fileSystemURLWithString:[NSString stringWithFormat:@"filesystem://localhost/%@%@", self.name, fullPath]];
+        return [CDVFilesystemURL fileSystemURLWithString:[NSString stringWithFormat:@"%@://localhost/%@%@", kCDVFilesystemURLPrefix, self.name, fullPath]];
     }
     return nil;
 }
