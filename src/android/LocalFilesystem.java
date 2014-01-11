@@ -33,7 +33,7 @@ public class LocalFilesystem extends Filesystem {
 
 	@Override
 	public String filesystemPathForURL(LocalFilesystemURL url) {
-	    String path = this.fsRoot + url.fullPath;
+	    String path = new File(this.fsRoot, url.fullPath).toString();
 	    if (path.endsWith("/")) {
 	      path = path.substring(0, path.length()-1);
 	    }
@@ -66,7 +66,7 @@ public class LocalFilesystem extends Filesystem {
 
 	@Override
 	public JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException {
-      File fp = new File(this.fsRoot + inputURL.fullPath); //TODO: Proper fs.join
+      File fp = new File(this.fsRoot, inputURL.fullPath);
 
       if (!fp.exists()) {
           throw new FileNotFoundException();
@@ -91,7 +91,7 @@ public class LocalFilesystem extends Filesystem {
 
 	@Override
 	public JSONObject getFileForLocalURL(LocalFilesystemURL inputURL,
-			String fileName, JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
+			String path, JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
         boolean create = false;
         boolean exclusive = false;
 
@@ -103,8 +103,8 @@ public class LocalFilesystem extends Filesystem {
         }
 
         // Check for a ":" character in the file to line up with BB and iOS
-        if (fileName.contains(":")) {
-            throw new EncodingException("This file has a : in it's name");
+        if (path.contains(":")) {
+            throw new EncodingException("This path has an invalid \":\" in it.");
         }
 
         LocalFilesystemURL requestedURL = new LocalFilesystemURL(Uri.withAppendedPath(inputURL.URL, fileName));

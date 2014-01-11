@@ -295,20 +295,20 @@ public class FileUtils extends CordovaPlugin {
         }
         else if (action.equals("getDirectory")) {
             final String dirname=args.getString(0);
-            final String fname=args.getString(1);
+            final String path=args.getString(1);
             threadhelper( new FileOp( ){
                 public void run() throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
-                   JSONObject obj = getFile(dirname, fname, args.optJSONObject(2), true);
+                   JSONObject obj = getFile(dirname, path, args.optJSONObject(2), true);
                    callbackContext.success(obj);
                 }
             },callbackContext);
         }
         else if (action.equals("getFile")) {
             final String dirname=args.getString(0);
-            final String fname=args.getString(1);
+            final String path=args.getString(1);
             threadhelper( new FileOp( ){
                 public void run() throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
-                    JSONObject obj = getFile(dirname, fname, args.optJSONObject(2), false);
+                    JSONObject obj = getFile(dirname, path, args.optJSONObject(2), false);
                     callbackContext.success(obj);
                 }
             },callbackContext);
@@ -618,7 +618,7 @@ public class FileUtils extends CordovaPlugin {
      * Creates or looks up a file.
      *
      * @param baseURLstr base directory
-     * @param fileName file/directory to lookup or create
+     * @param path file/directory to lookup or create
      * @param options specify whether to create or not
      * @param directory if true look up directory, if false look up file
      * @return a Entry object
@@ -628,14 +628,14 @@ public class FileUtils extends CordovaPlugin {
      * @throws EncodingException
      * @throws JSONException
      */
-    private JSONObject getFile(String baseURLstr, String fileName, JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
+    private JSONObject getFile(String baseURLstr, String path, JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
         try {
         	LocalFilesystemURL inputURL = new LocalFilesystemURL(baseURLstr);
         	Filesystem fs = this.filesystemForURL(inputURL);
         	if (fs == null) {
         		throw new MalformedURLException("No installed handlers for this URL");
         	}
-        	return fs.getFileForLocalURL(inputURL, fileName, options, directory);
+        	return fs.getFileForLocalURL(inputURL, path, options, directory);
         
         } catch (IllegalArgumentException e) {
         	throw new MalformedURLException("Unrecognized filesystem URL");

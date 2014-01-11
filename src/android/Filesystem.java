@@ -41,7 +41,7 @@ public abstract class Filesystem {
 
 	abstract JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException;
 
-	abstract JSONObject getFileForLocalURL(LocalFilesystemURL inputURL, String fileName,
+	abstract JSONObject getFileForLocalURL(LocalFilesystemURL inputURL, String path,
 			JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException;
 
 	abstract boolean removeFileAtLocalURL(LocalFilesystemURL inputURL) throws InvalidModificationException, NoModificationAllowedException;
