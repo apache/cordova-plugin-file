@@ -107,7 +107,14 @@ public class LocalFilesystem extends Filesystem {
             throw new EncodingException("This path has an invalid \":\" in it.");
         }
 
-        LocalFilesystemURL requestedURL = new LocalFilesystemURL(Uri.withAppendedPath(inputURL.URL, fileName));
+        LocalFilesystemURL requestedURL;
+        
+        // Check whether the supplied path is absolute or relative
+        if (path.startsWith("/")) {
+        	requestedURL = URLforFilesystemPath(path);
+        } else {
+        	requestedURL = new LocalFilesystemURL(Uri.withAppendedPath(inputURL.URL, path));
+        }
         
         File fp = new File(this.filesystemPathForURL(requestedURL));
 
