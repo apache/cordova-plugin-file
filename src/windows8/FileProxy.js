@@ -194,6 +194,10 @@ module.exports = {
             flag = new Flags(false, false);
         }
 
+        if (path !== null) {
+            path = path.replace("/", "\\");
+        }
+
         Windows.Storage.StorageFolder.getFolderFromPathAsync(fullPath).then(
             function (storageFolder) {
                 if (flag.create === true && flag.exclusive === true) {
