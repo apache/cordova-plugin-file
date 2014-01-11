@@ -31,7 +31,7 @@ var argscheck = require('cordova/argscheck'),
  * @param successCallback  invoked with Entry object corresponding to URI
  * @param errorCallback    invoked if error occurs retrieving file system entry
  */
-module.exports = function(uri, successCallback, errorCallback) {
+module.exports.resolveLocalFileSystemURL = function(uri, successCallback, errorCallback) {
     argscheck.checkArgs('sFF', 'resolveLocalFileSystemURI', arguments);
     // error callback
     var fail = function(error) {
@@ -62,4 +62,8 @@ module.exports = function(uri, successCallback, errorCallback) {
     };
 
     exec(success, fail, "File", "resolveLocalFileSystemURI", [uri]);
+};
+module.exports.resolveLocalFileSystemURI = function() {
+    console.log("resolveLocalfileSystemURI is deprecated. Please call reolvelLocalFileSystemURL instead");
+    module.exports.resolveLocalFileSystemURL.apply(this, arguments);
 };

@@ -79,7 +79,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
     </js-module>
 
     <js-module src="www/resolveLocalFileSystemURI.js" name="resolveLocalFileSystemURI">
-        <clobbers target="window.resolveLocalFileSystemURI" />
+        <merges target="window" />
     </js-module>
 
     <!-- android -->
