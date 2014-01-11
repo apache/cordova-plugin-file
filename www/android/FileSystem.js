@@ -23,6 +23,9 @@ FILESYSTEM_PROTOCOL = "filesystem";
 
 module.exports = {
     __format__: function(fullPath) {
+        if (this.name === 'content') {
+            return 'content:/' + encodeURI(fullPath);
+        }
         var path = ('/'+this.name+(fullPath[0]==='/'?'':'/')+encodeURI(fullPath)).replace('//','/');
         return FILESYSTEM_PROTOCOL + '://localhost' + path;
     }
