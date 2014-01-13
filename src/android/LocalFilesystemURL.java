@@ -4,7 +4,7 @@ import android.net.Uri;
 
 public class LocalFilesystemURL {
 	
-	public static final String FILESYSTEM_PROTOCOL = "filesystem";
+	public static final String FILESYSTEM_PROTOCOL = "cdvfile";
 	
 	public static final int TEMPORARY = 0;
 	public static final int PERSISTENT = 1;

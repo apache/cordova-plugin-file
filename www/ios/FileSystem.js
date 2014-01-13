@@ -19,7 +19,7 @@
  *
 */
 
-FILESYSTEM_PROTOCOL = "filesystem";
+FILESYSTEM_PROTOCOL = "cdvfile";
 
 module.exports = {
     __format__: function(fullPath) {

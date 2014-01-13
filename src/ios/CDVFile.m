@@ -30,7 +30,7 @@ extern NSString * const NSURLIsExcludedFromBackupKey __attribute__((weak_import)
     NSString* const NSURLIsExcludedFromBackupKey = @"NSURLIsExcludedFromBackupKey";
 #endif
 
-NSString* const kCDVFilesystemURLPrefix = @"filesystem";
+NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
 @implementation CDVFilesystemURL
 @synthesize url=_url;
