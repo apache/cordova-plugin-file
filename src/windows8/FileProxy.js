@@ -431,7 +431,7 @@ module.exports = {
             promiseArr[index++] = storageFolder.createFolderQuery().getFoldersAsync().then(function (folderList) {
                 if (folderList !== null) {
                     for (var j = 0; j < folderList.length; j++) {
-                        result.push(new FileEntry(folderList[j].name, folderList[j].path));
+                        result.push(new DirectoryEntry(folderList[j].name, folderList[j].path));
                     }
                 }
             });
