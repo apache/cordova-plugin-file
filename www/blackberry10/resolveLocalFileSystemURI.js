@@ -24,7 +24,7 @@ var fileUtils = require('./BB10Utils'),
 
 module.exports = function (uri, success, fail) {
 
-    var decodedURI = decodeURI(uri).replace(/filesystem:/, '').replace(/local:\/\//, '').replace(/file:\/\//, ''),
+    var decodedURI = decodeURI(uri).replace(/filesystem:/, '').replace(/file:\/\//, ''),
         failNotFound = function () {
             fail(FileError.NOT_FOUND_ERR);
         },
@@ -47,11 +47,24 @@ module.exports = function (uri, success, fail) {
             );
         };
 
-    cordova.exec(
-        resolveURI, 
-        failNotFound, 
-        'org.apache.cordova.file', 
-        'setSandbox', 
-        [!fileUtils.isOutsideSandbox(decodedURI)]
-    );
+    if (decodedURI.substring(0, 8) === 'local://') {
+        cordova.exec(
+            function (path) {
+                decodedURI = path;
+                resolveURI();
+            },
+            failNotFound,
+            'org.apache.cordova.file',
+            'resolveLocalPath',
+            [decodedURI]
+        );
+    } else {
+        cordova.exec(
+            resolveURI, 
+            failNotFound, 
+            'org.apache.cordova.file', 
+            'setSandbox', 
+            [!fileUtils.isOutsideSandbox(decodedURI)]
+        );
+    }
 };
