@@ -1,5 +1,6 @@
 package org.apache.cordova.file;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -12,31 +13,33 @@ import org.json.JSONObject;
 
 public abstract class Filesystem {
 
+	public String name;
+	
 	public interface ReadFileCallback {
 		public void handleData(InputStream inputStream, String contentType) throws IOException;
 	}
 
-	public static JSONObject makeEntryForPath(String path, int fsType, Boolean isDir)
+	public static JSONObject makeEntryForPath(String path, String fsName, Boolean isDir)
 			throws JSONException {
         JSONObject entry = new JSONObject();
 
         int end = path.endsWith("/") ? 1 : 0;
         String[] parts = path.substring(0,path.length()-end).split("/");
-        String name = parts[parts.length-1];
+        String fileName = parts[parts.length-1];
         entry.put("isFile", !isDir);
         entry.put("isDirectory", isDir);
-        entry.put("name", name);
+        entry.put("name", fileName);
         entry.put("fullPath", path);
         // The file system can't be specified, as it would lead to an infinite loop,
-        // but the filesystem type can
-        entry.put("filesystem", fsType);
+        // but the filesystem name can be.
+        entry.put("filesystemName", fsName);
 
         return entry;
 
     }
 
     public static JSONObject makeEntryForURL(LocalFilesystemURL inputURL, Boolean isDir) throws JSONException {
-        return makeEntryForPath(inputURL.fullPath, inputURL.filesystemType, isDir);
+        return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, isDir);
     }
 
 	abstract JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException;
@@ -170,5 +173,12 @@ public abstract class Filesystem {
             return numBytesRead;
         }
     }
+
+    /* Create a FileEntry or DirectoryEntry given an actual file on device.
+     * Return null if the file does not exist within this filesystem.
+     */
+	public JSONObject makeEntryForFile(File file) throws JSONException {
+		return null;
+	}
 
 }

@@ -1,52 +1,44 @@
 package org.apache.cordova.file;
 
+import java.util.List;
+
 import android.net.Uri;
 
 public class LocalFilesystemURL {
 	
 	public static final String FILESYSTEM_PROTOCOL = "cdvfile";
 	
-	public static final int TEMPORARY = 0;
-	public static final int PERSISTENT = 1;
-
 	Uri URL;
-	int filesystemType;
+	String filesystemName;
 	String fullPath;
 
 	public LocalFilesystemURL(Uri URL) {
 		this.URL = URL;
-		this.filesystemType = this.filesystemTypeForLocalURL(URL);
+		this.filesystemName = this.filesystemNameForLocalURL(URL);
 		this.fullPath = this.fullPathForLocalURL(URL);
 	}
 	
 	private String fullPathForLocalURL(Uri URL) {
-		int fsType = this.filesystemTypeForLocalURL(URL);
-		if (fsType == FileUtils.TEMPORARY) {
-			return URL.getPath().substring(10);
-		}
-		if (fsType == FileUtils.PERSISTENT) {
-			return URL.getPath().substring(11);
-		}
-		if (fsType == FileUtils.CONTENT) {
+		if (FILESYSTEM_PROTOCOL.equals(URL.getScheme()) && "localhost".equals(URL.getHost())) {
+			String path = URL.getPath();
+			return path.substring(path.indexOf('/', 1));
+		} else if ("content".equals(URL.getScheme())) {
 			return '/' + URL.getHost() + URL.getPath();
 		}
 		return null;
 	}
 
-	private int filesystemTypeForLocalURL(Uri URL) {
+	private String filesystemNameForLocalURL(Uri URL) {
 		if (FILESYSTEM_PROTOCOL.equals(URL.getScheme()) && "localhost".equals(URL.getHost())) {
-			String path = URL.getPath();
-			if (path != null) {
-				if (path.startsWith("/temporary")) {
-					return FileUtils.TEMPORARY;
-				} else if (path.startsWith("/persistent")) {
-					return FileUtils.PERSISTENT;
-				}
+			List<String> pathComponents = URL.getPathSegments();
+			if (pathComponents != null && pathComponents.size() > 0) {
+				return pathComponents.get(0);
 			}
+			return null;
 		} else if ("content".equals(URL.getScheme())) {
-			return FileUtils.CONTENT;
+			return "content";
 		}
-		return -1;
+		return null;
 	}
 
 	public LocalFilesystemURL(String strURL) {

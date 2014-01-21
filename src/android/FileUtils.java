@@ -64,12 +64,6 @@ public class FileUtils extends CordovaPlugin {
     public static int PATH_EXISTS_ERR = 12;
     
     public static int UNKNOWN_ERR = 1000;
-
-    public static int TEMPORARY = 0;
-    public static int PERSISTENT = 1;
-    public static int RESOURCE = 2;
-    public static int APPLICATION = 3;
-    public static int CONTENT = 4;
     
     // This field exists only to support getEntry, below, which has been deprecated
     private static FileUtils filePlugin;
@@ -80,6 +74,21 @@ public class FileUtils extends CordovaPlugin {
     
     private ArrayList<Filesystem> filesystems;
 
+    public void registerFilesystem(Filesystem fs) {
+    	if (fs != null && filesystemForName(fs.name)== null) {
+    		this.filesystems.add(fs);
+    	}
+    }
+    
+    private Filesystem filesystemForName(String name) {
+    	for (Filesystem fs:filesystems) {
+    		if (fs != null && fs.name != null && fs.name.equals(name)) {
+    			return fs;
+    		}
+    	}
+    	return null;
+    }
+    
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     	super.initialize(cordova, webView);
@@ -99,11 +108,14 @@ public class FileUtils extends CordovaPlugin {
     	// Create the cache dir if it doesn't exist.
     	fp = new File(tempRoot);
     	fp.mkdirs();
-    	this.filesystems.add(new LocalFilesystem(cordova, "temporary", tempRoot));
-    	this.filesystems.add(new LocalFilesystem(cordova, "persistent", persistentRoot));
-    	this.filesystems.add(null); // Hold for 'resource' FS
-    	this.filesystems.add(null); // Hold for 'application' FS
-    	this.filesystems.add(new ContentFilesystem(cordova, webView));
+    	
+    	// Register initial filesystems
+    	// Note: The temporary and persistent filesystems need to be the first two
+    	// registered, so that they will match window.TEMPORARY and window.PERSISTENT,
+    	// per spec.
+    	this.registerFilesystem(new LocalFilesystem("temporary", cordova, tempRoot));
+    	this.registerFilesystem(new LocalFilesystem("persistent", cordova, persistentRoot));
+    	this.registerFilesystem(new ContentFilesystem("content", cordova, webView));
 
     	// Initialize static plugin reference for deprecated getEntry method
     	if (filePlugin == null) {
@@ -111,12 +123,9 @@ public class FileUtils extends CordovaPlugin {
     	}
     }
     
-    public Filesystem filesystemForURL(LocalFilesystemURL localURL) {
-    	try {
-    		return this.filesystems.get(localURL.filesystemType);
-    	} catch (ArrayIndexOutOfBoundsException e) {
-    		return null;
-    	}
+    private Filesystem filesystemForURL(LocalFilesystemURL localURL) {
+    	if (localURL == null) return null;
+    	return filesystemForName(localURL.filesystemName);
     }
     
     @Override
@@ -699,20 +708,17 @@ public class FileUtils extends CordovaPlugin {
      */
     private JSONObject requestFileSystem(int type) throws IOException, JSONException {
         JSONObject fs = new JSONObject();
-        LocalFilesystemURL rootURL;
-        if (type == TEMPORARY) {
-            fs.put("name", "temporary");
-            rootURL = new LocalFilesystemURL(LocalFilesystemURL.FILESYSTEM_PROTOCOL + "://localhost/temporary/");
+        Filesystem rootFs = null;
+        try {
+        	rootFs = this.filesystems.get(type);
+        } catch (ArrayIndexOutOfBoundsException e) {
+        	// Pass null through
         }
-        else if (type == PERSISTENT) {
-            fs.put("name", "persistent");
-            rootURL = new LocalFilesystemURL(LocalFilesystemURL.FILESYSTEM_PROTOCOL+ "://localhost/persistent/");
+        if (rootFs == null) {
+            throw new IOException("No filesystem of type requested");        	
         }
-        else {
-            throw new IOException("No filesystem of type requested");
-        }
-        Filesystem rootFs = this.filesystemForURL(rootURL);
-        fs.put("root", rootFs.getEntryForLocalURL(rootURL));
+        fs.put("name", rootFs.name);
+        fs.put("root", Filesystem.makeEntryForPath("/", rootFs.name, true));
         return fs;
     }
 
@@ -730,18 +736,13 @@ public class FileUtils extends CordovaPlugin {
     public static JSONObject getEntry(File file) throws JSONException {
 		JSONObject entry;
 		
-		if (filePlugin != null) {
-			LocalFilesystem fs;
-			fs = (LocalFilesystem) filePlugin.filesystems.get(0);
-			entry = fs.makeEntryForFile(file, 0);
-			if (entry != null) {
-				return entry;
+ 		if (filePlugin != null) {
+ 			for (Filesystem fs:filePlugin.filesystems) {
+ 				entry = fs.makeEntryForFile(file);
+ 				if (entry != null) {
+ 					return entry;
+ 				}
 			}
-			fs = (LocalFilesystem) filePlugin.filesystems.get(1);
-			entry = fs.makeEntryForFile(file, 1);
-			if (entry != null) {
-				return entry;
-			}			
 		}
 		return null;
     }

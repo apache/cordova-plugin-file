@@ -21,11 +21,10 @@ import android.net.Uri;
 
 public class LocalFilesystem extends Filesystem {
 
-	private String name;
 	private String fsRoot;
 	private CordovaInterface cordova;
 
-	public LocalFilesystem(CordovaInterface cordova, String name, String fsRoot) {
+	public LocalFilesystem(String name, CordovaInterface cordova, String fsRoot) {
 		this.name = name;
 		this.fsRoot = fsRoot;
 		this.cordova = cordova;
@@ -56,10 +55,11 @@ public class LocalFilesystem extends Filesystem {
 	    return null;
 	}
 
-    public JSONObject makeEntryForFile(File file, int fsType) throws JSONException {
+	@Override
+    public JSONObject makeEntryForFile(File file) throws JSONException {
     	String path = this.fullPathForFilesystemPath(file.getAbsolutePath());
     	if (path != null) {
-    		return makeEntryForPath(path, fsType, file.isDirectory());
+    		return makeEntryForPath(path, this.name, file.isDirectory());
     	}
     	return null;
     }
@@ -81,8 +81,9 @@ public class LocalFilesystem extends Filesystem {
     	  entry.put("name", fp.getName());
     	  entry.put("fullPath", inputURL.fullPath);
     	  // The file system can't be specified, as it would lead to an infinite loop.
-    	  // But we can specify the type of FS, and the rest can be reconstructed in JS.
-    	  entry.put("filesystem", inputURL.filesystemType);
+    	  // But we can specify the name of the FS, and the rest can be reconstructed
+    	  // in JS.
+    	  entry.put("filesystemName", inputURL.filesystemName);
           return entry;
       } catch (JSONException e) {
     	  throw new IOException();
@@ -147,7 +148,7 @@ public class LocalFilesystem extends Filesystem {
         }
 
         // Return the directory
-        return makeEntryForPath(requestedURL.fullPath, requestedURL.filesystemType, directory);
+        return makeEntryForPath(requestedURL.fullPath, requestedURL.filesystemName, directory);
 	}
 
 	@Override
@@ -199,7 +200,7 @@ public class LocalFilesystem extends Filesystem {
             for (int i = 0; i < files.length; i++) {
                 if (files[i].canRead()) {
                     try {
-						entries.put(makeEntryForPath(fullPathForFilesystemPath(files[i].getAbsolutePath()), inputURL.filesystemType, files[i].isDirectory()));
+						entries.put(makeEntryForPath(fullPathForFilesystemPath(files[i].getAbsolutePath()), inputURL.filesystemName, files[i].isDirectory()));
 					} catch (JSONException e) {
 					}
                 }
@@ -260,7 +261,7 @@ public class LocalFilesystem extends Filesystem {
      * @throws InvalidModificationException
      * @throws JSONException
      */
-    private JSONObject copyFile(File srcFile, File destFile, int fsType) throws IOException, InvalidModificationException, JSONException {
+    private JSONObject copyFile(File srcFile, File destFile) throws IOException, InvalidModificationException, JSONException {
         // Renaming a file to an existing directory should fail
         if (destFile.exists() && destFile.isDirectory()) {
             throw new InvalidModificationException("Can't rename a file to a directory");
@@ -268,7 +269,7 @@ public class LocalFilesystem extends Filesystem {
 
         copyAction(srcFile, destFile);
 
-        return makeEntryForFile(destFile, fsType);
+        return makeEntryForFile(destFile);
     }
 
     /**
@@ -302,7 +303,7 @@ public class LocalFilesystem extends Filesystem {
      * @throws NoModificationAllowedException
      * @throws InvalidModificationException
      */
-    private JSONObject copyDirectory(File srcDir, File destinationDir, int fsType) throws JSONException, IOException, NoModificationAllowedException, InvalidModificationException {
+    private JSONObject copyDirectory(File srcDir, File destinationDir) throws JSONException, IOException, NoModificationAllowedException, InvalidModificationException {
         // Renaming a file to an existing directory should fail
         if (destinationDir.exists() && destinationDir.isFile()) {
             throw new InvalidModificationException("Can't rename a file to a directory");
@@ -325,13 +326,13 @@ public class LocalFilesystem extends Filesystem {
         for (File file : srcDir.listFiles()) {
             File destination = new File(destinationDir.getAbsoluteFile() + File.separator + file.getName());
             if (file.isDirectory()) {
-                copyDirectory(file, destination, fsType);
+                copyDirectory(file, destination);
             } else {
-                copyFile(file, destination, fsType);
+                copyFile(file, destination);
             }
         }
 
-        return makeEntryForFile(destinationDir, fsType);
+        return makeEntryForFile(destinationDir);
     }
 
     /**
@@ -344,7 +345,7 @@ public class LocalFilesystem extends Filesystem {
      * @throws InvalidModificationException
      * @throws JSONException
      */
-    private JSONObject moveFile(File srcFile, File destFile, int fsType) throws IOException, JSONException, InvalidModificationException {
+    private JSONObject moveFile(File srcFile, File destFile) throws IOException, JSONException, InvalidModificationException {
         // Renaming a file to an existing directory should fail
         if (destFile.exists() && destFile.isDirectory()) {
             throw new InvalidModificationException("Can't rename a file to a directory");
@@ -364,7 +365,7 @@ public class LocalFilesystem extends Filesystem {
             }
         }
 
-        return makeEntryForFile(destFile, fsType);
+        return makeEntryForFile(destFile);
     }
 
     /**
@@ -379,7 +380,7 @@ public class LocalFilesystem extends Filesystem {
      * @throws NoModificationAllowedException
      * @throws FileExistsException
      */
-    private JSONObject moveDirectory(File srcDir, File destinationDir, int fsType) throws IOException, JSONException, InvalidModificationException, NoModificationAllowedException, FileExistsException {
+    private JSONObject moveDirectory(File srcDir, File destinationDir) throws IOException, JSONException, InvalidModificationException, NoModificationAllowedException, FileExistsException {
         // Renaming a file to an existing directory should fail
         if (destinationDir.exists() && destinationDir.isFile()) {
             throw new InvalidModificationException("Can't rename a file to a directory");
@@ -403,7 +404,7 @@ public class LocalFilesystem extends Filesystem {
             // Now we have to do things the hard way
             // 1) Copy all the old files
             // 2) delete the src directory
-            copyDirectory(srcDir, destinationDir, fsType);
+            copyDirectory(srcDir, destinationDir);
             if (destinationDir.exists()) {
                 removeDirRecursively(srcDir);
             } else {
@@ -411,7 +412,7 @@ public class LocalFilesystem extends Filesystem {
             }
         }
 
-        return makeEntryForFile(destinationDir, fsType);
+        return makeEntryForFile(destinationDir);
     }
 	
 	@Override
@@ -449,15 +450,15 @@ public class LocalFilesystem extends Filesystem {
 
             if (sourceFile.isDirectory()) {
 	            if (move) {
-                    return moveDirectory(sourceFile, destinationFile, destURL.filesystemType);
+                    return moveDirectory(sourceFile, destinationFile);
 	            } else {
-                    return copyDirectory(sourceFile, destinationFile, destURL.filesystemType);
+                    return copyDirectory(sourceFile, destinationFile);
 	            }
 	        } else {
 	            if (move) {
-                    return moveFile(sourceFile, destinationFile, destURL.filesystemType);
+                    return moveFile(sourceFile, destinationFile);
 	            } else {
-                    return copyFile(sourceFile, destinationFile, destURL.filesystemType);
+                    return copyFile(sourceFile, destinationFile);
 	            }
 	        }
 	    	

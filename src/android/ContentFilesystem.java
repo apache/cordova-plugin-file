@@ -22,7 +22,8 @@ public class ContentFilesystem extends Filesystem {
 	private CordovaInterface cordova;
 	private CordovaResourceApi resourceApi;
 	
-	public ContentFilesystem(CordovaInterface cordova, CordovaWebView webView) {
+	public ContentFilesystem(String name, CordovaInterface cordova, CordovaWebView webView) {
+		this.name = name;
 		this.cordova = cordova;
 		this.resourceApi = new CordovaResourceApi(webView.getContext(), webView.pluginManager);
 	}
@@ -45,7 +46,7 @@ public class ContentFilesystem extends Filesystem {
           throw new IOException();
       }
       try {
-    	  return makeEntryForPath(inputURL.fullPath, inputURL.filesystemType, fp.isDirectory());
+    	  return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, fp.isDirectory());
       } catch (JSONException e) {
     	  throw new IOException();
       }
@@ -74,7 +75,7 @@ public class ContentFilesystem extends Filesystem {
             }
         }
         // Return the directory
-        return makeEntryForPath(requestedURL.fullPath, requestedURL.filesystemType, directory);
+        return makeEntryForPath(requestedURL.fullPath, requestedURL.filesystemName, directory);
 
 	}
 
