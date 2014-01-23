@@ -64,6 +64,6 @@ module.exports.resolveLocalFileSystemURL = function(uri, successCallback, errorC
     exec(success, fail, "File", "resolveLocalFileSystemURI", [uri]);
 };
 module.exports.resolveLocalFileSystemURI = function() {
-    console.log("resolveLocalfileSystemURI is deprecated. Please call reolvelLocalFileSystemURL instead");
+    console.log("resolveLocalFileSystemURI is deprecated. Please call resolveLocalFileSystemURL instead.");
     module.exports.resolveLocalFileSystemURL.apply(this, arguments);
 };
