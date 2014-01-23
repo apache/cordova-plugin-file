@@ -40,16 +40,9 @@ enum CDVFileError {
 };
 typedef int CDVFileError;
 
-enum CDVFileSystemType {
-    TEMPORARY = 0,
-    PERSISTENT = 1,
-    ASSETS_LIBRARY = 2,
-};
-typedef int CDVFileSystemType;
-
 @interface CDVFilesystemURL : NSObject  {
     NSURL *_url;
-    CDVFileSystemType _fileSystemType;
+    NSString *_fileSystemName;
     NSString *_fullPath;
 }
 
@@ -60,7 +53,7 @@ typedef int CDVFileSystemType;
 
 
 @property (atomic) NSURL *url;
-@property (atomic) CDVFileSystemType fileSystemType;
+@property (atomic) NSString *fileSystemName;
 @property (atomic) NSString *fullPath;
 
 @end
@@ -85,6 +78,8 @@ typedef int CDVFileSystemType;
 
 - (NSDictionary *)makeEntryForLocalURL:(CDVFilesystemURL *)url;
 
+@property (nonatomic,strong) NSString *name;
+
 @optional
 - (NSString *)filesystemPathForURL:(CDVFilesystemURL *)localURI;
 - (CDVFilesystemURL *)URLforFilesystemPath:(NSString *)path;
@@ -103,11 +98,15 @@ typedef int CDVFileSystemType;
 }
 
 - (NSNumber*)checkFreeDiskSpace:(NSString*)appPath;
-- (NSDictionary*)makeEntryForPath:(NSString*)fullPath fileSystem:(int)fsType isDirectory:(BOOL)isDir;
+- (NSDictionary*)makeEntryForPath:(NSString*)fullPath fileSystemName:(NSString *)fsName isDirectory:(BOOL)isDir;
 - (NSDictionary *)makeEntryForURL:(NSURL *)URL;
 - (CDVFilesystemURL *)fileSystemURLforLocalPath:(NSString *)localPath;
 
 - (NSObject<CDVFileSystem> *)filesystemForURL:(CDVFilesystemURL *)localURL;
+
+/* Native Registration API */
+- (void)registerFilesystem:(NSObject<CDVFileSystem> *)fs;
+- (NSObject<CDVFileSystem> *)fileSystemByName:(NSString *)fsName;
 
 /* Exec API */
 - (void)requestFileSystem:(CDVInvokedUrlCommand*)command;

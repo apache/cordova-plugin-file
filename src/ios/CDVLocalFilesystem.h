@@ -27,7 +27,6 @@
 - (id) initWithName:(NSString *)name root:(NSString *)fsRoot;
 + (NSString*)getMimeTypeFromPath:(NSString*)fullPath;
 
-@property (nonatomic,strong) NSString *name;
 @property (nonatomic,strong) NSString *fsRoot;
 
 @end

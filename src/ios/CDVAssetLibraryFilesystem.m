@@ -29,6 +29,8 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 NSString* const kCDVAssetsLibraryScheme = @"assets-library";
 
 @implementation CDVAssetLibraryFilesystem
+@synthesize name=_name;
+
 - (CDVPluginResult *)entryForLocalURI:(CDVFilesystemURL *)url
 {
     NSDictionary* entry = [self makeEntryForLocalURL:url];
@@ -36,10 +38,10 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
 }
 
 - (NSDictionary *)makeEntryForLocalURL:(CDVFilesystemURL *)url {
-    return [self makeEntryForPath:[url.url absoluteString] fileSystem:ASSETS_LIBRARY isDirectory:NO];
+    return [self makeEntryForPath:[url.url absoluteString] fileSystemName:self.name isDirectory:NO];
 }
 
-- (NSDictionary*)makeEntryForPath:(NSString*)fullPath fileSystem:(int)fsType isDirectory:(BOOL)isDir
+- (NSDictionary*)makeEntryForPath:(NSString*)fullPath fileSystemName:(NSString *)fsName isDirectory:(BOOL)isDir
 {
     NSMutableDictionary* dirEntry = [NSMutableDictionary dictionaryWithCapacity:5];
     NSString* lastPart = [fullPath lastPathComponent];
@@ -50,7 +52,8 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
     [dirEntry setObject:[NSNumber numberWithBool:isDir]  forKey:@"isDirectory"];
     [dirEntry setObject:fullPath forKey:@"fullPath"];
     [dirEntry setObject:lastPart forKey:@"name"];
-    [dirEntry setObject: [NSNumber numberWithInt:fsType] forKey: @"filesystem"];
+    [dirEntry setObject: [NSNumber numberWithInt:([fsName isEqualToString:@"temporary"] ? 0 : 1)] forKey: @"filesystem"];
+    [dirEntry setObject:fsName forKey: @"filesystemName"];
 
     return dirEntry;
 }
@@ -81,6 +84,14 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
         }
     }
     return mimeType;
+}
+
+- (id)initWithName:(NSString *)name
+{
+    if (self) {
+        _name = name;
+    }
+    return self;
 }
 
 - (CDVPluginResult *)getFileForURL:(CDVFilesystemURL *)baseURI requestedPath:(NSString *)requestedPath options:(NSDictionary *)options

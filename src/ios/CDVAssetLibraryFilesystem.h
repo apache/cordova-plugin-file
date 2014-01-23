@@ -25,4 +25,6 @@ extern NSString* const kCDVAssetsLibraryScheme;
 @interface CDVAssetLibraryFilesystem : NSObject<CDVFileSystem> {
 }
 
+- (id) initWithName:(NSString *)name;
+
 @end
