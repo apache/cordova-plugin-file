@@ -33,6 +33,8 @@ public abstract class Filesystem {
         // The file system can't be specified, as it would lead to an infinite loop,
         // but the filesystem name can be.
         entry.put("filesystemName", fsName);
+        // Backwards compatibility
+        entry.put("filesystem", "temporary".equals(fsName) ? 0 : 1);
 
         return entry;
 

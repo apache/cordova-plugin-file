@@ -84,6 +84,8 @@ public class LocalFilesystem extends Filesystem {
     	  // But we can specify the name of the FS, and the rest can be reconstructed
     	  // in JS.
     	  entry.put("filesystemName", inputURL.filesystemName);
+    	  // Backwards compatibility
+    	  entry.put("filesystem", "temporary".equals(name) ? 0 : 1);
           return entry;
       } catch (JSONException e) {
     	  throw new IOException();
