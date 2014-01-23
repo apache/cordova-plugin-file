@@ -119,11 +119,15 @@ public class FileUtils extends CordovaPlugin {
 
     	// Initialize static plugin reference for deprecated getEntry method
     	if (filePlugin == null) {
-    		filePlugin = this;
+    		FileUtils.filePlugin = this;
     	}
     }
     
-    private Filesystem filesystemForURL(LocalFilesystemURL localURL) {
+    public static FileUtils getFilePlugin() {
+		return filePlugin;
+	}
+
+	private Filesystem filesystemForURL(LocalFilesystemURL localURL) {
     	if (localURL == null) return null;
     	return filesystemForName(localURL.filesystemName);
     }
@@ -736,8 +740,8 @@ public class FileUtils extends CordovaPlugin {
     public static JSONObject getEntry(File file) throws JSONException {
 		JSONObject entry;
 		
- 		if (filePlugin != null) {
- 			for (Filesystem fs:filePlugin.filesystems) {
+ 		if (getFilePlugin() != null) {
+ 			for (Filesystem fs:getFilePlugin().filesystems) {
  				entry = fs.makeEntryForFile(file);
  				if (entry != null) {
  					return entry;
