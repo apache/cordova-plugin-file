@@ -55,3 +55,34 @@ on the subject. For an overview of other storage options, refer to Cordova's
 - `FileReader.readAsText(blob, encoding)`
   - The `encoding` parameter is not supported, and UTF-8 encoding is always in effect.
 
+### iOS Persistent storage location
+
+There are two valid locations to store persistent files on an iOS device: the
+Documents directory and the Library directory. Previous versions of thie plugin
+only ever stored persistent files in the Documents directory. This had the
+side-effect of making all of an application's files visible in iTunes, which
+was often unintended, especially for applications which handle lots of small
+files, rather than producing complete documents for export, which is the
+intended purpose of the directory.
+
+It is now possible to choose whether to store files in the documents or library
+directory, with a preference in your application's config.xml file. To do this,
+add one of these two lines to config.xml:
+
+    <preference name="iosPersistentFileLocation" value="Library" />
+
+    <preference name="iosPersistentFileLocation" value="Documents" />
+
+Without this line, the File plugin will not initialize, and your application
+will not start.
+
+If your application has previously been shipped to users, using an older (pre-
+1.0) version of this plugin, and has stored files in the persistent filesystem,
+then you should set the preference to "Documents". Switching the location to
+"Library" would mean that existing users who upgrade their application would be
+unable to access their previously-stored files.
+
+If your application is new, or has never previously stored files in the
+persistent filesystem, then the "Library" setting is generally recommended,
+unless your application's purpose is to generate document files for users to
+consume externally.

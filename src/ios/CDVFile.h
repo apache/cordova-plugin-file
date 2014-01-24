@@ -90,8 +90,6 @@ typedef int CDVFileError;
     NSString* appDocsPath;
     NSString* appLibraryPath;
     NSString* appTempPath;
-    NSString* persistentPath;
-    NSString* temporaryPath;
 
     NSMutableArray* fileSystems_;
     BOOL userHasAllowed;

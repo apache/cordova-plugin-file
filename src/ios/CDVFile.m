@@ -153,7 +153,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
 @implementation CDVFile
 
-@synthesize appDocsPath, appLibraryPath, appTempPath, persistentPath, temporaryPath, userHasAllowed, fileSystems=fileSystems_;
+@synthesize appDocsPath, appLibraryPath, appTempPath, userHasAllowed, fileSystems=fileSystems_;
 
 - (void)registerFilesystem:(NSObject<CDVFileSystem> *)fs {
     [fileSystems_ addObject:fs];
@@ -182,35 +182,54 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     }
 }
 
+@synthesize viewController=_viewController;
+- (void)setViewController:(UIViewController *)newViewController
+{
+    if (_viewController != newViewController) {
+        _viewController = newViewController;
+
+        NSString *location = nil;
+        if([_viewController isKindOfClass:[CDVViewController class]]) {
+            CDVViewController *vc = (CDVViewController *)_viewController;
+            NSMutableDictionary *settings = vc.settings;
+            location = [[settings objectForKey:@"iospersistentfilelocation"] lowercaseString];
+            NSAssert(
+                [location isEqualToString:@"library"] || [location isEqualToString:@"documents"],
+                @"File plugin configuration error: Please set ios-persistent-file-location in config.xml to one of \"library\" (for new applications) or \"documents\" (for compatibility with previous versions)");
+        }
+
+        [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"temporary" root:self.appTempPath]];
+        if ([location isEqualToString:@"library"]) {
+            [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.appLibraryPath]];
+        } else {
+            // Compatibilty by default (if we're not embedded in a CDVViewController somehow.)
+            [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.appDocsPath]];
+        }
+        [self registerFilesystem:[[CDVAssetLibraryFilesystem alloc] initWithName:@"assets-library"]];
+    }
+}
+
+
 - (id)initWithWebView:(UIWebView*)theWebView
 {
     self = (CDVFile*)[super initWithWebView:theWebView];
     if (self) {
         filePlugin = self;
-//        @throw (@"Error!");
         [NSURLProtocol registerClass:[CDVFilesystemURLProtocol class]];
 
         fileSystems_ = [[NSMutableArray alloc] initWithCapacity:3];
 
-        // get the temporary directory path
+        // Get the Library directory path
         NSArray* paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
         self.appLibraryPath = [paths objectAtIndex:0];
 
+        // Get the Temporary directory path
         self.appTempPath = [NSTemporaryDirectory()stringByStandardizingPath];   // remove trailing slash from NSTemporaryDirectory()
 
-        [fileSystems_ addObject:[[CDVLocalFilesystem alloc] initWithName:@"temporary" root:[paths objectAtIndex:0]]];
-
-        // get the documents directory path
+        // Get the Documents directory path
         paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         self.appDocsPath = [paths objectAtIndex:0];
 
-        [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:[paths objectAtIndex:0]]];
-
-        self.persistentPath = [NSString stringWithFormat:@"/%@", [self.appDocsPath lastPathComponent]];
-        self.temporaryPath = [NSString stringWithFormat:@"/%@", [self.appTempPath lastPathComponent]];
-        // NSLog(@"docs: %@ - temp: %@", self.appDocsPath, self.appTempPath);
-        
-        [self registerFilesystem:[[CDVAssetLibraryFilesystem alloc] initWithName:@"assets-library"]];
 
     }
 
