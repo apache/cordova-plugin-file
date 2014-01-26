@@ -567,17 +567,19 @@ public class FileUtils extends CordovaPlugin {
     private void copyAction(File srcFile, File destFile)
             throws FileNotFoundException, IOException {
         FileInputStream istream = new FileInputStream(srcFile);
-        FileOutputStream ostream = new FileOutputStream(destFile);
-        FileChannel input = istream.getChannel();
-        FileChannel output = ostream.getChannel();
-
         try {
-            input.transferTo(0, input.size(), output);
+            FileOutputStream ostream = new FileOutputStream(destFile);
+            FileChannel input = istream.getChannel();
+            FileChannel output = ostream.getChannel();
+            try {
+                input.transferTo(0, input.size(), output);
+            } finally {
+                ostream.close();
+                input.close();
+                output.close();
+            }
         } finally {
             istream.close();
-            ostream.close();
-            input.close();
-            output.close();
         }
     }
 
@@ -1141,20 +1143,21 @@ public class FileUtils extends CordovaPlugin {
             rawData = data.getBytes();
         }
         ByteArrayInputStream in = new ByteArrayInputStream(rawData);
+        FileOutputStream out = new FileOutputStream(filename, append);
         try
         {
-            FileOutputStream out = new FileOutputStream(filename, append);
             byte buff[] = new byte[rawData.length];
             in.read(buff, 0, buff.length);
             out.write(buff, 0, rawData.length);
             out.flush();
-            out.close();
         }
         catch (NullPointerException e)
         {
             // This is a bug in the Android implementation of the Java Stack
             NoModificationAllowedException realException = new NoModificationAllowedException(filename);
             throw realException;
+        } finally {
+            out.close();
         }
 
         return rawData.length;
