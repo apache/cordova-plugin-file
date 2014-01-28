@@ -112,18 +112,16 @@ add one of these two lines to config.xml:
 
     <preference name="iosPersistentFileLocation" value="Library" />
 
-    <preference name="iosPersistentFileLocation" value="Documents" />
+    <preference name="iosPersistentFileLocation" value="Compatibility" />
 
 Without this line, the File plugin will not initialize, and your application
 will not start.
 
 If your application has previously been shipped to users, using an older (pre-
 1.0) version of this plugin, and has stored files in the persistent filesystem,
-then you should set the preference to "Documents". Switching the location to
+then you should set the preference to "Compatibility". Switching the location to
 "Library" would mean that existing users who upgrade their application would be
 unable to access their previously-stored files.
 
 If your application is new, or has never previously stored files in the
-persistent filesystem, then the "Library" setting is generally recommended,
-unless your application's purpose is to generate document files for users to
-consume externally.
+persistent filesystem, then the "Library" setting is generally recommended.

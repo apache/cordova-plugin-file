@@ -87,6 +87,7 @@ typedef int CDVFileError;
 @end
 
 @interface CDVFile : CDVPlugin {
+    NSString* rootDocsPath;
     NSString* appDocsPath;
     NSString* appLibraryPath;
     NSString* appTempPath;
@@ -136,6 +137,7 @@ typedef int CDVFileError;
 /* Internal methods for testing */
 - (void)_getLocalFilesystemPath:(CDVInvokedUrlCommand*)command;
 
+@property (nonatomic, strong) NSString* rootDocsPath;
 @property (nonatomic, strong) NSString* appDocsPath;
 @property (nonatomic, strong) NSString* appLibraryPath;
 @property (nonatomic, strong) NSString* appTempPath;

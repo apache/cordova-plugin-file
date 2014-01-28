@@ -153,7 +153,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
 @implementation CDVFile
 
-@synthesize appDocsPath, appLibraryPath, appTempPath, userHasAllowed, fileSystems=fileSystems_;
+@synthesize rootDocsPath, appDocsPath, appLibraryPath, appTempPath, userHasAllowed, fileSystems=fileSystems_;
 
 - (void)registerFilesystem:(NSObject<CDVFileSystem> *)fs {
     [fileSystems_ addObject:fs];
@@ -194,8 +194,8 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
             NSMutableDictionary *settings = vc.settings;
             location = [[settings objectForKey:@"iospersistentfilelocation"] lowercaseString];
             NSAssert(
-                [location isEqualToString:@"library"] || [location isEqualToString:@"documents"],
-                @"File plugin configuration error: Please set ios-persistent-file-location in config.xml to one of \"library\" (for new applications) or \"documents\" (for compatibility with previous versions)");
+                [location isEqualToString:@"library"] || [location isEqualToString:@"compatibility"],
+                @"File plugin configuration error: Please set iosPersistentFileLocation in config.xml to one of \"library\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
         }
 
         [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"temporary" root:self.appTempPath]];
@@ -203,7 +203,14 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
             [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.appLibraryPath]];
         } else {
             // Compatibilty by default (if we're not embedded in a CDVViewController somehow.)
-            [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.appDocsPath]];
+            /*
+             *  Fall-back to compatibility mode -- this is the logic implemented in
+             *  earlier versions of this plugin, and should be maintained here so
+             *  that apps which were originally deployed with older versions of the
+             *  plugin can continue to provide access to files stored under those
+             *  versions.
+             */
+            [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.rootDocsPath]];
         }
         [self registerFilesystem:[[CDVAssetLibraryFilesystem alloc] initWithName:@"assets-library"]];
     }
@@ -221,14 +228,15 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
         // Get the Library directory path
         NSArray* paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
-        self.appLibraryPath = [paths objectAtIndex:0];
+        self.appLibraryPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"files"];
 
         // Get the Temporary directory path
         self.appTempPath = [NSTemporaryDirectory()stringByStandardizingPath];   // remove trailing slash from NSTemporaryDirectory()
 
         // Get the Documents directory path
         paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-        self.appDocsPath = [paths objectAtIndex:0];
+        self.rootDocsPath = [paths objectAtIndex:0];
+        self.appDocsPath = [self.rootDocsPath stringByAppendingPathComponent:@"files"];
 
 
     }
