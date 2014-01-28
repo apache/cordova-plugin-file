@@ -102,7 +102,7 @@ public class FileUtils extends CordovaPlugin {
     	String packageName = activity.getPackageName();
     	
     	String location = activity.getIntent().getStringExtra("androidpersistentfilelocation");
-    	if (!(location.equalsIgnoreCase("internal") || location.equalsIgnoreCase("compatibility"))) {
+    	if (location == null || !(location.equalsIgnoreCase("internal") || location.equalsIgnoreCase("compatibility"))) {
     		Log.e(LOG_TAG, "File plugin configuration error: Please set AndroidPersistentFileLocation in config.xml to one of \"internal\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
     		activity.finish();
     	}
