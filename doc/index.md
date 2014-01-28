@@ -39,6 +39,47 @@ on the subject. For an overview of other storage options, refer to Cordova's
 
 \* _These platforms do not support `FileReader.readAsArrayBuffer` nor `FileWriter.write(blob)`._
 
+## Android Quirks
+
+### Android Persistent storage location
+
+There are multiple valid locations to store persistent files on an Android
+device. See [this page](http://developer.android.com/guide/topics/data/data-storage.html)
+for an extensive discussion of the various possibilities.
+
+Previous versions of thie plugin would choose the location of the temporary and
+persistent files on startup, based on whether the device claimed that the SD
+Card (or equivalent storage partition) was mounted. If the SD Card was mounted,
+or if a large internal storage partition was available (such as on Nexus
+devices,) then the persistent files would be stored in the root of that space.
+This meant that all Cordova apps could see all of the files available on the
+card.
+
+If the SD card was not available, then previous versions would store data under
+/data/data/<packageId>, which isolates apps from each other, but may still
+cause data to be shared between users.
+
+It is now possible to choose whether to store files in the internal file
+storage location, or using the previous logic, with a preference in your
+application's config.xml file. To do this, add one of these two lines to
+config.xml:
+
+    <preference name="AndroidPersistentFileLocation" value="Internal" />
+
+    <preference name="AndroidPersistentFileLocation" value="Compatibility" />
+
+Without this line, the File plugin will not initialize, and your application
+will not start.
+
+If your application has previously been shipped to users, using an older (pre-
+1.0) version of this plugin, and has stored files in the persistent filesystem,
+then you should set the preference to "Compatibility". Switching the location to
+"Internal" would mean that existing users who upgrade their application may be
+unable to access their previously-stored files, depending on their device.
+
+If your application is new, or has never previously stored files in the
+persistent filesystem, then the "internal" setting is generally recommended.
+
 ## BlackBerry Quirks
 
 `DirectoryEntry.removeRecursively()` may fail with a `ControlledAccessException` in the following cases:

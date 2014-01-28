@@ -18,6 +18,7 @@
  */
 package org.apache.cordova.file;
 
+import android.app.Activity;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Base64;
@@ -93,33 +94,55 @@ public class FileUtils extends CordovaPlugin {
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     	super.initialize(cordova, webView);
     	this.filesystems = new ArrayList<Filesystem>();
-    	
-    	File fp;
-    	String tempRoot;
-    	String persistentRoot;
-    	if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-    		persistentRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
-    		tempRoot = Environment.getExternalStorageDirectory().getAbsolutePath() +
-    				"/Android/data/" + cordova.getActivity().getPackageName() + "/cache/";
-    	} else {
-    		persistentRoot = "/data/data/" + cordova.getActivity().getPackageName();
-    		tempRoot = "/data/data/" + cordova.getActivity().getPackageName() + "/cache/";
-    	}
-    	// Create the cache dir if it doesn't exist.
-    	fp = new File(tempRoot);
-    	fp.mkdirs();
-    	
-    	// Register initial filesystems
-    	// Note: The temporary and persistent filesystems need to be the first two
-    	// registered, so that they will match window.TEMPORARY and window.PERSISTENT,
-    	// per spec.
-    	this.registerFilesystem(new LocalFilesystem("temporary", cordova, tempRoot));
-    	this.registerFilesystem(new LocalFilesystem("persistent", cordova, persistentRoot));
-    	this.registerFilesystem(new ContentFilesystem("content", cordova, webView));
 
-    	// Initialize static plugin reference for deprecated getEntry method
-    	if (filePlugin == null) {
-    		FileUtils.filePlugin = this;
+    	String tempRoot = null;
+    	String persistentRoot = null;
+
+    	Activity activity = cordova.getActivity();
+    	String packageName = activity.getPackageName();
+    	
+    	String location = activity.getIntent().getStringExtra("androidpersistentfilelocation");
+    	if (!(location.equalsIgnoreCase("internal") || location.equalsIgnoreCase("compatibility"))) {
+    		Log.e(LOG_TAG, "File plugin configuration error: Please set AndroidPersistentFileLocation in config.xml to one of \"internal\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
+    		activity.finish();
+    	}
+    	else {
+    		if (location.equalsIgnoreCase("internal")) {
+    			persistentRoot = activity.getFilesDir().getAbsolutePath();
+    			tempRoot = activity.getCacheDir().getAbsolutePath();
+    		} else {
+    			/*
+    			 *  Fall-back to compatibility mode -- this is the logic implemented in
+    			 *  earlier versions of this plugin, and should be maintained here so
+    			 *  that apps which were originally deployed with older versions of the
+    			 *  plugin can continue to provide access to files stored under those
+    			 *  versions.
+    			 */
+    			File fp;
+    			if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+    				persistentRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
+    				tempRoot = Environment.getExternalStorageDirectory().getAbsolutePath() +
+    						"/Android/data/" + packageName + "/cache/";
+    			} else {
+    				persistentRoot = "/data/data/" + packageName;
+    				tempRoot = "/data/data/" + packageName + "/cache/";
+    			}
+    			// Create the cache dir if it doesn't exist.
+    			fp = new File(tempRoot);
+    			fp.mkdirs();
+    		}
+    		// Register initial filesystems
+    		// Note: The temporary and persistent filesystems need to be the first two
+    		// registered, so that they will match window.TEMPORARY and window.PERSISTENT,
+    		// per spec.
+    		this.registerFilesystem(new LocalFilesystem("temporary", cordova, tempRoot));
+    		this.registerFilesystem(new LocalFilesystem("persistent", cordova, persistentRoot));
+    		this.registerFilesystem(new ContentFilesystem("content", cordova, webView));
+
+    		// Initialize static plugin reference for deprecated getEntry method
+    		if (filePlugin == null) {
+    			FileUtils.filePlugin = this;
+    		}
     	}
     }
     
