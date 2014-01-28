@@ -118,7 +118,6 @@ public class FileUtils extends CordovaPlugin {
     			 *  plugin can continue to provide access to files stored under those
     			 *  versions.
     			 */
-    			File fp;
     			if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
     				persistentRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
     				tempRoot = Environment.getExternalStorageDirectory().getAbsolutePath() +
@@ -127,10 +126,11 @@ public class FileUtils extends CordovaPlugin {
     				persistentRoot = "/data/data/" + packageName;
     				tempRoot = "/data/data/" + packageName + "/cache/";
     			}
-    			// Create the cache dir if it doesn't exist.
-    			fp = new File(tempRoot);
-    			fp.mkdirs();
     		}
+			// Create the directories if they don't exist.
+			new File(tempRoot).mkdirs();
+			new File(persistentRoot).mkdirs();
+
     		// Register initial filesystems
     		// Note: The temporary and persistent filesystems need to be the first two
     		// registered, so that they will match window.TEMPORARY and window.PERSISTENT,
