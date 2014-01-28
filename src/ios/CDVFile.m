@@ -198,9 +198,24 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
                 @"File plugin configuration error: Please set iosPersistentFileLocation in config.xml to one of \"library\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
         }
 
-        [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"temporary" root:self.appTempPath]];
+        NSError *error;
+        if ([[NSFileManager defaultManager] createDirectoryAtPath:self.appTempPath
+                                      withIntermediateDirectories:YES
+                                                       attributes:nil
+                                                            error:&error]) {
+            [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"temporary" root:self.appTempPath]];
+        } else {
+            NSLog(@"Unable to create temporary directory: %@", error);
+        }
         if ([location isEqualToString:@"library"]) {
-            [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.appLibraryPath]];
+            if ([[NSFileManager defaultManager] createDirectoryAtPath:self.appLibraryPath
+                                          withIntermediateDirectories:YES
+                                                           attributes:nil
+                                                                error:&error]) {
+                [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.appLibraryPath]];
+            } else {
+                NSLog(@"Unable to create library directory: %@", error);
+            }
         } else {
             // Compatibilty by default (if we're not embedded in a CDVViewController somehow.)
             /*
@@ -237,7 +252,6 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         self.rootDocsPath = [paths objectAtIndex:0];
         self.appDocsPath = [self.rootDocsPath stringByAppendingPathComponent:@"files"];
-
 
     }
 
