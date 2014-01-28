@@ -50,7 +50,7 @@ module.exports.resolveLocalFileSystemURL = function(uri, successCallback, errorC
             if (successCallback) {
                 // create appropriate Entry object
                 var fsName = entry.filesystemName || (entry.filesystem == window.PERSISTENT ? 'persistent' : 'temporary');
-                var fs = new FileSystem(fsName);
+                var fs = new FileSystem(fsName, {name:"", fullPath:"/"});
                 var result = (entry.isDirectory) ? new DirectoryEntry(entry.name, entry.fullPath, fs) : new FileEntry(entry.name, entry.fullPath, fs);
                 successCallback(result);
             }
