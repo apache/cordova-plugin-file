@@ -57,6 +57,7 @@ DirectoryReader.prototype.readEntries = function(successCallback, errorCallback)
             entry.isFile = result[i].isFile;
             entry.name = result[i].name;
             entry.fullPath = result[i].fullPath;
+            entry.filesystem = new (require('./FileSystem'))(result[i].filesystemName);
             retVal.push(entry);
         }
         reader.hasReadEntries = true;
