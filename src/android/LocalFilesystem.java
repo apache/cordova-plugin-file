@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.cordova.CordovaInterface;
 import org.json.JSONArray;
@@ -46,15 +48,53 @@ public class LocalFilesystem extends Filesystem {
 		return null;
 	}
 
-	@Override
-	public LocalFilesystemURL URLforFilesystemPath(String path) {
-	    String fullPath = this.fullPathForFilesystemPath(path);
+	protected LocalFilesystemURL URLforFullPath(String fullPath) {
 	    if (fullPath != null) {
+	    	if (fullPath.startsWith("/")) {
+	    		return new LocalFilesystemURL(LocalFilesystemURL.FILESYSTEM_PROTOCOL + "://localhost/"+this.name+fullPath);
+	    	}
 	        return new LocalFilesystemURL(LocalFilesystemURL.FILESYSTEM_PROTOCOL + "://localhost/"+this.name+"/"+fullPath);
 	    }
 	    return null;
+		
+	}
+	
+	@Override
+	public LocalFilesystemURL URLforFilesystemPath(String path) {
+	    return this.URLforFullPath(this.fullPathForFilesystemPath(path));
 	}
 
+	protected String normalizePath(String rawPath) {
+	    // If this is an absolute path, trim the leading "/" and replace it later
+	    boolean isAbsolutePath = rawPath.startsWith("/");
+	    if (isAbsolutePath) {
+	        rawPath = rawPath.substring(1);
+	    }
+	    ArrayList<String> components = new ArrayList<String>(Arrays.asList(rawPath.split("/")));
+	    for (int index = 0; index < components.size(); ++index) {
+	        if (components.get(index).equals("..")) {
+	            components.remove(index);
+	            if (index > 0) {
+	                components.remove(index-1);
+	                --index;
+	            }
+	        }
+	    }
+	    StringBuilder normalizedPath = new StringBuilder();
+	    for(String component: components) {
+	    	normalizedPath.append("/");
+	    	normalizedPath.append(component);
+	    }
+	    if (isAbsolutePath) {
+	    	return normalizedPath.toString();
+	    } else {
+	    	return normalizedPath.toString().substring(1);
+	    }
+
+
+	}
+
+	
 	@Override
     public JSONObject makeEntryForFile(File file) throws JSONException {
     	String path = this.fullPathForFilesystemPath(file.getAbsolutePath());
@@ -116,7 +156,7 @@ public class LocalFilesystem extends Filesystem {
         if (path.startsWith("/")) {
         	requestedURL = URLforFilesystemPath(path);
         } else {
-        	requestedURL = new LocalFilesystemURL(Uri.withAppendedPath(inputURL.URL, path));
+        	requestedURL = URLforFullPath(normalizePath(inputURL.fullPath + "/" + path));
         }
         
         File fp = new File(this.filesystemPathForURL(requestedURL));

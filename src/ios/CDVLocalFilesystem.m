@@ -103,15 +103,48 @@
     return path;
 }
 
-- (CDVFilesystemURL *)URLforFilesystemPath:(NSString *)path
+- (CDVFilesystemURL *)URLforFullPath:(NSString *)fullPath
 {
-    NSString *fullPath = [self fullPathForFileSystemPath:path];
     if (fullPath) {
+        if ([fullPath hasPrefix:@"/"])
         return [CDVFilesystemURL fileSystemURLWithString:[NSString stringWithFormat:@"%@://localhost/%@%@", kCDVFilesystemURLPrefix, self.name, fullPath]];
+        return [CDVFilesystemURL fileSystemURLWithString:[NSString stringWithFormat:@"%@://localhost/%@/%@", kCDVFilesystemURLPrefix, self.name, fullPath]];
     }
     return nil;
 }
 
+- (CDVFilesystemURL *)URLforFilesystemPath:(NSString *)path
+{
+    return [self URLforFullPath:[self fullPathForFileSystemPath:path]];
+
+}
+
+- (NSString *)normalizePath:(NSString *)rawPath
+{
+    // If this is an absolute path, the first path component will be '/'. Skip it if that's the case
+    BOOL isAbsolutePath = [rawPath hasPrefix:@"/"];
+    if (isAbsolutePath) {
+        rawPath = [rawPath substringFromIndex:1];
+    }
+    NSMutableArray *components = [NSMutableArray arrayWithArray:[rawPath pathComponents]];
+    for (int index = 0; index < [components count]; ++index) {
+        if ([[components objectAtIndex:index] isEqualToString:@".."]) {
+            [components removeObjectAtIndex:index];
+            if (index > 0) {
+                [components removeObjectAtIndex:index-1];
+                --index;
+            }
+        }
+    }
+    NSString *normalizedPath;
+    if (isAbsolutePath) {
+        return [NSString stringWithFormat:@"/%@", [components componentsJoinedByString:@"/"]];
+    } else {
+        return [components componentsJoinedByString:@"/"];
+    }
+
+
+}
 
 - (CDVPluginResult *)getFileForURL:(CDVFilesystemURL *)baseURI requestedPath:(NSString *)requestedPath options:(NSDictionary *)options
 {
@@ -136,14 +169,19 @@
     if ([requestedPath rangeOfString:@":"].location != NSNotFound) {
         errorCode = ENCODING_ERR;
     } else {
-        CDVFilesystemURL* requestedURL = [CDVFilesystemURL fileSystemURLWithURL:[NSURL URLWithString:[requestedPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding] relativeToURL:baseURI.url]]; /* TODO: UGLY - FIX */
-
-        // NSLog(@"reqFullPath = %@", reqFullPath);
+        // Build new fullPath for the requested resource.
+        // We concatenate the two paths together, and then scan the resulting string to remove
+        // parent ("..") references. Any parent references at the beginning of the string are
+        // silently removed.
+        NSString *combinedPath = [baseURI.fullPath stringByAppendingPathComponent:[requestedPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        combinedPath = [self normalizePath:combinedPath];
+        CDVFilesystemURL* requestedURL = [self URLforFullPath:combinedPath];
+        
         NSFileManager* fileMgr = [[NSFileManager alloc] init];
         BOOL bIsDir;
         BOOL bExists = [fileMgr fileExistsAtPath:[self filesystemPathForURL:requestedURL] isDirectory:&bIsDir];
         if (bExists && (create == NO) && (bIsDir == !bDirRequest)) {
-            // path exists and is of requested type  - return TYPE_MISMATCH_ERR
+            // path exists and is not of requested type  - return TYPE_MISMATCH_ERR
             errorCode = TYPE_MISMATCH_ERR;
         } else if (!bExists && (create == NO)) {
             // path does not exist and create is false - return NOT_FOUND_ERR
