@@ -70,6 +70,11 @@ function write(data) {
         data = binary;
     }
 
+    var prefix = "file://localhost";
+    var path = this.localURL;
+    if (path.substr(0, prefix.length) == prefix) {
+        path = path.substr(prefix.length);
+    }
     // Write file
     exec(
         // Success callback
@@ -120,7 +125,7 @@ function write(data) {
             if (typeof me.onwriteend === "function") {
                 me.onwriteend(new ProgressEvent("writeend", {"target":me}));
             }
-        }, "File", "write", [this.fileName, data, this.position, isBinary]);
+        }, "File", "write", [path, data, this.position, isBinary]);
 };
 
 module.exports = {

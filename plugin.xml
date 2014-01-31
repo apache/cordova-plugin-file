@@ -143,6 +143,9 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <js-module src="www/ubuntu/Entry.js" name="Entry1">
             <merges target="window.Entry" />
         </js-module>
+        <js-module src="www/ubuntu/DirectoryEntry.js" name="DirectoryEntry1">
+            <merges target="window.DirectoryEntry" />
+        </js-module>
         <js-module src="www/ubuntu/FileWriter.js" name="FileWriter1">
             <merges target="window.FileWriter" />
         </js-module>
