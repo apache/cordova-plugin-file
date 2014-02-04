@@ -851,34 +851,44 @@ module.exports = {
             path = decodeURI(path);
         }
 
-        // support for special path start with file:///
-        if (path.substr(0, 8) == "file:///") {
-            path = Windows.Storage.ApplicationData.current.localFolder.path + "\\" + String(path).substr(8);
-        } else {
-            // method should not let read files outside of the [APP HASH]/Local or [APP HASH]/temp folders
-            if (path.indexOf(Windows.Storage.ApplicationData.current.temporaryFolder.path) != 0 &&
-                path.indexOf(Windows.Storage.ApplicationData.current.localFolder.path) != 0) {
-                fail && fail(FileError.ENCODING_ERR);
-                return;
-            }
-        }
-        
-        // refine path format to make sure it is correct
-        path = path.split("/").join("\\");
+		if (path.substr(0, 10) == "ms-appx://" || path.substr(0, 13) == "ms-appdata://") {
+            Windows.Storage.StorageFile.getFileFromApplicationUriAsync(new Windows.Foundation.Uri(path)).then(
+                function (storageFile) {
+                    success(new FileEntry(storageFile.name, storageFile.path));
+                }, function () {
+                    fail && fail(FileError.NOT_FOUND_ERR);
+                });
+		} else {
+			// support for special path start with file:///
+			if (path.substr(0, 8) == "file:///") {
+				path = Windows.Storage.ApplicationData.current.localFolder.path + "\\" + String(path).substr(8);
+			}
+			else {
+				// method should not let read files outside of the [APP HASH]/Local or [APP HASH]/temp folders
+				if (path.indexOf(Windows.Storage.ApplicationData.current.temporaryFolder.path) != 0 &&
+					path.indexOf(Windows.Storage.ApplicationData.current.localFolder.path) != 0) {
+					fail && fail(FileError.ENCODING_ERR);
+					return;
+				}
+			}
+			
+			// refine path format to make sure it is correct
+			path = path.split("/").join("\\");
 
-        Windows.Storage.StorageFile.getFileFromPathAsync(path).then(
-            function (storageFile) {
-                success(new FileEntry(storageFile.name, storageFile.path));
-            }, function () {
-                Windows.Storage.StorageFolder.getFolderFromPathAsync(path).then(
-                    function (storageFolder) {
-                        success(new DirectoryEntry(storageFolder.name, storageFolder.path));
-                    }, function () {
-                        fail && fail(FileError.NOT_FOUND_ERR);
-                    }
-                );
-            }
-        );
+			Windows.Storage.StorageFile.getFileFromPathAsync(path).then(
+				function (storageFile) {
+					success(new FileEntry(storageFile.name, storageFile.path));
+				}, function () {
+					Windows.Storage.StorageFolder.getFolderFromPathAsync(path).then(
+						function (storageFolder) {
+							success(new DirectoryEntry(storageFolder.name, storageFolder.path));
+						}, function () {
+							fail && fail(FileError.NOT_FOUND_ERR);
+						}
+					);
+				}
+			);
+		}
     }
     
 
