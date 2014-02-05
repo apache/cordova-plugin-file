@@ -66,6 +66,8 @@ public class FileUtils extends CordovaPlugin {
     
     public static int UNKNOWN_ERR = 1000;
     
+    private boolean configured = false;
+
     // This field exists only to support getEntry, below, which has been deprecated
     private static FileUtils filePlugin;
 
@@ -139,6 +141,8 @@ public class FileUtils extends CordovaPlugin {
     		this.registerFilesystem(new LocalFilesystem("persistent", cordova, persistentRoot));
     		this.registerFilesystem(new ContentFilesystem("content", cordova, webView));
 
+           this.configured = true;
+
     		// Initialize static plugin reference for deprecated getEntry method
     		if (filePlugin == null) {
     			FileUtils.filePlugin = this;
@@ -182,6 +186,10 @@ public class FileUtils extends CordovaPlugin {
      * @return 			True if the action was valid, false otherwise.
      */
     public boolean execute(String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
+        if (!configured) {
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "File plugin is not configured. Please see the README.md file for details on how to update config.xml"));
+            return true;
+        }
         if (action.equals("testSaveLocationExists")) {
             threadhelper( new FileOp( ){
                 public void run() {
