@@ -104,31 +104,30 @@ public class FileUtils extends CordovaPlugin {
     	String packageName = activity.getPackageName();
     	
     	String location = activity.getIntent().getStringExtra("androidpersistentfilelocation");
-    	if (location == null || !(location.equalsIgnoreCase("internal") || location.equalsIgnoreCase("compatibility"))) {
-    		Log.e(LOG_TAG, "File plugin configuration error: Please set AndroidPersistentFileLocation in config.xml to one of \"internal\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
-    		activity.finish();
-    	}
-    	else {
-    		if (location.equalsIgnoreCase("internal")) {
-    			persistentRoot = activity.getFilesDir().getAbsolutePath() + "/files/";
-    			tempRoot = activity.getCacheDir().getAbsolutePath();
+    	if ("internal".equalsIgnoreCase(location)) {
+    		persistentRoot = activity.getFilesDir().getAbsolutePath() + "/files/";
+    		tempRoot = activity.getCacheDir().getAbsolutePath();
+    		this.configured = true;
+    	} else if ("compatibility".equalsIgnoreCase(location)) {
+    		/*
+    		 *  Fall-back to compatibility mode -- this is the logic implemented in
+    		 *  earlier versions of this plugin, and should be maintained here so
+    		 *  that apps which were originally deployed with older versions of the
+    		 *  plugin can continue to provide access to files stored under those
+    		 *  versions.
+    		 */
+    		if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+    			persistentRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
+    			tempRoot = Environment.getExternalStorageDirectory().getAbsolutePath() +
+    					"/Android/data/" + packageName + "/cache/";
     		} else {
-    			/*
-    			 *  Fall-back to compatibility mode -- this is the logic implemented in
-    			 *  earlier versions of this plugin, and should be maintained here so
-    			 *  that apps which were originally deployed with older versions of the
-    			 *  plugin can continue to provide access to files stored under those
-    			 *  versions.
-    			 */
-    			if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-    				persistentRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
-    				tempRoot = Environment.getExternalStorageDirectory().getAbsolutePath() +
-    						"/Android/data/" + packageName + "/cache/";
-    			} else {
-    				persistentRoot = "/data/data/" + packageName;
-    				tempRoot = "/data/data/" + packageName + "/cache/";
-    			}
+    			persistentRoot = "/data/data/" + packageName;
+    			tempRoot = "/data/data/" + packageName + "/cache/";
     		}
+    		this.configured = true;
+    	}
+
+    	if (this.configured) {
 			// Create the directories if they don't exist.
 			new File(tempRoot).mkdirs();
 			new File(persistentRoot).mkdirs();
@@ -141,12 +140,14 @@ public class FileUtils extends CordovaPlugin {
     		this.registerFilesystem(new LocalFilesystem("persistent", cordova, persistentRoot));
     		this.registerFilesystem(new ContentFilesystem("content", cordova, webView));
 
-           this.configured = true;
 
     		// Initialize static plugin reference for deprecated getEntry method
     		if (filePlugin == null) {
     			FileUtils.filePlugin = this;
     		}
+    	} else {
+    		Log.e(LOG_TAG, "File plugin configuration error: Please set AndroidPersistentFileLocation in config.xml to one of \"internal\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
+    		activity.finish();
     	}
     }
     

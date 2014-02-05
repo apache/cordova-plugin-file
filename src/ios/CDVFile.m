@@ -216,8 +216,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
             } else {
                 NSLog(@"Unable to create library directory: %@", error);
             }
-        } else {
-            // Compatibilty by default (if we're not embedded in a CDVViewController somehow.)
+        } else if ([location isEqualToString:@"compatibility"]) {
             /*
              *  Fall-back to compatibility mode -- this is the logic implemented in
              *  earlier versions of this plugin, and should be maintained here so
@@ -226,6 +225,9 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
              *  versions.
              */
             [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.rootDocsPath]];
+        } else {
+            NSAssert(false,
+                @"File plugin configuration error: Please set iosPersistentFileLocation in config.xml to one of \"library\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
         }
         [self registerFilesystem:[[CDVAssetLibraryFilesystem alloc] initWithName:@"assets-library"]];
     }
