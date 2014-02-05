@@ -193,9 +193,11 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
             CDVViewController *vc = (CDVViewController *)_viewController;
             NSMutableDictionary *settings = vc.settings;
             location = [[settings objectForKey:@"iospersistentfilelocation"] lowercaseString];
-            NSAssert(
-                [location isEqualToString:@"library"] || [location isEqualToString:@"compatibility"],
-                @"File plugin configuration error: Please set iosPersistentFileLocation in config.xml to one of \"library\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
+        }
+        if (location == nil) {
+            // Compatibilty by default (if the config preference is not set, or
+            // if we're not embedded in a CDVViewController somehow.)
+            location = @"compatibility";
         }
 
         NSError *error;

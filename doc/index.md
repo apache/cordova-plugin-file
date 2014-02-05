@@ -68,7 +68,8 @@ config.xml:
 
     <preference name="AndroidPersistentFileLocation" value="Compatibility" />
 
-Without this line, the File plugin will not initialize, and your application
+Without this line, the File plugin will use "Compatibility" as the default. If
+a preference tag is present, and is not one of these values, the application
 will not start.
 
 If your application has previously been shipped to users, using an older (pre-
@@ -114,7 +115,8 @@ add one of these two lines to config.xml:
 
     <preference name="iosPersistentFileLocation" value="Compatibility" />
 
-Without this line, the File plugin will not initialize, and your application
+Without this line, the File plugin will use "Compatibility" as the default. If
+a preference tag is present, and is not one of these values, the application
 will not start.
 
 If your application has previously been shipped to users, using an older (pre-
