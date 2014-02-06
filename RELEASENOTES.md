@@ -125,12 +125,3 @@
 * CB-5405: Update JS code to use URLs exclusively
 * CB-4816 Fix file creation outside sandbox for BB10
 
-### 1.0.1
-* CB-5959: Entry.getMetadata should return size attribute
-* CB-6010: Test properly for presence of URLforFilesystemPath method
-* CB-6012: Preserve query strings on cdvfile:// URLs where necessary
-* CB-5233: Make asset-library urls work properly on iOS
-* CB-2432, CB-3185, CB-5975: Fix Android handling of content:// URLs
-* CB-6050: Public method for returning a FileEntry from a device file path
-* CB-6057: Add methods for plugins to convert between URLs and paths
-* CB-6080: Fix file copy when src and dst are on different local file systems
