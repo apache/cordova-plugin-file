@@ -262,7 +262,8 @@ public class LocalFilesystem extends Filesystem {
 
         JSONObject metadata = new JSONObject();
         try {
-        	metadata.put("size", file.length());
+            // Ensure that directories report a size of 0
+        	metadata.put("size", file.isDirectory() ? 0 : file.length());
         	metadata.put("type", FileHelper.getMimeType(file.getAbsolutePath(), cordova));
         	metadata.put("name", file.getName());
         	metadata.put("fullPath", inputURL.fullPath);
