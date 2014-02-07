@@ -257,9 +257,11 @@
     NSDictionary* fileAttribs = [fileMgr attributesOfItemAtPath:[self  filesystemPathForURL:url] error:&error];
 
     if (fileAttribs) {
+        // Ensure that directories (and other non-regular files) report size of 0
+        unsigned long long size = ([fileAttribs fileType] == NSFileTypeRegular ? [fileAttribs fileSize] : 0);
         NSDate* modDate = [fileAttribs fileModificationDate];
         if (modDate) {
-            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDouble:[modDate timeIntervalSince1970] * 1000];
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:@{@"modificationTime": @([modDate timeIntervalSince1970] * 1000), @"size": @(size)}];
         }
     } else {
         // didn't get fileAttribs

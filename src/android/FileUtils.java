@@ -314,23 +314,14 @@ public class FileUtils extends CordovaPlugin {
                 }
             },callbackContext);
         }
-        else if (action.equals("getMetadata")) {
-            final String fname=args.getString(0);
-            threadhelper( new FileOp( ){
-                public void run() throws FileNotFoundException, JSONException, MalformedURLException {
-                    JSONObject obj = getFileMetadata(fname);
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, obj.getLong("lastModifiedDate")));
-                }
-            }, callbackContext);
-        }
-        else if (action.equals("getFileMetadata")) {
+        else if (action.equals("getMetadata") || action.equals("getFileMetadata")) {
             final String fname=args.getString(0);
             threadhelper( new FileOp( ){
                 public void run() throws FileNotFoundException, JSONException, MalformedURLException {
                     JSONObject obj = getFileMetadata(fname);
                     callbackContext.success(obj);
                 }
-            },callbackContext);
+            }, callbackContext);
         }
         else if (action.equals("getParent")) {
             final String fname=args.getString(0);

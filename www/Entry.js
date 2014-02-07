@@ -59,8 +59,8 @@ function Entry(isFile, isDirectory, name, fullPath, fileSystem) {
  */
 Entry.prototype.getMetadata = function(successCallback, errorCallback) {
     argscheck.checkArgs('FF', 'Entry.getMetadata', arguments);
-    var success = successCallback && function(lastModified) {
-        var metadata = new Metadata(lastModified);
+    var success = successCallback && function(entryMetadata) {
+        var metadata = new Metadata(entryMetadata);
         successCallback(metadata);
     };
     var fail = errorCallback && function(code) {
