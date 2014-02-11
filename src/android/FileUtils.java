@@ -108,7 +108,7 @@ public class FileUtils extends CordovaPlugin {
     		location = "compatibility";
     	}
     	if ("internal".equalsIgnoreCase(location)) {
-    		persistentRoot = activity.getFilesDir().getAbsolutePath() + "/files/";
+    		persistentRoot = activity.getFilesDir().getAbsolutePath();
     		tempRoot = activity.getCacheDir().getAbsolutePath();
     		this.configured = true;
     	} else if ("compatibility".equalsIgnoreCase(location)) {
