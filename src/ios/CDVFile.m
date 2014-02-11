@@ -94,6 +94,8 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
             return @"";
         }
         return [path substringFromIndex:slashRange.location];
+    } else if ([[uri scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
+        return [[uri absoluteString] substringFromIndex:[kCDVAssetsLibraryScheme length]+2];
     }
     return nil;
 }
