@@ -124,3 +124,6 @@
 * CB-5406: Update iOS native code to use filesystem URLs internally
 * CB-5405: Update JS code to use URLs exclusively
 * CB-4816 Fix file creation outside sandbox for BB10
+
+### 1.0.1
+* CB-5959: Entry.getMetadata should return size attribute
