@@ -86,6 +86,9 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 {
     if ([[uri scheme] isEqualToString:kCDVFilesystemURLPrefix] && [[uri host] isEqualToString:@"localhost"]) {
         NSString *path = [uri path];
+        if ([uri query]) {
+            path = [NSString stringWithFormat:@"%@?%@", path, [uri query]];
+        }
         NSRange slashRange = [path rangeOfString:@"/" options:0 range:NSMakeRange(1, path.length-1)];
         if (slashRange.location == NSNotFound) {
             return @"";

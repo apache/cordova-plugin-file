@@ -128,3 +128,4 @@
 ### 1.0.1
 * CB-5959: Entry.getMetadata should return size attribute
 * CB-6010: Test properly for presence of URLforFilesystemPath method
+* CB-6012: Preserve query strings on cdvfile:// URLs where necessary

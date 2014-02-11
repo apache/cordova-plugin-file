@@ -35,6 +35,10 @@ public class LocalFilesystem extends Filesystem {
 	@Override
 	public String filesystemPathForURL(LocalFilesystemURL url) {
 	    String path = new File(this.fsRoot, url.fullPath).toString();
+        int questionMark = path.indexOf("?");
+        if (questionMark >= 0) {
+          path = path.substring(0, questionMark);
+        }
 	    if (path.endsWith("/")) {
 	      path = path.substring(0, path.length()-1);
 	    }
@@ -106,7 +110,7 @@ public class LocalFilesystem extends Filesystem {
 
 	@Override
 	public JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException {
-      File fp = new File(this.fsRoot, inputURL.fullPath);
+      File fp = new File(filesystemPathForURL(inputURL));
 
       if (!fp.exists()) {
           throw new FileNotFoundException();

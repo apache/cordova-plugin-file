@@ -21,6 +21,9 @@ public class LocalFilesystemURL {
 	private String fullPathForLocalURL(Uri URL) {
 		if (FILESYSTEM_PROTOCOL.equals(URL.getScheme()) && "localhost".equals(URL.getHost())) {
 			String path = URL.getPath();
+            if (URL.getQuery() != null) {
+                path = path + "?" + URL.getQuery();
+            }
 			return path.substring(path.indexOf('/', 1));
 		} else if ("content".equals(URL.getScheme())) {
 			return '/' + URL.getHost() + URL.getPath();

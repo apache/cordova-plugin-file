@@ -69,7 +69,7 @@
 - (NSDictionary*)makeEntryForPath:(NSString*)fullPath fileSystemName:(NSString *)fsName isDirectory:(BOOL)isDir
 {
     NSMutableDictionary* dirEntry = [NSMutableDictionary dictionaryWithCapacity:5];
-    NSString* lastPart = [fullPath lastPathComponent];
+    NSString* lastPart = [[self stripQueryParametersFromPath:fullPath] lastPathComponent];
     if (isDir && ![fullPath hasSuffix:@"/"]) {
         fullPath = [fullPath stringByAppendingString:@"/"];
     }
@@ -81,6 +81,15 @@
     [dirEntry setObject:fsName forKey: @"filesystemName"];
 
     return dirEntry;
+}
+
+- (NSString *)stripQueryParametersFromPath:(NSString *)fullPath
+{
+    NSRange questionMark = [fullPath rangeOfString:@"?"];
+    if (questionMark.location != NSNotFound) {
+        return [fullPath substringWithRange:NSMakeRange(0,questionMark.location)];
+    }
+    return fullPath;
 }
 
 /*
@@ -95,7 +104,7 @@
 - (NSString *)filesystemPathForURL:(CDVFilesystemURL *)url
 {
     NSString *path = nil;
-    NSString *fullPath = url.fullPath;
+    NSString *fullPath = [self stripQueryParametersFromPath:url.fullPath];
     path = [NSString stringWithFormat:@"%@%@", self.fsRoot, fullPath];
     if ([path hasSuffix:@"/"]) {
       path = [path substringToIndex:([path length]-1)];
