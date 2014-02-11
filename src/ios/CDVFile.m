@@ -268,9 +268,12 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     // Try all installed filesystems, in order. If any one supports mapping from
     // path to URL, and returns a URL, then use it.
     for (id object in self.fileSystems) {
-        localURL = [object URLforFilesystemPath:localPath];
-        if (localURL)
+        if ([object respondsToSelector:@selector(URLforFilesystemPath:)]) {
+            localURL = [object URLforFilesystemPath:localPath];
+        }
+        if (localURL) {
             return localURL;
+        }
     }
     return nil;
 }
