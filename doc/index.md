@@ -47,7 +47,7 @@ There are multiple valid locations to store persistent files on an Android
 device. See [this page](http://developer.android.com/guide/topics/data/data-storage.html)
 for an extensive discussion of the various possibilities.
 
-Previous versions of thie plugin would choose the location of the temporary and
+Previous versions of the plugin would choose the location of the temporary and
 persistent files on startup, based on whether the device claimed that the SD
 Card (or equivalent storage partition) was mounted. If the SD Card was mounted,
 or if a large internal storage partition was available (such as on Nexus
