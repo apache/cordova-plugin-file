@@ -127,3 +127,39 @@ unable to access their previously-stored files.
 
 If your application is new, or has never previously stored files in the
 persistent filesystem, then the "Library" setting is generally recommended.
+
+## Upgrading Notes
+
+In v1.0.0 of this plugin, the `FileEntry` and `DirectoryEntry` structures have changed,
+to be more in line with the published specification.
+
+Previous (pre-1.0.0) versions of the plugin stored the device-absolute-file-location
+in the `fullPath` property of `Entry` objects. These paths would typically look like
+
+    /var/mobile/Applications/<application UUID>/Documents/path/to/file  (iOS)
+    /storage/emulated/0/path/to/file                                    (Android)
+
+These paths were also returned by the `toURL()` method of the `Entry` objects.
+
+With v1.0.0, the `fullPath` attribute is the path to the file, _relative to the root of
+the HTML filesystem_. So, the above paths would now both be represented by a `FileEntry`
+object with a `fullPath` of
+
+    /path/to/file
+
+If your application works with device-absolute-paths, and you previously retrieved those
+paths through the `fullPath` property of `Entry` objects, then you should update your code
+to use `entry.toURL()` instead. This method will now return filesystem URLs of the form
+
+    cdvfile://localhost/persistent/path/to/file
+
+which can be used to identify the file uniquely.
+
+For backwards compatibility, the `resolveLocalFileSystemURL()` method will accept a
+device-absolute-path, and will return an `Entry` object corresponding to it, as long as that
+file exists within either the TEMPORARY or PERSISTENT filesystems.
+
+This has particularly been an issue with the File-Transfer plugin, which previously used
+device-absolute-paths (and can still accept them). It has been updated to work correctly
+with FileSystem URLs, so replacing `entry.fullPath` with `entry.toURL()` should resolve any
+issues getting that plugin to work with files on the device.
