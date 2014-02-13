@@ -145,7 +145,7 @@
             }
         }
     }
-    NSString *normalizedPath;
+
     if (isAbsolutePath) {
         return [NSString stringWithFormat:@"/%@", [components componentsJoinedByString:@"/"]];
     } else {
