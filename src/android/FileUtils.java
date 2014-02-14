@@ -501,14 +501,14 @@ public class FileUtils extends CordovaPlugin {
      * @throws JSONException
      */
     private JSONObject resolveLocalFileSystemURI(String url) throws IOException, JSONException {
-        String decoded = URLDecoder.decode(url, "UTF-8");
     	LocalFilesystemURL inputURL;
     	if (url == null) {
     		throw new MalformedURLException("Unrecognized filesystem URL");
     	}
     	
 		/* Backwards-compatibility: Check for file:// urls */
-    	if (decoded.startsWith("file://")) {
+    	if (url.startsWith("file://")) {
+            String decoded = URLDecoder.decode(url, "UTF-8");
     		/* This looks like a file url. Get the path, and see if any handlers recognize it. */
     		String path;
 	        int questionMark = decoded.indexOf("?");
@@ -519,7 +519,7 @@ public class FileUtils extends CordovaPlugin {
 	        }
     		inputURL = this.filesystemURLforLocalPath(path);
     	} else {
-    		inputURL = new LocalFilesystemURL(decoded);
+    		inputURL = new LocalFilesystemURL(url);
     	}
 
         try {

@@ -26,7 +26,9 @@ public class LocalFilesystemURL {
             }
 			return path.substring(path.indexOf('/', 1));
 		} else if ("content".equals(URL.getScheme())) {
-			return '/' + URL.getHost() + URL.getPath();
+			String path = '/' + URL.getHost() + URL.getPath();
+			// Re-encode path component to handle Android 4.4+ Content URLs
+			return Uri.encode(path,"/");
 		}
 		return null;
 	}
