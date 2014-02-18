@@ -44,8 +44,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 
 /**
- * This class provides SD card file and directory services to JavaScript.
- * Only files on the SD card can be accessed.
+ * This class provides file and directory services to JavaScript.
  */
 public class FileUtils extends CordovaPlugin {
     private static final String LOG_TAG = "FileUtils";
