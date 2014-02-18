@@ -752,6 +752,26 @@ public class FileUtils extends CordovaPlugin {
         return fs;
     }
 
+   /**
+     * Returns a JSON object representing the given File. Internal APIs should be modified
+     * to use URLs instead of raw FS paths wherever possible, when interfacing with this plugin.
+     *
+     * @param file the File to convert
+     * @return a JSON representation of the given File
+     * @throws JSONException
+     */
+    public JSONObject getEntryForFile(File file) throws JSONException {
+        JSONObject entry;
+
+        for (Filesystem fs : filesystems) {
+             entry = fs.makeEntryForFile(file);
+             if (entry != null) {
+                 return entry;
+             }
+        }
+        return null;
+    }
+
     /**
      * Returns a JSON object representing the given File. Deprecated, as this is only used by
      * FileTransfer, and because it is a static method that should really be an instance method,
@@ -764,15 +784,8 @@ public class FileUtils extends CordovaPlugin {
      */
     @Deprecated
     public static JSONObject getEntry(File file) throws JSONException {
-		JSONObject entry;
-		
  		if (getFilePlugin() != null) {
- 			for (Filesystem fs:getFilePlugin().filesystems) {
- 				entry = fs.makeEntryForFile(file);
- 				if (entry != null) {
- 					return entry;
- 				}
-			}
+             return getFilePlugin().getEntryForFile(file);
 		}
 		return null;
     }
