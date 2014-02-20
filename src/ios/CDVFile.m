@@ -110,6 +110,11 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     return [[CDVFilesystemURL alloc] initWithURL:URL];
 }
 
+- (NSString *)absoluteURL
+{
+    return [NSString stringWithFormat:@"cdvfile://localhost/%@%@", self.fileSystemName, self.fullPath];
+}
+
 @end
 
 @implementation CDVFilesystemURLProtocol
@@ -382,11 +387,16 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     return dirEntry;
 }
 
+- (NSDictionary *)makeEntryForLocalURL:(CDVFilesystemURL *)localURL
+{
+    NSObject<CDVFileSystem> *fs = [self filesystemForURL:localURL];
+    return [fs makeEntryForLocalURL:localURL];
+}
+
 - (NSDictionary *)makeEntryForURL:(NSURL *)URL
 {
     CDVFilesystemURL *fsURL = [CDVFilesystemURL fileSystemURLWithURL:URL];
-    NSObject<CDVFileSystem> *fs = [self filesystemForURL:fsURL];
-    return [fs makeEntryForLocalURL:fsURL];
+    return [self makeEntryForLocalURL:fsURL];
 }
 
 /*
@@ -864,6 +874,20 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
 }
 
+#pragma mark Methods for converting between URLs and paths
+
+- (NSString *)filesystemPathForURL:(CDVFilesystemURL *)localURL
+{
+    for (NSObject<CDVFileSystem> *fs in self.fileSystems) {
+        if ([fs.name isEqualToString:localURL.fileSystemName]) {
+            if ([fs respondsToSelector:@selector(filesystemPathForURL:)]) {
+                return [fs filesystemPathForURL:localURL];
+            }
+        }
+    }
+    return nil;
+}
+
 #pragma mark Undocumented Filesystem API
 
 - (void)testFileExists:(CDVInvokedUrlCommand*)command
@@ -928,24 +952,13 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 #pragma mark Internal methods for testing
 // Internal methods for testing: Get the on-disk location of a local filesystem url.
 // [Currently used for testing file-transfer]
-- (NSString *)_filesystemPathForURL:(CDVFilesystemURL *)localURL
-{
-    for (NSObject<CDVFileSystem> *fs in self.fileSystems) {
-        if ([fs.name isEqualToString:localURL.fileSystemName]) {
-            if ([fs respondsToSelector:@selector(filesystemPathForURL:)]) {
-                return [fs filesystemPathForURL:localURL];
-            }
-        }
-    }
-    return nil;
-}
 
 - (void)_getLocalFilesystemPath:(CDVInvokedUrlCommand*)command
 {
     NSString* localURLstr = [command.arguments objectAtIndex:0];
     CDVFilesystemURL* localURL = [CDVFilesystemURL fileSystemURLWithString:localURLstr];
 
-    NSString* fsPath = [self _filesystemPathForURL:localURL];
+    NSString* fsPath = [self filesystemPathForURL:localURL];
     CDVPluginResult* result;
     if (fsPath) {
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:fsPath];

@@ -51,6 +51,7 @@ typedef int CDVFileError;
 + (CDVFilesystemURL *)fileSystemURLWithString:(NSString *)strURL;
 + (CDVFilesystemURL *)fileSystemURLWithURL:(NSURL *)URL;
 
+- (NSString *)absoluteURL;
 
 @property (atomic) NSURL *url;
 @property (atomic) NSString *fileSystemName;
@@ -133,6 +134,9 @@ typedef int CDVFileError;
 /* Compatibilty with older File API */
 - (NSString*)getMimeTypeFromPath:(NSString*)fullPath;
 - (NSDictionary *)getDirectoryEntry:(NSString *)target isDirectory:(BOOL)bDirRequest;
+
+/* Conversion between filesystem paths and URLs */
+- (NSString *)filesystemPathForURL:(CDVFilesystemURL *)URL;
 
 /* Internal methods for testing */
 - (void)_getLocalFilesystemPath:(CDVInvokedUrlCommand*)command;

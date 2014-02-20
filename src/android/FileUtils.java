@@ -414,7 +414,7 @@ public class FileUtils extends CordovaPlugin {
             final String localURLstr = args.getString(0);
             threadhelper( new FileOp( ){
                 public void run() throws FileNotFoundException, JSONException, MalformedURLException {
-                    String fname = _filesystemPathForURL(localURLstr);
+                    String fname = filesystemPathForURL(localURLstr);
                     callbackContext.success(fname);
                 }
             },callbackContext);
@@ -425,9 +425,13 @@ public class FileUtils extends CordovaPlugin {
         return true;
     }
 
-    /* Internal method for testing: Get the on-disk location of a local filesystem url.
+    /*
+     * These two native-only methods can be used by other plugins to translate between
+     * device file system paths and URLs. By design, there is no direct JavaScript
+     * interface to these methods.
      */
-    protected String _filesystemPathForURL(String localURLstr) throws MalformedURLException {
+
+    public String filesystemPathForURL(String localURLstr) throws MalformedURLException {
         try {
             LocalFilesystemURL inputURL = new LocalFilesystemURL(localURLstr);
             Filesystem fs = this.filesystemForURL(inputURL);
@@ -440,7 +444,7 @@ public class FileUtils extends CordovaPlugin {
         }
     }
 
-    protected LocalFilesystemURL filesystemURLforLocalPath(String localPath) {
+    public LocalFilesystemURL filesystemURLforLocalPath(String localPath) {
     	LocalFilesystemURL localURL;
 		for (Filesystem fs: filesystems) {
 			if (fs != null) {

@@ -50,4 +50,7 @@ public class LocalFilesystemURL {
 		this(Uri.parse(strURL));
 	}
 	
+    public String toString() {
+        return "cdvfile://localhost/" + this.filesystemName + this.fullPath;
+    }
 }
