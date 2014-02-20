@@ -130,3 +130,6 @@
 * CB-6010: Test properly for presence of URLforFilesystemPath method
 * CB-6012: Preserve query strings on cdvfile:// URLs where necessary
 * CB-5233: Make asset-library urls work properly on iOS
+* CB-2432, CB-3185, CB-5975: Fix Android handling of content:// URLs
+* CB-6050: Public method for returning a FileEntry from a device file path
+* CB-6057: Add methods for plugins to convert between URLs and paths
