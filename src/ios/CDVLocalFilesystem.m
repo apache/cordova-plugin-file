@@ -537,7 +537,7 @@
 
     else if ([srcFs isKindOfClass:[CDVLocalFilesystem class]]) {
         /* Same FS, we can shortcut with NSFileManager operations */
-        NSString *srcFullPath = [self filesystemPathForURL:srcURL];
+        NSString *srcFullPath = [srcFs filesystemPathForURL:srcURL];
 
         BOOL bSrcIsDir = NO;
         BOOL bSrcExists = [fileMgr fileExistsAtPath:srcFullPath isDirectory:&bSrcIsDir];
