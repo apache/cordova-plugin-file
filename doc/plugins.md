@@ -25,10 +25,7 @@ On Android, the simplest method to convert a `cdvfile://` URL to a filesystem pa
 
     // Obtain a file:/// URL representing this file on the device,
     // or the same URL unchanged if it cannot be mapped to a file
-    URI fileURI = resourceApi.remapUri(cdvfileURL);
-
-    // Obtain a File object, or null if the file cannot be mapped
-    File deviceFile = resourceApi.mapUriToFile(cdvfileURL);
+    Uri fileURL = resourceApi.remapUri(Uri.parse(cdvfileURL));
 
 It is also possible to use the File plugin directly:
 
