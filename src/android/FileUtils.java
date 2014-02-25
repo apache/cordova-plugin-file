@@ -445,16 +445,26 @@ public class FileUtils extends CordovaPlugin {
     }
 
     public LocalFilesystemURL filesystemURLforLocalPath(String localPath) {
-    	LocalFilesystemURL localURL;
-		for (Filesystem fs: filesystems) {
-			if (fs != null) {
-		        localURL = fs.URLforFilesystemPath(localPath);
-		        if (localURL != null)
-		            return localURL;
-			}
-		}
-		return null;
-	}
+        LocalFilesystemURL localURL = null;
+        int shortestFullPath = 0;
+
+        // Try all installed filesystems. Return the best matching URL
+        // (determined by the shortest resulting URL)
+        for (Filesystem fs: filesystems) {
+            if (fs != null) {
+                LocalFilesystemURL url = fs.URLforFilesystemPath(localPath);
+                if (url != null) {
+                    // A shorter fullPath implies that the filesystem is a better
+                    // match for the local path than the previous best.
+                    if (localURL == null || (url.fullPath.length() < shortestFullPath)) {
+                        localURL = url;
+                        shortestFullPath = url.fullPath.length();
+                    }
+                }
+            }
+        }
+        return localURL;
+    }
 
 
 	/* helper to execute functions async and handle the result codes
