@@ -275,17 +275,22 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 - (CDVFilesystemURL *)fileSystemURLforLocalPath:(NSString *)localPath
 {
     CDVFilesystemURL *localURL = nil;
-    // Try all installed filesystems, in order. If any one supports mapping from
-    // path to URL, and returns a URL, then use it.
+    NSUInteger shortestFullPath = 0;
+
+    // Try all installed filesystems, in order. Return the most match url.
     for (id object in self.fileSystems) {
         if ([object respondsToSelector:@selector(URLforFilesystemPath:)]) {
-            localURL = [object URLforFilesystemPath:localPath];
-        }
-        if (localURL) {
-            return localURL;
+            CDVFilesystemURL *url = [object URLforFilesystemPath:localPath];
+            if (url){
+                // A shorter fullPath would imply that the filesystem is a better match for the local path
+                if (!localURL || ([[url fullPath] length] < shortestFullPath)) {
+                    localURL = url;
+                    shortestFullPath = [[url fullPath] length];
+                }
+            }
         }
     }
-    return nil;
+    return localURL;
 }
 
 - (NSNumber*)checkFreeDiskSpace:(NSString*)appPath
