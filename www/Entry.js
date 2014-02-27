@@ -40,13 +40,18 @@ var argscheck = require('cordova/argscheck'),
  * @param fileSystem
  *            {FileSystem} the filesystem on which this entry resides
  *            (readonly)
+ * @param nativeURL
+ *            {DOMString} an alternate URL which can be used by native
+ *            webview controls, for example media players.
+ *            (optional, readonly)
  */
-function Entry(isFile, isDirectory, name, fullPath, fileSystem) {
+function Entry(isFile, isDirectory, name, fullPath, fileSystem, nativeURL) {
     this.isFile = !!isFile;
     this.isDirectory = !!isDirectory;
     this.name = name || '';
     this.fullPath = fullPath || '';
     this.filesystem = fileSystem || null;
+    this.nativeURL = nativeURL || null;
 }
 
 /**
@@ -110,7 +115,7 @@ Entry.prototype.moveTo = function(parent, newName, successCallback, errorCallbac
             if (entry) {
                 if (successCallback) {
                     // create appropriate Entry object
-                    var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath, fs) : new (require('org.apache.cordova.file.FileEntry'))(entry.name, entry.fullPath, fs);
+                    var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath, fs, entry.nativeURL) : new (require('org.apache.cordova.file.FileEntry'))(entry.name, entry.fullPath, fs, entry.nativeURL);
                     successCallback(result);
                 }
             }
@@ -151,7 +156,7 @@ Entry.prototype.copyTo = function(parent, newName, successCallback, errorCallbac
             if (entry) {
                 if (successCallback) {
                     // create appropriate Entry object
-                    var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath, fs) : new (require('org.apache.cordova.file.FileEntry'))(entry.name, entry.fullPath, fs);
+                    var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath, fs, entry.nativeURL) : new (require('org.apache.cordova.file.FileEntry'))(entry.name, entry.fullPath, fs, entry.nativeURL);
                     successCallback(result);
                 }
             }
@@ -174,6 +179,14 @@ Entry.prototype.toURL = function() {
     }
     // fullPath attribute contains the full URL
     return "file://localhost" + this.fullPath;
+};
+
+/**
+ * Return a URL that can be used to as the src attribute of a <video> or
+ * <audio> tag, in case it is different from the URL returned by .toURL().
+ */
+Entry.prototype.toNativeURL = function() {
+    return this.nativeURL || this.toURL();
 };
 
 /**
@@ -215,7 +228,7 @@ Entry.prototype.getParent = function(successCallback, errorCallback) {
     var fs = this.filesystem;
     var win = successCallback && function(result) {
         var DirectoryEntry = require('./DirectoryEntry');
-        var entry = new DirectoryEntry(result.name, result.fullPath, fs);
+        var entry = new DirectoryEntry(result.name, result.fullPath, fs, result.nativeURL);
         successCallback(entry);
     };
     var fail = errorCallback && function(code) {

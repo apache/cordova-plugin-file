@@ -21,6 +21,11 @@ public abstract class Filesystem {
 
 	public static JSONObject makeEntryForPath(String path, String fsName, Boolean isDir)
 			throws JSONException {
+		return makeEntryForPath(path, fsName, isDir, null);
+	}
+
+	public static JSONObject makeEntryForPath(String path, String fsName, Boolean isDir, String nativeURL)
+			throws JSONException {
         JSONObject entry = new JSONObject();
 
         int end = path.endsWith("/") ? 1 : 0;
@@ -36,12 +41,19 @@ public abstract class Filesystem {
         // Backwards compatibility
         entry.put("filesystem", "temporary".equals(fsName) ? 0 : 1);
 
+        if (nativeURL != null) {
+        	entry.put("nativeURL", nativeURL);
+        }
         return entry;
 
     }
 
     public static JSONObject makeEntryForURL(LocalFilesystemURL inputURL, Boolean isDir) throws JSONException {
-        return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, isDir);
+        return makeEntryForURL(inputURL, isDir, null);
+    }
+
+    public static JSONObject makeEntryForURL(LocalFilesystemURL inputURL, Boolean isDir, String nativeURL) throws JSONException {
+        return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, isDir, nativeURL);
     }
 
 	abstract JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException;

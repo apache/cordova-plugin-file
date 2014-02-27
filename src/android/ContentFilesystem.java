@@ -42,7 +42,7 @@ public class ContentFilesystem extends Filesystem {
 				cursor.close();
 		}
 		try {
-			return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, false /*fp.isDirectory()*/);
+			return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, false /*fp.isDirectory()*/, inputURL.URL.toString());
 		} catch (JSONException e) {
 			throw new IOException();
 		}
@@ -71,7 +71,7 @@ public class ContentFilesystem extends Filesystem {
             }
         }
         // Return the directory
-        return makeEntryForPath(requestedURL.fullPath, requestedURL.filesystemName, directory);
+        return makeEntryForPath(requestedURL.fullPath, requestedURL.filesystemName, directory, Uri.fromFile(fp).toString());
 
 	}
 
@@ -159,7 +159,7 @@ public class ContentFilesystem extends Filesystem {
             if (move) {
                 srcFs.removeFileAtLocalURL(srcURL);
             }
-            return makeEntryForURL(destinationURL, false);
+            return makeEntryForURL(destinationURL, false, destinationURL.URL.toString());
         } else {
             // Need to copy the hard way
             return super.copyFileToURL(destURL, newName, srcFs, srcURL, move);

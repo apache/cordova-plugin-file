@@ -79,6 +79,7 @@
     [dirEntry setObject:lastPart forKey:@"name"];
     [dirEntry setObject: [NSNumber numberWithInt:([fsName isEqualToString:@"temporary"] ? 0 : 1)] forKey: @"filesystem"];
     [dirEntry setObject:fsName forKey: @"filesystemName"];
+    [dirEntry setObject:[NSString stringWithFormat:@"file://%@",[self filesystemPathForFullPath:fullPath]] forKey:@"nativeURL"];
 
     return dirEntry;
 }
@@ -92,6 +93,16 @@
     return fullPath;
 }
 
+- (NSString *)filesystemPathForFullPath:(NSString *)fullPath
+{
+    NSString *path = nil;
+    NSString *strippedFullPath = [self stripQueryParametersFromPath:fullPath];
+    path = [NSString stringWithFormat:@"%@%@", self.fsRoot, strippedFullPath];
+    if ([path hasSuffix:@"/"]) {
+      path = [path substringToIndex:([path length]-1)];
+    }
+    return path;
+}
 /*
  * IN
  *  NSString localURI
@@ -103,13 +114,7 @@
  */
 - (NSString *)filesystemPathForURL:(CDVFilesystemURL *)url
 {
-    NSString *path = nil;
-    NSString *fullPath = [self stripQueryParametersFromPath:url.fullPath];
-    path = [NSString stringWithFormat:@"%@%@", self.fsRoot, fullPath];
-    if ([path hasSuffix:@"/"]) {
-      path = [path substringToIndex:([path length]-1)];
-    }
-    return path;
+    return [self filesystemPathForFullPath:url.fullPath];
 }
 
 - (CDVFilesystemURL *)URLforFullPath:(NSString *)fullPath
