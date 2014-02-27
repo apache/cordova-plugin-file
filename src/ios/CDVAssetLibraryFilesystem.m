@@ -198,7 +198,7 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
     callback(result);
 }
 
-- (NSString *)fileSystemPathForURL:(CDVFilesystemURL *)url
+- (NSString *)filesystemPathForURL:(CDVFilesystemURL *)url
 {
     NSString *path = nil;
     if ([[url.url scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
