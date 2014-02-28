@@ -437,7 +437,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     } else {
         inputURI = [CDVFilesystemURL fileSystemURLWithString:localURIstr];
     }
-    if (inputURI != nil && inputURI.fileSystemName == nil) {
+    if (inputURI == nil || inputURI.fileSystemName == nil) {
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:ENCODING_ERR];
     } else {
         NSObject<CDVFileSystem> *fs = [self filesystemForURL:inputURI];
