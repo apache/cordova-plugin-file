@@ -125,7 +125,9 @@
 * CB-5405: Update JS code to use URLs exclusively
 * CB-4816 Fix file creation outside sandbox for BB10
 
-### 1.0.1 (Feb 27, 2014)
+### 1.0.1 (Feb 28, 2014)
+* CB-6116 Fix error where resolveLocalFileSystemURL would fail
+* CB-6106 Add support for nativeURL attribute on Entry objects
 * CB-6110 iOS: Fix typo in filesystemPathForURL: method
 * Android: Use most specific FS match when resolving file: URIs
 * iOS: Update fileSystemURLforLocalPath: to return the most match url.
