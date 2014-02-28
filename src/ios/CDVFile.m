@@ -428,16 +428,23 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         /* This looks like a file url. Get the path, and see if any handlers recognize it. */
         NSString* path;
         NSRange questionMark = [localURIstr rangeOfString:@"?"];
+        NSUInteger pathEnd;
         if (questionMark.location == NSNotFound) {
-            path = [localURIstr substringFromIndex:7];
+            pathEnd = localURIstr.length;
         } else {
-            path = [localURIstr substringWithRange:NSMakeRange(7,questionMark.location-7)];
+            pathEnd = questionMark.location;
+        }
+        NSRange thirdSlash = [localURIstr rangeOfString:@"/" options:0 range:(NSRange){7, pathEnd-7}];
+        if (thirdSlash.location == NSNotFound) {
+            path = @"";
+        } else {
+            path = [localURIstr substringWithRange:NSMakeRange(thirdSlash.location, pathEnd-thirdSlash.location)];
         }
         inputURI = [self fileSystemURLforLocalPath:path];
     } else {
         inputURI = [CDVFilesystemURL fileSystemURLWithString:localURIstr];
     }
-    if (inputURI != nil && inputURI.fileSystemName == nil) {
+    if (inputURI == nil || inputURI.fileSystemName == nil) {
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:ENCODING_ERR];
     } else {
         NSObject<CDVFileSystem> *fs = [self filesystemForURL:inputURI];

@@ -525,10 +525,18 @@ public class FileUtils extends CordovaPlugin {
     		/* This looks like a file url. Get the path, and see if any handlers recognize it. */
     		String path;
 	        int questionMark = decoded.indexOf("?");
+            int pathEnd;
 	        if (questionMark < 0) {
-	            path = decoded.substring(7, decoded.length());
+                pathEnd = decoded.length();
 	        } else {
-	            path = decoded.substring(7, questionMark);
+                pathEnd = questionMark;
+            }
+
+            int thirdSlash = decoded.indexOf("/", 7);
+            if (thirdSlash < 0 || thirdSlash > pathEnd) {
+                path = "";
+            } else {
+                path = decoded.substring(thirdSlash, pathEnd);
 	        }
     		inputURL = this.filesystemURLforLocalPath(path);
     	} else {
