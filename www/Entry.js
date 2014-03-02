@@ -146,9 +146,9 @@ Entry.prototype.copyTo = function(parent, newName, successCallback, errorCallbac
     var fail = errorCallback && function(code) {
         errorCallback(new FileError(code));
     };
-    var fs = this.filesystem // Copy / move op cannot cross filesystems;
+    var fs = this.filesystem, // Copy / move op cannot cross filesystems;
         // source path
-    var srcURL = this.filesystem.__format__(this.fullPath),
+        srcURL = this.filesystem.__format__(this.fullPath),
         // entry name
         name = newName || this.name,
         // success callback
