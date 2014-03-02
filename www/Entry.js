@@ -86,7 +86,7 @@ Entry.prototype.getMetadata = function(successCallback, errorCallback) {
  */
 Entry.prototype.setMetadata = function(successCallback, errorCallback, metadataObject) {
     argscheck.checkArgs('FFO', 'Entry.setMetadata', arguments);
-    exec(successCallback, errorCallback, "File", "setMetadata", [this.fullPath, metadataObject]);
+    exec(successCallback, errorCallback, "File", "setMetadata", [this.filesystem.__format__(this.fullPath), metadataObject]);
 };
 
 /**
