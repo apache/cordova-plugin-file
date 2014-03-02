@@ -107,7 +107,7 @@ Entry.prototype.moveTo = function(parent, newName, successCallback, errorCallbac
         errorCallback(new FileError(code));
     };
     var fs = this.filesystem, // Copy / move op cannot cross filesystems;
-    // source path
+        // source path
         srcURL = this.filesystem.__format__(this.fullPath),
         // entry name
         name = newName || this.name,
