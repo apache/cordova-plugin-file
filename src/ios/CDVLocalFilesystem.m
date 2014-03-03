@@ -604,7 +604,7 @@
             }
             if (bSuccess) {
                 // should verify it is there and of the correct type???
-                NSDictionary* newEntry = [self makeEntryForPath:newFullPath fileSystemName:srcURL.fileSystemName isDirectory:bSrcIsDir];  // should be the same type as source
+                NSDictionary* newEntry = [self makeEntryForPath:newFullPath fileSystemName:destURL.fileSystemName isDirectory:bSrcIsDir];
                 result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:newEntry];
             } else {
                 if (error) {

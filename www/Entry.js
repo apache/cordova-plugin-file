@@ -106,15 +106,14 @@ Entry.prototype.moveTo = function(parent, newName, successCallback, errorCallbac
     var fail = errorCallback && function(code) {
         errorCallback(new FileError(code));
     };
-    var fs = this.filesystem, // Copy / move op cannot cross filesystems;
-        // source path
-        srcURL = this.filesystem.__format__(this.fullPath),
+    var srcURL = this.filesystem.__format__(this.fullPath),
         // entry name
         name = newName || this.name,
         success = function(entry) {
             if (entry) {
                 if (successCallback) {
                     // create appropriate Entry object
+                    var fs = entry.filesystemName ? new FileSystem(entry.filesystemName, {name:"", fullPath:"/"}) : this.filesystem;
                     var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath, fs, entry.nativeURL) : new (require('org.apache.cordova.file.FileEntry'))(entry.name, entry.fullPath, fs, entry.nativeURL);
                     successCallback(result);
                 }
@@ -146,9 +145,7 @@ Entry.prototype.copyTo = function(parent, newName, successCallback, errorCallbac
     var fail = errorCallback && function(code) {
         errorCallback(new FileError(code));
     };
-    var fs = this.filesystem, // Copy / move op cannot cross filesystems;
-        // source path
-        srcURL = this.filesystem.__format__(this.fullPath),
+    var srcURL = this.filesystem.__format__(this.fullPath),
         // entry name
         name = newName || this.name,
         // success callback
@@ -156,6 +153,7 @@ Entry.prototype.copyTo = function(parent, newName, successCallback, errorCallbac
             if (entry) {
                 if (successCallback) {
                     // create appropriate Entry object
+                    var fs = entry.filesystemName ? new FileSystem(entry.filesystemName, {name:"", fullPath:"/"}) : this.filesystem;
                     var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath, fs, entry.nativeURL) : new (require('org.apache.cordova.file.FileEntry'))(entry.name, entry.fullPath, fs, entry.nativeURL);
                     successCallback(result);
                 }
