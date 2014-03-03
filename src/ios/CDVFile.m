@@ -426,20 +426,9 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     /* Backwards-compatibility: Check for file:// urls */
     if ([localURIstr hasPrefix:@"file://"]) {
         /* This looks like a file url. Get the path, and see if any handlers recognize it. */
-        NSString* path;
-        NSRange questionMark = [localURIstr rangeOfString:@"?"];
-        NSUInteger pathEnd;
-        if (questionMark.location == NSNotFound) {
-            pathEnd = localURIstr.length;
-        } else {
-            pathEnd = questionMark.location;
-        }
-        NSRange thirdSlash = [localURIstr rangeOfString:@"/" options:0 range:(NSRange){7, pathEnd-7}];
-        if (thirdSlash.location == NSNotFound) {
-            path = @"";
-        } else {
-            path = [localURIstr substringWithRange:NSMakeRange(thirdSlash.location, pathEnd-thirdSlash.location)];
-        }
+        NSURL *fileURL = [NSURL URLWithString:localURIstr];
+        NSURL *resolvedFileURL = [fileURL URLByResolvingSymlinksInPath];
+        NSString *path = [resolvedFileURL path];
         inputURI = [self fileSystemURLforLocalPath:path];
     } else {
         inputURI = [CDVFilesystemURL fileSystemURLWithString:localURIstr];
