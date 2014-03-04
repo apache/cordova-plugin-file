@@ -32,13 +32,21 @@ public class LocalFilesystem extends Filesystem {
 		this.cordova = cordova;
 	}
 
-	@Override
-	public String filesystemPathForURL(LocalFilesystemURL url) {
-	    String path = new File(this.fsRoot, url.fullPath).toString();
+	public String filesystemPathForFullPath(String fullPath) {
+	    String path = new File(this.fsRoot, fullPath).toString();
+        int questionMark = path.indexOf("?");
+        if (questionMark >= 0) {
+          path = path.substring(0, questionMark);
+        }
 	    if (path.endsWith("/")) {
 	      path = path.substring(0, path.length()-1);
 	    }
 	    return path;
+	}
+	
+	@Override
+	public String filesystemPathForURL(LocalFilesystemURL url) {
+		return filesystemPathForFullPath(url.fullPath);
 	}
 
 	private String fullPathForFilesystemPath(String absolutePath) {
@@ -99,14 +107,14 @@ public class LocalFilesystem extends Filesystem {
     public JSONObject makeEntryForFile(File file) throws JSONException {
     	String path = this.fullPathForFilesystemPath(file.getAbsolutePath());
     	if (path != null) {
-    		return makeEntryForPath(path, this.name, file.isDirectory());
+    		return makeEntryForPath(path, this.name, file.isDirectory(), Uri.fromFile(file).toString());
     	}
     	return null;
     }
 
 	@Override
 	public JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException {
-      File fp = new File(this.fsRoot, inputURL.fullPath);
+      File fp = new File(filesystemPathForURL(inputURL));
 
       if (!fp.exists()) {
           throw new FileNotFoundException();
@@ -126,6 +134,7 @@ public class LocalFilesystem extends Filesystem {
     	  entry.put("filesystemName", inputURL.filesystemName);
     	  // Backwards compatibility
     	  entry.put("filesystem", "temporary".equals(name) ? 0 : 1);
+    	  entry.put("nativeURL", Uri.fromFile(fp).toString());
           return entry;
       } catch (JSONException e) {
     	  throw new IOException();
@@ -190,7 +199,7 @@ public class LocalFilesystem extends Filesystem {
         }
 
         // Return the directory
-        return makeEntryForPath(requestedURL.fullPath, requestedURL.filesystemName, directory);
+        return makeEntryForPath(requestedURL.fullPath, requestedURL.filesystemName, directory, Uri.fromFile(fp).toString());
 	}
 
 	@Override
@@ -242,7 +251,7 @@ public class LocalFilesystem extends Filesystem {
             for (int i = 0; i < files.length; i++) {
                 if (files[i].canRead()) {
                     try {
-						entries.put(makeEntryForPath(fullPathForFilesystemPath(files[i].getAbsolutePath()), inputURL.filesystemName, files[i].isDirectory()));
+						entries.put(makeEntryForPath(fullPathForFilesystemPath(files[i].getAbsolutePath()), inputURL.filesystemName, files[i].isDirectory(), Uri.fromFile(files[i]).toString()));
 					} catch (JSONException e) {
 					}
                 }
@@ -262,7 +271,8 @@ public class LocalFilesystem extends Filesystem {
 
         JSONObject metadata = new JSONObject();
         try {
-        	metadata.put("size", file.length());
+            // Ensure that directories report a size of 0
+        	metadata.put("size", file.isDirectory() ? 0 : file.length());
         	metadata.put("type", FileHelper.getMimeType(file.getAbsolutePath(), cordova));
         	metadata.put("name", file.getName());
         	metadata.put("fullPath", inputURL.fullPath);
@@ -475,7 +485,7 @@ public class LocalFilesystem extends Filesystem {
             // Figure out where we should be copying to
             final LocalFilesystemURL destinationURL = makeDestinationURL(newName, srcURL, destURL);
 
-	        String srcFilesystemPath = this.filesystemPathForURL(srcURL);
+	        String srcFilesystemPath = srcFs.filesystemPathForURL(srcURL);
             File sourceFile = new File(srcFilesystemPath);
             String destFilesystemPath = this.filesystemPathForURL(destinationURL);
             File destinationFile = new File(destFilesystemPath);

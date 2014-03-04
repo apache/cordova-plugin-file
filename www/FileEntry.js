@@ -35,8 +35,8 @@ var utils = require('cordova/utils'),
  * {DOMString} fullPath the absolute full path to the file (readonly)
  * {FileSystem} filesystem on which the file resides (readonly)
  */
-var FileEntry = function(name, fullPath, fileSystem) {
-     FileEntry.__super__.constructor.apply(this, [true, false, name, fullPath, fileSystem]);
+var FileEntry = function(name, fullPath, fileSystem, nativeURL) {
+     FileEntry.__super__.constructor.apply(this, [true, false, name, fullPath, fileSystem, nativeURL]);
 };
 
 utils.extend(FileEntry, Entry);

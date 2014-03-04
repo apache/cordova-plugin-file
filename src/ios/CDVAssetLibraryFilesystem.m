@@ -31,6 +31,24 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
 @implementation CDVAssetLibraryFilesystem
 @synthesize name=_name;
 
+
+/*
+ The CDVAssetLibraryFilesystem works with resources which are identified
+ by iOS as
+   asset-library://<path>
+ and represents them internally as URLs of the form
+   cdvfile://localhost/assets-library/<path>
+ */
+
+- (NSURL *)assetLibraryURLForLocalURL:(CDVFilesystemURL *)url
+{
+    if ([url.url.scheme isEqualToString:kCDVFilesystemURLPrefix]) {
+        NSString *path = [[url.url absoluteString] substringFromIndex:[@"cdvfile://localhost/assets-library" length]];
+        return [NSURL URLWithString:[NSString stringWithFormat:@"assets-library:/%@", path]];
+    }
+    return url.url;
+}
+
 - (CDVPluginResult *)entryForLocalURI:(CDVFilesystemURL *)url
 {
     NSDictionary* entry = [self makeEntryForLocalURL:url];
@@ -38,7 +56,7 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
 }
 
 - (NSDictionary *)makeEntryForLocalURL:(CDVFilesystemURL *)url {
-    return [self makeEntryForPath:[url.url absoluteString] fileSystemName:self.name isDirectory:NO];
+    return [self makeEntryForPath:url.fullPath fileSystemName:self.name isDirectory:NO];
 }
 
 - (NSDictionary*)makeEntryForPath:(NSString*)fullPath fileSystemName:(NSString *)fsName isDirectory:(BOOL)isDir
@@ -133,7 +151,7 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
     };
 
     ALAssetsLibrary* assetsLibrary = [[ALAssetsLibrary alloc] init];
-    [assetsLibrary assetForURL:url.url resultBlock:resultBlock failureBlock:failureBlock];
+    [assetsLibrary assetForURL:[self assetLibraryURLForLocalURL:url] resultBlock:resultBlock failureBlock:failureBlock];
     return;
 }
 
@@ -180,7 +198,7 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
     callback(result);
 }
 
-- (NSString *)fileSystemPathForURL:(CDVFilesystemURL *)url
+- (NSString *)filesystemPathForURL:(CDVFilesystemURL *)url
 {
     NSString *path = nil;
     if ([[url.url scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
@@ -196,8 +214,6 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
 
 - (void)readFileAtURL:(CDVFilesystemURL *)localURL start:(NSInteger)start end:(NSInteger)end callback:(void (^)(NSData*, NSString* mimeType, CDVFileError))callback
 {
-    NSString *path = [self fileSystemPathForURL:localURL];
-
     ALAssetsLibraryAssetForURLResultBlock resultBlock = ^(ALAsset* asset) {
         if (asset) {
             // We have the asset!  Get the data and send it off.
@@ -220,13 +236,11 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
     };
 
     ALAssetsLibrary* assetsLibrary = [[ALAssetsLibrary alloc] init];
-    [assetsLibrary assetForURL:[NSURL URLWithString:path] resultBlock:resultBlock failureBlock:failureBlock];
+    [assetsLibrary assetForURL:[self assetLibraryURLForLocalURL:localURL] resultBlock:resultBlock failureBlock:failureBlock];
 }
 
 - (void)getFileMetadataForURL:(CDVFilesystemURL *)localURL callback:(void (^)(CDVPluginResult *))callback
 {
-    NSString *path = [self fileSystemPathForURL:localURL];
-
     // In this case, we need to use an asynchronous method to retrieve the file.
     // Because of this, we can't just assign to `result` and send it at the end of the method.
     // Instead, we return after calling the asynchronous method and send `result` in each of the blocks.
@@ -256,7 +270,7 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
     };
 
     ALAssetsLibrary* assetsLibrary = [[ALAssetsLibrary alloc] init];
-    [assetsLibrary assetForURL:[NSURL URLWithString:path] resultBlock:resultBlock failureBlock:failureBlock];
+    [assetsLibrary assetForURL:[self assetLibraryURLForLocalURL:localURL] resultBlock:resultBlock failureBlock:failureBlock];
     return;
 }
 @end

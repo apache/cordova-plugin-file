@@ -26,25 +26,29 @@ module.exports = function (uri, success, fail) {
 
     var decodedURI = decodeURI(uri).replace(/filesystem:/, '').replace(/file:\/\//, ''),
         failNotFound = function () {
-            fail(FileError.NOT_FOUND_ERR);
+            if (fail) {
+                fail(FileError.NOT_FOUND_ERR);
+            }
         },
         resolveURI = function () {
-            window.webkitRequestFileSystem(
-                window.PERSISTENT,
-                50*1024*1024,
-                function (fs) {
-                    var op = decodedURI.slice(-1) === '/' ? 'getDirectory' : 'getFile';
-                    fs.root[op](
-                        decodedURI,
-                        { create: false },
-                        function (entry) {
-                            success(fileUtils.createEntry(entry));
-                        },
-                        failNotFound
-                    );
-                },
-                failNotFound
-            );
+            window.requestAnimationFrame(function () {
+                window.webkitRequestFileSystem(
+                    window.PERSISTENT,
+                    50*1024*1024,
+                    function (fs) {
+                        var op = decodedURI.slice(-1) === '/' ? 'getDirectory' : 'getFile';
+                        fs.root[op](
+                            decodedURI,
+                            { create: false },
+                            function (entry) {
+                                success(fileUtils.createEntry(entry));
+                            },
+                            failNotFound
+                        );
+                    },
+                    failNotFound
+                );
+            });
         };
 
     if (decodedURI.substring(0, 8) === 'local://') {

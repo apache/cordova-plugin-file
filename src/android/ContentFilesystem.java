@@ -16,6 +16,7 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 
 public class ContentFilesystem extends Filesystem {
 
@@ -29,27 +30,22 @@ public class ContentFilesystem extends Filesystem {
 	}
 	
 	@Override
-    @SuppressWarnings("deprecation")
 	public JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException {
-      File fp = null;
-
-          Cursor cursor = this.cordova.getActivity().managedQuery(inputURL.URL, new String[] { MediaStore.Images.Media.DATA }, null, null, null);
-          // Note: MediaStore.Images/Audio/Video.Media.DATA is always "_data"
-          int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-          cursor.moveToFirst();
-          fp = new File(cursor.getString(column_index));
-
-      if (!fp.exists()) {
-          throw new FileNotFoundException();
-      }
-      if (!fp.canRead()) {
-          throw new IOException();
-      }
-      try {
-    	  return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, fp.isDirectory());
-      } catch (JSONException e) {
-    	  throw new IOException();
-      }
+		// Get the cursor to validate that the file exists
+		Cursor cursor = openCursorForURL(inputURL);
+		try {
+			if (cursor == null || !cursor.moveToFirst()) {
+				throw new FileNotFoundException();
+			}
+		} finally {
+			if (cursor != null)
+				cursor.close();
+		}
+		try {
+			return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, false /*fp.isDirectory()*/, inputURL.URL.toString());
+		} catch (JSONException e) {
+			throw new IOException();
+		}
 	}
 	
     @Override
@@ -75,7 +71,7 @@ public class ContentFilesystem extends Filesystem {
             }
         }
         // Return the directory
-        return makeEntryForPath(requestedURL.fullPath, requestedURL.filesystemName, directory);
+        return makeEntryForPath(requestedURL.fullPath, requestedURL.filesystemName, directory, Uri.fromFile(fp).toString());
 
 	}
 
@@ -112,18 +108,28 @@ public class ContentFilesystem extends Filesystem {
 
 	@Override
 	public JSONObject getFileMetadataForLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException {
-		String path = filesystemPathForURL(inputURL);
-		if (path == null) {
-			throw new FileNotFoundException();
-		}	
-		File file = new File(path);
+		Integer size = null;
+		Integer lastModified = null;
+        Cursor cursor = openCursorForURL(inputURL);
+        try {
+        	if (cursor != null && cursor.moveToFirst()) {
+        		size = resourceSizeForCursor(cursor);
+        		lastModified = lastModifiedDateForCursor(cursor);
+        	} else {
+    			throw new FileNotFoundException();
+        	}
+        } finally {
+        	if (cursor != null)
+        		cursor.close();
+        }
+
         JSONObject metadata = new JSONObject();
         try {
-        	metadata.put("size", file.length());
+        	metadata.put("size", size);
         	metadata.put("type", resourceApi.getMimeType(inputURL.URL));
-        	metadata.put("name", file.getName());
+        	metadata.put("name", inputURL.filesystemName);
         	metadata.put("fullPath", inputURL.fullPath);
-        	metadata.put("lastModifiedDate", file.lastModified());
+        	metadata.put("lastModifiedDate", lastModified);
         } catch (JSONException e) {
         	return null;
         }
@@ -153,7 +159,7 @@ public class ContentFilesystem extends Filesystem {
             if (move) {
                 srcFs.removeFileAtLocalURL(srcURL);
             }
-            return makeEntryForURL(destinationURL, false);
+            return makeEntryForURL(destinationURL, false, destinationURL.URL.toString());
         } else {
             // Need to copy the hard way
             return super.copyFileToURL(destURL, newName, srcFs, srcURL, move);
@@ -191,23 +197,54 @@ public class ContentFilesystem extends Filesystem {
         throw new NoModificationAllowedException("Couldn't truncate file given its content URI");
 	}
 
+	protected Cursor openCursorForURL(LocalFilesystemURL url) {
+        ContentResolver contentResolver = this.cordova.getActivity().getContentResolver();
+        Cursor cursor = contentResolver.query(url.URL, null, null, null, null);
+        return cursor;
+	}
+
+	protected String filesystemPathForCursor(Cursor cursor) {
+        final String[] LOCAL_FILE_PROJECTION = { MediaStore.Images.Media.DATA };
+        int columnIndex = cursor.getColumnIndex(LOCAL_FILE_PROJECTION[0]);
+        if (columnIndex != -1) {
+            return cursor.getString(columnIndex);
+        }
+        return null;
+	}
+
+	protected Integer resourceSizeForCursor(Cursor cursor) {
+        int columnIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+        if (columnIndex != -1) {
+            String sizeStr = cursor.getString(columnIndex);
+            if (sizeStr != null) {
+            	return Integer.parseInt(sizeStr,10);
+            }
+        }
+        return null;
+	}
+	
+	protected Integer lastModifiedDateForCursor(Cursor cursor) {
+        final String[] LOCAL_FILE_PROJECTION = { MediaStore.MediaColumns.DATE_MODIFIED };
+        int columnIndex = cursor.getColumnIndex(LOCAL_FILE_PROJECTION[0]);
+        if (columnIndex != -1) {
+            String dateStr = cursor.getString(columnIndex);
+            if (dateStr != null) {
+            	return Integer.parseInt(dateStr,10);
+            }
+        }
+        return null;
+	}
+
     @Override
     public String filesystemPathForURL(LocalFilesystemURL url) {
-        final String[] LOCAL_FILE_PROJECTION = { MediaStore.Images.Media.DATA };
-
-        ContentResolver contentResolver = this.cordova.getActivity().getContentResolver();
-        Cursor cursor = contentResolver.query(url.URL, LOCAL_FILE_PROJECTION, null, null, null);
-        if (cursor != null) {
-            try {
-                int columnIndex = cursor.getColumnIndex(LOCAL_FILE_PROJECTION[0]);
-                if (columnIndex != -1 && cursor.getCount() > 0) {
-                    cursor.moveToFirst();
-                    String path = cursor.getString(columnIndex);
-                    return path;
-                }
-            } finally {
-                cursor.close();
-            }
+        Cursor cursor = openCursorForURL(url);
+        try {
+        	if (cursor != null && cursor.moveToFirst()) {
+        		return filesystemPathForCursor(cursor);
+        	}
+        } finally {
+            if (cursor != null)
+            	cursor.close();
         }
         return null;
     }

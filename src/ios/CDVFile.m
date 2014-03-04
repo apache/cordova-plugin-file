@@ -86,11 +86,16 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 {
     if ([[uri scheme] isEqualToString:kCDVFilesystemURLPrefix] && [[uri host] isEqualToString:@"localhost"]) {
         NSString *path = [uri path];
+        if ([uri query]) {
+            path = [NSString stringWithFormat:@"%@?%@", path, [uri query]];
+        }
         NSRange slashRange = [path rangeOfString:@"/" options:0 range:NSMakeRange(1, path.length-1)];
         if (slashRange.location == NSNotFound) {
             return @"";
         }
         return [path substringFromIndex:slashRange.location];
+    } else if ([[uri scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
+        return [[uri absoluteString] substringFromIndex:[kCDVAssetsLibraryScheme length]+2];
     }
     return nil;
 }
@@ -103,6 +108,11 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 + (CDVFilesystemURL *)fileSystemURLWithURL:(NSURL *)URL
 {
     return [[CDVFilesystemURL alloc] initWithURL:URL];
+}
+
+- (NSString *)absoluteURL
+{
+    return [NSString stringWithFormat:@"cdvfile://localhost/%@%@", self.fileSystemName, self.fullPath];
 }
 
 @end
@@ -265,14 +275,22 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 - (CDVFilesystemURL *)fileSystemURLforLocalPath:(NSString *)localPath
 {
     CDVFilesystemURL *localURL = nil;
-    // Try all installed filesystems, in order. If any one supports mapping from
-    // path to URL, and returns a URL, then use it.
+    NSUInteger shortestFullPath = 0;
+
+    // Try all installed filesystems, in order. Return the most match url.
     for (id object in self.fileSystems) {
-        localURL = [object URLforFilesystemPath:localPath];
-        if (localURL)
-            return localURL;
+        if ([object respondsToSelector:@selector(URLforFilesystemPath:)]) {
+            CDVFilesystemURL *url = [object URLforFilesystemPath:localPath];
+            if (url){
+                // A shorter fullPath would imply that the filesystem is a better match for the local path
+                if (!localURL || ([[url fullPath] length] < shortestFullPath)) {
+                    localURL = url;
+                    shortestFullPath = [[url fullPath] length];
+                }
+            }
+        }
     }
-    return nil;
+    return localURL;
 }
 
 - (NSNumber*)checkFreeDiskSpace:(NSString*)appPath
@@ -374,11 +392,16 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     return dirEntry;
 }
 
+- (NSDictionary *)makeEntryForLocalURL:(CDVFilesystemURL *)localURL
+{
+    NSObject<CDVFileSystem> *fs = [self filesystemForURL:localURL];
+    return [fs makeEntryForLocalURL:localURL];
+}
+
 - (NSDictionary *)makeEntryForURL:(NSURL *)URL
 {
     CDVFilesystemURL *fsURL = [CDVFilesystemURL fileSystemURLWithURL:URL];
-    NSObject<CDVFileSystem> *fs = [self filesystemForURL:fsURL];
-    return [fs makeEntryForLocalURL:fsURL];
+    return [self makeEntryForLocalURL:fsURL];
 }
 
 /*
@@ -405,16 +428,23 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         /* This looks like a file url. Get the path, and see if any handlers recognize it. */
         NSString* path;
         NSRange questionMark = [localURIstr rangeOfString:@"?"];
+        NSUInteger pathEnd;
         if (questionMark.location == NSNotFound) {
-            path = [localURIstr substringFromIndex:7];
+            pathEnd = localURIstr.length;
         } else {
-            path = [localURIstr substringWithRange:NSMakeRange(7,questionMark.location-7)];
+            pathEnd = questionMark.location;
+        }
+        NSRange thirdSlash = [localURIstr rangeOfString:@"/" options:0 range:(NSRange){7, pathEnd-7}];
+        if (thirdSlash.location == NSNotFound) {
+            path = @"";
+        } else {
+            path = [localURIstr substringWithRange:NSMakeRange(thirdSlash.location, pathEnd-thirdSlash.location)];
         }
         inputURI = [self fileSystemURLforLocalPath:path];
     } else {
         inputURI = [CDVFilesystemURL fileSystemURLWithString:localURIstr];
     }
-    if (inputURI != nil && inputURI.fileSystemName == nil) {
+    if (inputURI == nil || inputURI.fileSystemName == nil) {
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:ENCODING_ERR];
     } else {
         NSObject<CDVFileSystem> *fs = [self filesystemForURL:inputURI];
@@ -856,6 +886,20 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
 }
 
+#pragma mark Methods for converting between URLs and paths
+
+- (NSString *)filesystemPathForURL:(CDVFilesystemURL *)localURL
+{
+    for (NSObject<CDVFileSystem> *fs in self.fileSystems) {
+        if ([fs.name isEqualToString:localURL.fileSystemName]) {
+            if ([fs respondsToSelector:@selector(filesystemPathForURL:)]) {
+                return [fs filesystemPathForURL:localURL];
+            }
+        }
+    }
+    return nil;
+}
+
 #pragma mark Undocumented Filesystem API
 
 - (void)testFileExists:(CDVInvokedUrlCommand*)command
@@ -920,24 +964,13 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 #pragma mark Internal methods for testing
 // Internal methods for testing: Get the on-disk location of a local filesystem url.
 // [Currently used for testing file-transfer]
-- (NSString *)_filesystemPathForURL:(CDVFilesystemURL *)localURL
-{
-    for (NSObject<CDVFileSystem> *fs in self.fileSystems) {
-        if ([fs.name isEqualToString:localURL.fileSystemName]) {
-            if ([fs respondsToSelector:@selector(filesystemPathForURL:)]) {
-                return [fs filesystemPathForURL:localURL];
-            }
-        }
-    }
-    return nil;
-}
 
 - (void)_getLocalFilesystemPath:(CDVInvokedUrlCommand*)command
 {
     NSString* localURLstr = [command.arguments objectAtIndex:0];
     CDVFilesystemURL* localURL = [CDVFilesystemURL fileSystemURLWithString:localURLstr];
 
-    NSString* fsPath = [self _filesystemPathForURL:localURL];
+    NSString* fsPath = [self filesystemPathForURL:localURL];
     CDVPluginResult* result;
     if (fsPath) {
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:fsPath];

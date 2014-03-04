@@ -69,7 +69,7 @@
 - (NSDictionary*)makeEntryForPath:(NSString*)fullPath fileSystemName:(NSString *)fsName isDirectory:(BOOL)isDir
 {
     NSMutableDictionary* dirEntry = [NSMutableDictionary dictionaryWithCapacity:5];
-    NSString* lastPart = [fullPath lastPathComponent];
+    NSString* lastPart = [[self stripQueryParametersFromPath:fullPath] lastPathComponent];
     if (isDir && ![fullPath hasSuffix:@"/"]) {
         fullPath = [fullPath stringByAppendingString:@"/"];
     }
@@ -79,10 +79,30 @@
     [dirEntry setObject:lastPart forKey:@"name"];
     [dirEntry setObject: [NSNumber numberWithInt:([fsName isEqualToString:@"temporary"] ? 0 : 1)] forKey: @"filesystem"];
     [dirEntry setObject:fsName forKey: @"filesystemName"];
+    [dirEntry setObject:[NSString stringWithFormat:@"file://%@",[self filesystemPathForFullPath:fullPath]] forKey:@"nativeURL"];
 
     return dirEntry;
 }
 
+- (NSString *)stripQueryParametersFromPath:(NSString *)fullPath
+{
+    NSRange questionMark = [fullPath rangeOfString:@"?"];
+    if (questionMark.location != NSNotFound) {
+        return [fullPath substringWithRange:NSMakeRange(0,questionMark.location)];
+    }
+    return fullPath;
+}
+
+- (NSString *)filesystemPathForFullPath:(NSString *)fullPath
+{
+    NSString *path = nil;
+    NSString *strippedFullPath = [self stripQueryParametersFromPath:fullPath];
+    path = [NSString stringWithFormat:@"%@%@", self.fsRoot, strippedFullPath];
+    if ([path hasSuffix:@"/"]) {
+      path = [path substringToIndex:([path length]-1)];
+    }
+    return path;
+}
 /*
  * IN
  *  NSString localURI
@@ -94,13 +114,7 @@
  */
 - (NSString *)filesystemPathForURL:(CDVFilesystemURL *)url
 {
-    NSString *path = nil;
-    NSString *fullPath = url.fullPath;
-    path = [NSString stringWithFormat:@"%@%@", self.fsRoot, fullPath];
-    if ([path hasSuffix:@"/"]) {
-      path = [path substringToIndex:([path length]-1)];
-    }
-    return path;
+    return [self filesystemPathForFullPath:url.fullPath];
 }
 
 - (CDVFilesystemURL *)URLforFullPath:(NSString *)fullPath
@@ -136,7 +150,7 @@
             }
         }
     }
-    NSString *normalizedPath;
+
     if (isAbsolutePath) {
         return [NSString stringWithFormat:@"/%@", [components componentsJoinedByString:@"/"]];
     } else {
@@ -257,9 +271,11 @@
     NSDictionary* fileAttribs = [fileMgr attributesOfItemAtPath:[self  filesystemPathForURL:url] error:&error];
 
     if (fileAttribs) {
+        // Ensure that directories (and other non-regular files) report size of 0
+        unsigned long long size = ([fileAttribs fileType] == NSFileTypeRegular ? [fileAttribs fileSize] : 0);
         NSDate* modDate = [fileAttribs fileModificationDate];
         if (modDate) {
-            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDouble:[modDate timeIntervalSince1970] * 1000];
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:@{@"modificationTime": @([modDate timeIntervalSince1970] * 1000), @"size": @(size)}];
         }
     } else {
         // didn't get fileAttribs
@@ -526,7 +542,7 @@
 
     else if ([srcFs isKindOfClass:[CDVLocalFilesystem class]]) {
         /* Same FS, we can shortcut with NSFileManager operations */
-        NSString *srcFullPath = [self filesystemPathForURL:srcURL];
+        NSString *srcFullPath = [srcFs filesystemPathForURL:srcURL];
 
         BOOL bSrcIsDir = NO;
         BOOL bSrcExists = [fileMgr fileExistsAtPath:srcFullPath isDirectory:&bSrcIsDir];

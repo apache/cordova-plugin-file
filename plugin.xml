@@ -3,7 +3,7 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
 xmlns:android="http://schemas.android.com/apk/res/android"
            id="org.apache.cordova.file"
-      version="1.0.0">
+      version="1.0.1">
     <name>File</name>
     <description>Cordova File Plugin</description>
     <license>Apache 2.0</license>
@@ -87,6 +87,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="File" >
                 <param name="android-package" value="org.apache.cordova.file.FileUtils"/>
+                <param name="onload" value="true" />
             </feature>
         </config-file>
 
@@ -118,6 +119,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="File" >
                 <param name="android-package" value="org.apache.cordova.file.FileUtils"/>
+                <param name="onload" value="true" />
             </feature>
         </config-file>
 
@@ -133,7 +135,15 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <source-file src="src/android/FileUtils.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/FileHelper.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/DirectoryManager.java" target-dir="src/org/apache/cordova/file" />
-
+        <source-file src="src/android/LocalFilesystemURL.java" target-dir="src/org/apache/cordova/file" />
+        <source-file src="src/android/Filesystem.java" target-dir="src/org/apache/cordova/file" />
+        <source-file src="src/android/LocalFilesystem.java" target-dir="src/org/apache/cordova/file" />
+        <source-file src="src/android/ContentFilesystem.java" target-dir="src/org/apache/cordova/file" />
+        
+        <!-- android specific file apis -->
+        <js-module src="www/android/FileSystem.js" name="androidFileSystem">
+            <merges target="window.FileSystem" />
+        </js-module>
     </platform>
 
     <!-- ubuntu -->
@@ -156,6 +166,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <config-file target="config.xml" parent="/*">
             <feature name="File">
                 <param name="ios-package" value="CDVFile" />
+                <param name="onload" value="true" />
             </feature>
         </config-file>
         <header-file src="src/ios/CDVFile.h" />

@@ -35,16 +35,21 @@ module.exports = function (type, size, success, fail) {
             fail(new FileError(FileError.SYNTAX_ERR));
         }
     } else {
-        window.webkitRequestFileSystem(type, size, function (fs) {
-            cordovaFsRoot = fileUtils.createEntry(fs.root);
-            cordovaFs = new FileSystem(fileUtils.getFileSystemName(fs), cordovaFsRoot);
-            cordovaFsRoot.filesystem = cordovaFs;
-            cordovaFs._size = size;
-            success(cordovaFs);
-        }, function (error) {
-            if (typeof fail === "function") {
-                fail(new FileError(error));
-            }
-        });
+        cordova.exec(function () {
+            window.requestAnimationFrame(function () {
+                window.webkitRequestFileSystem(type, size, function (fs) {
+                    cordovaFsRoot = fileUtils.createEntry(fs.root);
+                    cordovaFs = new FileSystem(fileUtils.getFileSystemName(fs), cordovaFsRoot);
+                    cordovaFsRoot.filesystem = cordovaFs;
+                    cordovaFs._size = size;
+                    success(cordovaFs);
+                }, function (error) {
+                    if (typeof fail === "function") {
+                        fail(new FileError(error));
+                    }
+                });
+            });
+        }, fail, "org.apache.cordova.file", "setSandbox", [true]);
+
     }
 };

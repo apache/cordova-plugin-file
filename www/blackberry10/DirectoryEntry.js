@@ -31,20 +31,13 @@ var argscheck = require('cordova/argscheck'),
 
 utils.extend(DirectoryEntry, Entry);
 
-function err(sandboxState, errorCallback) {
-    return function (e) {
-        cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);
-        errorCallback(e);
-    }
-};
-
 DirectoryEntry.prototype.createReader = function () {
     return new DirectoryReader(this.fullPath);
 };
 
 DirectoryEntry.prototype.getDirectory = function (path, options, successCallback, errorCallback) {
-    var sandboxState,
-        currentPath = this.nativeEntry.fullPath,
+    var currentPath = this.nativeEntry.fullPath,
+        that = this,
         fullPath;
 
     if (path.indexOf("/") === 0) {
@@ -53,30 +46,28 @@ DirectoryEntry.prototype.getDirectory = function (path, options, successCallback
         fullPath = currentPath + "/" + path;
     }
 
-    cordova.exec(function (sandboxed) {
-        sandboxState = sandboxed;
-    }, function (e) {
-        console.log("[ERROR]: Could not retrieve sandbox state ", e);
-    }, "org.apache.cordova.file", "isSandboxed");
-
     argscheck.checkArgs('sOFF', 'DirectoryEntry.getDirectory', arguments);
 
     if (fileUtils.isOutsideSandbox(fullPath)) {
-        cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [false]);
-        window.webkitRequestFileSystem(window.PERSISTENT, this.filesystem._size, function (fs) {
-            cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);
-            fs.root.getDirectory(fullPath, options, function (entry) {
-                successCallback(fileUtils.createEntry(entry));
-            }, err(sandboxState, errorCallback));
-        }, err(sandboxState, errorCallback));
+        cordova.exec(function () {
+            window.requestAnimationFrame(function () {
+                window.webkitRequestFileSystem(window.PERSISTENT, that.filesystem._size, function (fs) {
+                    fs.root.getDirectory(fullPath, options, function (entry) {
+                        successCallback(fileUtils.createEntry(entry));
+                    }, errorCallback);
+                }, errorCallback);
+            });
+        }, errorCallback, "org.apache.cordova.file", "setSandbox", [false]);
     } else {
-        cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [true]);
-        window.webkitRequestFileSystem(fileUtils.getFileSystemName(this.filesystem) === "persistent" ? window.PERSISTENT : window.TEMPORARY, this.filesystem._size, function (fs) {
-            cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);
-            fs.root.getDirectory(fullPath, options, function (entry) {
-                successCallback(fileUtils.createEntry(entry));
-            }, err(sandboxState, errorCallback));
-        }, err(sandboxState, errorCallback));
+        cordova.exec(function () {
+            window.requestAnimationFrame(function () {
+                window.webkitRequestFileSystem(fileUtils.getFileSystemName(that.filesystem) === "persistent" ? window.PERSISTENT : window.TEMPORARY, that.filesystem._size, function (fs) {
+                    fs.root.getDirectory(fullPath, options, function (entry) {
+                        successCallback(fileUtils.createEntry(entry));
+                    }, errorCallback);
+                }, errorCallback);
+            });
+        }, errorCallback, "org.apache.cordova.file", "setSandbox", [true]);
     }
 };
 
@@ -86,8 +77,8 @@ DirectoryEntry.prototype.removeRecursively = function (successCallback, errorCal
 };
 
 DirectoryEntry.prototype.getFile = function (path, options, successCallback, errorCallback) {
-    var sandboxState,
-        currentPath = this.nativeEntry.fullPath,
+    var currentPath = this.nativeEntry.fullPath,
+        that = this,
         fullPath;
 
     if (path.indexOf("/") === 0) {
@@ -96,30 +87,28 @@ DirectoryEntry.prototype.getFile = function (path, options, successCallback, err
         fullPath = currentPath + "/" + path;
     }
 
-    cordova.exec(function (sandboxed) {
-        sandboxState = sandboxed;
-    }, function (e) {
-        console.log("[ERROR]: Could not retrieve sandbox state ", e);
-    }, "org.apache.cordova.file", "isSandboxed");
-
     argscheck.checkArgs('sOFF', 'DirectoryEntry.getFile', arguments);
 
     if (fileUtils.isOutsideSandbox(fullPath)) {
-        cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [false]);
-        window.webkitRequestFileSystem(window.PERSISTENT, this.filesystem._size, function (fs) {
-            cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);
-            fs.root.getFile(fullPath, options, function (entry) {
-                successCallback(fileUtils.createEntry(entry));
-            }, err(sandboxState, errorCallback));
-        }, err(sandboxState, errorCallback));
+        cordova.exec(function () {
+            window.requestAnimationFrame(function () {
+                window.webkitRequestFileSystem(window.PERSISTENT, that.filesystem._size, function (fs) {
+                    fs.root.getFile(fullPath, options, function (entry) {
+                        successCallback(fileUtils.createEntry(entry));
+                    }, errorCallback);
+                }, errorCallback);
+            });
+        }, errorCallback, "org.apache.cordova.file", "setSandbox", [false]);
     } else {
-        cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [true]);
-        window.webkitRequestFileSystem(fileUtils.getFileSystemName(this.filesystem) === "persistent" ? window.PERSISTENT: window.TEMPORARY, this.filesystem._size, function (fs) {
-            cordova.exec(null, null, "org.apache.cordova.file", "setSandbox", [sandboxState]);
-            fs.root.getFile(fullPath, options, function (entry) {
-                successCallback(fileUtils.createEntry(entry));
-            }, err(sandboxState, errorCallback));
-        }, err(sandboxState, errorCallback));
+        cordova.exec(function () {
+            window.requestAnimationFrame(function () {
+                window.webkitRequestFileSystem(fileUtils.getFileSystemName(that.filesystem) === "persistent" ? window.PERSISTENT: window.TEMPORARY, that.filesystem._size, function (fs) {
+                    fs.root.getFile(fullPath, options, function (entry) {
+                        successCallback(fileUtils.createEntry(entry));
+                    }, errorCallback);
+                }, errorCallback);
+            });
+        }, errorCallback, "org.apache.cordova.file", "setSandbox", [true]);
     }
 };
 

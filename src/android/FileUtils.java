@@ -44,8 +44,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 
 /**
- * This class provides SD card file and directory services to JavaScript.
- * Only files on the SD card can be accessed.
+ * This class provides file and directory services to JavaScript.
  */
 public class FileUtils extends CordovaPlugin {
     private static final String LOG_TAG = "FileUtils";
@@ -314,23 +313,14 @@ public class FileUtils extends CordovaPlugin {
                 }
             },callbackContext);
         }
-        else if (action.equals("getMetadata")) {
-            final String fname=args.getString(0);
-            threadhelper( new FileOp( ){
-                public void run() throws FileNotFoundException, JSONException, MalformedURLException {
-                    JSONObject obj = getFileMetadata(fname);
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, obj.getLong("lastModifiedDate")));
-                }
-            }, callbackContext);
-        }
-        else if (action.equals("getFileMetadata")) {
+        else if (action.equals("getMetadata") || action.equals("getFileMetadata")) {
             final String fname=args.getString(0);
             threadhelper( new FileOp( ){
                 public void run() throws FileNotFoundException, JSONException, MalformedURLException {
                     JSONObject obj = getFileMetadata(fname);
                     callbackContext.success(obj);
                 }
-            },callbackContext);
+            }, callbackContext);
         }
         else if (action.equals("getParent")) {
             final String fname=args.getString(0);
@@ -424,7 +414,7 @@ public class FileUtils extends CordovaPlugin {
             final String localURLstr = args.getString(0);
             threadhelper( new FileOp( ){
                 public void run() throws FileNotFoundException, JSONException, MalformedURLException {
-                    String fname = _filesystemPathForURL(localURLstr);
+                    String fname = filesystemPathForURL(localURLstr);
                     callbackContext.success(fname);
                 }
             },callbackContext);
@@ -435,9 +425,13 @@ public class FileUtils extends CordovaPlugin {
         return true;
     }
 
-    /* Internal method for testing: Get the on-disk location of a local filesystem url.
+    /*
+     * These two native-only methods can be used by other plugins to translate between
+     * device file system paths and URLs. By design, there is no direct JavaScript
+     * interface to these methods.
      */
-    protected String _filesystemPathForURL(String localURLstr) throws MalformedURLException {
+
+    public String filesystemPathForURL(String localURLstr) throws MalformedURLException {
         try {
             LocalFilesystemURL inputURL = new LocalFilesystemURL(localURLstr);
             Filesystem fs = this.filesystemForURL(inputURL);
@@ -450,17 +444,27 @@ public class FileUtils extends CordovaPlugin {
         }
     }
 
-    protected LocalFilesystemURL filesystemURLforLocalPath(String localPath) {
-    	LocalFilesystemURL localURL;
-		for (Filesystem fs: filesystems) {
-			if (fs != null) {
-		        localURL = fs.URLforFilesystemPath(localPath);
-		        if (localURL != null)
-		            return localURL;
-			}
-		}
-		return null;
-	}
+    public LocalFilesystemURL filesystemURLforLocalPath(String localPath) {
+        LocalFilesystemURL localURL = null;
+        int shortestFullPath = 0;
+
+        // Try all installed filesystems. Return the best matching URL
+        // (determined by the shortest resulting URL)
+        for (Filesystem fs: filesystems) {
+            if (fs != null) {
+                LocalFilesystemURL url = fs.URLforFilesystemPath(localPath);
+                if (url != null) {
+                    // A shorter fullPath implies that the filesystem is a better
+                    // match for the local path than the previous best.
+                    if (localURL == null || (url.fullPath.length() < shortestFullPath)) {
+                        localURL = url;
+                        shortestFullPath = url.fullPath.length();
+                    }
+                }
+            }
+        }
+        return localURL;
+    }
 
 
 	/* helper to execute functions async and handle the result codes
@@ -510,25 +514,33 @@ public class FileUtils extends CordovaPlugin {
      * @throws JSONException
      */
     private JSONObject resolveLocalFileSystemURI(String url) throws IOException, JSONException {
-        String decoded = URLDecoder.decode(url, "UTF-8");
     	LocalFilesystemURL inputURL;
     	if (url == null) {
     		throw new MalformedURLException("Unrecognized filesystem URL");
     	}
     	
 		/* Backwards-compatibility: Check for file:// urls */
-    	if (decoded.startsWith("file://")) {
+    	if (url.startsWith("file://")) {
+            String decoded = URLDecoder.decode(url, "UTF-8");
     		/* This looks like a file url. Get the path, and see if any handlers recognize it. */
     		String path;
 	        int questionMark = decoded.indexOf("?");
+            int pathEnd;
 	        if (questionMark < 0) {
-	            path = decoded.substring(7, decoded.length());
+                pathEnd = decoded.length();
 	        } else {
-	            path = decoded.substring(7, questionMark);
+                pathEnd = questionMark;
+            }
+
+            int thirdSlash = decoded.indexOf("/", 7);
+            if (thirdSlash < 0 || thirdSlash > pathEnd) {
+                path = "";
+            } else {
+                path = decoded.substring(thirdSlash, pathEnd);
 	        }
     		inputURL = this.filesystemURLforLocalPath(path);
     	} else {
-    		inputURL = new LocalFilesystemURL(decoded);
+    		inputURL = new LocalFilesystemURL(url);
     	}
 
         try {
@@ -761,6 +773,26 @@ public class FileUtils extends CordovaPlugin {
         return fs;
     }
 
+   /**
+     * Returns a JSON object representing the given File. Internal APIs should be modified
+     * to use URLs instead of raw FS paths wherever possible, when interfacing with this plugin.
+     *
+     * @param file the File to convert
+     * @return a JSON representation of the given File
+     * @throws JSONException
+     */
+    public JSONObject getEntryForFile(File file) throws JSONException {
+        JSONObject entry;
+
+        for (Filesystem fs : filesystems) {
+             entry = fs.makeEntryForFile(file);
+             if (entry != null) {
+                 return entry;
+             }
+        }
+        return null;
+    }
+
     /**
      * Returns a JSON object representing the given File. Deprecated, as this is only used by
      * FileTransfer, and because it is a static method that should really be an instance method,
@@ -773,15 +805,8 @@ public class FileUtils extends CordovaPlugin {
      */
     @Deprecated
     public static JSONObject getEntry(File file) throws JSONException {
-		JSONObject entry;
-		
  		if (getFilePlugin() != null) {
- 			for (Filesystem fs:getFilePlugin().filesystems) {
- 				entry = fs.makeEntryForFile(file);
- 				if (entry != null) {
- 					return entry;
- 				}
-			}
+             return getFilePlugin().getEntryForFile(file);
 		}
 		return null;
     }
