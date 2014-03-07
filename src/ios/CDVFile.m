@@ -140,13 +140,17 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     CDVFilesystemURL* url = [CDVFilesystemURL fileSystemURLWithURL:[[self request] URL]];
     NSObject<CDVFileSystem> *fs = [filePlugin filesystemForURL:url];
     [fs readFileAtURL:url start:0 end:-1 callback:^void(NSData *data, NSString *mimetype, CDVFileError error) {
+        NSMutableDictionary* responseHeaders = [[NSMutableDictionary alloc] init];
+        responseHeaders[@"Cache-Control"] = @"no-cache";
+
         if (!error) {
-            NSURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url.url statusCode:200 HTTPVersion:@"HTTP/1.1"headerFields:@{@"Content-Type": mimetype}];
+            responseHeaders[@"Content-Type"] = mimetype;
+            NSURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url.url statusCode:200 HTTPVersion:@"HTTP/1.1"headerFields:responseHeaders];
             [[self client] URLProtocol:self didReceiveResponse:response cacheStoragePolicy:NSURLCacheStorageNotAllowed];
             [[self client] URLProtocol:self didLoadData:data];
             [[self client] URLProtocolDidFinishLoading:self];
         } else {
-            NSURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url.url statusCode:404 HTTPVersion:@"HTTP/1.1"headerFields:@{}];
+            NSURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url.url statusCode:404 HTTPVersion:@"HTTP/1.1"headerFields:responseHeaders];
             [[self client] URLProtocol:self didReceiveResponse:response cacheStoragePolicy:NSURLCacheStorageNotAllowed];
             [[self client] URLProtocolDidFinishLoading:self];
         }
@@ -154,8 +158,11 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 }
 
 - (void)stopLoading
-{
-    // do any cleanup here
+{}
+
+- (NSCachedURLResponse *)connection:(NSURLConnection *)connection
+                  willCacheResponse:(NSCachedURLResponse*)cachedResponse {
+    return nil;
 }
 
 @end
