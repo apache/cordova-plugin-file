@@ -79,7 +79,8 @@
     [dirEntry setObject:lastPart forKey:@"name"];
     [dirEntry setObject: [NSNumber numberWithInt:([fsName isEqualToString:@"temporary"] ? 0 : 1)] forKey: @"filesystem"];
     [dirEntry setObject:fsName forKey: @"filesystemName"];
-    [dirEntry setObject:[NSString stringWithFormat:@"file://%@",[self filesystemPathForFullPath:fullPath]] forKey:@"nativeURL"];
+    dirEntry[@"nativeURL"] = [[NSURL fileURLWithPath:[self filesystemPathForFullPath:fullPath]] absoluteString];
+
 
     return dirEntry;
 }
