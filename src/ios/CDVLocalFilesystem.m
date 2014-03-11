@@ -452,7 +452,7 @@
 - (CDVPluginResult *)truncateFileAtURL:(CDVFilesystemURL *)localURI atPosition:(unsigned long long)pos
 {
     unsigned long long newPos = [self truncateFile:[self filesystemPathForURL:localURI] atPosition:pos];
-    return [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:newPos];
+    return [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:(int)newPos];
 }
 
 - (CDVPluginResult *)writeToFileAtURL:(CDVFilesystemURL *)localURL withData:(NSData*)encData append:(BOOL)shouldAppend
@@ -469,7 +469,7 @@
             NSUInteger len = [encData length];
             [fileStream open];
 
-            bytesWritten = [fileStream write:[encData bytes] maxLength:len];
+            bytesWritten = (int)[fileStream write:[encData bytes] maxLength:len];
 
             [fileStream close];
             if (bytesWritten > 0) {
