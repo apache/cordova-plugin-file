@@ -22,6 +22,10 @@
 var fileUtils = require('./BB10Utils'),
     FileError = require('./FileError');
 
+if (!window.requestAnimationFrame) {
+    window.requestAnimationFrame = function (callback) { callback(); };
+}
+
 module.exports = function (uri, success, fail) {
 
     var decodedURI = decodeURI(uri).replace(/filesystem:/, '').replace(/file:\/\//, ''),
