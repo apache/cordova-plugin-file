@@ -256,9 +256,11 @@ xmlns:android="http://schemas.android.com/apk/res/android"
             <clobbers target="window.requestFileSystem" />
         </js-module>
         <js-module src="www/blackberry10/resolveLocalFileSystemURI.js" name="BB10resolveLocalFileSystemURI">
+            <clobbers target="window.resolveLocalFileSystemURI" />
+        </js-module>
+        <js-module src="www/blackberry10/resolveLocalFileSystemURL.js" name="BB10resolveLocalFileSystemURL">
             <clobbers target="window.resolveLocalFileSystemURL" />
         </js-module>
-
         <source-file src="src/blackberry10/index.js"></source-file>
     </platform>
 
