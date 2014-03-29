@@ -19,7 +19,20 @@
  *
 */
 
-// Overridden by Android, BlackBerry 10 and iOS to populate fsMap.
-module.exports.getFs = function(name, callback) {
-    callback(null);
-};
+/*
+ * requestAnimationFrame
+ * 
+ * This is used throughout the BB10 File implementation to wrap
+ * native webkit calls. There is a bug in the webkit implementation
+ * which causes callbacks to never return when multiple file system
+ * APIs are called in sequence. This should also make the UI more
+ * responsive during file operations.
+ * 
+ * Supported on BB10 OS > 10.1
+ */
+
+var requestAnimationFrame = window.requestAnimationFrame;
+if (typeof(requestAnimationFrame) !== 'function') {
+    requestAnimationFrame = function (cb) { cb(); };
+}
+module.exports = requestAnimationFrame;

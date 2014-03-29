@@ -19,7 +19,21 @@
  *
 */
 
-// Overridden by Android, BlackBerry 10 and iOS to populate fsMap.
-module.exports.getFs = function(name, callback) {
-    callback(null);
+/* 
+ * moveTo
+ * 
+ * IN:
+ *  args
+ *   0 - URL of entry to move
+ *   1 - URL of the directory into which to move the entry
+ *   2 - the new name of the entry, defaults to the current name
+ * OUT:
+ *  success - entry for the copied file or directory
+ *  fail - FileError
+ */
+
+var copy = cordova.require('org.apache.cordova.file.copyToProxy');
+
+module.exports = function (success, fail, args) {
+    copy(success, fail, args, true);
 };
