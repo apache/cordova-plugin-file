@@ -32,7 +32,7 @@ on the subject. For an overview of other storage options, refer to Cordova's
 
 - Amazon Fire OS
 - Android
-- BlackBerry 10*
+- BlackBerry 10
 - iOS
 - Windows Phone 7 and 8*
 - Windows 8*
@@ -111,17 +111,6 @@ unable to access their previously-stored files, depending on their device.
 If your application is new, or has never previously stored files in the
 persistent filesystem, then the "internal" setting is generally recommended.
 
-## BlackBerry Quirks
-
-`DirectoryEntry.removeRecursively()` may fail with a `ControlledAccessException` in the following cases:
-
-- An app attempts to access a directory created by a previous installation of the app.
-
-> Solution: ensure temporary directories are cleaned manually, or by the application prior to reinstallation.
-
-- If the device is connected by USB.
-
-> Solution: disconnect the USB cable from the device and run again.
 
 ## iOS Quirks
 - `FileReader.readAsText(blob, encoding)`

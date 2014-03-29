@@ -19,7 +19,36 @@
  *
 */
 
-// Overridden by Android, BlackBerry 10 and iOS to populate fsMap.
-module.exports.getFs = function(name, callback) {
-    callback(null);
+/* 
+ * getMetadata
+ *
+ * IN:
+ *  args
+ *   0 - local filesytem URI
+ * OUT:
+ *  success - metadata
+ *  fail - FileError code
+ */
+
+var resolve = cordova.require('org.apache.cordova.file.resolveLocalFileSystemURIProxy');
+
+module.exports = function (success, fail, args) {
+    var uri = args[0],
+        onSuccess = function (entry) {
+            if (typeof(success) === 'function') {
+                success(entry);
+            }
+        },
+        onFail = function (error) {
+            if (typeof(fail) === 'function') {
+                if (error.code) {
+                    fail(error.code);
+                } else {
+                    fail(error);
+                }
+            }
+        };
+    resolve(function (entry) {
+        entry.nativeEntry.getMetadata(onSuccess, onFail);
+    }, onFail, [uri]);
 };

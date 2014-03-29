@@ -20,34 +20,38 @@
 */
 
 /* 
- * requestFileSystem
+ * getFile
  *
  * IN:
- *  args 
- *   0 - type (TEMPORARY = 0, PERSISTENT = 1)
- *   1 - size
+ *  args
+ *   0 - local filesytem URI for the base directory to search
+ *   1 - file to be created/returned; may be absolute path or relative path
+ *   2 - options object
  * OUT:
- *  success - FileSystem object
- *   - name - the human readable directory name
- *   - root - DirectoryEntry object
- *      - isDirectory
- *      - isFile
- *      - name
- *      - fullPath
+ *  success - FileEntry
  *  fail - FileError code
  */
 
 var resolve = cordova.require('org.apache.cordova.file.resolveLocalFileSystemURIProxy');
 
 module.exports = function (success, fail, args) {
-    var fsType = args[0] === 0 ? 'temporary' : 'persistent',
-        size = args[1],
-        onSuccess = function (fs) {
-            var directory = {
-                name: fsType,
-                root: fs
-            };
-            success(directory);
+    var uri = args[0] === "/" ? "" : args[0] + "/" + args[1],
+        options = args[2],
+        onSuccess = function (entry) {
+            if (typeof(success) === 'function') {
+                success(entry);
+            }
+        },
+        onFail = function (code) {
+            if (typeof(fail) === 'function') {
+                fail(code);
+            }
         };
-    resolve(onSuccess, fail, ['cdvfile://localhost/' + fsType + '/', undefined, size]);
+    resolve(function (entry) {
+        if (!entry.isFile) {
+            onFail(FileError.TYPE_MISMATCH_ERR);
+        } else {
+            onSuccess(entry);
+        }
+    }, onFail, [uri, options]);
 };
