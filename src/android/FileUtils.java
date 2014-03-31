@@ -106,9 +106,9 @@ public class FileUtils extends CordovaPlugin {
     	if (location == null) {
     		location = "compatibility";
     	}
+    	tempRoot = activity.getCacheDir().getAbsolutePath();
     	if ("internal".equalsIgnoreCase(location)) {
     		persistentRoot = activity.getFilesDir().getAbsolutePath() + "/files/";
-    		tempRoot = activity.getCacheDir().getAbsolutePath();
     		this.configured = true;
     	} else if ("compatibility".equalsIgnoreCase(location)) {
     		/*
@@ -124,7 +124,6 @@ public class FileUtils extends CordovaPlugin {
     					"/Android/data/" + packageName + "/cache/";
     		} else {
     			persistentRoot = "/data/data/" + packageName;
-    			tempRoot = "/data/data/" + packageName + "/cache/";
     		}
     		this.configured = true;
     	}
