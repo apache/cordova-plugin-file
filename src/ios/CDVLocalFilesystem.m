@@ -121,8 +121,9 @@
 - (CDVFilesystemURL *)URLforFullPath:(NSString *)fullPath
 {
     if (fullPath) {
-        if ([fullPath hasPrefix:@"/"])
-        return [CDVFilesystemURL fileSystemURLWithString:[NSString stringWithFormat:@"%@://localhost/%@%@", kCDVFilesystemURLPrefix, self.name, fullPath]];
+        if ([fullPath hasPrefix:@"/"]) {
+            return [CDVFilesystemURL fileSystemURLWithString:[NSString stringWithFormat:@"%@://localhost/%@%@", kCDVFilesystemURLPrefix, self.name, fullPath]];
+        }
         return [CDVFilesystemURL fileSystemURLWithString:[NSString stringWithFormat:@"%@://localhost/%@/%@", kCDVFilesystemURLPrefix, self.name, fullPath]];
     }
     return nil;
