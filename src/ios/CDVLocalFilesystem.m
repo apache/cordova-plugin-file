@@ -130,7 +130,7 @@
 
 - (CDVFilesystemURL *)URLforFilesystemPath:(NSString *)path
 {
-    return [self URLforFullPath:[self fullPathForFileSystemPath:path]];
+    return [self URLforFullPath:[[self fullPathForFileSystemPath:path] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 
 }
 
