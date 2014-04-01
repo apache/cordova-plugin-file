@@ -66,7 +66,7 @@ FileEntry.prototype.createWriter = function(successCallback, errorCallback) {
  * @param {Function} errorCallback is called with a FileError
  */
 FileEntry.prototype.file = function(successCallback, errorCallback) {
-    var localURL = this.filesystem.__format__(this.fullPath);
+    var localURL = this.toInternalURL();
     var win = successCallback && function(f) {
         var file = new File(f.name, localURL, f.type, f.lastModifiedDate, f.size);
         successCallback(file);

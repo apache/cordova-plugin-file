@@ -177,9 +177,6 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <source-file src="src/ios/CDVAssetLibraryFilesystem.m" />
 
         <!-- ios specific file apis -->
-        <js-module src="www/ios/Entry.js" name="iosEntry">
-            <merges target="window.Entry" />
-        </js-module>
         <js-module src="www/ios/FileSystem.js" name="iosFileSystem">
             <merges target="window.FileSystem" />
         </js-module>
