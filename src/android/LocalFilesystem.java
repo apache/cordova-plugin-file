@@ -38,7 +38,7 @@ public class LocalFilesystem extends Filesystem {
         if (questionMark >= 0) {
           path = path.substring(0, questionMark);
         }
-	    if (path.endsWith("/")) {
+	    if (path.length() > 1 && path.endsWith("/")) {
 	      path = path.substring(0, path.length()-1);
 	    }
 	    return path;

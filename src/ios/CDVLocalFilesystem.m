@@ -99,7 +99,7 @@
     NSString *path = nil;
     NSString *strippedFullPath = [self stripQueryParametersFromPath:fullPath];
     path = [NSString stringWithFormat:@"%@%@", self.fsRoot, strippedFullPath];
-    if ([path hasSuffix:@"/"]) {
+    if ([path length] > 1 && [path hasSuffix:@"/"]) {
       path = [path substringToIndex:([path length]-1)];
     }
     return path;
