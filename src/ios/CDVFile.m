@@ -199,6 +199,71 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     }
 }
 
+- (NSArray *)getExtraFileSystemsPreference:(UIViewController *)vc
+{
+    NSString *filesystemsStr = nil;
+    if([self.viewController isKindOfClass:[CDVViewController class]]) {
+        CDVViewController *vc = (CDVViewController *)self.viewController;
+        NSDictionary *settings = [vc settings];
+        filesystemsStr = [settings[@"iosextrafilesystems"] lowercaseString];
+    }
+    if (!filesystemsStr) {
+        filesystemsStr = @"library,library-nosync,documents,documents-nosync,cache,bundle,root";
+    }
+    return [filesystemsStr componentsSeparatedByString:@","];
+}
+
+- (void)makeNonSyncable:(NSString*)path {
+    [[NSFileManager defaultManager] createDirectoryAtPath:path
+              withIntermediateDirectories:YES
+                               attributes:nil
+                                    error:nil];
+    NSURL* url = [NSURL fileURLWithPath:path];
+    [url setResourceValue: [NSNumber numberWithBool: YES]
+                   forKey: NSURLIsExcludedFromBackupKey error:nil];
+
+}
+
+- (void)registerExtraFileSystems:(NSArray *)filesystems fromAvailableSet:(NSDictionary *)availableFileSystems
+{
+    NSMutableSet *installedFilesystems = [[NSMutableSet alloc] initWithCapacity:7];
+
+    /* Build non-syncable directories as necessary */
+    for (NSString *nonSyncFS in @[@"library-nosync", @"documents-nosync"]) {
+        if ([filesystems containsObject:nonSyncFS]) {
+            [self makeNonSyncable:availableFileSystems[nonSyncFS]];
+        }
+    }
+
+    /* Register filesystems in order */
+    for (NSString *fsName in filesystems) {
+        if (![installedFilesystems containsObject:fsName]) {
+            NSString *fsRoot = availableFileSystems[fsName];
+            if (fsRoot) {
+                [filePlugin registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:fsName root:fsRoot]];
+                [installedFilesystems addObject:fsName];
+            } else {
+                NSLog(@"Unrecognized extra filesystem identifier: %@", fsName);
+            }
+        }
+    }
+}
+
+- (NSDictionary *)getAvailableFileSystems
+{
+    NSString *libPath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *docPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    return @{
+        @"library": libPath,
+        @"library-nosync": [libPath stringByAppendingPathComponent:@"NoCloud"],
+        @"documents": docPath,
+        @"documents-nosync": [docPath stringByAppendingPathComponent:@"NoCloud"],
+        @"cache": [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0],
+        @"bundle": [[NSBundle mainBundle] bundlePath],
+        @"root": @"/"
+    };
+}
+
 - (void)pluginInitialize
 {
     NSString *location = nil;
@@ -245,6 +310,10 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
             @"File plugin configuration error: Please set iosPersistentFileLocation in config.xml to one of \"library\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
     }
     [self registerFilesystem:[[CDVAssetLibraryFilesystem alloc] initWithName:@"assets-library"]];
+
+    [self registerExtraFileSystems:[self getExtraFileSystemsPreference:self.viewController]
+                  fromAvailableSet:[self getAvailableFileSystems]];
+
 }
 
 
