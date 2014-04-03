@@ -439,7 +439,11 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:ENCODING_ERR];
     } else {
         NSObject<CDVFileSystem> *fs = [self filesystemForURL:inputURI];
-        result = [fs entryForLocalURI:inputURI];
+        if (fs == nil) {
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:ENCODING_ERR];
+        } else {
+            result = [fs entryForLocalURI:inputURI];
+        }
     }
     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
