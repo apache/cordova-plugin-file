@@ -33,16 +33,23 @@ public class ContentFilesystem extends Filesystem {
 	public JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException {
 		// Get the cursor to validate that the file exists
 		Cursor cursor = openCursorForURL(inputURL);
+		String filePath = null;
 		try {
 			if (cursor == null || !cursor.moveToFirst()) {
 				throw new FileNotFoundException();
 			}
+			filePath = filesystemPathForCursor(cursor);
 		} finally {
 			if (cursor != null)
 				cursor.close();
 		}
+		if (filePath == null) {
+			filePath = inputURL.URL.toString();
+		} else {
+			filePath = "file://" + filePath;
+		}
 		try {
-			return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, false /*fp.isDirectory()*/, inputURL.URL.toString());
+			return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, false /*fp.isDirectory()*/, filePath);
 		} catch (JSONException e) {
 			throw new IOException();
 		}
