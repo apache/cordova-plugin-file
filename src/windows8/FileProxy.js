@@ -187,6 +187,27 @@ module.exports = {
         );
     },
 
+    readAsArrayBuffer: function (win, fail, args) {
+        var fileName = args[0];
+
+        Windows.Storage.StorageFile.getFileFromPathAsync(fileName).then(
+            function (storageFile) {
+                Windows.Storage.FileIO.readBufferAsync(storageFile).done(
+                    function (buffer) {
+                        var array = new Uint8Array(buffer.length);
+                        var dataReader = Windows.Storage.Streams.DataReader.fromBuffer(buffer);
+                        dataReader.readBytes(array)
+                        dataReader.close();
+                        win(array);
+                    }, function () {
+                        fail && fail(FileError.NOT_READABLE_ERR);
+                    });
+            }, function () {
+            	fail && fail(FileError.NOT_FOUND_ERR);
+            }
+        );
+    },
+    
     getDirectory:function(win,fail,args) {
         var fullPath = args[0];
         var path = args[1];
