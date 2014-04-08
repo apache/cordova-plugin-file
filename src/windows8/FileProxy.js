@@ -884,4 +884,4 @@ module.exports = {
 
 };
 
-require("cordova/windows8/commandProxy").add("File",module.exports);
+require("cordova/exec/proxy").add("File",module.exports);
