@@ -376,9 +376,20 @@ module.exports = {
     },
 
     getFile:function(win,fail,args) {
-        var fullPath = args[0];
-        var path = args[1];
+		//not sure why, but it won't work with normal slashes...
+		var fullPath = args[0].replace(/\//g, '\\');
+        var path = args[1].replace(/\//g, '\\');
         var options = args[2];
+
+        var completePath = fullPath + '\\' + path;
+		//handles trailing slash and leading slash, or just one or the other
+        completePath = completePath.replace(/\\\\\\/g, '/').replace(/\\\\/g, '\\');
+
+        var fileName = completePath.substring(completePath.lastIndexOf('\\'));
+		
+		//final adjustment
+        fullPath = completePath.substring(0, completePath.lastIndexOf('\\'));
+        path = fileName.replace(/\\/g, '');
 
         var flag = "";
         if (options !== null) {
