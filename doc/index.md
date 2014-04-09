@@ -163,3 +163,19 @@ This has particularly been an issue with the File-Transfer plugin, which previou
 device-absolute-paths (and can still accept them). It has been updated to work correctly
 with FileSystem URLs, so replacing `entry.fullPath` with `entry.toURL()` should resolve any
 issues getting that plugin to work with files on the device.
+
+## List of Error Codes and Meanings
+When an error is thrown, one of the following codes will be used. 
+
+* 1 = NOT_FOUND_ERR
+* 2 = SECURITY_ERR
+* 3 = ABORT_ERR
+* 4 = NOT_READABLE_ERR
+* 5 = ENCODING_ERR
+* 6 = NO_MODIFICATION_ALLOWED_ERR
+* 7 = INVALID_STATE_ERR
+* 8 = SYNTAX_ERR
+* 9 = INVALID_MODIFICATION_ERR
+* 10 = QUOTA_EXCEEDED_ERR
+* 11 = TYPE_MISMATCH_ERR
+* 12 = PATH_EXISTS_ERR
