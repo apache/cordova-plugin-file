@@ -26,7 +26,7 @@
  */
 var Metadata = function(metadata) {
     if (typeof metadata == "object") {
-        this.modificationTime = new Date(metadata.modificationTime);
+        this.modificationTime = new Date(metadata.lastModifiedDate);
         this.size = +(metadata.size);
     } else if (typeof metadata == "undefined") {
         this.modificationTime = null;
