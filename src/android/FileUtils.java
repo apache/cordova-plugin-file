@@ -568,7 +568,10 @@ public class FileUtils extends CordovaPlugin {
     	}
     	
 		/* Backwards-compatibility: Check for file:// urls */
-    	if (url.startsWith("file://")) {
+        if (url.startsWith("file:/")) {
+            if (!url.startsWith("file://")) {
+                url = "file:///" + url.substring(6);
+            }
             String decoded = URLDecoder.decode(url, "UTF-8");
     		/* This looks like a file url. Get the path, and see if any handlers recognize it. */
     		String path;
