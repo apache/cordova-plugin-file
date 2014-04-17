@@ -145,3 +145,31 @@
 * CB-6012 Preserve query strings on cdvfile:// URLs where necessary
 * CB-6010 Test properly for presence of URLforFilesystemPath method
 * CB-5959 Entry.getMetadata should return size attribute
+
+### 1.1.0 (Apr 17, 2014)
+* CB-4965: Remove tests from file plugin
+* Android: Allow file:/ URLs
+* CB-6422: [windows8] use cordova/exec/proxy
+* CB-6249: [android] Opportunistically resolve content urls to file
+* CB-6394: [ios, android] Add extra filesystem roots
+* CB-6394: [ios, android] Fix file resolution for the device root case
+* CB-6394: [ios] Return ENCODING_ERR when fs name is not valid
+* CB-6393: Change behaviour of toURL and toNativeURL
+* ios: Style: plugin initialization
+* ios: Fix handling of file URLs with encoded spaces
+* Always use Android's recommended temp file location for temporary file system
+* CB-6352: Allow FileSystem objects to be serialized to JSON
+* CB-5959: size is explicitly 0 if not set, file.spec.46&47 are testing the type of size
+* CB-6242: [BlackBerry10] Add deprecated version of resolveLocalFileSystemURI
+* CB-6242: [BlackBerry10] add file:/// prefix for toURI / toURL
+* CB-6242: [BlackBerry10] Polyfill window.requestAnimationFrame for OS < 10.2
+* CB-6242: [BlackBerry10] Override window.resolveLocalFileSystemURL
+* CB-6212: [iOS] fix warnings compiled under arm64 64-bit
+* ios: Don't cache responses from CDVFile's URLProtocol
+* CB-6199: [iOS] Fix toNativeURL() not escaping characters properly
+* CB-6148: Fix cross-filesystem copy and move
+* fixed setMetadata() to use the formatted fullPath
+* corrected typo which leads to a "comma expression"
+* CB-4952: ios: Resolve symlinks in file:// URLs
+* Add docs about the extraFileSystems <preference>
+* CB-6460: Update license headers
