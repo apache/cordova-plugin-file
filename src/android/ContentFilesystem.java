@@ -1,3 +1,21 @@
+/*
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+ */
 package org.apache.cordova.file;
 
 import java.io.File;
@@ -33,16 +51,23 @@ public class ContentFilesystem extends Filesystem {
 	public JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException {
 		// Get the cursor to validate that the file exists
 		Cursor cursor = openCursorForURL(inputURL);
+		String filePath = null;
 		try {
 			if (cursor == null || !cursor.moveToFirst()) {
 				throw new FileNotFoundException();
 			}
+			filePath = filesystemPathForCursor(cursor);
 		} finally {
 			if (cursor != null)
 				cursor.close();
 		}
+		if (filePath == null) {
+			filePath = inputURL.URL.toString();
+		} else {
+			filePath = "file://" + filePath;
+		}
 		try {
-			return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, false /*fp.isDirectory()*/, inputURL.URL.toString());
+			return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, false /*fp.isDirectory()*/, filePath);
 		} catch (JSONException e) {
 			throw new IOException();
 		}

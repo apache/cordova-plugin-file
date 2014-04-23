@@ -140,13 +140,17 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     CDVFilesystemURL* url = [CDVFilesystemURL fileSystemURLWithURL:[[self request] URL]];
     NSObject<CDVFileSystem> *fs = [filePlugin filesystemForURL:url];
     [fs readFileAtURL:url start:0 end:-1 callback:^void(NSData *data, NSString *mimetype, CDVFileError error) {
+        NSMutableDictionary* responseHeaders = [[NSMutableDictionary alloc] init];
+        responseHeaders[@"Cache-Control"] = @"no-cache";
+
         if (!error) {
-            NSURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url.url statusCode:200 HTTPVersion:@"HTTP/1.1"headerFields:@{@"Content-Type": mimetype}];
+            responseHeaders[@"Content-Type"] = mimetype;
+            NSURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url.url statusCode:200 HTTPVersion:@"HTTP/1.1"headerFields:responseHeaders];
             [[self client] URLProtocol:self didReceiveResponse:response cacheStoragePolicy:NSURLCacheStorageNotAllowed];
             [[self client] URLProtocol:self didLoadData:data];
             [[self client] URLProtocolDidFinishLoading:self];
         } else {
-            NSURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url.url statusCode:404 HTTPVersion:@"HTTP/1.1"headerFields:@{}];
+            NSURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url.url statusCode:404 HTTPVersion:@"HTTP/1.1"headerFields:responseHeaders];
             [[self client] URLProtocol:self didReceiveResponse:response cacheStoragePolicy:NSURLCacheStorageNotAllowed];
             [[self client] URLProtocolDidFinishLoading:self];
         }
@@ -154,8 +158,11 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 }
 
 - (void)stopLoading
-{
-    // do any cleanup here
+{}
+
+- (NSCachedURLResponse *)connection:(NSURLConnection *)connection
+                  willCacheResponse:(NSCachedURLResponse*)cachedResponse {
+    return nil;
 }
 
 @end
@@ -192,57 +199,121 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     }
 }
 
-@synthesize viewController=_viewController;
-- (void)setViewController:(UIViewController *)newViewController
+- (NSArray *)getExtraFileSystemsPreference:(UIViewController *)vc
 {
-    if (_viewController != newViewController) {
-        _viewController = newViewController;
+    NSString *filesystemsStr = nil;
+    if([self.viewController isKindOfClass:[CDVViewController class]]) {
+        CDVViewController *vc = (CDVViewController *)self.viewController;
+        NSDictionary *settings = [vc settings];
+        filesystemsStr = [settings[@"iosextrafilesystems"] lowercaseString];
+    }
+    if (!filesystemsStr) {
+        filesystemsStr = @"library,library-nosync,documents,documents-nosync,cache,bundle,root";
+    }
+    return [filesystemsStr componentsSeparatedByString:@","];
+}
 
-        NSString *location = nil;
-        if([_viewController isKindOfClass:[CDVViewController class]]) {
-            CDVViewController *vc = (CDVViewController *)_viewController;
-            NSMutableDictionary *settings = vc.settings;
-            location = [[settings objectForKey:@"iospersistentfilelocation"] lowercaseString];
-        }
-        if (location == nil) {
-            // Compatibilty by default (if the config preference is not set, or
-            // if we're not embedded in a CDVViewController somehow.)
-            location = @"compatibility";
-        }
+- (void)makeNonSyncable:(NSString*)path {
+    [[NSFileManager defaultManager] createDirectoryAtPath:path
+              withIntermediateDirectories:YES
+                               attributes:nil
+                                    error:nil];
+    NSURL* url = [NSURL fileURLWithPath:path];
+    [url setResourceValue: [NSNumber numberWithBool: YES]
+                   forKey: NSURLIsExcludedFromBackupKey error:nil];
 
-        NSError *error;
-        if ([[NSFileManager defaultManager] createDirectoryAtPath:self.appTempPath
+}
+
+- (void)registerExtraFileSystems:(NSArray *)filesystems fromAvailableSet:(NSDictionary *)availableFileSystems
+{
+    NSMutableSet *installedFilesystems = [[NSMutableSet alloc] initWithCapacity:7];
+
+    /* Build non-syncable directories as necessary */
+    for (NSString *nonSyncFS in @[@"library-nosync", @"documents-nosync"]) {
+        if ([filesystems containsObject:nonSyncFS]) {
+            [self makeNonSyncable:availableFileSystems[nonSyncFS]];
+        }
+    }
+
+    /* Register filesystems in order */
+    for (NSString *fsName in filesystems) {
+        if (![installedFilesystems containsObject:fsName]) {
+            NSString *fsRoot = availableFileSystems[fsName];
+            if (fsRoot) {
+                [filePlugin registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:fsName root:fsRoot]];
+                [installedFilesystems addObject:fsName];
+            } else {
+                NSLog(@"Unrecognized extra filesystem identifier: %@", fsName);
+            }
+        }
+    }
+}
+
+- (NSDictionary *)getAvailableFileSystems
+{
+    NSString *libPath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *docPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    return @{
+        @"library": libPath,
+        @"library-nosync": [libPath stringByAppendingPathComponent:@"NoCloud"],
+        @"documents": docPath,
+        @"documents-nosync": [docPath stringByAppendingPathComponent:@"NoCloud"],
+        @"cache": [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0],
+        @"bundle": [[NSBundle mainBundle] bundlePath],
+        @"root": @"/"
+    };
+}
+
+- (void)pluginInitialize
+{
+    NSString *location = nil;
+    if([self.viewController isKindOfClass:[CDVViewController class]]) {
+        CDVViewController *vc = (CDVViewController *)self.viewController;
+        NSMutableDictionary *settings = vc.settings;
+        location = [[settings objectForKey:@"iospersistentfilelocation"] lowercaseString];
+    }
+    if (location == nil) {
+        // Compatibilty by default (if the config preference is not set, or
+        // if we're not embedded in a CDVViewController somehow.)
+        location = @"compatibility";
+    }
+
+    NSError *error;
+    if ([[NSFileManager defaultManager] createDirectoryAtPath:self.appTempPath
+                                  withIntermediateDirectories:YES
+                                                   attributes:nil
+                                                        error:&error]) {
+        [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"temporary" root:self.appTempPath]];
+    } else {
+        NSLog(@"Unable to create temporary directory: %@", error);
+    }
+    if ([location isEqualToString:@"library"]) {
+        if ([[NSFileManager defaultManager] createDirectoryAtPath:self.appLibraryPath
                                       withIntermediateDirectories:YES
                                                        attributes:nil
                                                             error:&error]) {
-            [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"temporary" root:self.appTempPath]];
+            [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.appLibraryPath]];
         } else {
-            NSLog(@"Unable to create temporary directory: %@", error);
+            NSLog(@"Unable to create library directory: %@", error);
         }
-        if ([location isEqualToString:@"library"]) {
-            if ([[NSFileManager defaultManager] createDirectoryAtPath:self.appLibraryPath
-                                          withIntermediateDirectories:YES
-                                                           attributes:nil
-                                                                error:&error]) {
-                [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.appLibraryPath]];
-            } else {
-                NSLog(@"Unable to create library directory: %@", error);
-            }
-        } else if ([location isEqualToString:@"compatibility"]) {
-            /*
-             *  Fall-back to compatibility mode -- this is the logic implemented in
-             *  earlier versions of this plugin, and should be maintained here so
-             *  that apps which were originally deployed with older versions of the
-             *  plugin can continue to provide access to files stored under those
-             *  versions.
-             */
-            [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.rootDocsPath]];
-        } else {
-            NSAssert(false,
-                @"File plugin configuration error: Please set iosPersistentFileLocation in config.xml to one of \"library\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
-        }
-        [self registerFilesystem:[[CDVAssetLibraryFilesystem alloc] initWithName:@"assets-library"]];
+    } else if ([location isEqualToString:@"compatibility"]) {
+        /*
+         *  Fall-back to compatibility mode -- this is the logic implemented in
+         *  earlier versions of this plugin, and should be maintained here so
+         *  that apps which were originally deployed with older versions of the
+         *  plugin can continue to provide access to files stored under those
+         *  versions.
+         */
+        [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.rootDocsPath]];
+    } else {
+        NSAssert(false,
+            @"File plugin configuration error: Please set iosPersistentFileLocation in config.xml to one of \"library\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
     }
+    [self registerFilesystem:[[CDVAssetLibraryFilesystem alloc] initWithName:@"assets-library"]];
+
+    [self registerExtraFileSystems:[self getExtraFileSystemsPreference:self.viewController]
+                  fromAvailableSet:[self getAvailableFileSystems]];
+
 }
 
 
@@ -426,20 +497,9 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     /* Backwards-compatibility: Check for file:// urls */
     if ([localURIstr hasPrefix:@"file://"]) {
         /* This looks like a file url. Get the path, and see if any handlers recognize it. */
-        NSString* path;
-        NSRange questionMark = [localURIstr rangeOfString:@"?"];
-        NSUInteger pathEnd;
-        if (questionMark.location == NSNotFound) {
-            pathEnd = localURIstr.length;
-        } else {
-            pathEnd = questionMark.location;
-        }
-        NSRange thirdSlash = [localURIstr rangeOfString:@"/" options:0 range:(NSRange){7, pathEnd-7}];
-        if (thirdSlash.location == NSNotFound) {
-            path = @"";
-        } else {
-            path = [localURIstr substringWithRange:NSMakeRange(thirdSlash.location, pathEnd-thirdSlash.location)];
-        }
+        NSURL *fileURL = [NSURL URLWithString:localURIstr];
+        NSURL *resolvedFileURL = [fileURL URLByResolvingSymlinksInPath];
+        NSString *path = [resolvedFileURL path];
         inputURI = [self fileSystemURLforLocalPath:path];
     } else {
         inputURI = [CDVFilesystemURL fileSystemURLWithString:localURIstr];
@@ -448,7 +508,11 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:ENCODING_ERR];
     } else {
         NSObject<CDVFileSystem> *fs = [self filesystemForURL:inputURI];
-        result = [fs entryForLocalURI:inputURI];
+        if (fs == nil) {
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:ENCODING_ERR];
+        } else {
+            result = [fs entryForLocalURI:inputURI];
+        }
     }
     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }

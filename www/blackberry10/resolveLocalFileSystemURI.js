@@ -19,56 +19,7 @@
  *
 */
 
-var fileUtils = require('./BB10Utils'),
-    FileError = require('./FileError');
-
-module.exports = function (uri, success, fail) {
-
-    var decodedURI = decodeURI(uri).replace(/filesystem:/, '').replace(/file:\/\//, ''),
-        failNotFound = function () {
-            if (fail) {
-                fail(FileError.NOT_FOUND_ERR);
-            }
-        },
-        resolveURI = function () {
-            window.requestAnimationFrame(function () {
-                window.webkitRequestFileSystem(
-                    window.PERSISTENT,
-                    50*1024*1024,
-                    function (fs) {
-                        var op = decodedURI.slice(-1) === '/' ? 'getDirectory' : 'getFile';
-                        fs.root[op](
-                            decodedURI,
-                            { create: false },
-                            function (entry) {
-                                success(fileUtils.createEntry(entry));
-                            },
-                            failNotFound
-                        );
-                    },
-                    failNotFound
-                );
-            });
-        };
-
-    if (decodedURI.substring(0, 8) === 'local://') {
-        cordova.exec(
-            function (path) {
-                decodedURI = path;
-                resolveURI();
-            },
-            failNotFound,
-            'org.apache.cordova.file',
-            'resolveLocalPath',
-            [decodedURI]
-        );
-    } else {
-        cordova.exec(
-            resolveURI, 
-            failNotFound, 
-            'org.apache.cordova.file', 
-            'setSandbox', 
-            [!fileUtils.isOutsideSandbox(decodedURI)]
-        );
-    }
+module.exports = function () {
+    console.log("resolveLocalFileSystemURI is deprecated. Please call resolveLocalFileSystemURL instead.");
+    window.resolveLocalFileSystemURL.apply(this, arguments);
 };

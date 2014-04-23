@@ -39,6 +39,36 @@ on the subject. For an overview of other storage options, refer to Cordova's
 
 \* _These platforms do not support `FileReader.readAsArrayBuffer` nor `FileWriter.write(blob)`._
 
+## Configuring the Plugin
+
+The set of available filesystems can be configured per-platform. Both iOS and
+Android recognize a <preference> tag in `config.xml` which names the
+filesystems to be installed. By default, all file-system roots are enabled.
+
+    <preference name="iosExtraFilesystems" value="library,library-nosync,documents,documents-nosync,cache,bundle,root" />
+    <preference name="AndroidExtraFilesystems" value="files,files-external,documents,sdcard,cache,cache-external,root" />
+
+### Android
+
+* files: The application's internal file storage directory
+* files-external: The application's external file storage directory
+* sdcard: The global external file storage directory (this is the root of the SD card, if one is installed)
+* cache: The application's internal cache directory
+* cache-external: The application's external cache directory
+* root: The entire device filesystem
+
+Android also supports a special filesystem named "documents", which represents a "/Documents/" subdirectory within the "files" filesystem.
+
+### iOS
+
+* library: The application's Library directory
+* documents: The application's Documents directory
+* cache: The application's Cache directory
+* app-bundle: The application's bundle; the location of the app itself on disk
+* root: The entire device filesystem
+
+By default, the library and documents directories can be synced to iCloud. You can also request two additional filesystems, "library-nosync" and "documents-nosync", which represent a special non-synced directory within the Library or Documents filesystem.
+
 ## Android Quirks
 
 ### Android Persistent storage location
