@@ -387,8 +387,12 @@ void File::getMetadata(int scId, int ecId, const QString &path) {
 
     if (!fileInfo.exists())
         this->callback(ecId, FileError::kNotFoundErr);
-    else
-        this->cb(scId, fileInfo.lastModified().toMSecsSinceEpoch());
+    else {
+        QVariantMap obj;
+        obj.insert("modificationTime", fileInfo.lastModified().toMSecsSinceEpoch());
+        obj.insert("size", fileInfo.isDir() ? 0 : fileInfo.size());
+        this->cb(scId, obj);
+    }
 }
 
 void File::readEntries(int scId, int ecId, QString path) {
