@@ -77,9 +77,9 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <clobbers target="window.Flags" />
     </js-module>
 
-    <js-module src="www/LocalFileSystem.js" name="LocalFileSystem">
+    <js-module src="www/LocalFilesystem.js" name="LocalFilesystem">
         <!-- Non-standards way -->
-        <clobbers target="window.LocalFileSystem" />
+        <clobbers target="window.LocalFilesystem" />
         <!-- Standards-compliant way -->
         <merges target="window" />
     </js-module>
@@ -127,8 +127,8 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <source-file src="src/android/ContentFilesystem.java" target-dir="src/org/apache/cordova/file" />
 
         <!-- android specific file apis -->
-        <js-module src="www/android/FileSystem.js" name="androidFileSystem">
-            <merges target="window.FileSystem" />
+        <js-module src="www/android/Filesystem.js" name="androidFilesystem">
+            <merges target="window.Filesystem" />
         </js-module>
     </platform>
 
