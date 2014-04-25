@@ -24,6 +24,20 @@ to HTML5 Rocks' [FileSystem article](http://www.html5rocks.com/en/tutorials/file
 on the subject. For an overview of other storage options, refer to Cordova's
 [storage guide](http://cordova.apache.org/docs/en/edge/cordova_storage_storage.md.html).
 
+Over the standard file systems (`LocalFileSystem.PERSISTENCE` and `LocalFileSystem.TEMPORARY`) the cordova file plug-in allows access to further file systems. To use them, one needs to configure which are allowed for the application (see section configuration). To access a file within one of these file systems, use the following command:
+
+ `window.resolveLocalFileSystemURL(path, cbSuccess, cbFail);`
+
+ * @param path:     {string} a cordova path with scheme: `cdvfile://localhost/<file-system-name>/<path-to-file>`  <br/>Examples: 
+<br/>`cdvfile://localhost/sdcard/path/to/global/file`
+<br/>`cdvfile://localhost/cache/onlyVisibleToTheApp.txt`
+ * @param cbSuccess: {function} a callback method that receives a `DirectoryEntry` object.
+ * @param cbSuccess: {Function} a callback method that receives a `FileError` object.
+
+Also note, that for Android you need to configure the FileLocation as follows, in order to have access to all file systems:
+
+    <preference name="AndroidPersistentFileLocation" value="Compatibility" />
+
 ## Installation
 
     cordova plugin add org.apache.cordova.file
