@@ -35,7 +35,8 @@ Over the standard file systems (`LocalFileSystem.PERSISTENCE` and `LocalFileSyst
  * @param cbSuccess: {Function} a callback method that receives a `FileError` object.
 
 Also note, that for Android you need to configure the FileLocation as follows, in order to have access to all file systems:
-<preference name="AndroidPersistentFileLocation" value="Compatibility" />
+
+    <preference name="AndroidPersistentFileLocation" value="Compatibility" />
 
 ## Installation
 
