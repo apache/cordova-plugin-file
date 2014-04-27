@@ -34,6 +34,7 @@ on the subject. For an overview of other storage options, refer to Cordova's
 - Android
 - BlackBerry 10*
 - iOS
+- OS X
 - Windows Phone 7 and 8*
 - Windows 8*
 
@@ -68,6 +69,10 @@ Android also supports a special filesystem named "documents", which represents a
 * root: The entire device filesystem
 
 By default, the library and documents directories can be synced to iCloud. You can also request two additional filesystems, "library-nosync" and "documents-nosync", which represent a special non-synced directory within the Library or Documents filesystem.
+
+### OS X
+
+The implementation is the same as the one for the iOS, except the asset library support.
 
 ## Android Quirks
 

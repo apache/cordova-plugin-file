@@ -199,6 +199,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     }
 }
 
+#if TARGET_OS_IPHONE
 - (NSArray *)getExtraFileSystemsPreference:(UIViewController *)vc
 {
     NSString *filesystemsStr = nil;
@@ -212,6 +213,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     }
     return [filesystemsStr componentsSeparatedByString:@","];
 }
+#endif
 
 - (void)makeNonSyncable:(NSString*)path {
     [[NSFileManager defaultManager] createDirectoryAtPath:path
@@ -309,15 +311,15 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         NSAssert(false,
             @"File plugin configuration error: Please set iosPersistentFileLocation in config.xml to one of \"library\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
     }
+#if TARGET_OS_IPHONE
     [self registerFilesystem:[[CDVAssetLibraryFilesystem alloc] initWithName:@"assets-library"]];
 
     [self registerExtraFileSystems:[self getExtraFileSystemsPreference:self.viewController]
                   fromAvailableSet:[self getAvailableFileSystems]];
-
+#endif
 }
 
-
-- (id)initWithWebView:(UIWebView*)theWebView
+- (id)initWithWebView:(id)theWebView
 {
     self = (CDVFile*)[super initWithWebView:theWebView];
     if (self) {
