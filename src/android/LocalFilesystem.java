@@ -141,19 +141,7 @@ public class LocalFilesystem extends Filesystem {
           throw new IOException();
       }
       try {
-    	  JSONObject entry = new JSONObject();
-    	  entry.put("isFile", fp.isFile());
-    	  entry.put("isDirectory", fp.isDirectory());
-    	  entry.put("name", fp.getName());
-    	  entry.put("fullPath", inputURL.fullPath);
-    	  // The file system can't be specified, as it would lead to an infinite loop.
-    	  // But we can specify the name of the FS, and the rest can be reconstructed
-    	  // in JS.
-    	  entry.put("filesystemName", inputURL.filesystemName);
-    	  // Backwards compatibility
-    	  entry.put("filesystem", "temporary".equals(name) ? 0 : 1);
-    	  entry.put("nativeURL", Uri.fromFile(fp).toString());
-          return entry;
+          return LocalFilesystem.makeEntryForURL(inputURL, fp.isDirectory(),  Uri.fromFile(fp).toString());
       } catch (JSONException e) {
     	  throw new IOException();
       }

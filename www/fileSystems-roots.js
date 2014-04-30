@@ -19,30 +19,26 @@
  *
 */
 
-var DirectoryEntry = require('./DirectoryEntry');
+// Map of fsName -> FileSystem.
+var fsMap = null;
+var FileSystem = require('./FileSystem');
+var exec = require('cordova/exec');
 
-/**
- * An interface representing a file system
- *
- * @constructor
- * {DOMString} name the unique name of the file system (readonly)
- * {DirectoryEntry} root directory of the file system (readonly)
- */
-var FileSystem = function(name, root) {
-    this.name = name;
-    if (root) {
-        this.root = new DirectoryEntry(root.name, root.fullPath, this, root.nativeURL);
+// Overridden by iOS & Android to populate fsMap.
+require('./fileSystems').getFs = function(name, callback) {
+    if (fsMap) {
+        callback(fsMap[name]);
     } else {
-        this.root = new DirectoryEntry(this.name, '/', this);
+        exec(success, null, "File", "requestAllFileSystems", []);
+        function success(response) {
+            fsMap = {};
+            for (var i = 0; i < response.length; ++i) {
+                var fsRoot = response[i];
+                var fs = new FileSystem(fsRoot.filesystemName, fsRoot);
+                fsMap[fs.name] = fs;
+            }
+            callback(fsMap[name]);
+        }
     }
 };
 
-FileSystem.prototype.__format__ = function(fullPath) {
-    return fullPath;
-};
-
-FileSystem.prototype.toJSON = function() {
-    return "<FileSystem: " + this.name + ">";
-};
-
-module.exports = FileSystem;

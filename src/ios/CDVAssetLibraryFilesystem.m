@@ -56,10 +56,10 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
 }
 
 - (NSDictionary *)makeEntryForLocalURL:(CDVFilesystemURL *)url {
-    return [self makeEntryForPath:url.fullPath fileSystemName:self.name isDirectory:NO];
+    return [self makeEntryForPath:url.fullPath isDirectory:NO];
 }
 
-- (NSDictionary*)makeEntryForPath:(NSString*)fullPath fileSystemName:(NSString *)fsName isDirectory:(BOOL)isDir
+- (NSDictionary*)makeEntryForPath:(NSString*)fullPath isDirectory:(BOOL)isDir
 {
     NSMutableDictionary* dirEntry = [NSMutableDictionary dictionaryWithCapacity:5];
     NSString* lastPart = [fullPath lastPathComponent];
@@ -70,8 +70,8 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
     [dirEntry setObject:[NSNumber numberWithBool:isDir]  forKey:@"isDirectory"];
     [dirEntry setObject:fullPath forKey:@"fullPath"];
     [dirEntry setObject:lastPart forKey:@"name"];
-    [dirEntry setObject: [NSNumber numberWithInt:([fsName isEqualToString:@"temporary"] ? 0 : 1)] forKey: @"filesystem"];
-    [dirEntry setObject:fsName forKey: @"filesystemName"];
+    [dirEntry setObject:self.name forKey: @"filesystemName"];
+    dirEntry[@"nativeURL"] = [NSString stringWithFormat:@"assets-library:/%@",fullPath];
 
     return dirEntry;
 }

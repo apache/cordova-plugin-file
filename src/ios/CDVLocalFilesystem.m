@@ -61,12 +61,12 @@
     // see if exists and is file or dir
     BOOL bExists = [fileMgr fileExistsAtPath:path isDirectory:&isDir];
     if (bExists) {
-        return [self makeEntryForPath:url.fullPath fileSystemName:url.fileSystemName isDirectory:isDir];
+        return [self makeEntryForPath:url.fullPath isDirectory:isDir];
     } else {
         return nil;
     }
 }
-- (NSDictionary*)makeEntryForPath:(NSString*)fullPath fileSystemName:(NSString *)fsName isDirectory:(BOOL)isDir
+- (NSDictionary*)makeEntryForPath:(NSString*)fullPath isDirectory:(BOOL)isDir
 {
     NSMutableDictionary* dirEntry = [NSMutableDictionary dictionaryWithCapacity:5];
     NSString* lastPart = [[self stripQueryParametersFromPath:fullPath] lastPathComponent];
@@ -77,10 +77,8 @@
     [dirEntry setObject:[NSNumber numberWithBool:isDir]  forKey:@"isDirectory"];
     [dirEntry setObject:fullPath forKey:@"fullPath"];
     [dirEntry setObject:lastPart forKey:@"name"];
-    [dirEntry setObject: [NSNumber numberWithInt:([fsName isEqualToString:@"temporary"] ? 0 : 1)] forKey: @"filesystem"];
-    [dirEntry setObject:fsName forKey: @"filesystemName"];
+    [dirEntry setObject:self.name forKey: @"filesystemName"];
     dirEntry[@"nativeURL"] = [[NSURL fileURLWithPath:[self filesystemPathForFullPath:fullPath]] absoluteString];
-
 
     return dirEntry;
 }
@@ -228,7 +226,7 @@
             } else {
                 // NSLog(@"newly created file/dir (%@) exists: %d", reqFullPath, [fileMgr fileExistsAtPath:reqFullPath]);
                 // file existed or was created
-                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[self makeEntryForPath:requestedURL.fullPath fileSystemName:baseURI.fileSystemName isDirectory:bDirRequest]];
+                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[self makeEntryForPath:requestedURL.fullPath isDirectory:bDirRequest]];
             }
         } // are all possible conditions met?
     }
@@ -255,7 +253,7 @@
     BOOL bIsDir;
     BOOL bExists = [fileMgr fileExistsAtPath:[self filesystemPathForURL:newURI] isDirectory:&bIsDir];
     if (bExists) {
-        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[self makeEntryForPath:newURI.fullPath fileSystemName:newURI.fileSystemName isDirectory:bIsDir]];
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[self makeEntryForPath:newURI.fullPath isDirectory:bIsDir]];
     } else {
         // invalid path or file does not exist
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NOT_FOUND_ERR];
@@ -424,7 +422,7 @@
                 NSString* entryPath = [fileSystemPath stringByAppendingPathComponent:name];
                 BOOL bIsDir = NO;
                 [fileMgr fileExistsAtPath:entryPath isDirectory:&bIsDir];
-                NSDictionary* entryDict = [self makeEntryForPath:[self fullPathForFileSystemPath:entryPath] fileSystemName:localURI.fileSystemName isDirectory:bIsDir];
+                NSDictionary* entryDict = [self makeEntryForPath:[self fullPathForFileSystemPath:entryPath] isDirectory:bIsDir];
                 [entries addObject:entryDict];
             }
         }
@@ -606,7 +604,7 @@
             }
             if (bSuccess) {
                 // should verify it is there and of the correct type???
-                NSDictionary* newEntry = [self makeEntryForPath:newFullPath fileSystemName:destURL.fileSystemName isDirectory:bSrcIsDir];
+                NSDictionary* newEntry = [self makeEntryForPath:newFullPath isDirectory:bSrcIsDir];
                 result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:newEntry];
             } else {
                 if (error) {
@@ -628,7 +626,7 @@
                 BOOL bSuccess = [data writeToFile:newFileSystemPath atomically:YES];
                 if (bSuccess) {
                     // should verify it is there and of the correct type???
-                    NSDictionary* newEntry = [self makeEntryForPath:newFullPath fileSystemName:destURL.fileSystemName isDirectory:NO];
+                    NSDictionary* newEntry = [self makeEntryForPath:newFullPath isDirectory:NO];
                     result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:newEntry];
                 } else {
                     result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:ABORT_ERR];

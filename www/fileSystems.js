@@ -19,30 +19,7 @@
  *
 */
 
-var DirectoryEntry = require('./DirectoryEntry');
-
-/**
- * An interface representing a file system
- *
- * @constructor
- * {DOMString} name the unique name of the file system (readonly)
- * {DirectoryEntry} root directory of the file system (readonly)
- */
-var FileSystem = function(name, root) {
-    this.name = name;
-    if (root) {
-        this.root = new DirectoryEntry(root.name, root.fullPath, this, root.nativeURL);
-    } else {
-        this.root = new DirectoryEntry(this.name, '/', this);
-    }
+// Overridden by iOS & Android to populate fsMap.
+module.exports.getFs = function(name, callback) {
+    callback(null);
 };
-
-FileSystem.prototype.__format__ = function(fullPath) {
-    return fullPath;
-};
-
-FileSystem.prototype.toJSON = function() {
-    return "<FileSystem: " + this.name + ">";
-};
-
-module.exports = FileSystem;

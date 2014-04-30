@@ -23,6 +23,7 @@ var argscheck = require('cordova/argscheck'),
     FileError = require('./FileError'),
     FileSystem = require('./FileSystem'),
     exec = require('cordova/exec');
+var fileSystems = require('./fileSystems');
 
 /**
  * Request a file system in which to store application data.
@@ -44,9 +45,12 @@ var requestFileSystem = function(type, size, successCallback, errorCallback) {
         var success = function(file_system) {
             if (file_system) {
                 if (successCallback) {
-                    // grab the name and root from the file system object
-                    var result = new FileSystem(file_system.name, file_system.root);
-                    successCallback(result);
+                    fileSystems.getFs(file_system.name, function(fs) {
+                        if (!fs) {
+                            fs = new FileSystem(file_system.name, file_system.root);
+                        }
+                        successCallback(fs);
+                    });
                 }
             }
             else {

@@ -49,6 +49,14 @@ public class ContentFilesystem extends Filesystem {
 	
 	@Override
 	public JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException {
+	    if ("/".equals(inputURL.fullPath)) {
+            try {
+                return LocalFilesystem.makeEntryForURL(inputURL, true, inputURL.URL.toString());
+            } catch (JSONException e) {
+                throw new IOException();
+            }
+	    }
+
 		// Get the cursor to validate that the file exists
 		Cursor cursor = openCursorForURL(inputURL);
 		String filePath = null;
