@@ -20,15 +20,12 @@
 #import <Cordova/CDV.h>
 #import "CDVFile.h"
 #import "CDVLocalFilesystem.h"
-#import "CDVAssetLibraryFilesystem.h"
 
 CDVFile *filePlugin = nil;
 
 extern NSString * const NSURLIsExcludedFromBackupKey __attribute__((weak_import));
 
-#ifndef __IPHONE_5_1
-    NSString* const NSURLIsExcludedFromBackupKey = @"NSURLIsExcludedFromBackupKey";
-#endif
+NSString* const NSURLIsExcludedFromBackupKey = @"NSURLIsExcludedFromBackupKey";
 
 NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
@@ -69,8 +66,6 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         if (pathComponents != nil && pathComponents.count > 1) {
             return [pathComponents objectAtIndex:1];
         }
-    } else if ([[uri scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
-        return @"assets-library";
     }
     return nil;
 }
@@ -94,8 +89,6 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
             return @"";
         }
         return [path substringFromIndex:slashRange.location];
-    } else if ([[uri scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
-        return [[uri absoluteString] substringFromIndex:[kCDVAssetsLibraryScheme length]+2];
     }
     return nil;
 }
@@ -199,20 +192,6 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     }
 }
 
-- (NSArray *)getExtraFileSystemsPreference:(UIViewController *)vc
-{
-    NSString *filesystemsStr = nil;
-    if([self.viewController isKindOfClass:[CDVViewController class]]) {
-        CDVViewController *vc = (CDVViewController *)self.viewController;
-        NSDictionary *settings = [vc settings];
-        filesystemsStr = [settings[@"iosextrafilesystems"] lowercaseString];
-    }
-    if (!filesystemsStr) {
-        filesystemsStr = @"library,library-nosync,documents,documents-nosync,cache,bundle,root";
-    }
-    return [filesystemsStr componentsSeparatedByString:@","];
-}
-
 - (void)makeNonSyncable:(NSString*)path {
     [[NSFileManager defaultManager] createDirectoryAtPath:path
               withIntermediateDirectories:YES
@@ -266,53 +245,49 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
 - (void)pluginInitialize
 {
-    NSString *location = nil;
-    if([self.viewController isKindOfClass:[CDVViewController class]]) {
-        CDVViewController *vc = (CDVViewController *)self.viewController;
-        NSMutableDictionary *settings = vc.settings;
-        location = [[settings objectForKey:@"iospersistentfilelocation"] lowercaseString];
-    }
-    if (location == nil) {
-        // Compatibilty by default (if the config preference is not set, or
-        // if we're not embedded in a CDVViewController somehow.)
-        location = @"compatibility";
-    }
-
-    NSError *error;
-    if ([[NSFileManager defaultManager] createDirectoryAtPath:self.appTempPath
-                                  withIntermediateDirectories:YES
-                                                   attributes:nil
-                                                        error:&error]) {
-        [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"temporary" root:self.appTempPath]];
-    } else {
-        NSLog(@"Unable to create temporary directory: %@", error);
-    }
-    if ([location isEqualToString:@"library"]) {
-        if ([[NSFileManager defaultManager] createDirectoryAtPath:self.appLibraryPath
-                                      withIntermediateDirectories:YES
-                                                       attributes:nil
-                                                            error:&error]) {
-            [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.appLibraryPath]];
-        } else {
-            NSLog(@"Unable to create library directory: %@", error);
-        }
-    } else if ([location isEqualToString:@"compatibility"]) {
-        /*
-         *  Fall-back to compatibility mode -- this is the logic implemented in
-         *  earlier versions of this plugin, and should be maintained here so
-         *  that apps which were originally deployed with older versions of the
-         *  plugin can continue to provide access to files stored under those
-         *  versions.
-         */
-        [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.rootDocsPath]];
-    } else {
-        NSAssert(false,
-            @"File plugin configuration error: Please set iosPersistentFileLocation in config.xml to one of \"library\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
-    }
-    [self registerFilesystem:[[CDVAssetLibraryFilesystem alloc] initWithName:@"assets-library"]];
-
-    [self registerExtraFileSystems:[self getExtraFileSystemsPreference:self.viewController]
-                  fromAvailableSet:[self getAvailableFileSystems]];
+	NSString *location = nil;
+	if([self.viewController isKindOfClass:[CDVViewController class]]) {
+		CDVViewController *vc = (CDVViewController *)self.viewController;
+		NSMutableDictionary *settings = vc.settings;
+		location = [[settings objectForKey:@"osxpersistentfilelocation"] lowercaseString];
+	}
+	if (location == nil) {
+		// Compatibilty by default (if the config preference is not set, or
+		// if we're not embedded in a CDVViewController somehow.)
+		location = @"compatibility";
+	}
+	
+	NSError *error;
+	if ([[NSFileManager defaultManager] createDirectoryAtPath:self.appTempPath
+																withIntermediateDirectories:YES
+																								 attributes:nil
+																											error:&error]) {
+		[self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"temporary" root:self.appTempPath]];
+	} else {
+		NSLog(@"Unable to create temporary directory: %@", error);
+	}
+	if ([location isEqualToString:@"library"]) {
+		if ([[NSFileManager defaultManager] createDirectoryAtPath:self.appLibraryPath
+																	withIntermediateDirectories:YES
+																									 attributes:nil
+																												error:&error]) {
+			[self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.appLibraryPath]];
+		} else {
+			NSLog(@"Unable to create library directory: %@", error);
+		}
+	} else if ([location isEqualToString:@"compatibility"]) {
+		/*
+		 *  Fall-back to compatibility mode -- this is the logic implemented in
+		 *  earlier versions of this plugin, and should be maintained here so
+		 *  that apps which were originally deployed with older versions of the
+		 *  plugin can continue to provide access to files stored under those
+		 *  versions.
+		 */
+		[self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:@""]];
+	} else {
+		NSAssert(false,
+						 @"File plugin configuration error: Please set iosPersistentFileLocation in config.xml to one of \"library\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
+	}
 }
 
 - (id)initWithWebView:(id)theWebView

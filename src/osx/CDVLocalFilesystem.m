@@ -20,7 +20,6 @@
 #import "CDVFile.h"
 #import "CDVLocalFilesystem.h"
 #import <Cordova/CDV.h>
-#import <MobileCoreServices/MobileCoreServices.h>
 #import <sys/xattr.h>
 
 @implementation CDVLocalFilesystem
@@ -307,19 +306,10 @@
     id iCloudBackupExtendedAttributeValue = [options objectForKey:iCloudBackupExtendedAttributeKey];
 
     if ((iCloudBackupExtendedAttributeValue != nil) && [iCloudBackupExtendedAttributeValue isKindOfClass:[NSNumber class]]) {
-        if (IsAtLeastiOSVersion(@"5.1")) {
-            NSURL* url = [NSURL fileURLWithPath:filePath];
-            NSError* __autoreleasing error = nil;
-
-            ok = [url setResourceValue:[NSNumber numberWithBool:[iCloudBackupExtendedAttributeValue boolValue]] forKey:NSURLIsExcludedFromBackupKey error:&error];
-        } else { // below 5.1 (deprecated - only really supported in 5.01)
-            u_int8_t value = [iCloudBackupExtendedAttributeValue intValue];
-            if (value == 0) { // remove the attribute (allow backup, the default)
-                ok = (removexattr([filePath fileSystemRepresentation], [iCloudBackupExtendedAttributeKey cStringUsingEncoding:NSUTF8StringEncoding], 0) == 0);
-            } else { // set the attribute (skip backup)
-                ok = (setxattr([filePath fileSystemRepresentation], [iCloudBackupExtendedAttributeKey cStringUsingEncoding:NSUTF8StringEncoding], &value, sizeof(value), 0, 0) == 0);
-            }
-        }
+			NSURL* url = [NSURL fileURLWithPath:filePath];
+			NSError* __autoreleasing error = nil;
+			
+			ok = [url setResourceValue:[NSNumber numberWithBool:[iCloudBackupExtendedAttributeValue boolValue]] forKey:NSURLIsExcludedFromBackupKey error:&error];
     }
 
     if (ok) {

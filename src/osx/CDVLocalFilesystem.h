@@ -19,10 +19,14 @@
 
 #import "CDVFile.h"
 
-/*
- there is no AssetLibrary implementation for the OS X yet
- this file exists to make it possible to share the code between ios and osx
-*/
+@interface CDVLocalFilesystem : NSObject<CDVFileSystem> {
+    NSString *_name;
+    NSString *_fsRoot;
+}
 
-extern NSString* const kCDVAssetsLibraryPrefix;
-extern NSString* const kCDVAssetsLibraryScheme;
+- (id) initWithName:(NSString *)name root:(NSString *)fsRoot;
++ (NSString*)getMimeTypeFromPath:(NSString*)fullPath;
+
+@property (nonatomic,strong) NSString *fsRoot;
+
+@end

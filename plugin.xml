@@ -212,15 +212,13 @@ xmlns:android="http://schemas.android.com/apk/res/android"
             </feature>
         </config-file>
 				<!-- most of the files are actually indentical to the ios -->
-        <header-file src="src/ios/CDVFile.h" />
-        <source-file src="src/ios/CDVFile.m" />
-        <header-file src="src/ios/CDVLocalFilesystem.h" />
-        <source-file src="src/ios/CDVLocalFilesystem.m" />
-        <header-file src="src/osx/CDVAssetLibraryFilesystem.h" />
-        <source-file src="src/osx/CDVAssetLibraryFilesystem.m" />
+        <header-file src="src/osx/CDVFile.h" />
+        <source-file src="src/osx/CDVFile.m" />
+        <header-file src="src/osx/CDVLocalFilesystem.h" />
+        <source-file src="src/osx/CDVLocalFilesystem.m" />
 
-        <!-- ios specific file apis -->
-        <js-module src="www/ios/FileSystem.js" name="iosFileSystem">
+        <!-- osx specific file apis -->
+        <js-module src="www/osx/FileSystem.js" name="iosFileSystem">
             <merges target="window.FileSystem" />
         </js-module>
     </platform>
