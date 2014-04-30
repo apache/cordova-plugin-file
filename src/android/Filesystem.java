@@ -54,6 +54,9 @@ public abstract class Filesystem {
         // Backwards compatibility
         entry.put("filesystem", "temporary".equals(fsName) ? 0 : 1);
 
+        if (isDir && !nativeURL.endsWith("/")) {
+            nativeURL += "/";
+        }
     	entry.put("nativeURL", nativeURL);
         return entry;
     }
