@@ -119,17 +119,18 @@
 - (CDVFilesystemURL *)URLforFullPath:(NSString *)fullPath
 {
     if (fullPath) {
+        NSString* escapedPath = [fullPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
         if ([fullPath hasPrefix:@"/"]) {
-            return [CDVFilesystemURL fileSystemURLWithString:[NSString stringWithFormat:@"%@://localhost/%@%@", kCDVFilesystemURLPrefix, self.name, fullPath]];
+            return [CDVFilesystemURL fileSystemURLWithString:[NSString stringWithFormat:@"%@://localhost/%@%@", kCDVFilesystemURLPrefix, self.name, escapedPath]];
         }
-        return [CDVFilesystemURL fileSystemURLWithString:[NSString stringWithFormat:@"%@://localhost/%@/%@", kCDVFilesystemURLPrefix, self.name, fullPath]];
+        return [CDVFilesystemURL fileSystemURLWithString:[NSString stringWithFormat:@"%@://localhost/%@/%@", kCDVFilesystemURLPrefix, self.name, escapedPath]];
     }
     return nil;
 }
 
 - (CDVFilesystemURL *)URLforFilesystemPath:(NSString *)path
 {
-    return [self URLforFullPath:[[self fullPathForFileSystemPath:path] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    return [self URLforFullPath:[self fullPathForFileSystemPath:path]];
 
 }
 
@@ -187,7 +188,7 @@
         // We concatenate the two paths together, and then scan the resulting string to remove
         // parent ("..") references. Any parent references at the beginning of the string are
         // silently removed.
-        NSString *combinedPath = [baseURI.fullPath stringByAppendingPathComponent:[requestedPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        NSString *combinedPath = [baseURI.fullPath stringByAppendingPathComponent:requestedPath];
         combinedPath = [self normalizePath:combinedPath];
         CDVFilesystemURL* requestedURL = [self URLforFullPath:combinedPath];
         
