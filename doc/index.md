@@ -72,7 +72,7 @@ By default, the library and documents directories can be synced to iCloud. You c
 
 ### OS X
 
-The implementation is the same as the one for the iOS, except the asset library support.
+The implementation based on the code from the iOS. The asset library support is missing at this moment.
 
 ## Android Quirks
 
