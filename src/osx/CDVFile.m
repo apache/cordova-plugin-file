@@ -245,49 +245,49 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
 - (void)pluginInitialize
 {
-	NSString *location = nil;
-	if([self.viewController isKindOfClass:[CDVViewController class]]) {
-		CDVViewController *vc = (CDVViewController *)self.viewController;
-		NSMutableDictionary *settings = vc.settings;
-		location = [[settings objectForKey:@"osxpersistentfilelocation"] lowercaseString];
-	}
-	if (location == nil) {
-		// Compatibilty by default (if the config preference is not set, or
-		// if we're not embedded in a CDVViewController somehow.)
-		location = @"compatibility";
-	}
-	
-	NSError *error;
-	if ([[NSFileManager defaultManager] createDirectoryAtPath:self.appTempPath
-																withIntermediateDirectories:YES
-																								 attributes:nil
-																											error:&error]) {
-		[self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"temporary" root:self.appTempPath]];
-	} else {
-		NSLog(@"Unable to create temporary directory: %@", error);
-	}
-	if ([location isEqualToString:@"library"]) {
-		if ([[NSFileManager defaultManager] createDirectoryAtPath:self.appLibraryPath
-																	withIntermediateDirectories:YES
-																									 attributes:nil
-																												error:&error]) {
-			[self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.appLibraryPath]];
-		} else {
-			NSLog(@"Unable to create library directory: %@", error);
-		}
-	} else if ([location isEqualToString:@"compatibility"]) {
-		/*
-		 *  Fall-back to compatibility mode -- this is the logic implemented in
-		 *  earlier versions of this plugin, and should be maintained here so
-		 *  that apps which were originally deployed with older versions of the
-		 *  plugin can continue to provide access to files stored under those
-		 *  versions.
-		 */
-		[self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:@""]];
-	} else {
-		NSAssert(false,
-						 @"File plugin configuration error: Please set iosPersistentFileLocation in config.xml to one of \"library\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
-	}
+    NSString *location = nil;
+    if([self.viewController isKindOfClass:[CDVViewController class]]) {
+        CDVViewController *vc = (CDVViewController *)self.viewController;
+        NSMutableDictionary *settings = vc.settings;
+        location = [[settings objectForKey:@"osxpersistentfilelocation"] lowercaseString];
+    }
+    if (location == nil) {
+        // Compatibilty by default (if the config preference is not set, or
+        // if we're not embedded in a CDVViewController somehow.)
+        location = @"compatibility";
+    }
+
+    NSError *error;
+    if ([[NSFileManager defaultManager] createDirectoryAtPath:self.appTempPath
+                                  withIntermediateDirectories:YES
+                                                   attributes:nil
+                                                        error:&error]) {
+    [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"temporary" root:self.appTempPath]];
+    } else {
+        NSLog(@"Unable to create temporary directory: %@", error);
+    }
+    if ([location isEqualToString:@"library"]) {
+        if ([[NSFileManager defaultManager] createDirectoryAtPath:self.appLibraryPath
+                                      withIntermediateDirectories:YES
+                                                       attributes:nil
+                                                            error:&error]) {
+            [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:self.appLibraryPath]];
+        } else {
+            NSLog(@"Unable to create library directory: %@", error);
+        }
+    } else if ([location isEqualToString:@"compatibility"]) {
+        /*
+         *  Fall-back to compatibility mode -- this is the logic implemented in
+         *  earlier versions of this plugin, and should be maintained here so
+         *  that apps which were originally deployed with older versions of the
+         *  plugin can continue to provide access to files stored under those
+         *  versions.
+         */
+        [self registerFilesystem:[[CDVLocalFilesystem alloc] initWithName:@"persistent" root:@""]];
+    } else {
+    NSAssert(false,
+        @"File plugin configuration error: Please set iosPersistentFileLocation in config.xml to one of \"library\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
+    }
 }
 
 - (id)initWithWebView:(id)theWebView
@@ -754,7 +754,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     NSString* encoding = [command argumentAtIndex:1];
     NSInteger start = [[command argumentAtIndex:2] integerValue];
     NSInteger end = [[command argumentAtIndex:3] integerValue];
-		NSString* callbackId = command.callbackId;
+    NSString* callbackId = command.callbackId;
 
     NSObject<CDVFileSystem> *fs = [self filesystemForURL:localURI];
 
@@ -803,7 +803,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     CDVFilesystemURL* localURI = [CDVFilesystemURL fileSystemURLWithString:[command argumentAtIndex:0]];
     NSInteger start = [[command argumentAtIndex:1] integerValue];
     NSInteger end = [[command argumentAtIndex:2] integerValue];
-		NSString* callbackId = command.callbackId;		
+    NSString* callbackId = command.callbackId;		
 
     NSObject<CDVFileSystem> *fs = [self filesystemForURL:localURI];
 
@@ -836,7 +836,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     CDVFilesystemURL* localURI = [CDVFilesystemURL fileSystemURLWithString:[command argumentAtIndex:0]];
     NSInteger start = [[command argumentAtIndex:1] integerValue];
     NSInteger end = [[command argumentAtIndex:2] integerValue];
-		NSString* callbackId = command.callbackId;		
+    NSString* callbackId = command.callbackId;
 
     NSObject<CDVFileSystem> *fs = [self filesystemForURL:localURI];
 
@@ -859,7 +859,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     CDVFilesystemURL* localURI = [CDVFilesystemURL fileSystemURLWithString:[command argumentAtIndex:0]];
     NSInteger start = [[command argumentAtIndex:1] integerValue];
     NSInteger end = [[command argumentAtIndex:2] integerValue];
-		NSString* callbackId = command.callbackId;		
+    NSString* callbackId = command.callbackId;
 
     NSObject<CDVFileSystem> *fs = [self filesystemForURL:localURI];
 

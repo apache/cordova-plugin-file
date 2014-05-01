@@ -306,10 +306,10 @@
     id iCloudBackupExtendedAttributeValue = [options objectForKey:iCloudBackupExtendedAttributeKey];
 
     if ((iCloudBackupExtendedAttributeValue != nil) && [iCloudBackupExtendedAttributeValue isKindOfClass:[NSNumber class]]) {
-			NSURL* url = [NSURL fileURLWithPath:filePath];
-			NSError* __autoreleasing error = nil;
-			
-			ok = [url setResourceValue:[NSNumber numberWithBool:[iCloudBackupExtendedAttributeValue boolValue]] forKey:NSURLIsExcludedFromBackupKey error:&error];
+        NSURL* url = [NSURL fileURLWithPath:filePath];
+        NSError* __autoreleasing error = nil;
+
+        ok = [url setResourceValue:[NSNumber numberWithBool:[iCloudBackupExtendedAttributeValue boolValue]] forKey:NSURLIsExcludedFromBackupKey error:&error];
     }
 
     if (ok) {
