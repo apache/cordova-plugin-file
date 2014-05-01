@@ -313,9 +313,11 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
     [self registerExtraFileSystems:[self getExtraFileSystemsPreference:self.viewController]
                   fromAvailableSet:[self getAvailableFileSystems]];
+
 }
 
-- (id)initWithWebView:(id)theWebView
+
+- (id)initWithWebView:(UIWebView*)theWebView
 {
     self = (CDVFile*)[super initWithWebView:theWebView];
     if (self) {
