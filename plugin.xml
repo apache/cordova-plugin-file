@@ -177,14 +177,14 @@ xmlns:android="http://schemas.android.com/apk/res/android"
     <platform name="ubuntu">
         <header-file src="src/ubuntu/file.h" />
         <source-file src="src/ubuntu/file.cpp" />
-        <js-module src="www/ubuntu/Entry.js" name="Entry1">
-            <merges target="window.Entry" />
-        </js-module>
-        <js-module src="www/ubuntu/DirectoryEntry.js" name="DirectoryEntry1">
-            <merges target="window.DirectoryEntry" />
+        <js-module src="www/ubuntu/FileSystem.js" name="ubuntuFileSystem1">
+            <merges target="window.FileSystem" />
         </js-module>
         <js-module src="www/ubuntu/FileWriter.js" name="FileWriter1">
             <merges target="window.FileWriter" />
+        </js-module>
+        <js-module src="www/ubuntu/fileSystems-roots.js" name="fileSystems-roots">
+            <runs/>
         </js-module>
     </platform>
 
