@@ -18,20 +18,27 @@
  * under the License.
  *
 */
-module.exports = {
-    setSandbox : function (success, fail, args, env) {
-        require("lib/webview").setSandbox(JSON.parse(decodeURIComponent(args[0])));
-        new PluginResult(args, env).ok();
-    },
 
-    isSandboxed : function (success, fail, args, env) {
-        new PluginResult(args, env).ok(require("lib/webview").getSandbox() === "1");
-    },
+// Map of fsName -> FileSystem.
+var fsMap = null;
+var FileSystem = require('./FileSystem');
+var exec = require('cordova/exec');
 
-    resolveLocalPath : function (success, fail, args, env) {
-        var homeDir = window.qnx.webplatform.getApplication().getEnv("HOME").replace("/data", "/app/native/"),
-            path = homeDir + JSON.parse(decodeURIComponent(args[0])).substring(9);
-        require("lib/webview").setSandbox(false);
-        new PluginResult(args, env).ok(path);
+// Overridden by iOS & Android to populate fsMap.
+require('./fileSystems').getFs = function(name, callback) {
+    if (fsMap) {
+        callback(fsMap[name]);
+    } else {
+        exec(success, null, "File", "requestAllFileSystems", []);
+        function success(response) {
+            fsMap = {};
+            for (var i = 0; i < response.length; ++i) {
+                var fsRoot = response[i];
+                var fs = new FileSystem(fsRoot.filesystemName, fsRoot);
+                fsMap[fs.name] = fs;
+            }
+            callback(fsMap[name]);
+        }
     }
 };
+

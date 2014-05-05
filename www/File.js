@@ -67,7 +67,7 @@ File.prototype.slice = function(start, end) {
         }
     }
 
-    var newFile = new File(this.name, this.localURL, this.type, this.lastModifiedData, this.size);
+    var newFile = new File(this.name, this.localURL, this.type, this.lastModifiedDate, this.size);
     newFile.start = this.start + newStart;
     newFile.end = this.start + newEnd;
     return newFile;

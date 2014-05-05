@@ -92,7 +92,7 @@ Entry.prototype.copyTo = function(parent, newName, successCallback, errorCallbac
 };
 
 Entry.prototype.toURL = function() {
-    return this.nativeEntry.fullPath; 
+    return "file://" + this.nativeEntry.fullPath; 
 };
 
 Entry.prototype.toURI = function(mimeType) {

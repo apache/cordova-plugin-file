@@ -19,17 +19,7 @@
  *
 */
 
-module.exports = {
-    toURL:function() {
-        // TODO: refactor path in a cross-platform way so we can eliminate
-        // these kinds of platform-specific hacks.
-        if (this.filesystem && this.filesystem.__format__) {
-          return this.filesystem.__format__(this.fullPath);
-        }
-        return "file://localhost" + this.fullPath;
-    },
-    toURI: function() {
-        console.log("DEPRECATED: Update your code to use 'toURL'");
-        return this.toURL();
-    }
+// Overridden by iOS & Android to populate fsMap.
+module.exports.getFs = function(name, callback) {
+    callback(null);
 };
