@@ -251,41 +251,45 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <config-file target="www/config.xml" parent="/widget">
             <feature name="File" value="File" />
         </config-file>
-        <js-module src="www/blackberry10/fileUtils.js" name="BB10Utils" />
-        <js-module src="www/blackberry10/DirectoryEntry.js" name="BB10DirectoryEntry">
-            <clobbers target="window.DirectoryEntry" />
+        <js-module src="www/blackberry10/FileProxy.js" name="FileProxy" >
+            <runs />
         </js-module>
-        <js-module src="www/blackberry10/DirectoryReader.js" name="BB10DirectoryReader">
-            <clobbers target="window.DirectoryReader" />
+        <js-module src="www/blackberry10/info.js" name="bb10FileSystemInfo">
+            <runs />
         </js-module>
-        <js-module src="www/blackberry10/Entry.js" name="BB10Entry">
-            <clobbers target="window.Entry" />
+        <js-module src="www/blackberry10/createEntryFromNative.js" name="bb10CreateEntryFromNative">
+            <runs />
         </js-module>
-        <js-module src="www/blackberry10/File.js" name="BB10File">
-            <clobbers target="window.File" />
+        <js-module src="www/blackberry10/requestAnimationFrame.js" name="bb10RequestAnimationFrame">
+            <runs />
         </js-module>
-        <js-module src="www/blackberry10/FileEntry.js" name="BB10FileEntry">
-            <clobbers target="window.FileEntry" />
+        <js-module src="www/blackberry10/FileSystem.js" name="bb10FileSystem">
+            <merges target="window.FileSystem" />
         </js-module>
-        <js-module src="www/blackberry10/FileReader.js" name="BB10FileReader">
-            <clobbers target="window.FileReader" />
+        <js-module src="www/fileSystems-roots.js" name="fileSystems-roots">
+            <runs/>
         </js-module>
-        <js-module src="www/blackberry10/FileSystem.js" name="BB10FileSystem">
-            <clobbers target="window.FileSystem" />
-        </js-module>
-        <js-module src="www/blackberry10/FileWriter.js" name="BB10FileWriter">
-            <clobbers target="window.FileWriter" />
-        </js-module>
-        <js-module src="www/blackberry10/requestFileSystem.js" name="BB10requestFileSystem">
-            <clobbers target="window.requestFileSystem" />
-        </js-module>
-        <js-module src="www/blackberry10/resolveLocalFileSystemURI.js" name="BB10resolveLocalFileSystemURI">
-            <clobbers target="window.resolveLocalFileSystemURI" />
-        </js-module>
-        <js-module src="www/blackberry10/resolveLocalFileSystemURL.js" name="BB10resolveLocalFileSystemURL">
-            <clobbers target="window.resolveLocalFileSystemURL" />
-        </js-module>
-        <source-file src="src/blackberry10/index.js"></source-file>
+        <js-module src="www/blackberry10/copyTo.js" name="copyToProxy" />
+        <js-module src="www/blackberry10/getDirectory.js" name="getDirectoryProxy" />
+        <js-module src="www/blackberry10/getFile.js" name="getFileProxy" />
+        <js-module src="www/blackberry10/getFileMetadata.js" name="getFileMetadataProxy" />
+        <js-module src="www/blackberry10/getMetadata.js" name="getMetadataProxy" />
+        <js-module src="www/blackberry10/getParent.js" name="getParentProxy" />
+        <js-module src="www/blackberry10/moveTo.js" name="moveToProxy" />
+        <js-module src="www/blackberry10/readAsArrayBuffer.js" name="readAsArrayBufferProxy" />
+        <js-module src="www/blackberry10/readAsBinaryString.js" name="readAsBinaryStringProxy" />
+        <js-module src="www/blackberry10/readAsDataURL.js" name="readAsDataURLProxy" />
+        <js-module src="www/blackberry10/readAsText.js" name="readAsTextProxy" />
+        <js-module src="www/blackberry10/readEntries.js" name="readEntriesProxy" />
+        <js-module src="www/blackberry10/remove.js" name="removeProxy" />
+        <js-module src="www/blackberry10/removeRecursively.js" name="removeRecursivelyProxy" />
+        <js-module src="www/blackberry10/resolveLocalFileSystemURI.js" name="resolveLocalFileSystemURIProxy" />
+        <js-module src="www/blackberry10/requestAllFileSystems.js" name="requestAllFileSystemsProxy" />
+        <js-module src="www/blackberry10/requestFileSystem.js" name="requestFileSystemProxy" />
+        <js-module src="www/blackberry10/setMetadata.js" name="setMetadataProxy" />
+        <js-module src="www/blackberry10/truncate.js" name="truncateProxy" />
+        <js-module src="www/blackberry10/write.js" name="writeProxy" />
+        <source-file src="src/blackberry10/index.js" />
     </platform>
 
     <!-- windows8 -->

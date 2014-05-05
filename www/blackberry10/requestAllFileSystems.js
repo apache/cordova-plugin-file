@@ -19,7 +19,24 @@
  *
 */
 
-// Overridden by Android, BlackBerry 10 and iOS to populate fsMap.
-module.exports.getFs = function(name, callback) {
-    callback(null);
-};
+/* 
+ * requestAllFileSystems
+ * 
+ * IN - no arguments
+ * OUT
+ *  success - Array of FileSystems
+ *   - filesystemName
+ *   - fullPath
+ *   - name
+ *   - nativeURL
+ */
+
+var info = require('org.apache.cordova.file.bb10FileSystemInfo');
+
+module.exports = function (success, fail, args) {
+    success([
+        { filesystemName: 'persistent', name: 'persistent', fullPath: '/', nativeURL: info.persistentPath + '/' },
+        { filesystemName: 'temporary', name: 'temporary', fullPath: '/', nativeURL: info.temporaryPath + '/' },
+        { filesystemName: 'root', name: 'root', fullPath: '/', nativeURL: 'file:///' }
+    ]);
+}
