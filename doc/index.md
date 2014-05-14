@@ -166,11 +166,7 @@ object with a `fullPath` of
 
 If your application works with device-absolute-paths, and you previously retrieved those
 paths through the `fullPath` property of `Entry` objects, then you should update your code
-to use `entry.toURL()` instead. This method will now return filesystem URLs of the form
-
-    cdvfile://localhost/persistent/path/to/file
-
-which can be used to identify the file uniquely.
+to use `entry.toURL()` instead.
 
 For backwards compatibility, the `resolveLocalFileSystemURL()` method will accept a
 device-absolute-path, and will return an `Entry` object corresponding to it, as long as that
@@ -180,6 +176,14 @@ This has particularly been an issue with the File-Transfer plugin, which previou
 device-absolute-paths (and can still accept them). It has been updated to work correctly
 with FileSystem URLs, so replacing `entry.fullPath` with `entry.toURL()` should resolve any
 issues getting that plugin to work with files on the device.
+
+In v1.1.0 the return value of `toURL()` was changed (see [CB-6394] (https://issues.apache.org/jira/browse/CB-6394))
+and return an absolute 'file://' URL. To get a 'cdvfile:'-URL you have to use `toInternalURL()` now.
+This method will now return filesystem URLs of the form
+
+    cdvfile://localhost/persistent/path/to/file
+
+which can be used to identify the file uniquely.
 
 ## List of Error Codes and Meanings
 When an error is thrown, one of the following codes will be used. 
@@ -226,4 +230,3 @@ Android also supports a special filesystem named "documents", which represents a
 * root: The entire device filesystem
 
 By default, the library and documents directories can be synced to iCloud. You can also request two additional filesystems, "library-nosync" and "documents-nosync", which represent a special non-synced directory within the Library or Documents filesystem.
-
