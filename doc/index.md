@@ -39,35 +39,33 @@ on the subject. For an overview of other storage options, refer to Cordova's
 
 \* _These platforms do not support `FileReader.readAsArrayBuffer` nor `FileWriter.write(blob)`._
 
-## Configuring the Plugin
+## Where to Store Files
 
-The set of available filesystems can be configured per-platform. Both iOS and
-Android recognize a <preference> tag in `config.xml` which names the
-filesystems to be installed. By default, all file-system roots are enabled.
+As of v1.2.0, URLs to important file-system directories are provided.
+Each URL is in the form _file:///path/to/spot/_, and can be converted to a
+`DirectoryEntry` using `window.resolveLocalFileSystemURL()`.
 
-    <preference name="iosExtraFilesystems" value="library,library-nosync,documents,documents-nosync,cache,bundle,root" />
-    <preference name="AndroidExtraFilesystems" value="files,files-external,documents,sdcard,cache,cache-external,root" />
+`cordova.file.applicationDirectory` - Read-only directory where the application is installed. (_iOS_, _Android_)
 
-### Android
+`cordova.file.applicationStorageDirectory` - Root of app's private writable storage. (_iOS_, _Android_)
 
-* files: The application's internal file storage directory
-* files-external: The application's external file storage directory
-* sdcard: The global external file storage directory (this is the root of the SD card, if one is installed). You must have the `android.permission.WRITE_EXTERNAL_STORAGE` permission to use this.
-* cache: The application's internal cache directory
-* cache-external: The application's external cache directory
-* root: The entire device filesystem
+`cordova.file.dataDirectory` - Where to put app-specific data files. (_iOS_, _Android_)
 
-Android also supports a special filesystem named "documents", which represents a "/Documents/" subdirectory within the "files" filesystem.
+`cordova.file.cacheDirectory` - Cached files that should survive app restarts. Apps should not rely on the OS to delete files in here. (_iOS_, _Android_)
 
-### iOS
+`cordova.file.externalApplicationStorageDirectory` - Application space on external storage. (_iOS_, _Android_)
 
-* library: The application's Library directory
-* documents: The application's Documents directory
-* cache: The application's Cache directory
-* bundle: The application's bundle; the location of the app itself on disk (read-only)
-* root: The entire device filesystem
+`cordova.file.externalDataDirectory` - Where to put app-specific data files on external storage. (_Android_)
 
-By default, the library and documents directories can be synced to iCloud. You can also request two additional filesystems, "library-nosync" and "documents-nosync", which represent a special non-synced directory within the Library or Documents filesystem.
+`cordova.file.externalCacheDirectory` - Application cache on external storage. (_Android_)
+
+`cordova.file.externalRootDirectory` - External storage (SD card) root. (_Android_)
+
+`cordova.file.tempDirectory` - Temp directory that the OS can clear at will. (_iOS_)
+
+`cordova.file.syncedDataDirectory` - Holds app-specific files that should be synced (e.g. to iCloud). (_iOS_)
+
+`cordova.file.documentsDirectory` - Files private to the app, but that are meaningful to other applciations (e.g. Office files). (_iOS_)
 
 ## Android Quirks
 
@@ -198,3 +196,34 @@ When an error is thrown, one of the following codes will be used.
 * 10 = QUOTA_EXCEEDED_ERR
 * 11 = TYPE_MISMATCH_ERR
 * 12 = PATH_EXISTS_ERR
+
+## Configuring the Plugin (Optional)
+
+The set of available filesystems can be configured per-platform. Both iOS and
+Android recognize a <preference> tag in `config.xml` which names the
+filesystems to be installed. By default, all file-system roots are enabled.
+
+    <preference name="iosExtraFilesystems" value="library,library-nosync,documents,documents-nosync,cache,bundle,root" />
+    <preference name="AndroidExtraFilesystems" value="files,files-external,documents,sdcard,cache,cache-external,root" />
+
+### Android
+
+* files: The application's internal file storage directory
+* files-external: The application's external file storage directory
+* sdcard: The global external file storage directory (this is the root of the SD card, if one is installed). You must have the `android.permission.WRITE_EXTERNAL_STORAGE` permission to use this.
+* cache: The application's internal cache directory
+* cache-external: The application's external cache directory
+* root: The entire device filesystem
+
+Android also supports a special filesystem named "documents", which represents a "/Documents/" subdirectory within the "files" filesystem.
+
+### iOS
+
+* library: The application's Library directory
+* documents: The application's Documents directory
+* cache: The application's Cache directory
+* bundle: The application's bundle; the location of the app itself on disk (read-only)
+* root: The entire device filesystem
+
+By default, the library and documents directories can be synced to iCloud. You can also request two additional filesystems, "library-nosync" and "documents-nosync", which represent a special non-synced directory within the Library or Documents filesystem.
+
