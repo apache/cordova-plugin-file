@@ -101,8 +101,7 @@ QPair<QString, QString> File::GetRelativePath(const QFileInfo &fileInfo) {
 void File::requestFileSystem(int scId, int ecId, unsigned short type, unsigned long long size) {
     QDir dir;
 
-    //FIXEME,what is quota value
-    if (size >= 10000){
+    if (size >= 1000485760){
         this->callback(ecId, FileError::kQuotaExceededErr);
         return;
     }
