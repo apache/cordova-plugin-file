@@ -1040,8 +1040,8 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 - (void)getFreeDiskSpace:(CDVInvokedUrlCommand*)command
 {
     // no arguments
-
-    NSNumber* pNumAvail = [self checkFreeDiskSpace:self.appDocsPath];
+    NSString* fullPath = @"/";
+    NSNumber* pNumAvail = [self checkFreeDiskSpace:fullPath];
 
     NSString* strFreeSpace = [NSString stringWithFormat:@"%qu", [pNumAvail unsignedLongLongValue]];
     // NSLog(@"Free space is %@", strFreeSpace );
