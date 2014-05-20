@@ -20,34 +20,42 @@
 */
 
 /* 
- * requestFileSystem
+ * getFileMetadata
  *
  * IN:
- *  args 
- *   0 - type (TEMPORARY = 0, PERSISTENT = 1)
- *   1 - size
+ *  args
+ *   0 - local filesytem URI
  * OUT:
- *  success - FileSystem object
- *   - name - the human readable directory name
- *   - root - DirectoryEntry object
- *      - isDirectory
- *      - isFile
- *      - name
- *      - fullPath
+ *  success - file
+ *   - name
+ *   - type
+ *   - lastModifiedDate
+ *   - size
  *  fail - FileError code
  */
 
-var resolve = cordova.require('org.apache.cordova.file.resolveLocalFileSystemURIProxy');
+var resolve = cordova.require('org.apache.cordova.file.resolveLocalFileSystemURIProxy'),
+    requestAnimationFrame = cordova.require('org.apache.cordova.file.bb10RequestAnimationFrame');
 
 module.exports = function (success, fail, args) {
-    var fsType = args[0] === 0 ? 'temporary' : 'persistent',
-        size = args[1],
-        onSuccess = function (fs) {
-            var directory = {
-                name: fsType,
-                root: fs
-            };
-            success(directory);
+    var uri = args[0],
+        onSuccess = function (entry) {
+            if (typeof(success) === 'function') {
+                success(entry);
+            }
+        },
+        onFail = function (error) {
+            if (typeof(fail) === 'function') {
+                if (error.code) {
+                    fail(error.code);
+                } else {
+                    fail(error);
+                }
+            }
         };
-    resolve(onSuccess, fail, ['cdvfile://localhost/' + fsType + '/', undefined, size]);
+    resolve(function (entry) {
+        requestAnimationFrame(function () {
+            entry.nativeEntry.file(onSuccess, onFail);
+        });
+    }, onFail, [uri]);
 };

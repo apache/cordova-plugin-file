@@ -20,34 +20,33 @@
 */
 
 /* 
- * requestFileSystem
+ * info
  *
- * IN:
- *  args 
- *   0 - type (TEMPORARY = 0, PERSISTENT = 1)
- *   1 - size
- * OUT:
- *  success - FileSystem object
- *   - name - the human readable directory name
- *   - root - DirectoryEntry object
- *      - isDirectory
- *      - isFile
- *      - name
- *      - fullPath
- *  fail - FileError code
+ * persistentPath - full path to app sandboxed persistent storage
+ * temporaryPath - full path to app sandboxed temporary storage
+ * localPath - full path to app source (www dir)
+ * MAX_SIZE - maximum size for filesystem request
  */
 
-var resolve = cordova.require('org.apache.cordova.file.resolveLocalFileSystemURIProxy');
-
-module.exports = function (success, fail, args) {
-    var fsType = args[0] === 0 ? 'temporary' : 'persistent',
-        size = args[1],
-        onSuccess = function (fs) {
-            var directory = {
-                name: fsType,
-                root: fs
-            };
-            success(directory);
-        };
-    resolve(onSuccess, fail, ['cdvfile://localhost/' + fsType + '/', undefined, size]);
+var info = {
+    persistentPath: "", 
+    temporaryPath: "", 
+    localPath: "",
+    MAX_SIZE: 64 * 1024 * 1024 * 1024
 };
+
+cordova.exec(
+    function (path) {
+        info.persistentPath = 'file://' + path + '/webviews/webfs/persistent/local__0';
+        info.temporaryPath = 'file://' + path + '/webviews/webfs/temporary/local__0';
+        info.localPath = path.replace('/data', '/app/native');
+    },
+    function () {
+        console.error('Unable to determine local storage file path');
+    },
+    'org.apache.cordova.file',
+    'getHomePath',
+    false
+);
+
+module.exports = info;
