@@ -467,17 +467,21 @@
         NSOutputStream* fileStream = [NSOutputStream outputStreamToFileAtPath:filePath append:shouldAppend];
         if (fileStream) {
             NSUInteger len = [encData length];
-            [fileStream open];
+            if (len == 0) {
+                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:len];
+            } else {
+                [fileStream open];
 
-            bytesWritten = (int)[fileStream write:[encData bytes] maxLength:len];
+                bytesWritten = (int)[fileStream write:[encData bytes] maxLength:len];
 
-            [fileStream close];
-            if (bytesWritten > 0) {
-                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:bytesWritten];
-                // } else {
-                // can probably get more detailed error info via [fileStream streamError]
-                // errCode already set to INVALID_MODIFICATION_ERR;
-                // bytesWritten = 0; // may be set to -1 on error
+                [fileStream close];
+                if (bytesWritten > 0) {
+                    result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:bytesWritten];
+                    // } else {
+                    // can probably get more detailed error info via [fileStream streamError]
+                    // errCode already set to INVALID_MODIFICATION_ERR;
+                    // bytesWritten = 0; // may be set to -1 on error
+                }
             }
         } // else fileStream not created return INVALID_MODIFICATION_ERR
     } else {
