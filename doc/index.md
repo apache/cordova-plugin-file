@@ -178,7 +178,7 @@ with FileSystem URLs, so replacing `entry.fullPath` with `entry.toURL()` should 
 issues getting that plugin to work with files on the device.
 
 In v1.1.0 the return value of `toURL()` was changed (see [CB-6394] (https://issues.apache.org/jira/browse/CB-6394))
-and return an absolute 'file://' URL. To get a 'cdvfile:'-URL you have to use `toInternalURL()` now.
+to return an absolute 'file://' URL. wherever possible. To ensure a 'cdvfile:'-URL you can use `toInternalURL()` now.
 This method will now return filesystem URLs of the form
 
     cdvfile://localhost/persistent/path/to/file
