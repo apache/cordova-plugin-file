@@ -36,6 +36,7 @@ on the subject. For an overview of other storage options, refer to Cordova's
 - iOS
 - Windows Phone 7 and 8*
 - Windows 8*
+- Firefox OS
 
 \* _These platforms do not support `FileReader.readAsArrayBuffer` nor `FileWriter.write(blob)`._
 
@@ -145,6 +146,16 @@ unable to access their previously-stored files.
 If your application is new, or has never previously stored files in the
 persistent filesystem, then the "Library" setting is generally recommended.
 
+### Firefox OS Quirks
+
+The File System API is not natively supported by Firefox OS and is implemented
+as a shim on top of indexedDB. 
+ 
+* Does not fail when removing non-empty directories
+* Does not support metadata for directories
+* Does not support `requestAllFileSystems` and `resolveLocalFileSystemURI` methods
+* Methods `copyTo` and `moveTo` do not support directories
+
 ## Upgrading Notes
 
 In v1.0.0 of this plugin, the `FileEntry` and `DirectoryEntry` structures have changed,
@@ -166,11 +177,7 @@ object with a `fullPath` of
 
 If your application works with device-absolute-paths, and you previously retrieved those
 paths through the `fullPath` property of `Entry` objects, then you should update your code
-to use `entry.toURL()` instead. This method will now return filesystem URLs of the form
-
-    cdvfile://localhost/persistent/path/to/file
-
-which can be used to identify the file uniquely.
+to use `entry.toURL()` instead.
 
 For backwards compatibility, the `resolveLocalFileSystemURL()` method will accept a
 device-absolute-path, and will return an `Entry` object corresponding to it, as long as that
@@ -180,6 +187,14 @@ This has particularly been an issue with the File-Transfer plugin, which previou
 device-absolute-paths (and can still accept them). It has been updated to work correctly
 with FileSystem URLs, so replacing `entry.fullPath` with `entry.toURL()` should resolve any
 issues getting that plugin to work with files on the device.
+
+In v1.1.0 the return value of `toURL()` was changed (see [CB-6394] (https://issues.apache.org/jira/browse/CB-6394))
+to return an absolute 'file://' URL. wherever possible. To ensure a 'cdvfile:'-URL you can use `toInternalURL()` now.
+This method will now return filesystem URLs of the form
+
+    cdvfile://localhost/persistent/path/to/file
+
+which can be used to identify the file uniquely.
 
 ## List of Error Codes and Meanings
 When an error is thrown, one of the following codes will be used. 
@@ -226,4 +241,3 @@ Android also supports a special filesystem named "documents", which represents a
 * root: The entire device filesystem
 
 By default, the library and documents directories can be synced to iCloud. You can also request two additional filesystems, "library-nosync" and "documents-nosync", which represent a special non-synced directory within the Library or Documents filesystem.
-
