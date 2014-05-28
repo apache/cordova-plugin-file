@@ -17,25 +17,25 @@
     under the License.
 -->
 
-# プラグイン開発者のためのノート
+# Hinweise für Plugin-Entwickler
 
-これらのノートは、主に人造人間と iOS 開発者向けファイルのプラグインを使用して、ファイル システムでプラグインのインターフェイスを記述するもの。
+Diese Notizen sollen in erster Linie für Android und iOS-Entwickler, die Plugins welche Schnittstelle mit dem Dateisystem, mit dem Datei-Plugin schreiben möchten.
 
-## コルドバのファイル システムの Url の操作
+## Arbeiten mit Cordova-Datei-System-URLs
 
-バージョン 1.0.0 以降このプラグインが使用した Url とは `cdvfile` raw デバイス ファイル システム パスを JavaScript に公開するのではなく、ブリッジ上のすべての通信方式します。
+Seit der Version 1.0.0, wurde dieses Plugin URLs mit verwendet eine `cdvfile` Regelung für die gesamte Kommunikation über die Brücke, sondern als raw-Device Dateisystempfade zu JavaScript auszusetzen.
 
-JavaScript 側認証と DirectoryEntry オブジェクトの HTML ファイル システムのルートからの相対である fullPath 属性があることを意味します。 呼び出す必要がありますプラグインの JavaScript API は、認証または DirectoryEntry オブジェクトを受け入れる場合 `.toURL()` 、橋を渡ってネイティブ コードに渡す前に、そのオブジェクト。
+Auf der Seite JavaScript bedeutet dies, dass FileEntries und DirectoryEntry-Objekt ein FullPath-Attribut haben, die relativ zum Stammverzeichnis des Dateisystems HTML ist. Wenn Ihr Plugins-JavaScript-API ein FileEntries oder DirectoryEntry-Objekt akzeptiert, rufen Sie `.toURL()` auf das Objekt vor der Übergabe an systemeigenen Code über die Brücke.
 
-### Cdvfile を変換する：//fileystem のパスに Url
+### Konvertieren von Cdvfile: / / URLs auf Fileystem Pfade
 
-ファイルシステムへの書き込みする必要があるプラグインは実際のファイルシステムの場所に受信ファイル用の URL を変換したい可能性があります。ネイティブのプラットフォームによって、これを行うための複数の方法があります。
+Plugins, die auf das Dateisystem schreiben müssen, möchten möglicherweise eine empfangene Datei-System-URL auf eine tatsächliche Stelle des Dateisystems zu konvertieren. Es gibt mehrere Wege, dies zu tun, je nach einheitlichen Plattform.
 
-覚えておくことが重要ですすべてではない `cdvfile://` の Url はデバイス上の実際のファイルをマッピング可能な。 いくつかの Url は、ファイルでは表されないまたはリモートのリソースを参照することができますもをデバイス上の資産を参照できます。 プラグインはこれらの可能性のために彼らの Url パスに変換するしようとしているときに戻って、有意義な結果を得るかどうか常にテスト必要があります。
+Es ist wichtig zu erinnern, dass nicht alle `cdvfile://` URLs sind zuweisbaren real Dateien auf das Gerät. Einige URLs verweisen auf Vermögenswerte auf Gerät die werden nicht durch Dateien dargestellt, oder sogar auf Remoteressourcen verweisen kann. Aufgrund dieser Möglichkeiten sollten Plugins immer testen, ob sie ein sinnvolles Ergebnis zu erhalten, wieder beim URLs in Pfade umwandeln.
 
-#### アンドロイド
+#### Android
 
-Android 上で変換する最も簡単な方法は `cdvfile://` を使用してファイルシステムのパスに URL が `org.apache.cordova.CordovaResourceApi` 。 `CordovaResourceApi`扱うことができるいくつかの方法があります `cdvfile://` Url:
+Auf Android, die einfachste Methode zum Konvertieren eines `cdvfile://` darin, dass die URL zu einem Dateisystempfad verwenden `org.apache.cordova.CordovaResourceApi` . `CordovaResourceApi`verfügt über mehrere Methoden der verarbeiten kann `cdvfile://` URLs:
 
     // webView is a member of the Plugin class
     CordovaResourceApi resourceApi = webView.getResourceApi();
@@ -45,7 +45,7 @@ Android 上で変換する最も簡単な方法は `cdvfile://` を使用して�
     Uri fileURL = resourceApi.remapUri(Uri.parse(cdvfileURL));
     
 
-また、ファイル プラグインを直接使用することが可能です。
+Es ist auch möglich, das Plugin Datei direkt zu verwenden:
 
     import org.apache.cordova.file.FileUtils;
     import org.apache.cordova.file.FileSystem;
@@ -62,7 +62,7 @@ Android 上で変換する最も簡単な方法は `cdvfile://` を使用して�
     }
     
 
-パスから変換する、 `cdvfile://` の URL:
+Konvertieren von einen Pfad zu einer `cdvfile://` URL:
 
     import org.apache.cordova.file.LocalFilesystemURL;
     
@@ -73,7 +73,7 @@ Android 上で変換する最も簡単な方法は `cdvfile://` を使用して�
     String cdvfileURL = url.toString();
     
 
-あなたのプラグインは、ファイルを作成し、認証オブジェクトを返す場合ファイルのプラグインを使用：
+Wenn Ihr Plugin eine Datei erstellt, und Sie dafür ein FileEntries-Objekt zurückgeben möchten, verwenden Sie das Datei-Plugin:
 
     // Return a JSON structure suitable for returning to JavaScript,
     // or null if this file is not representable as a cdvfile URL.
@@ -82,7 +82,7 @@ Android 上で変換する最も簡単な方法は `cdvfile://` を使用して�
 
 #### iOS
 
-IOS にコルドバと同じ使用しない `CordovaResourceApi` アンドロイドとして概念。IOS、上ファイル プラグインを使用して Url をファイルシステムのパスに変換する必要があります。
+Cordova auf iOS verwendet nicht das gleiche `CordovaResourceApi` Konzept als Android. Auf iOS sollten Sie das Datei-Plugin verwenden, zum Konvertieren von URLs und Dateisystem-Pfaden.
 
     // Get a CDVFilesystem URL object from a URL string
     CDVFilesystemURL* url = [CDVFilesystemURL fileSystemURLWithString:cdvfileURL];
@@ -97,7 +97,7 @@ IOS にコルドバと同じ使用しない `CordovaResourceApi` アンドロイ
     NSString* cdvfileURL = [url absoluteString];
     
 
-あなたのプラグインは、ファイルを作成し、認証オブジェクトを返す場合ファイルのプラグインを使用：
+Wenn Ihr Plugin eine Datei erstellt, und Sie dafür ein FileEntries-Objekt zurückgeben möchten, verwenden Sie das Datei-Plugin:
 
     // Get a CDVFilesystem URL object for a device path, or
     // nil if it cannot be represented as a cdvfile URL.
@@ -106,14 +106,14 @@ IOS にコルドバと同じ使用しない `CordovaResourceApi` アンドロイ
     NSDictionary* entry = [filePlugin makeEntryForLocalURL:url]
     
 
-#### Java スクリプトの設定
+#### JavaScript
 
-Java スクリプトの設定を取得するには `cdvfile://` 認証または DirectoryEntry オブジェクトから URL を単に呼び出す `.toURL()` に：
+In JavaScript, bekommen eine `cdvfile://` URL aus einem FileEntries oder DirectoryEntry-Objekt, rufen Sie einfach `.toURL()` drauf:
 
     var cdvfileURL = entry.toURL();
     
 
-プラグインハンドラーの応答で返された FileEntry 構造体の実際のエントリ オブジェクトを変換するハンドラーのコードする必要がありますファイル プラグインをインポートし、新しいオブジェクトを作成します。
+Im Plugin Antwort Handler um aus einer zurückgegebenen FileEntries-Struktur in ein tatsächliches Entry-Objekt zu konvertieren sollte Handlercode importieren die Datei-Erweiterung und ein neues Objekt erstellen:
 
     // create appropriate Entry object
     var entry;

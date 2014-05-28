@@ -19,7 +19,7 @@
 
 # org.apache.cordova.file
 
-This plugin provides the [HTML5 Filesystem API][1]. For usage, refer to HTML5 Rocks' [FileSystem article][2] on the subject. For an overview of other storage options, refer to Cordova's [storage guide][3].
+このプラグインは、 [HTML5 ファイル システム API][1]を提供します。 使用状況、件名に HTML5 岩 '[ファイルシステムの記事][2]を参照してください。 他のストレージ オプションの概要については、コルドバの[ストレージ ・ ガイド][3]を参照してください。.
 
  [1]: http://dev.w3.org/2009/dap/file-system/pub/FileSystem/
  [2]: http://www.html5rocks.com/en/tutorials/file/filesystem/
@@ -34,55 +34,53 @@ This plugin provides the [HTML5 Filesystem API][1]. For usage, refer to HTML5 Ro
 
 *   アマゾン火 OS
 *   アンドロイド
-*   BlackBerry 10*
+*   ブラックベリー 10
 *   iOS
-*   Windows Phone 7 and 8*
-*   Windows 8*
+*   Windows Phone 7 と 8 *
+*   Windows 8 *
+*   Firefox の OS
 
-* *These platforms do not support `FileReader.readAsArrayBuffer` nor `FileWriter.write(blob)`.*
+**これらのプラットフォームがサポートしていない `FileReader.readAsArrayBuffer` も `FileWriter.write(blob)` .*
 
-## Configuring the Plugin
+## ファイルを保存する場所
 
-利用可能なファイルシステムのセットは構成されたプラットフォームをすることができます。IOS と Android の両方を認識します。 <preference> タグの `config.xml` をインストールするファイルシステムの名前します。既定では、すべてのファイル システムのルートが有効になります。
+V1.2.0、現在重要なファイル システム ディレクトリへの Url を提供しています。 各 URL はフォーム*file:///path/to/spot/*に変換することができます、 `DirectoryEntry` を使用して`window.resolveLocalFileSystemURL()`.
 
-    <preference name="iosExtraFilesystems" value="library,library-nosync,documents,documents-nosync,cache,bundle,root" />
-    <preference name="AndroidExtraFilesystems" value="files,files-external,documents,sdcard,cache,cache-external,root" />
-    
+`cordova.file.applicationDirectory`-読み取り専用のディレクトリは、アプリケーションがインストールされています。（*iOS*、*アンドロイド*)
 
-### アンドロイド
+`cordova.file.applicationStorageDirectory`-アプリのプライベートの書き込み可能な記憶域のルートです。（*iOS*、*アンドロイド*)
 
-*   ファイル： アプリケーションの内部ファイルのストレージ ディレクトリ
-*   外部ファイル: アプリケーションの外部のファイルのストレージ ディレクトリ
-*   sdcard: The global external file storage directory (this is the root of the SD card, if one is installed)
-*   cache: The application's internal cache directory
-*   cache-external: The application's external cache directory
-*   root: The entire device filesystem
+`cordova.file.dataDirectory`-どこにアプリケーション固有のデータ ファイルを置きます。（*iOS*、*アンドロイド*)
 
-Android also supports a special filesystem named "documents", which represents a "/Documents/" subdirectory within the "files" filesystem.
+`cordova.file.cacheDirectory`-キャッシュのファイルをアプリケーションの再起動後も維持する必要があります。アプリは、ここでファイルを削除する OS 依存しないでください。（*iOS*、*アンドロイド*)
 
-### iOS
+`cordova.file.externalApplicationStorageDirectory`外部ストレージのアプリケーション領域。（*iOS*、*アンドロイド*)
 
-*   library: The application's Library directory
-*   documents: The application's Documents directory
-*   cache: The application's Cache directory
-*   app-bundle: The application's bundle; the location of the app itself on disk
-*   root: The entire device filesystem
+`cordova.file.externalDataDirectory`-外部ストレージ上のアプリ固有のデータ ファイルを配置する場所。（*アンドロイド*)
 
-By default, the library and documents directories can be synced to iCloud. You can also request two additional filesystems, "library-nosync" and "documents-nosync", which represent a special non-synced directory within the Library or Documents filesystem.
+`cordova.file.externalCacheDirectory`外部ストレージにアプリケーション キャッシュ。（*アンドロイド*)
+
+`cordova.file.externalRootDirectory`-外部ストレージ (SD カード) ルート。（*アンドロイド*)
+
+`cordova.file.tempDirectory`-OS をクリアすることができます temp ディレクトリが。(*iOS*)
+
+`cordova.file.syncedDataDirectory`-（例えば iCloud) に同期する必要がありますアプリケーション固有のファイルを保持します。(*iOS*)
+
+`cordova.file.documentsDirectory`-ファイル、アプリがプライベート他行われなくなります (Office ファイルなど） には意味が。(*iOS*)
 
 ## Android の癖
 
-### Android Persistent storage location
+### Android の永続的なストレージの場所
 
-There are multiple valid locations to store persistent files on an Android device. See [this page][4] for an extensive discussion of the various possibilities.
+Android のデバイスに永続的なファイルを格納する複数の有効な場所があります。 さまざまな可能性について広範な議論のための[このページ][4]を参照してください。
 
  [4]: http://developer.android.com/guide/topics/data/data-storage.html
 
-Previous versions of the plugin would choose the location of the temporary and persistent files on startup, based on whether the device claimed that the SD Card (or equivalent storage partition) was mounted. If the SD Card was mounted, or if a large internal storage partition was available (such as on Nexus devices,) then the persistent files would be stored in the root of that space. This meant that all Cordova apps could see all of the files available on the card.
+以前のバージョンのプラグインは、デバイスの SD カード （または同等のストレージ パーティション） マウントされていたと主張したかどうかに基づいて、起動時に一時と永続的なファイルの場所を選ぶでしょう。 SD カードがマウントされている場合、または大規模な内部ストレージ パーティションが利用可能な場合 (ようネクサス デバイス上） し、永続的なファイルは、その領域のルートに格納されます。 これはすべての Cordova アプリ見ることができる利用可能なファイルのすべてのカードに意味しました。
 
-If the SD card was not available, then previous versions would store data under /data/data/<packageid>, which isolates apps from each other, but may still cause data to be shared between users.
+SD カードが利用できない場合、以前のバージョン取得データを保存/データ/データの下<packageid>、アプリ、互いからの分離がまだユーザー間で共有するデータを引き起こす可能性があります。
 
-It is now possible to choose whether to store files in the internal file storage location, or using the previous logic, with a preference in your application's config.xml file. To do this, add one of these two lines to config.xml:
+内部ファイルの保存場所やアプリケーションの config.xml ファイルに優先順位を持つ以前のロジックを使用してファイルを保存するかどうかを選択することが可能です今。 これを行うに、config.xml に次の 2 行のいずれかを追加します。
 
     <preference name="AndroidPersistentFileLocation" value="Internal" />
     
@@ -94,18 +92,6 @@ It is now possible to choose whether to store files in the internal file storage
 アプリケーションは、ユーザーに以前出荷されている場合、古い (前 1.0） を使用して、このプラグインのバージョンし、永続的なファイルシステムに保存されているファイルには「互換性」を設定する必要があります。 自分のアプリケーションをアップグレードする既存のユーザーを彼らの装置によって、以前に保存されたファイルにアクセスすることができることがあることを意味する「内部」に場所をスイッチングします。
 
 アプリケーション場合は、新しい、または永続的なファイルシステムにファイルが格納され以前は決して、「内部」の設定は推奨一般に。
-
-## ブラックベリーの癖
-
-`DirectoryEntry.removeRecursively()`失敗する可能性があります、 `ControlledAccessException` 、次の場合。
-
-*   アプリは、アプリの以前のインストールによって作成されたディレクトリにアクセスしようとします。
-
-> 解決策: 手動で、または再インストールする前にアプリケーションによって一時ディレクトリはきれいに確認してください。
-
-*   場合は、デバイスは USB で接続されました。
-
-> ソリューション: 再実行して、デバイスから USB ケーブルを外します。
 
 ## iOS の癖
 
@@ -129,6 +115,15 @@ IOS デバイスに永続的なファイルを格納する 2 つの有効な場�
 
 アプリケーション場合は、新しい、または永続的なファイルシステムにファイルが格納され以前は決して、「ライブラリ」設定は推奨一般に。
 
+### Firefox OS 癖
+
+ファイル システム API Firefox OS でネイティブ サポートされていないと、indexedDB の上にシムとして実装されています。
+
+*   空でないディレクトリを削除するときに失敗しません
+*   ディレクトリのメタデータをサポートしていません
+*   サポートしていない `requestAllFileSystems` と `resolveLocalFileSystemURI` 方法
+*   方法 `copyTo` と `moveTo` ディレクトリをサポートしていません
+
 ## ノートをアップグレードします。
 
 このプラグインのデベロッパーで、 `FileEntry` と `DirectoryEntry` 構造変更、公開された仕様に沿ったより多くであります。
@@ -146,16 +141,18 @@ IOS デバイスに永続的なファイルを格納する 2 つの有効な場�
     /path/to/file
     
 
-If your application works with device-absolute-paths, and you previously retrieved those paths through the `fullPath` property of `Entry` objects, then you should update your code to use `entry.toURL()` instead. このメソッドは、フォームのファイルシステムの Url を返します今
+場合は、アプリケーションはデバイス絶対パスで動作し、以前からそれらのパスを取得、 `fullPath` のプロパティ `Entry` を使用してコードを更新する必要があり、オブジェクト `entry.toURL()` 代わりに。
+
+後方の互換性、 `resolveLocalFileSystemURL()` メソッドはデバイス絶対パスを受け入れるし、戻ります、 `Entry` 、一時的または永続的なファイル ・ システム内でそのファイルが存在する限り、それに対応するオブジェクト。
+
+これは特に以前デバイス絶対パスを使用してファイル転送のプラグインで問題となっている （そしてまだそれらを受け入れることができます）。 ので交換、ファイルシステムの Url で正しく動作するように更新されている `entry.fullPath` と `entry.toURL()` デバイス上のファイルで動作するプラグインを得て問題を解決する必要があります。
+
+V1.1.0 戻り値での `toURL()` が変更された (\[CB-6394\] (https://issues.apache.org/jira/browse/CB-6394) を参照) を絶対的な 'file://' で始まる URL を返します。 可能な限り。 確保するために、' cdvfile:'-使用することができます URL `toInternalURL()` 今。 このメソッドは、フォームのファイルシステムの Url を返します今
 
     cdvfile://localhost/persistent/path/to/file
     
 
-which can be used to identify the file uniquely.
-
-For backwards compatibility, the `resolveLocalFileSystemURL()` method will accept a device-absolute-path, and will return an `Entry` object corresponding to it, as long as that file exists within either the TEMPORARY or PERSISTENT filesystems.
-
-これは特に以前デバイス絶対パスを使用してファイル転送のプラグインで問題となっている （そしてまだそれらを受け入れることができます）。 ので交換、ファイルシステムの Url で正しく動作するように更新されている `entry.fullPath` と `entry.toURL()` デバイス上のファイルで動作するプラグインを得て問題を解決する必要があります。
+これはファイルを一意に識別するために使用できます。
 
 ## エラー コードと意味のリスト
 
@@ -173,3 +170,32 @@ For backwards compatibility, the `resolveLocalFileSystemURL()` method will accep
 *   10 = QUOTA\_EXCEEDED\_ERR
 *   11 = TYPE\_MISMATCH\_ERR
 *   12 = PATH\_EXISTS\_ERR
+
+## (省略可能) プラグインを構成します。
+
+利用可能なファイルシステムのセットは構成されたプラットフォームをすることができます。IOS と Android の両方を認識します。 <preference> タグの `config.xml` をインストールするファイルシステムの名前します。既定では、すべてのファイル システムのルートが有効になります。
+
+    <preference name="iosExtraFilesystems" value="library,library-nosync,documents,documents-nosync,cache,bundle,root" />
+    <preference name="AndroidExtraFilesystems" value="files,files-external,documents,sdcard,cache,cache-external,root" />
+    
+
+### アンドロイド
+
+*   ファイル： アプリケーションの内部ファイルのストレージ ディレクトリ
+*   外部ファイル: アプリケーションの外部のファイルのストレージ ディレクトリ
+*   sd カード：、グローバル外部ストレージ ディレクトリをファイル (これは SD カードのルートがインストールされている場合)。 必要があります、 `android.permission.WRITE_EXTERNAL_STORAGE` これを使用するアクセス許可。
+*   キャッシュ： アプリケーションの内部キャッシュ ディレクトリ
+*   キャッシュ外部： 外部キャッシュのアプリケーションのディレクトリ
+*   ルート： デバイス全体のファイルシステム
+
+アンドロイドを「ファイル」ファイルシステム内の"ドキュメント/"サブディレクトリを表す"ドキュメント"という名前の特殊なファイルシステムもサポートしています。
+
+### iOS
+
+*   ライブラリ: ライブラリのアプリケーションのディレクトリ
+*   ドキュメント: ドキュメントのアプリケーションのディレクトリ
+*   キャッシュ: キャッシュのアプリケーションのディレクトリ
+*   バンドル: アプリケーションバンドル;アプリ自体 (読み取りのみ) ディスク上の場所
+*   ルート： デバイス全体のファイルシステム
+
+既定では、ライブラリとドキュメント ディレクトリを iCloud に同期できます。 ライブラリまたはドキュメントのファイルシステム内の特別な非同期ディレクトリを表す 2 つの追加のファイルシステム、"ライブラリ nosync"、「ドキュメント nosync」を要求することもできます。
