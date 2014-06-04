@@ -344,6 +344,8 @@ public class FileUtils extends CordovaPlugin {
                     callbackContext.success(requestAllFileSystems());
                 }
             }, callbackContext);
+        } else if (action.equals("requestAllPaths")) {
+            callbackContext.success(requestAllPaths());
         } else if (action.equals("requestFileSystem")) {
             final int fstype=args.getInt(0);
             final long size = args.optLong(1);
@@ -847,6 +849,24 @@ public class FileUtils extends CordovaPlugin {
             LocalFilesystemURL rootURL = new LocalFilesystemURL(LocalFilesystemURL.FILESYSTEM_PROTOCOL + "://localhost/"+fs.name+"/");
             ret.put(fs.getEntryForLocalURL(rootURL));
         }
+        return ret;
+    }
+
+    private static String toDirUrl(File f) {
+        return Uri.fromFile(f).toString() + '/';
+    }
+    
+    private JSONObject requestAllPaths() throws JSONException {
+        Context context = cordova.getActivity();
+        JSONObject ret = new JSONObject();
+        ret.put("applicationDirectory", "file:///android_asset/");
+        ret.put("applicationStorageDirectory", toDirUrl(context.getFilesDir().getParentFile()));
+        ret.put("dataDirectory", toDirUrl(context.getFilesDir()));
+        ret.put("cacheDirectory", toDirUrl(context.getCacheDir()));
+        ret.put("externalApplicationStorageDirectory", toDirUrl(context.getExternalFilesDir(null).getParentFile()));
+        ret.put("externalDataDirectory", toDirUrl(context.getExternalFilesDir(null)));
+        ret.put("externalCacheDirectory", toDirUrl(context.getExternalCacheDir()));
+        ret.put("externalRootDirectory", toDirUrl(Environment.getExternalStorageDirectory()));
         return ret;
     }
 

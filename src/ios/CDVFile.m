@@ -458,6 +458,36 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
 
+- (void)requestAllPaths:(CDVInvokedUrlCommand*)command
+{
+    NSString* libPath = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES)[0];
+    NSString* libPathSync = [libPath stringByAppendingPathComponent:@"Cloud"];
+    NSString* libPathNoSync = [libPath stringByAppendingPathComponent:@"NoCloud"];
+    NSString* docPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString* storagePath = [libPath stringByDeletingLastPathComponent];
+    NSString* cachePath = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES)[0];
+
+    // Create the directories if necessary.
+    [[NSFileManager defaultManager] createDirectoryAtPath:libPathSync withIntermediateDirectories:YES attributes:nil error:nil];
+    [[NSFileManager defaultManager] createDirectoryAtPath:libPathNoSync withIntermediateDirectories:YES attributes:nil error:nil];
+    // Mark NoSync as non-iCloud.
+    [[NSURL fileURLWithPath:libPathNoSync] setResourceValue: [NSNumber numberWithBool: YES]
+                                                     forKey: NSURLIsExcludedFromBackupKey error:nil];
+
+    NSDictionary* ret = @{
+        @"applicationDirectory": [[NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]] absoluteString],
+        @"applicationStorageDirectory": [[NSURL fileURLWithPath:storagePath] absoluteString],
+        @"dataDirectory": [[NSURL fileURLWithPath:libPathNoSync] absoluteString],
+        @"syncedDataDirectory": [[NSURL fileURLWithPath:libPathSync] absoluteString],
+        @"documentsDirectory": [[NSURL fileURLWithPath:docPath] absoluteString],
+        @"cacheDirectory": [[NSURL fileURLWithPath:cachePath] absoluteString],
+        @"tempDirectory": [[NSURL fileURLWithPath:NSTemporaryDirectory()] absoluteString]
+    };
+
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:ret];
+    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+}
+
 /* Creates and returns a dictionary representing an Entry Object
  *
  * IN:

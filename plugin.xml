@@ -135,6 +135,10 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <js-module src="www/fileSystems-roots.js" name="fileSystems-roots">
             <runs/>
         </js-module>
+        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
+            <merges target="cordova" />
+            <runs/>
+        </js-module>
     </platform>
 
     <!-- amazon-fireos -->
@@ -205,6 +209,11 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         </js-module>
 
         <js-module src="www/fileSystems-roots.js" name="fileSystems-roots">
+            <runs/>
+        </js-module>
+
+        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
+            <merges target="cordova" />
             <runs/>
         </js-module>
 
@@ -296,6 +305,13 @@ xmlns:android="http://schemas.android.com/apk/res/android"
     <platform name="windows8">
         <js-module src="src/windows8/FileProxy.js" name="FileProxy">
             <merges target="" />
+        </js-module>
+    </platform>
+
+    <!-- firefox os -->
+    <platform name="firefoxos">
+        <js-module src="src/firefoxos/FileProxy.js" name="FileProxy">
+            <runs />
         </js-module>
     </platform>
 
