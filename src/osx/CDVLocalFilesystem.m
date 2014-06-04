@@ -390,7 +390,9 @@
  */
 - (NSString *)fullPathForFileSystemPath:(NSString *)fsPath
 {
-    if ([fsPath hasPrefix:self.fsRoot]) {
+    if ([self.fsRoot isEqualToString:@""]) {
+        return fsPath;
+    } else if ([fsPath hasPrefix:self.fsRoot]) {
         return [fsPath substringFromIndex:[self.fsRoot length]];
     }
     return nil;
