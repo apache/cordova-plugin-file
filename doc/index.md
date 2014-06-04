@@ -33,10 +33,10 @@ on the subject. For an overview of other storage options, refer to Cordova's
 - Amazon Fire OS
 - Android
 - BlackBerry 10
+- Firefox OS
 - iOS
 - Windows Phone 7 and 8*
 - Windows 8*
-- Firefox OS
 
 \* _These platforms do not support `FileReader.readAsArrayBuffer` nor `FileWriter.write(blob)`._
 
