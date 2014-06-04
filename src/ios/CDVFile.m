@@ -426,7 +426,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     } else {
         NSString* fullPath = @"/";
         // check for avail space for size request
-        NSNumber* pNumAvail = [self checkFreeDiskSpace:fullPath];
+        NSNumber* pNumAvail = [self checkFreeDiskSpace:self.rootDocsPath];
         // NSLog(@"Free space: %@", [NSString stringWithFormat:@"%qu", [ pNumAvail unsignedLongLongValue ]]);
         if (pNumAvail && ([pNumAvail unsignedLongLongValue] < size)) {
             result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:QUOTA_EXCEEDED_ERR];
