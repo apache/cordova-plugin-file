@@ -262,39 +262,6 @@
     return result;
 }
 
-- (void)getMetadataForURL:(CDVFilesystemURL *)url callback:(void (^)(CDVPluginResult *))callback
-{
-
-    NSFileManager* fileMgr = [[NSFileManager alloc] init];
-    NSError* __autoreleasing error = nil;
-
-    CDVPluginResult *result;
-    NSDictionary* fileAttribs = [fileMgr attributesOfItemAtPath:[self  filesystemPathForURL:url] error:&error];
-
-    if (fileAttribs) {
-        // Ensure that directories (and other non-regular files) report size of 0
-        unsigned long long size = ([fileAttribs fileType] == NSFileTypeRegular ? [fileAttribs fileSize] : 0);
-        NSDate* modDate = [fileAttribs fileModificationDate];
-        if (modDate) {
-            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:@{@"modificationTime": @([modDate timeIntervalSince1970] * 1000), @"size": @(size)}];
-        }
-    } else {
-        // didn't get fileAttribs
-        CDVFileError errorCode = ABORT_ERR;
-        NSLog(@"error getting metadata: %@", [error localizedDescription]);
-        if ([error code] == NSFileNoSuchFileError) {
-            errorCode = NOT_FOUND_ERR;
-        }
-        // log [NSNumber numberWithDouble: theMessage] objCtype to see what it returns
-        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:errorCode];
-    }
-    if (!result) {
-        // invalid path or file does not exist
-        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION];
-    }
-    callback(result);
-}
-
 - (CDVPluginResult*)setMetadataForURL:(CDVFilesystemURL *)localURI withObject:(NSDictionary *)options
 {
     BOOL ok = NO;
