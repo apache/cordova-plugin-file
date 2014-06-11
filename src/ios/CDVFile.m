@@ -646,21 +646,6 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 }
 
 /*
- * get MetaData of entry
- * Currently MetaData only includes modificationTime.
- */
-- (void)getMetadata:(CDVInvokedUrlCommand*)command
-{
-    // arguments
-    CDVFilesystemURL* localURI = [self fileSystemURLforArg:command.arguments[0]];
-    NSObject<CDVFileSystem> *fs = [self filesystemForURL:localURI];
-    [fs getMetadataForURL:localURI callback:^(CDVPluginResult* result) {
-        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-    }];
-
-}
-
-/*
  * set MetaData of entry
  * Currently we only support "com.apple.MobileBackup" (boolean)
  */

@@ -369,7 +369,7 @@ public class FileUtils extends CordovaPlugin {
                 }
             },callbackContext);
         }
-        else if (action.equals("getMetadata") || action.equals("getFileMetadata")) {
+        else if (action.equals("getFileMetadata")) {
             final String fname=args.getString(0);
             threadhelper( new FileOp( ){
                 public void run() throws FileNotFoundException, JSONException, MalformedURLException {
