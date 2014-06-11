@@ -707,26 +707,44 @@
 - (void)getFileMetadataForURL:(CDVFilesystemURL *)localURL callback:(void (^)(CDVPluginResult *))callback
 {
     NSString *path = [self filesystemPathForURL:localURL];
-        NSFileManager* fileMgr = [[NSFileManager alloc] init];
-        BOOL bIsDir = NO;
-        // make sure it exists and is not a directory
-        BOOL bExists = [fileMgr fileExistsAtPath:path isDirectory:&bIsDir];
-        if (!bExists || bIsDir) {
-            callback([CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NOT_FOUND_ERR]);
-        } else {
-            // create dictionary of file info
-            NSError* __autoreleasing error = nil;
-            NSDictionary* fileAttrs = [fileMgr attributesOfItemAtPath:path error:&error];
-            NSMutableDictionary* fileInfo = [NSMutableDictionary dictionaryWithCapacity:5];
-            [fileInfo setObject:[NSNumber numberWithUnsignedLongLong:[fileAttrs fileSize]] forKey:@"size"];
-            [fileInfo setObject:localURL.fullPath forKey:@"fullPath"];
-            [fileInfo setObject:@"" forKey:@"type"];  // can't easily get the mimetype unless create URL, send request and read response so skipping
-            [fileInfo setObject:[path lastPathComponent] forKey:@"name"];
-            NSDate* modDate = [fileAttrs fileModificationDate];
-            NSNumber* msDate = [NSNumber numberWithDouble:[modDate timeIntervalSince1970] * 1000];
-            [fileInfo setObject:msDate forKey:@"lastModifiedDate"];
-            callback([CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:fileInfo]);
+    CDVPluginResult *result;
+    NSFileManager* fileMgr = [[NSFileManager alloc] init];
+
+    NSError* __autoreleasing error = nil;
+    NSDictionary* fileAttrs = [fileMgr attributesOfItemAtPath:path error:&error];
+
+    if (fileAttrs) {
+
+        // create dictionary of file info
+        NSMutableDictionary* fileInfo = [NSMutableDictionary dictionaryWithCapacity:5];
+
+        [fileInfo setObject:localURL.fullPath forKey:@"fullPath"];
+        [fileInfo setObject:@"" forKey:@"type"];  // can't easily get the mimetype unless create URL, send request and read response so skipping
+        [fileInfo setObject:[path lastPathComponent] forKey:@"name"];
+
+        // Ensure that directories (and other non-regular files) report size of 0
+        unsigned long long size = ([fileAttrs fileType] == NSFileTypeRegular ? [fileAttrs fileSize] : 0);
+        [fileInfo setObject:[NSNumber numberWithUnsignedLongLong:size] forKey:@"size"];
+
+        NSDate* modDate = [fileAttrs fileModificationDate];
+        if (modDate) {
+            [fileInfo setObject:[NSNumber numberWithDouble:[modDate timeIntervalSince1970] * 1000] forKey:@"lastModifiedDate"];
         }
+
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:fileInfo];
+
+    } else {
+        // didn't get fileAttribs
+        CDVFileError errorCode = ABORT_ERR;
+        NSLog(@"error getting metadata: %@", [error localizedDescription]);
+        if ([error code] == NSFileNoSuchFileError || [error code] == NSFileReadNoSuchFileError) {
+            errorCode = NOT_FOUND_ERR;
+        }
+        // log [NSNumber numberWithDouble: theMessage] objCtype to see what it returns
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:errorCode];
+    }
+
+    callback(result);
 }
 
 @end
