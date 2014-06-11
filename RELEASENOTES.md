@@ -173,3 +173,33 @@
 * CB-4952: ios: Resolve symlinks in file:// URLs
 * Add docs about the extraFileSystems <preference>
 * CB-6460: Update license headers
+
+### 1.2.0 (Jun 05, 2014)
+* CB-6127 Spanish and French Translations added. Github close #31
+* updated this reference to window
+* Add missing semicolon (copy & paste error)
+* Fix compiler warning about symbol in interface not matching implementation
+* Fix sorting order in supported platforms
+* ubuntu: increase quota value
+* ubuntu: Change FS URL scheme to 'cdvfile'
+* ubuntu: Return size with Entry.getMetadata() method
+* CB-6803 Add license
+* Initial implementation for Firefox OS
+* Small wording tweaks
+* Fixed toURL() toInternalURL() information in the doku
+* ios: Don't fail a write of zero-length payload.
+* CB-285 Docs for cordova.file.*Directory properties
+* CB-285 Add cordova.file.*Directory properties for iOS & Android
+* CB-3440 [BlackBerry10] Proxy based implementation
+* Fix typo in docs "app-bundle" -> "bundle"
+* CB-6583 ios: Fix failing to create entry when space in parent path
+* CB-6571 android: Make DirectoryEntry.toURL() have a trailing /
+* CB-6491 add CONTRIBUTING.md
+* CB-6525 android, ios: Allow file: URLs in all APIs. Fixes FileTransfer.download not being called.
+* fix the Windows 8  implementation of the getFile method
+* Update File.js for typo: lastModifiedData --> lastModifiedDate (closes #38)
+* Add error codes.
+* CB-5980 Updated version and RELEASENOTES.md for release 1.0.0
+* Add NOTICE file
+* CB-6114 Updated version and RELEASENOTES.md for release 1.0.1
+* CB-5980 Updated version and RELEASENOTES.md for release 1.0.0

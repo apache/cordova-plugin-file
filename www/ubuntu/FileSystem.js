@@ -19,8 +19,16 @@
  *
 */
 
+FILESYSTEM_PROTOCOL = "cdvfile";
+
 module.exports = {
-    createReader: function() {
-        return new DirectoryReader(this.fullPath);
+    __format__: function(fullPath) {
+        if (this.name === 'content') {
+            return 'content:/' + fullPath;
+        }
+        var path = ('/' + this.name + (fullPath[0] === '/' ? '' : '/') + encodeURI(fullPath)).replace('//','/');
+
+        return FILESYSTEM_PROTOCOL + '://localhost' + path;
     }
 };
+
