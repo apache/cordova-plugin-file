@@ -133,12 +133,12 @@ public class FileUtils extends CordovaPlugin {
         availableFileSystems.put("cache", context.getCacheDir().getAbsolutePath());
         availableFileSystems.put("root", "/");
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-          try { 
+          try {
             availableFileSystems.put("files-external", context.getExternalFilesDir(null).getAbsolutePath());
             availableFileSystems.put("sdcard", Environment.getExternalStorageDirectory().getAbsolutePath());
             availableFileSystems.put("cache-external", context.getExternalCacheDir().getAbsolutePath());
           }
-          catch(IOException e) {
+          catch(NullPointerException e) {
             /* If external storage is unavailable, context.getExternal* returns null */
           }
         }
@@ -871,13 +871,13 @@ public class FileUtils extends CordovaPlugin {
         ret.put("dataDirectory", toDirUrl(context.getFilesDir()));
         ret.put("cacheDirectory", toDirUrl(context.getCacheDir()));
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-          try { 
+          try {
             ret.put("externalApplicationStorageDirectory", toDirUrl(context.getExternalFilesDir(null).getParentFile()));
             ret.put("externalDataDirectory", toDirUrl(context.getExternalFilesDir(null)));
             ret.put("externalCacheDirectory", toDirUrl(context.getExternalCacheDir()));
             ret.put("externalRootDirectory", toDirUrl(Environment.getExternalStorageDirectory()));
           }
-          catch(IOException e) {
+          catch(NullPointerException e) {
             /* If external storage is unavailable, context.getExternal* returns null */
           }
         }
