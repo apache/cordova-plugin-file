@@ -19,7 +19,7 @@
 #
 -->
 # Release Notes
-
+ 
 ### 0.2.1 (Sept 5, 2013)
 * [CB-4656] Don't add newlines in data urls within readAsDataUrl.
 * [CB-4514] Making DirectoryCopy Recursive
