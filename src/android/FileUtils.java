@@ -129,11 +129,11 @@ public class FileUtils extends CordovaPlugin {
         HashMap<String, String> availableFileSystems = new HashMap<String,String>();
 
         availableFileSystems.put("files", context.getFilesDir().getAbsolutePath());
-        availableFileSystems.put("files-external", context.getExternalFilesDir(null).getAbsolutePath());
+        try { availableFileSystems.put("files-external", context.getExternalFilesDir(null).getAbsolutePath()); } catch(Exception e) {}
         availableFileSystems.put("documents", new File(context.getFilesDir(), "Documents").getAbsolutePath());
-        availableFileSystems.put("sdcard", Environment.getExternalStorageDirectory().getAbsolutePath());
+        try { availableFileSystems.put("sdcard", Environment.getExternalStorageDirectory().getAbsolutePath()); } catch(Exception e) {}
         availableFileSystems.put("cache", context.getCacheDir().getAbsolutePath());
-        availableFileSystems.put("cache-external", context.getExternalCacheDir().getAbsolutePath());
+        try { availableFileSystems.put("cache-external", context.getExternalCacheDir().getAbsolutePath()); } catch(Exception e) {}
         availableFileSystems.put("root", "/");
 
         return availableFileSystems;
@@ -863,10 +863,10 @@ public class FileUtils extends CordovaPlugin {
         ret.put("applicationStorageDirectory", toDirUrl(context.getFilesDir().getParentFile()));
         ret.put("dataDirectory", toDirUrl(context.getFilesDir()));
         ret.put("cacheDirectory", toDirUrl(context.getCacheDir()));
-        ret.put("externalApplicationStorageDirectory", toDirUrl(context.getExternalFilesDir(null).getParentFile()));
-        ret.put("externalDataDirectory", toDirUrl(context.getExternalFilesDir(null)));
-        ret.put("externalCacheDirectory", toDirUrl(context.getExternalCacheDir()));
-        ret.put("externalRootDirectory", toDirUrl(Environment.getExternalStorageDirectory()));
+        try { ret.put("externalApplicationStorageDirectory", toDirUrl(context.getExternalFilesDir(null).getParentFile())); } catch(Exception e) {}
+        try { ret.put("externalDataDirectory", toDirUrl(context.getExternalFilesDir(null))); } catch(Exception e) {}
+        try { ret.put("externalCacheDirectory", toDirUrl(context.getExternalCacheDir())); } catch(Exception e) {}
+        try { ret.put("externalRootDirectory", toDirUrl(Environment.getExternalStorageDirectory())); } catch(Exception e) {}
         return ret;
     }
 
