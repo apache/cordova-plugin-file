@@ -129,12 +129,19 @@ public class FileUtils extends CordovaPlugin {
         HashMap<String, String> availableFileSystems = new HashMap<String,String>();
 
         availableFileSystems.put("files", context.getFilesDir().getAbsolutePath());
-        availableFileSystems.put("files-external", context.getExternalFilesDir(null).getAbsolutePath());
         availableFileSystems.put("documents", new File(context.getFilesDir(), "Documents").getAbsolutePath());
-        availableFileSystems.put("sdcard", Environment.getExternalStorageDirectory().getAbsolutePath());
         availableFileSystems.put("cache", context.getCacheDir().getAbsolutePath());
-        availableFileSystems.put("cache-external", context.getExternalCacheDir().getAbsolutePath());
         availableFileSystems.put("root", "/");
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+          try {
+            availableFileSystems.put("files-external", context.getExternalFilesDir(null).getAbsolutePath());
+            availableFileSystems.put("sdcard", Environment.getExternalStorageDirectory().getAbsolutePath());
+            availableFileSystems.put("cache-external", context.getExternalCacheDir().getAbsolutePath());
+          }
+          catch(NullPointerException e) {
+            /* If external storage is unavailable, context.getExternal* returns null */
+          }
+        }
 
         return availableFileSystems;
     }
@@ -863,10 +870,17 @@ public class FileUtils extends CordovaPlugin {
         ret.put("applicationStorageDirectory", toDirUrl(context.getFilesDir().getParentFile()));
         ret.put("dataDirectory", toDirUrl(context.getFilesDir()));
         ret.put("cacheDirectory", toDirUrl(context.getCacheDir()));
-        ret.put("externalApplicationStorageDirectory", toDirUrl(context.getExternalFilesDir(null).getParentFile()));
-        ret.put("externalDataDirectory", toDirUrl(context.getExternalFilesDir(null)));
-        ret.put("externalCacheDirectory", toDirUrl(context.getExternalCacheDir()));
-        ret.put("externalRootDirectory", toDirUrl(Environment.getExternalStorageDirectory()));
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+          try {
+            ret.put("externalApplicationStorageDirectory", toDirUrl(context.getExternalFilesDir(null).getParentFile()));
+            ret.put("externalDataDirectory", toDirUrl(context.getExternalFilesDir(null)));
+            ret.put("externalCacheDirectory", toDirUrl(context.getExternalCacheDir()));
+            ret.put("externalRootDirectory", toDirUrl(Environment.getExternalStorageDirectory()));
+          }
+          catch(NullPointerException e) {
+            /* If external storage is unavailable, context.getExternal* returns null */
+          }
+        }
         return ret;
     }
 
