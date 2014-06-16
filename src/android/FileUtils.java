@@ -138,8 +138,8 @@ public class FileUtils extends CordovaPlugin {
             availableFileSystems.put("sdcard", Environment.getExternalStorageDirectory().getAbsolutePath());
             availableFileSystems.put("cache-external", context.getExternalCacheDir().getAbsolutePath());
           }
-          catch(IOException e) {
-            /* If external storage is unavailable, context.getExternal* returns null */
+          catch(NullPointerException e) {
+              Log.d(LOG_TAG, "External storage unavailable, check to see if USB Mass Storage Mode is on");
           }
         }
 
@@ -877,8 +877,9 @@ public class FileUtils extends CordovaPlugin {
             ret.put("externalCacheDirectory", toDirUrl(context.getExternalCacheDir()));
             ret.put("externalRootDirectory", toDirUrl(Environment.getExternalStorageDirectory()));
           }
-          catch(IOException e) {
+          catch(NullPointerException e) {
             /* If external storage is unavailable, context.getExternal* returns null */
+              Log.d(LOG_TAG, "Unable to access these paths, most liklely due to USB storage");
           }
         }
         return ret;
