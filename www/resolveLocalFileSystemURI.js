@@ -53,8 +53,8 @@ module.exports.resolveLocalFileSystemURL = function(uri, successCallback, errorC
                 var fsName = entry.filesystemName || (entry.filesystem == window.PERSISTENT ? 'persistent' : 'temporary');
                 fileSystems.getFs(fsName, function(fs) {
                     if (!fs) {
-						fs = new FileSystem(fsName, {name:"", fullPath:"/"});
-					}
+                        fs = new FileSystem(fsName, {name:"", fullPath:"/"});
+                    }
                     var result = (entry.isDirectory) ? new DirectoryEntry(entry.name, entry.fullPath, fs, entry.nativeURL) : new FileEntry(entry.name, entry.fullPath, fs, entry.nativeURL);
                     successCallback(result);
                 });
