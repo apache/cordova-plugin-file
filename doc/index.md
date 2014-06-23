@@ -19,9 +19,25 @@
 
 # org.apache.cordova.file
 
-This plugin provides the [HTML5 Filesystem API](http://dev.w3.org/2009/dap/file-system/pub/FileSystem/). For usage, refer
-to HTML5 Rocks' [FileSystem article](http://www.html5rocks.com/en/tutorials/file/filesystem/)
-on the subject. For an overview of other storage options, refer to Cordova's
+
+This plugin implements a File API allowing read/write access to files residing on the device.
+
+This plugin is based on several specs, including : 
+The HTML5 File API
+[http://www.w3.org/TR/FileAPI/](http://www.w3.org/TR/FileAPI/)
+
+The (now-defunct) Directories and System extensions
+Latest: 
+[http://www.w3.org/TR/2012/WD-file-system-api-20120417/](http://www.w3.org/TR/2012/WD-file-system-api-20120417/)
+Although most of the plugin code was written when an earlier spec was current:
+[http://www.w3.org/TR/2011/WD-file-system-api-20110419/](http://www.w3.org/TR/2011/WD-file-system-api-20110419/)
+
+It also implements the FileWriter spec :
+[http://dev.w3.org/2009/dap/file-system/file-writer.html](http://dev.w3.org/2009/dap/file-system/file-writer.html)
+
+For usage, please refer to HTML5 Rocks' excellent [FileSystem article.](http://www.html5rocks.com/en/tutorials/file/filesystem/)
+
+For an overview of other storage options, refer to Cordova's
 [storage guide](http://cordova.apache.org/docs/en/edge/cordova_storage_storage.md.html).
 
 ## Installation
