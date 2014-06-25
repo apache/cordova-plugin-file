@@ -63,7 +63,10 @@ module.exports = {
             // get the basic properties of the file.
             ).then(
                 function (basicProperties) {
-                    success(basicProperties.dateModified);
+                    success({
+                        modificationTime: basicProperties.dateModified.valueOf(),
+                        size: basicProperties.size
+                    });
                 },
                 function () {
                     fail && fail(FileError.NOT_READABLE_ERR);
@@ -82,7 +85,7 @@ module.exports = {
             // get the basic properties of the folder.
             ).then(
                 function (basicProperties) {
-                    success(basicProperties.dateModified);
+                    success(basicProperties.dateModified.valueOf());
                 },
                 function () {
                     fail && fail(FileError.NOT_FOUND_ERR);
