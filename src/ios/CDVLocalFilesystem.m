@@ -639,6 +639,8 @@
                     mimeType = @"audio/mp4";
                 } else if ([[fullPath pathExtension] rangeOfString:@"wav"].location != NSNotFound) {
                     mimeType = @"audio/wav";
+                } else if ([[fullPath pathExtension] rangeOfString:@"css"].location != NSNotFound) {
+                    mimeType = @"text/css";
                 }
             }
             CFRelease(typeId);
