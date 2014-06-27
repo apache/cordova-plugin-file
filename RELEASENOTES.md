@@ -203,3 +203,7 @@
 * Add NOTICE file
 * CB-6114 Updated version and RELEASENOTES.md for release 1.0.1
 * CB-5980 Updated version and RELEASENOTES.md for release 1.0.0
+
+### 1.2.1
+* CB-6922 Fix inconsistent handling of lastModifiedDate and modificationTime
+* CB-285: Document filesystem root properties
