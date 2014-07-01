@@ -64,7 +64,10 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
 
 `cordova.file.applicationDirectory` - Read-only directory where the application is installed. (_iOS_, _Android_)
 
-`cordova.file.applicationStorageDirectory` - Root of app's private writable storage. (_iOS_, _Android_)
+* `cordova.file.applicationStorageDirectory` - Root directory of the application's 
+  sandbox; on iOS this location is read-only (but specific subdirectories [like 
+  `/Documents`] are read-write). All data contained within is private to the app. (
+  _iOS_, _Android_)
 
 `cordova.file.dataDirectory` - Where to put app-specific data files. (_iOS_, _Android_)
 
