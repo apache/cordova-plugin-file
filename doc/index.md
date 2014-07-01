@@ -101,6 +101,65 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
 * `cordova.file.documentsDirectory` - Files private to the app, but that are meaningful 
   to other application (e.g. Office files). (_iOS_)
 
+## File System Layouts
+
+Although technically an implementation detail, it can be very useful to know how 
+the `cordova.file.*` properties map to physical paths on a real device.
+
+### iOS File System Layout
+
+| Device Path                                    | `cordova.file.*`            | `iosExtraFileSystems` | r/w? | persistent? | OS clears | sync | private |
+|:-----------------------------------------------|:----------------------------|:----------------------|:----:|:-----------:|:---------:|:----:|:-------:|
+| `/var/mobile/Applications/<UUID>/`             | applicationStorageDirectory | -                     | r/o  |     N/A     |     N/A   | N/A  |   Yes   |
+| &nbsp;&nbsp;&nbsp;`appname.app/`               | applicationDirectory        | bundle                | r/o  |     N/A     |     N/A   | N/A  |   Yes   |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`www/`     | -                           | -                     | r/o  |     N/A     |     N/A   | N/A  |   Yes   |
+| &nbsp;&nbsp;&nbsp;`Documents/`                 | documentsDirectory          | documents             | r/w  |     Yes     |     No    | Yes  |   Yes   |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`NoCloud/` | -                           | documents-nosync      | r/w  |     Yes     |     No    | No   |   Yes   |
+| &nbsp;&nbsp;&nbsp;`Library`                    | -                           | library               | r/w  |     Yes     |     No    | Yes? |   Yes   |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`NoCloud/` | dataDirectory               | library-nosync        | r/w  |     Yes     |     No    | No   |   Yes   |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Cloud/`   | syncedDataDirectory         | -                     | r/w  |     Yes     |     No    | Yes  |   Yes   |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Caches/`  | cacheDirectory              | cache                 | r/w  |     Yes*    |  Yes\*\*\*| No   |   Yes   |
+| &nbsp;&nbsp;&nbsp;`tmp/`                       | tempDirectory               | -                     | r/w  |     No\*\*  |  Yes\*\*\*| No   |   Yes   |
+
+
+  \* Files persist across app restarts and upgrades, but this directory can 
+     be cleared whenever the OS desires. Your app should be able to recreate any 
+     content that might be deleted.
+
+\*\* Files may persist across app restarts, but do not rely on this behavior. Files 
+     are not guaranteed to persist across updates. Your app should remove files from 
+     this directory when it is applicable, as the OS does not guarantee when (or even 
+     if) these files are removed.
+
+\*\*\* The OS may clear the contents of this directory whenever it feels it is 
+     necessary, but do not rely on this. You should clear this directory as 
+     appropriate for your application.
+
+### Android File System Layout
+
+| Device Path                                     | `cordova.file.*`            | `AndroidExtraFileSystems` | r/w? | persistent? | OS clears | private |
+|:------------------------------------------------|:----------------------------|:--------------------------|:----:|:-----------:|:---------:|:-------:|
+| `file:///android_asset/`                        | applicationDirectory        |                           | r/o  |     N/A     |     N/A   |   Yes   |
+| `/data/data/<app-id>/`                          | applicationStorageDirectory | -                         | r/w  |     N/A     |     N/A   |   Yes   |
+| &nbsp;&nbsp;&nbsp;`cache`                       | cacheDirectory              | cache                     | r/w  |     Yes     |     Yes\* |   Yes   |
+| &nbsp;&nbsp;&nbsp;`files`                       | dataDirectory               | files                     | r/w  |     Yes     |     No    |   Yes   |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Documents` |                             | documents                 | r/w  |     Yes     |     No    |   Yes   |
+| `<sdcard>/`                                     | externalRootDirectory       | sdcard                    | r/w  |     Yes     |     No    |   No    |
+| &nbsp;&nbsp;&nbsp;`Android/data/<app-id>/`      | externalApplicationStorageDirectory | -                 | r/w  |     Yes     |     No    |   No    |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`cache`     | externalCacheDirectry       | cache-external            | r/w  |     Yes     |     No\*\*|   No    |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`files`     | externalDataDirectory       | files-external            | r/w  |     Yes     |     No    |   No    |
+
+\* The OS may periodically clear this directory, but do not rely on this behavior. Clear 
+   the contents of this directory as appropriate for your application. Should a user 
+   purge the cache manually, the contents of this directory are removed.
+
+\*\* The OS does not clear this directory automatically; you are responsible for managing 
+     the contents yourself. Should the user purge the cache manually, the contents of the 
+     directory are removed.
+
+**Note**: If external storage can't be mounted, the `cordova.file.external*` 
+properties are `null`.
+
 ## Android Quirks
 
 ### Android Persistent storage location
