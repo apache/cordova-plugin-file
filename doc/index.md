@@ -238,7 +238,7 @@ unable to access their previously-stored files.
 If your application is new, or has never previously stored files in the
 persistent filesystem, then the `Library` setting is generally recommended.
 
-### Firefox OS Quirks
+## Firefox OS Quirks
 
 The File System API is not natively supported by Firefox OS and is implemented
 as a shim on top of indexedDB. 
