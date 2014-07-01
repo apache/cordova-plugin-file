@@ -204,6 +204,11 @@ persistent filesystem, then the `Internal` setting is generally recommended.
 
 
 ## iOS Quirks
+
+- `cordova.file.applicationStorageDirectory` is read-only; attempting to store 
+  files within the root directory will fail. Use one of the other `cordova.file.*`
+  properties defined for iOS (only `applicationDirectory` and `applicationStorageDirectory` are
+  read-only).
 - `FileReader.readAsText(blob, encoding)`
   - The `encoding` parameter is not supported, and UTF-8 encoding is always in effect.
 
