@@ -177,30 +177,30 @@ This meant that all Cordova apps could see all of the files available on the
 card.
 
 If the SD card was not available, then previous versions would store data under
-/data/data/<packageId>, which isolates apps from each other, but may still
+`/data/data/<packageId>`, which isolates apps from each other, but may still
 cause data to be shared between users.
 
 It is now possible to choose whether to store files in the internal file
 storage location, or using the previous logic, with a preference in your
-application's config.xml file. To do this, add one of these two lines to
-config.xml:
+application's `config.xml` file. To do this, add one of these two lines to
+`config.xml`:
 
     <preference name="AndroidPersistentFileLocation" value="Internal" />
 
     <preference name="AndroidPersistentFileLocation" value="Compatibility" />
 
-Without this line, the File plugin will use "Compatibility" as the default. If
+Without this line, the File plugin will use `Compatibility` as the default. If
 a preference tag is present, and is not one of these values, the application
 will not start.
 
 If your application has previously been shipped to users, using an older (pre-
 1.0) version of this plugin, and has stored files in the persistent filesystem,
-then you should set the preference to "Compatibility". Switching the location to
+then you should set the preference to `Compatibility`. Switching the location to
 "Internal" would mean that existing users who upgrade their application may be
 unable to access their previously-stored files, depending on their device.
 
 If your application is new, or has never previously stored files in the
-persistent filesystem, then the "internal" setting is generally recommended.
+persistent filesystem, then the `Internal` setting is generally recommended.
 
 
 ## iOS Quirks
@@ -218,25 +218,25 @@ files, rather than producing complete documents for export, which is the
 intended purpose of the directory.
 
 It is now possible to choose whether to store files in the documents or library
-directory, with a preference in your application's config.xml file. To do this,
-add one of these two lines to config.xml:
+directory, with a preference in your application's `config.xml` file. To do this,
+add one of these two lines to `config.xml`:
 
     <preference name="iosPersistentFileLocation" value="Library" />
 
     <preference name="iosPersistentFileLocation" value="Compatibility" />
 
-Without this line, the File plugin will use "Compatibility" as the default. If
+Without this line, the File plugin will use `Compatibility` as the default. If
 a preference tag is present, and is not one of these values, the application
 will not start.
 
 If your application has previously been shipped to users, using an older (pre-
 1.0) version of this plugin, and has stored files in the persistent filesystem,
-then you should set the preference to "Compatibility". Switching the location to
-"Library" would mean that existing users who upgrade their application would be
+then you should set the preference to `Compatibility`. Switching the location to
+`Library` would mean that existing users who upgrade their application would be
 unable to access their previously-stored files.
 
 If your application is new, or has never previously stored files in the
-persistent filesystem, then the "Library" setting is generally recommended.
+persistent filesystem, then the `Library` setting is generally recommended.
 
 ### Firefox OS Quirks
 
@@ -273,7 +273,7 @@ to use `entry.toURL()` instead.
 
 For backwards compatibility, the `resolveLocalFileSystemURL()` method will accept a
 device-absolute-path, and will return an `Entry` object corresponding to it, as long as that
-file exists within either the TEMPORARY or PERSISTENT filesystems.
+file exists within either the `TEMPORARY` or `PERSISTENT` filesystems.
 
 This has particularly been an issue with the File-Transfer plugin, which previously used
 device-absolute-paths (and can still accept them). It has been updated to work correctly
@@ -332,4 +332,4 @@ Android also supports a special filesystem named "documents", which represents a
 * bundle: The application's bundle; the location of the app itself on disk (read-only)
 * root: The entire device filesystem
 
-By default, the library and documents directories can be synced to iCloud. You can also request two additional filesystems, "library-nosync" and "documents-nosync", which represent a special non-synced directory within the Library or Documents filesystem.
+By default, the library and documents directories can be synced to iCloud. You can also request two additional filesystems, `library-nosync` and `documents-nosync`, which represent a special non-synced directory within the `/Library` or `/Documents` filesystem.
