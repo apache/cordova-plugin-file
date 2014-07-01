@@ -91,7 +91,9 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
 
 * `cordova.file.externalRootDirectory` - External storage (SD card) root. (_Android_)
 
-`cordova.file.tempDirectory` - Temp directory that the OS can clear at will. (_iOS_)
+* `cordova.file.tempDirectory` - Temp directory that the OS can clear at will. Do not 
+  rely on the OS to clear this directory; your app should always remove files as 
+  applicable. (_iOS_)
 
 * `cordova.file.syncedDataDirectory` - Holds app-specific files that should be synced 
   (e.g. to iCloud). (_iOS_)
