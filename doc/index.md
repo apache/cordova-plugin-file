@@ -62,7 +62,8 @@ As of v1.2.0, URLs to important file-system directories are provided.
 Each URL is in the form _file:///path/to/spot/_, and can be converted to a
 `DirectoryEntry` using `window.resolveLocalFileSystemURL()`.
 
-`cordova.file.applicationDirectory` - Read-only directory where the application is installed. (_iOS_, _Android_)
+* `cordova.file.applicationDirectory` - Read-only directory where the application 
+  is installed. (_iOS_, _Android_)
 
 * `cordova.file.applicationStorageDirectory` - Root directory of the application's 
   sandbox; on iOS this location is read-only (but specific subdirectories [like 
@@ -79,19 +80,24 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
   runs low on storage, nevertheless, apps should not rely on the OS to delete files 
   in here. (_iOS_, _Android_)
 
-`cordova.file.externalApplicationStorageDirectory` - Application space on external storage. (_iOS_, _Android_)
+* `cordova.file.externalApplicationStorageDirectory` - Application space on 
+  external storage. (_Android_)
 
-`cordova.file.externalDataDirectory` - Where to put app-specific data files on external storage. (_Android_)
+* `cordova.file.externalDataDirectory` - Where to put app-specific data files on 
+  external storage. (_Android_)
 
-`cordova.file.externalCacheDirectory` - Application cache on external storage. (_Android_)
+* `cordova.file.externalCacheDirectory` - Application cache on external storage. 
+  (_Android_)
 
-`cordova.file.externalRootDirectory` - External storage (SD card) root. (_Android_)
+* `cordova.file.externalRootDirectory` - External storage (SD card) root. (_Android_)
 
 `cordova.file.tempDirectory` - Temp directory that the OS can clear at will. (_iOS_)
 
-`cordova.file.syncedDataDirectory` - Holds app-specific files that should be synced (e.g. to iCloud). (_iOS_)
+* `cordova.file.syncedDataDirectory` - Holds app-specific files that should be synced 
+  (e.g. to iCloud). (_iOS_)
 
-`cordova.file.documentsDirectory` - Files private to the app, but that are meaningful to other applciations (e.g. Office files). (_iOS_)
+* `cordova.file.documentsDirectory` - Files private to the app, but that are meaningful 
+  to other application (e.g. Office files). (_iOS_)
 
 ## Android Quirks
 
