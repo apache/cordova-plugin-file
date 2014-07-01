@@ -74,7 +74,10 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
   external memory, use `.externalDataDirectory`). On iOS, this directory is not 
   synced with iCloud (use `.syncedDataDirectory`). (_iOS_, _Android_)
 
-`cordova.file.cacheDirectory` - Cached files that should survive app restarts. Apps should not rely on the OS to delete files in here. (_iOS_, _Android_)
+* `cordova.file.cacheDirectory` -  Directory for cached data files or any files 
+  that your app can re-create easily. The OS may delete these files when the device 
+  runs low on storage, nevertheless, apps should not rely on the OS to delete files 
+  in here. (_iOS_, _Android_)
 
 `cordova.file.externalApplicationStorageDirectory` - Application space on external storage. (_iOS_, _Android_)
 
