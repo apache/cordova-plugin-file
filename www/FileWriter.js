@@ -100,9 +100,11 @@ FileWriter.prototype.write = function(data) {
     var that=this;
     var supportsBinary = (typeof window.Blob !== 'undefined' && typeof window.ArrayBuffer !== 'undefined');
     var isBinary;
+    var isWin8 = cordova.platformId === "windows8";
 
     // Check to see if the incoming data is a blob
-    if (data instanceof File || (supportsBinary && data instanceof Blob)) {
+    if ((!isWin8 || !(data instanceof Blob || data instanceof File)) && // ignore if Windows 8
+        (data instanceof File || (supportsBinary && data instanceof Blob))) {
         var fileReader = new FileReader();
         fileReader.onload = function() {
             // Call this method again, with the arraybuffer as argument

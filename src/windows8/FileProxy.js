@@ -31,7 +31,7 @@ var Entry = require('./Entry'),
 
 module.exports = {
 
-    getFileMetadata:function(win,fail,args) {
+    getFileMetadata: function (win, fail, args) {
         var fullPath = args[0];
 
         Windows.Storage.StorageFile.getFileFromPathAsync(fullPath).done(
@@ -49,7 +49,7 @@ module.exports = {
         );
     },
 
-    getMetadata:function(success,fail,args) {
+    getMetadata: function (success, fail, args) {
         var fullPath = args[0];
 
         var dealFile = function (sFile) {
@@ -63,7 +63,10 @@ module.exports = {
             // get the basic properties of the file.
             ).then(
                 function (basicProperties) {
-                    success(basicProperties.dateModified);
+                    success({
+                        modificationTime: basicProperties.dateModified.valueOf(),
+                        size: basicProperties.size
+                    });
                 },
                 function () {
                     fail && fail(FileError.NOT_READABLE_ERR);
@@ -82,7 +85,7 @@ module.exports = {
             // get the basic properties of the folder.
             ).then(
                 function (basicProperties) {
-                    success(basicProperties.dateModified);
+                    success(basicProperties.dateModified.valueOf());
                 },
                 function () {
                     fail && fail(FileError.NOT_FOUND_ERR);
@@ -108,7 +111,7 @@ module.exports = {
         );
     },
 
-    getParent:function(win,fail,args) { // ["fullPath"]
+    getParent: function (win, fail, args) { // ["fullPath"]
         var fullPath = args[0];
 
         var storageFolderPer = Windows.Storage.ApplicationData.current.localFolder;
@@ -132,12 +135,12 @@ module.exports = {
         );
     },
 
-    readAsText:function(win,fail,args) {
+    readAsText: function (win, fail, args) {
         var fileName = args[0],
             enc = args[1],
             startPos = args[2],
             endPos = args[3];
-        
+
         var encoding = Windows.Storage.Streams.UnicodeEncoding.utf8;
         if (enc == 'Utf16LE' || enc == 'utf16LE') {
             encoding = Windows.Storage.Streams.UnicodeEncoding.utf16LE;
@@ -145,29 +148,29 @@ module.exports = {
             encoding = Windows.Storage.Streams.UnicodeEncoding.utf16BE;
         }
 
-        Windows.Storage.StorageFile.getFileFromPathAsync(fileName).then(function(file) {
-                return file.openReadAsync();
-            }).then(function (stream) {
-                startPos = (startPos < 0) ? Math.max(stream.size + startPos, 0) : Math.min(stream.size, startPos);
-                endPos = (endPos < 0) ? Math.max(endPos + stream.size, 0) : Math.min(stream.size, endPos);
-                stream.seek(startPos);
-                
-                var readSize = endPos - startPos,
-                    buffer = new Windows.Storage.Streams.Buffer(readSize);
+        Windows.Storage.StorageFile.getFileFromPathAsync(fileName).then(function (file) {
+            return file.openReadAsync();
+        }).then(function (stream) {
+            startPos = (startPos < 0) ? Math.max(stream.size + startPos, 0) : Math.min(stream.size, startPos);
+            endPos = (endPos < 0) ? Math.max(endPos + stream.size, 0) : Math.min(stream.size, endPos);
+            stream.seek(startPos);
 
-                return stream.readAsync(buffer, readSize, Windows.Storage.Streams.InputStreamOptions.none);
-            }).done(function(buffer) {
-                try{
-                    win(Windows.Security.Cryptography.CryptographicBuffer.convertBinaryToString(encoding, buffer));
-                } catch (e) {
-                    fail && fail(FileError.ENCODING_ERR);
-                }
-            },function() {
-                fail && fail(FileError.NOT_FOUND_ERR);
-            });
+            var readSize = endPos - startPos,
+                buffer = new Windows.Storage.Streams.Buffer(readSize);
+
+            return stream.readAsync(buffer, readSize, Windows.Storage.Streams.InputStreamOptions.none);
+        }).done(function (buffer) {
+            try {
+                win(Windows.Security.Cryptography.CryptographicBuffer.convertBinaryToString(encoding, buffer));
+            } catch (e) {
+                fail && fail(FileError.ENCODING_ERR);
+            }
+        }, function () {
+            fail && fail(FileError.NOT_FOUND_ERR);
+        });
     },
 
-    readAsDataURL:function(win,fail,args) {
+    readAsDataURL: function (win, fail, args) {
         var fileName = args[0];
 
 
@@ -177,7 +180,7 @@ module.exports = {
                     function (buffer) {
                         var strBase64 = Windows.Security.Cryptography.CryptographicBuffer.encodeToBase64String(buffer);
                         //the method encodeToBase64String will add "77u/" as a prefix, so we should remove it
-                        if(String(strBase64).substr(0,4) == "77u/") {
+                        if (String(strBase64).substr(0, 4) == "77u/") {
                             strBase64 = strBase64.substr(4);
                         }
                         var mediaType = storageFile.contentType;
@@ -191,7 +194,7 @@ module.exports = {
         );
     },
 
-    readAsBinaryString:function(win,fail,args) {
+    readAsBinaryString: function (win, fail, args) {
         var fileName = args[0];
 
 
@@ -199,10 +202,10 @@ module.exports = {
             function (storageFile) {
                 Windows.Storage.FileIO.readBufferAsync(storageFile).done(
                     function (buffer) {
-			var dataReader = Windows.Storage.Streams.DataReader.fromBuffer(buffer);
-			var fileContent = dataReader.readString(buffer.length);
-			dataReader.close();
-			win(fileContent);
+                        var dataReader = Windows.Storage.Streams.DataReader.fromBuffer(buffer);
+                        var fileContent = dataReader.readString(buffer.length);
+                        dataReader.close();
+                        win(fileContent);
                     }
                 );
             }, function () {
@@ -211,28 +214,28 @@ module.exports = {
         );
     },
 
-    readAsArrayBuffer:function(win,fail,args) {
+    readAsArrayBuffer: function (win, fail, args) {
         var fileName = args[0];
 
 
         Windows.Storage.StorageFile.getFileFromPathAsync(fileName).then(
             function (storageFile) {
-            	var blob = MSApp.createFileFromStorageFile(storageFile);
-            	var url = URL.createObjectURL(blob, { oneTimeOnly: true });
-            	var xhr = new XMLHttpRequest();
-            	xhr.open("GET", url, true);
-            	xhr.responseType = 'arraybuffer';
-            	xhr.onload = function() {
-            	    win(xhr.response);
-            	};
-            	xhr.send();
+                var blob = MSApp.createFileFromStorageFile(storageFile);
+                var url = URL.createObjectURL(blob, { oneTimeOnly: true });
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET", url, true);
+                xhr.responseType = 'arraybuffer';
+                xhr.onload = function () {
+                    win(xhr.response);
+                };
+                xhr.send();
             }, function () {
                 fail && fail(FileError.NOT_FOUND_ERR);
             }
         );
     },
-    
-    getDirectory:function(win,fail,args) {
+
+    getDirectory: function (win, fail, args) {
         var fullPath = args[0];
         var path = args[1];
         var options = args[2];
@@ -280,7 +283,7 @@ module.exports = {
                             storageFolder.getFileAsync(path).done(
                                 function () {
                                     fail && fail(FileError.TYPE_MISMATCH_ERR);
-                                }, function() {
+                                }, function () {
                                     fail && fail(FileError.NOT_FOUND_ERR);
                                 });
                         }
@@ -292,7 +295,7 @@ module.exports = {
         );
     },
 
-    remove:function(win,fail,args) {
+    remove: function (win, fail, args) {
         var fullPath = args[0];
 
         Windows.Storage.StorageFile.getFileFromPathAsync(fullPath).then(
@@ -334,7 +337,7 @@ module.exports = {
                                         fail && fail(FileError.INVALID_MODIFICATION_ERR);
                                     }
                                 }
-                            // check sub-folders.
+                                // check sub-folders.
                             }).then(function (folderList) {
                                 if (folderList) {
                                     if (folderList.length === 0) {
@@ -358,81 +361,81 @@ module.exports = {
         );
     },
 
-    removeRecursively:function(successCallback,fail,args) {
+    removeRecursively: function (successCallback, fail, args) {
         var fullPath = args[0];
 
         Windows.Storage.StorageFolder.getFolderFromPathAsync(fullPath).done(function (storageFolder) {
-        var storageFolderPer = Windows.Storage.ApplicationData.current.localFolder;
-        var storageFolderTem = Windows.Storage.ApplicationData.current.temporaryFolder;
+            var storageFolderPer = Windows.Storage.ApplicationData.current.localFolder;
+            var storageFolderTem = Windows.Storage.ApplicationData.current.temporaryFolder;
 
-        if (storageFolder.path == storageFolderPer.path || storageFolder.path == storageFolderTem.path) {
-            fail && fail(FileError.NO_MODIFICATION_ALLOWED_ERR);
-            return;
-        }
+            if (storageFolder.path == storageFolderPer.path || storageFolder.path == storageFolderTem.path) {
+                fail && fail(FileError.NO_MODIFICATION_ALLOWED_ERR);
+                return;
+            }
 
-        var removeFolders = function (path) {
-            return new WinJS.Promise(function (complete) {
-                var filePromiseArr = [];
-                var storageFolderTop = null;
-                Windows.Storage.StorageFolder.getFolderFromPathAsync(path).then(
-                    function (storageFolder) {
-                        var fileListPromise = storageFolder.createFileQuery().getFilesAsync();
+            var removeFolders = function (path) {
+                return new WinJS.Promise(function (complete) {
+                    var filePromiseArr = [];
+                    var storageFolderTop = null;
+                    Windows.Storage.StorageFolder.getFolderFromPathAsync(path).then(
+                        function (storageFolder) {
+                            var fileListPromise = storageFolder.createFileQuery().getFilesAsync();
 
-                        storageFolderTop = storageFolder;
-                        return fileListPromise;
-                    }
-                // remove all the files directly under the folder.
-                ).then(function (fileList) {
-                    if (fileList !== null) {
-                        for (var i = 0; i < fileList.length; i++) {
-                            var filePromise = fileList[i].deleteAsync();
-                            filePromiseArr.push(filePromise);
+                            storageFolderTop = storageFolder;
+                            return fileListPromise;
                         }
-                    }
-                    WinJS.Promise.join(filePromiseArr).then(function () {
-                        var folderListPromise = storageFolderTop.createFolderQuery().getFoldersAsync();
-                        return folderListPromise;
-                    // remove empty folders.
-                    }).then(function (folderList) {
-                        var folderPromiseArr = [];
-                        if (folderList.length !== 0) {
-                            for (var j = 0; j < folderList.length; j++) {
-
-                                folderPromiseArr.push(removeFolders(folderList[j].path));
+                    // remove all the files directly under the folder.
+                    ).then(function (fileList) {
+                        if (fileList !== null) {
+                            for (var i = 0; i < fileList.length; i++) {
+                                var filePromise = fileList[i].deleteAsync();
+                                filePromiseArr.push(filePromise);
                             }
-                            WinJS.Promise.join(folderPromiseArr).then(function () {
-                                storageFolderTop.deleteAsync().then(complete);
-                            });
-                        } else {
-                            storageFolderTop.deleteAsync().then(complete);
                         }
+                        WinJS.Promise.join(filePromiseArr).then(function () {
+                            var folderListPromise = storageFolderTop.createFolderQuery().getFoldersAsync();
+                            return folderListPromise;
+                            // remove empty folders.
+                        }).then(function (folderList) {
+                            var folderPromiseArr = [];
+                            if (folderList.length !== 0) {
+                                for (var j = 0; j < folderList.length; j++) {
+
+                                    folderPromiseArr.push(removeFolders(folderList[j].path));
+                                }
+                                WinJS.Promise.join(folderPromiseArr).then(function () {
+                                    storageFolderTop.deleteAsync().then(complete);
+                                });
+                            } else {
+                                storageFolderTop.deleteAsync().then(complete);
+                            }
+                        }, function () { });
                     }, function () { });
-                }, function () { });
-            });
-        };
-        removeFolders(storageFolder.path).then(function () {
-            Windows.Storage.StorageFolder.getFolderFromPathAsync(storageFolder.path).then(
-                function () {},
-                function () {
-                    if (typeof successCallback !== 'undefined' && successCallback !== null) { successCallback(); }
                 });
+            };
+            removeFolders(storageFolder.path).then(function () {
+                Windows.Storage.StorageFolder.getFolderFromPathAsync(storageFolder.path).then(
+                    function () { },
+                    function () {
+                        if (typeof successCallback !== 'undefined' && successCallback !== null) { successCallback(); }
+                    });
             });
         });
     },
 
-    getFile:function(win,fail,args) {
-		//not sure why, but it won't work with normal slashes...
-		var fullPath = args[0].replace(/\//g, '\\');
+    getFile: function (win, fail, args) {
+        //not sure why, but it won't work with normal slashes...
+        var fullPath = args[0].replace(/\//g, '\\');
         var path = args[1].replace(/\//g, '\\');
         var options = args[2];
 
         var completePath = fullPath + '\\' + path;
-		//handles trailing slash and leading slash, or just one or the other
+        //handles trailing slash and leading slash, or just one or the other
         completePath = completePath.replace(/\\\\\\/g, '/').replace(/\\\\/g, '\\');
 
         var fileName = completePath.substring(completePath.lastIndexOf('\\'));
-		
-		//final adjustment
+
+        //final adjustment
         fullPath = completePath.substring(0, completePath.lastIndexOf('\\'));
         path = fileName.replace(/\\/g, '');
 
@@ -486,7 +489,7 @@ module.exports = {
         );
     },
 
-    readEntries:function(win,fail,args) { // ["fullPath"]
+    readEntries: function (win, fail, args) { // ["fullPath"]
         var path = args[0];
 
         var result = [];
@@ -515,7 +518,7 @@ module.exports = {
         }, function () { fail && fail(FileError.NOT_FOUND_ERR); });
     },
 
-    write:function(win,fail,args) {
+    write: function (win, fail, args) {
         var fileName = args[0],
             data = args[1],
             position = args[2],
@@ -524,43 +527,80 @@ module.exports = {
         if (data instanceof ArrayBuffer) {
             data = Array.apply(null, new Uint8Array(data));
         }
-        
-        var writePromise = isBinary ? Windows.Storage.FileIO.writeBytesAsync : Windows.Storage.FileIO.writeTextAsync;
 
-        
+
+
         fileName = fileName.split("/").join("\\");
 
 
         // split path to folder and file name
         var path = fileName.substring(0, fileName.lastIndexOf('\\')),
             file = fileName.split('\\').pop();
-        
+
 
         Windows.Storage.StorageFolder.getFolderFromPathAsync(path).done(
-            function(storageFolder) {
+            function (storageFolder) {
                 storageFolder.createFileAsync(file, Windows.Storage.CreationCollisionOption.openIfExists).done(
-                    function(storageFile) {
-                        writePromise(storageFile, data).
-                            done(function () {
-                                win(data.length);
-                            }, function () {
-                                fail && fail(FileError.INVALID_MODIFICATION_ERR);
-                            });
-                    }, function() {
+                    function (storageFile) {
+                        if (data instanceof Blob || data instanceof File) {
+                            storageFile.openAsync(Windows.Storage.FileAccessMode.readWrite).done(
+                                function (output) {
+                                    var input = data.msDetachStream();
+
+                                    // Copy the stream from the blob to the File stream 
+                                    Windows.Storage.Streams.RandomAccessStream.copyAsync(input, output).then(
+                                        function () {
+                                            output.flushAsync().done(
+                                                function () {
+                                                    input.close();
+                                                    output.close();
+
+                                                    win(data.length);
+                                                },
+                                                function () {
+                                                    fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                                }
+                                            );
+                                        },
+                                        function () {
+                                            fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                        }
+                                    );
+                                },
+                                function () {
+                                    fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                }
+                            );
+                        }
+                        else {
+                            var writePromise = isBinary ? Windows.Storage.FileIO.writeBytesAsync : Windows.Storage.FileIO.writeTextAsync;
+                            writePromise(storageFile, data).done(
+                                function () {
+                                    win(data.length);
+                                },
+                                function () {
+                                    fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                }
+                            );
+                        }
+                    },
+                    function () {
                         fail && fail(FileError.INVALID_MODIFICATION_ERR);
                     }
                 );
-                
-            }, function() {
+
+            },
+            function () {
                 fail && fail(FileError.NOT_FOUND_ERR);
-            });
+            }
+        );
     },
 
-    truncate:function(win,fail,args) { // ["fileName","size"]
+    truncate: function (win, fail, args) { // ["fileName","size"]
         var fileName = args[0];
         var size = args[1];
 
-        Windows.Storage.StorageFile.getFileFromPathAsync(fileName).done(function(storageFile){
+        Windows.Storage.StorageFile.getFileFromPathAsync(fileName).done(function (storageFile) {
             //the current length of the file.
             var leng = 0;
 
@@ -598,7 +638,7 @@ module.exports = {
         }, function () { fail && fail(FileError.NOT_FOUND_ERR); });
     },
 
-    copyTo:function(success,fail,args) { // ["fullPath","parent", "newName"]
+    copyTo: function (success, fail, args) { // ["fullPath","parent", "newName"]
         var srcPath = args[0];
         var parentFullPath = args[1];
         var name = args[2];
@@ -681,7 +721,7 @@ module.exports = {
                                     }
                                     WinJS.Promise.join(filePromiseArr).done(function () {
                                         coreCopy(storageFolderTop, complete);
-                                    }, function() {
+                                    }, function () {
                                         fail && fail(FileError.INVALID_MODIFICATION_ERR);
                                     });
                                 });
@@ -720,7 +760,7 @@ module.exports = {
         );
     },
 
-    moveTo:function(success,fail,args) {
+    moveTo: function (success, fail, args) {
         var srcPath = args[0];
         var parentFullPath = args[1];
         var name = args[2];
@@ -858,11 +898,11 @@ module.exports = {
             }
         );
     },
-    tempFileSystem:null,
+    tempFileSystem: null,
 
-    persistentFileSystem:null,
+    persistentFileSystem: null,
 
-    requestFileSystem:function(win,fail,args) {
+    requestFileSystem: function (win, fail, args) {
         var type = args[0];
         var size = args[1];
 
@@ -892,7 +932,7 @@ module.exports = {
         win(result);
     },
 
-    resolveLocalFileSystemURI:function(success,fail,args) {
+    resolveLocalFileSystemURI: function (success, fail, args) {
         var uri = args[0];
 
         var path = uri;
@@ -918,7 +958,7 @@ module.exports = {
                 return;
             }
         }
-        
+
         // refine path format to make sure it is correct
         path = path.split("/").join("\\");
 
@@ -936,8 +976,8 @@ module.exports = {
             }
         );
     }
-    
+
 
 };
 
-require("cordova/exec/proxy").add("File",module.exports);
+require("cordova/exec/proxy").add("File", module.exports);
