@@ -19,11 +19,21 @@
 
 # org.apache.cordova.file
 
-Dieses Plugin bietet die [HTML5-Dateisystem-API][1]. Verwendung finden Sie unter HTML5 Rocks [FileSystem-Artikel][2] zu diesem Thema. Finden Sie einen Überblick über andere Speicheroptionen Cordovas [Speicher-Führer][3].
+Dieses Plugin implementiert eine File-API, die Lese-/Schreibzugriff Zugriff auf Dateien, die auf dem Gerät befinden.
 
- [1]: http://dev.w3.org/2009/dap/file-system/pub/FileSystem/
- [2]: http://www.html5rocks.com/en/tutorials/file/filesystem/
- [3]: http://cordova.apache.org/docs/en/edge/cordova_storage_storage.md.html
+Dieses Plugin basiert auf mehrere Angaben, einschließlich: die HTML5-File-API <http://www.w3.org/TR/FileAPI/>
+
+Die (heute nicht mehr existierenden) Verzeichnisse und System neuesten Erweiterungen: <http://www.w3.org/TR/2012/WD-file-system-api-20120417/> , obwohl die meisten von den Plugin-Code wurde geschrieben, als eine frühere Spec aktuell waren: <http://www.w3.org/TR/2011/WD-file-system-api-20110419/>
+
+Es implementiert auch die FileWriter Spec: <http://dev.w3.org/2009/dap/file-system/file-writer.html>
+
+Verwendung finden Sie in HTML5 Rocks ausgezeichnete [Dateisystem Artikel.][1]
+
+ [1]: http://www.html5rocks.com/en/tutorials/file/filesystem/
+
+Finden Sie einen Überblick über andere Speicheroptionen Cordovas [Speicher-Führer][2].
+
+ [2]: http://cordova.apache.org/docs/en/edge/cordova_storage_storage.md.html
 
 ## Installation
 
@@ -35,10 +45,10 @@ Dieses Plugin bietet die [HTML5-Dateisystem-API][1]. Verwendung finden Sie unter
 *   Amazon Fire OS
 *   Android
 *   BlackBerry 10
+*   Firefox OS
 *   iOS
 *   Windows Phone 7 und 8 *
 *   Windows 8 *
-*   Firefox OS
 
 * *Diese Plattformen unterstützen nicht `FileReader.readAsArrayBuffer` noch `FileWriter.write(blob)` .*
 
@@ -72,9 +82,9 @@ Stand: V1 werden URLs auf wichtige Datei-System-Verzeichnisse zur Verfügung ges
 
 ### Android permanenten Speicherort
 
-Es gibt mehrere gültige Speicherorte, persistente Dateien auf einem Android-Gerät zu speichern. Finden Sie auf [dieser Seite][4] eine ausführliche Diskussion über die verschiedenen Möglichkeiten.
+Es gibt mehrere gültige Speicherorte, persistente Dateien auf einem Android-Gerät zu speichern. Finden Sie auf [dieser Seite][3] eine ausführliche Diskussion über die verschiedenen Möglichkeiten.
 
- [4]: http://developer.android.com/guide/topics/data/data-storage.html
+ [3]: http://developer.android.com/guide/topics/data/data-storage.html
 
 Frühere Versionen des Plugins wählen würde, den Speicherort der temporären und permanenten Dateien beim Start, basierend auf, ob das Gerät behauptete, dass die SD-Karte (oder gleichwertige Speicherpartition) bereitgestellt wurde. Wenn die SD-Karte eingelegt wurde, oder wenn eine große interne Speicherpartition verfügbar war (wie auf Nexus-Geräten) und dann in die Wurzel dieses Raumes, die persistenten Dateien gespeichert werden. Dies bedeutete, dass alle Cordova apps aller verfügbaren Dateien auf der Karte sehen konnte.
 

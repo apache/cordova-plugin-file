@@ -19,11 +19,21 @@
 
 # org.apache.cordova.file
 
-이 플러그인 [HTML5 파일 시스템 API][1]를 제공합니다. 사용에 대 한 주제에 HTML5 바위 ' [파일 시스템 문서][2] 를 참조 하십시오. 다른 저장소 옵션에 대 한 개요, 코르도바의 [저장소 가이드][3] 를 참조합니다.
+이 플러그인은 장치에 있는 파일에 대 한 읽기/쓰기 액세스를 허용 하는 파일 API를 구현 합니다.
 
- [1]: http://dev.w3.org/2009/dap/file-system/pub/FileSystem/
- [2]: http://www.html5rocks.com/en/tutorials/file/filesystem/
- [3]: http://cordova.apache.org/docs/en/edge/cordova_storage_storage.md.html
+이 플러그인을 포함 한 몇 가지 사양에 따라: HTML5 파일 API는 <http://www.w3.org/TR/FileAPI/>
+
+(지금은 없어진) 디렉터리와 시스템 확장 최신: <http://www.w3.org/TR/2012/WD-file-system-api-20120417/> 플러그인 코드의 대부분은 때 이전 사양 작성 되었습니다 있지만 현재는: <http://www.w3.org/TR/2011/WD-file-system-api-20110419/>
+
+그것은 또한 FileWriter 사양 구현: <http://dev.w3.org/2009/dap/file-system/file-writer.html>
+
+사용을 참조 하십시오 HTML5 바위 ' 우수한 [파일 시스템 문서.][1]
+
+ [1]: http://www.html5rocks.com/en/tutorials/file/filesystem/
+
+다른 저장소 옵션에 대 한 개요, 코르도바의 [저장소 가이드][2] 를 참조합니다.
+
+ [2]: http://cordova.apache.org/docs/en/edge/cordova_storage_storage.md.html
 
 ## 설치
 
@@ -35,10 +45,10 @@
 *   아마존 화재 운영 체제
 *   안 드 로이드
 *   블랙베리 10
+*   Firefox 운영 체제
 *   iOS
 *   Windows Phone 7과 8 *
 *   윈도우 8 *
-*   Firefox 운영 체제
 
 * *가이 플랫폼을 지원 하지 않는 `FileReader.readAsArrayBuffer` 이나 `FileWriter.write(blob)` .*
 
@@ -72,9 +82,9 @@ V1.2.0, 현재 중요 한 파일 시스템 디렉터리에 Url도 제공 됩니�
 
 ### 안 드 로이드 영구 저장 위치
 
-안 드 로이드 장치에 영구 파일을 저장할 여러 유효한 위치가 있다. 다양 한 가능성의 광범위 한 토론에 대 한 [이 페이지][4] 를 참조 하십시오.
+안 드 로이드 장치에 영구 파일을 저장할 여러 유효한 위치가 있다. 다양 한 가능성의 광범위 한 토론에 대 한 [이 페이지][3] 를 참조 하십시오.
 
- [4]: http://developer.android.com/guide/topics/data/data-storage.html
+ [3]: http://developer.android.com/guide/topics/data/data-storage.html
 
 플러그인의 이전 버전을 시작할 때, 장치는 SD 카드 (또는 해당 스토리지 파티션) 탑재 했다 주장 하는 여부에 따라 임시 및 영구 파일의 위치를 선택 합니다. SD 카드 마운트, 또는 큰 내부 스토리지 파티션에 사용할 수 있었습니다 (같은 넥서스 장치에) 그 후에 영구 파일 공간의 루트에 저장 됩니다. 이 모든 코르 도우 바 애플 리 케이 션 카드에 모두 사용할 수 있는 파일을 볼 수 있는 의미 합니다.
 

@@ -19,11 +19,21 @@
 
 # org.apache.cordova.file
 
-このプラグインは、 [HTML5 ファイル システム API][1]を提供します。 使用状況、件名に HTML5 岩 '[ファイルシステムの記事][2]を参照してください。 他のストレージ オプションの概要については、コルドバの[ストレージ ・ ガイド][3]を参照してください。.
+このプラグインは、デバイス上のファイルへの読み取り/書き込みアクセスを許可するファイル API を実装します。
 
- [1]: http://dev.w3.org/2009/dap/file-system/pub/FileSystem/
- [2]: http://www.html5rocks.com/en/tutorials/file/filesystem/
- [3]: http://cordova.apache.org/docs/en/edge/cordova_storage_storage.md.html
+このプラグインを含む、いくつかの仕様に基づいています：、HTML5 File API の<http://www.w3.org/TR/FileAPI/>
+
+（今は亡き) ディレクトリとシステムは、最新の拡張機能: <http://www.w3.org/TR/2012/WD-file-system-api-20120417/>プラグインのコードのほとんどはときに、以前の仕様に書かれていたが現在は： <http://www.w3.org/TR/2011/WD-file-system-api-20110419/>
+
+FileWriter 仕様も実装しています: <http://dev.w3.org/2009/dap/file-system/file-writer.html>
+
+使用法を参照してください HTML5 岩 ' 優秀な[ファイルシステム記事][1]。
+
+ [1]: http://www.html5rocks.com/en/tutorials/file/filesystem/
+
+他のストレージ オプションの概要については、コルドバの[ストレージ ・ ガイド][2]を参照してください。.
+
+ [2]: http://cordova.apache.org/docs/en/edge/cordova_storage_storage.md.html
 
 ## インストール
 
@@ -35,10 +45,10 @@
 *   アマゾン火 OS
 *   アンドロイド
 *   ブラックベリー 10
+*   Firefox の OS
 *   iOS
 *   Windows Phone 7 と 8 *
 *   Windows 8 *
-*   Firefox の OS
 
 **これらのプラットフォームがサポートしていない `FileReader.readAsArrayBuffer` も `FileWriter.write(blob)` .*
 
@@ -72,9 +82,9 @@ V1.2.0、現在重要なファイル システム ディレクトリへの Url �
 
 ### Android の永続的なストレージの場所
 
-Android のデバイスに永続的なファイルを格納する複数の有効な場所があります。 さまざまな可能性について広範な議論のための[このページ][4]を参照してください。
+Android のデバイスに永続的なファイルを格納する複数の有効な場所があります。 さまざまな可能性について広範な議論のための[このページ][3]を参照してください。
 
- [4]: http://developer.android.com/guide/topics/data/data-storage.html
+ [3]: http://developer.android.com/guide/topics/data/data-storage.html
 
 以前のバージョンのプラグインは、デバイスの SD カード （または同等のストレージ パーティション） マウントされていたと主張したかどうかに基づいて、起動時に一時と永続的なファイルの場所を選ぶでしょう。 SD カードがマウントされている場合、または大規模な内部ストレージ パーティションが利用可能な場合 (ようネクサス デバイス上） し、永続的なファイルは、その領域のルートに格納されます。 これはすべての Cordova アプリ見ることができる利用可能なファイルのすべてのカードに意味しました。
 
