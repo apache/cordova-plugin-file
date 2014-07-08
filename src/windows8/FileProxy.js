@@ -354,7 +354,7 @@ module.exports = {
             return;
 
 
-            var storageFolderPer = Windows.Storage.ApplicationData.current.localFoldser;
+            var storageFolderPer = Windows.Storage.ApplicationData.current.localFolder;
             var storageFolderTem = Windows.Storage.ApplicationData.current.temporaryFolder;
 
         if (storageFolder.path == storageFolderPer.path || storageFolder.path == storageFolderTem.path) {
