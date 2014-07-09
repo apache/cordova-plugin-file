@@ -190,10 +190,48 @@ module.exports = {
             });
     },
 
+    readAsBinaryString:function(win,fail,args) {
+        var fileName = cordovaPathToNative((args[0]);
+
+        getFileFromPathAsync(fileName).then(
+            function (storageFile) {
+                Windows.Storage.FileIO.readBufferAsync(storageFile).done(
+                    function (buffer) {
+                        var dataReader = Windows.Storage.Streams.DataReader.fromBuffer(buffer);
+                        var fileContent = dataReader.readString(buffer.length);
+                        dataReader.close();
+                        win(fileContent);
+                    }
+                );
+            }, function () {
+                fail && fail(FileError.NOT_FOUND_ERR);
+            }
+        );
+    },
+
+    readAsArrayBuffer:function(win,fail,args) {
+        var fileName =cordovaPathToNative(args[0]);
+
+        getFileFromPathAsync(fileName).then(
+            function (storageFile) {
+                var blob = MSApp.createFileFromStorageFile(storageFile);
+                var url = URL.createObjectURL(blob, { oneTimeOnly: true });
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET", url, true);
+                xhr.responseType = 'arraybuffer';
+                xhr.onload = function() {
+                    win(xhr.response);
+                };
+                xhr.send();
+            }, function () {
+                fail && fail(FileError.NOT_FOUND_ERR);
+            }
+        );
+    },
+
     readAsDataURL: function (win, fail, args) {
 
         var fileName = cordovaPathToNative(args[0]);
-
 
         getFileFromPathAsync(fileName).then(
             function (storageFile) {
