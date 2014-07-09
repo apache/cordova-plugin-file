@@ -191,7 +191,7 @@ module.exports = {
     },
 
     readAsBinaryString:function(win,fail,args) {
-        var fileName = cordovaPathToNative((args[0]);
+        var fileName = cordovaPathToNative(args[0]);
 
         getFileFromPathAsync(fileName).then(
             function (storageFile) {
