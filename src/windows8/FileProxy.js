@@ -64,11 +64,11 @@ module.exports = {
                     function (basicProperties) {
                         win(new File(storageFile.name, storageFile.path, storageFile.fileType, basicProperties.dateModified, basicProperties.size));
                     }, function () {
-                        fail && fail(FileError.NOT_READABLE_ERR);
+                        fail(FileError.NOT_READABLE_ERR);
                     }
                 );
             }, function () {
-                fail && fail(FileError.NOT_FOUND_ERR);
+                fail(FileError.NOT_FOUND_ERR);
             }
         );
     },
@@ -83,7 +83,7 @@ module.exports = {
                     return storageFile.getBasicPropertiesAsync();
                 },
                 function () {
-                    fail && fail(FileError.NOT_READABLE_ERR);
+                    fail(FileError.NOT_READABLE_ERR);
                 }
             // get the basic properties of the file.
             ).then(
@@ -91,7 +91,7 @@ module.exports = {
                     success(basicProperties.dateModified);
                 },
                 function () {
-                    fail && fail(FileError.NOT_READABLE_ERR);
+                    fail(FileError.NOT_READABLE_ERR);
                 }
             );
         };
@@ -102,7 +102,7 @@ module.exports = {
                     return storageFolder.getBasicPropertiesAsync();
                 },
                 function () {
-                    fail && fail(FileError.NOT_READABLE_ERR);
+                    fail(FileError.NOT_READABLE_ERR);
                 }
             // get the basic properties of the folder.
             ).then(
@@ -110,7 +110,7 @@ module.exports = {
                     success(basicProperties.dateModified);
                 },
                 function () {
-                    fail && fail(FileError.NOT_FOUND_ERR);
+                    fail(FileError.NOT_FOUND_ERR);
                 }
             );
         };
@@ -126,7 +126,7 @@ module.exports = {
                     function (sFolder) {
                         dealFolder(sFolder);
                     }, function () {
-                        fail && fail(FileError.NOT_FOUND_ERR);
+                        fail(FileError.NOT_FOUND_ERR);
                     }
                 );
             }
@@ -154,7 +154,7 @@ module.exports = {
         var result = new DirectoryEntry(popItem, fullPath.substr(0, fullPath.length - popItem.length - 1));
         getFolderFromPathAsync(result.fullPath).done(
             function () { win(result); },
-            function () { fail && fail(FileError.INVALID_STATE_ERR); }
+            function () { fail(FileError.INVALID_STATE_ERR); }
         );
     },
 
@@ -186,7 +186,7 @@ module.exports = {
             }).done(function(buffer) {
                 win(Windows.Security.Cryptography.CryptographicBuffer.convertBinaryToString(encoding, buffer));
             },function() {
-                fail && fail(FileError.NOT_FOUND_ERR);
+                fail(FileError.NOT_FOUND_ERR);
             });
     },
 
@@ -204,7 +204,7 @@ module.exports = {
                     }
                 );
             }, function () {
-                fail && fail(FileError.NOT_FOUND_ERR);
+                fail(FileError.NOT_FOUND_ERR);
             }
         );
     },
@@ -224,7 +224,7 @@ module.exports = {
                 };
                 xhr.send();
             }, function () {
-                fail && fail(FileError.NOT_FOUND_ERR);
+                fail(FileError.NOT_FOUND_ERR);
             }
         );
     },
@@ -248,7 +248,7 @@ module.exports = {
                     }
                 );
             }, function () {
-                fail && fail(FileError.NOT_FOUND_ERR);
+                fail(FileError.NOT_FOUND_ERR);
             }
         );
     },
@@ -273,7 +273,7 @@ module.exports = {
                         function (storageFolder) {
                             win(new DirectoryEntry(storageFolder.name, storageFolder.path));
                         }, function () {
-                            fail && fail(FileError.PATH_EXISTS_ERR);
+                            fail(FileError.PATH_EXISTS_ERR);
                         }
                     );
                 } else if (flag.create === true && flag.exclusive === false) {
@@ -281,12 +281,12 @@ module.exports = {
                         function (storageFolder) {
                             win(new DirectoryEntry(storageFolder.name, storageFolder.path + "/"));
                         }, function () {
-                            fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                            fail(FileError.INVALID_MODIFICATION_ERR);
                         }
                     );
                 } else if (flag.create === false) {
                     if (/\?|\\|\*|\||\"|<|>|\:|\//g.test(path)) {
-                        fail && fail(FileError.ENCODING_ERR);
+                        fail(FileError.ENCODING_ERR);
                         return;
                     }
 
@@ -297,15 +297,15 @@ module.exports = {
                             // check if path actually points to a file
                             storageFolder.getFileAsync(path).done(
                                 function () {
-                                    fail && fail(FileError.TYPE_MISMATCH_ERR);
+                                    fail(FileError.TYPE_MISMATCH_ERR);
                                 }, function() {
-                                    fail && fail(FileError.NOT_FOUND_ERR);
+                                    fail(FileError.NOT_FOUND_ERR);
                                 });
                         }
                     );
                 }
             }, function () {
-                fail && fail(FileError.NOT_FOUND_ERR);
+                fail(FileError.NOT_FOUND_ERR);
             }
         );
     },
@@ -318,7 +318,7 @@ module.exports = {
             function (sFile) {
                 getFileFromPathAsync(fullPath).done(function (storageFile) {
                     storageFile.deleteAsync().done(win, function () {
-                        fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                        fail(FileError.INVALID_MODIFICATION_ERR);
 
                     });
                 });
@@ -335,13 +335,13 @@ module.exports = {
                                     var storageFolderPer = Windows.Storage.ApplicationData.current.localFolder;
                                     var storageFolderTem = Windows.Storage.ApplicationData.current.temporaryFolder;
                                     if (fullPath == storageFolderPer.path || fullPath == storageFolderTem.path) {
-                                        fail && fail(FileError.NO_MODIFICATION_ALLOWED_ERR);
+                                        fail(FileError.NO_MODIFICATION_ALLOWED_ERR);
                                         return;
                                     }
                                     storageFolderTop = storageFolder;
                                     return storageFolder.createFileQuery().getFilesAsync();
                                 }, function () {
-                                    fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                    fail(FileError.INVALID_MODIFICATION_ERR);
 
                                 }
                             // check sub-files.
@@ -350,7 +350,7 @@ module.exports = {
                                     if (fileList.length === 0) {
                                         return storageFolderTop.createFolderQuery().getFoldersAsync();
                                     } else {
-                                        fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                        fail(FileError.INVALID_MODIFICATION_ERR);
                                     }
                                 }
                             // check sub-folders.
@@ -358,11 +358,11 @@ module.exports = {
                                 if (folderList) {
                                     if (folderList.length === 0) {
                                         storageFolderTop.deleteAsync().done(win, function () {
-                                            fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                            fail(FileError.INVALID_MODIFICATION_ERR);
 
                                         });
                                     } else {
-                                        fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                        fail(FileError.INVALID_MODIFICATION_ERR);
                                     }
                                 }
 
@@ -370,7 +370,7 @@ module.exports = {
                         };
                         removeEntry();
                     }, function () {
-                        fail && fail(FileError.NOT_FOUND_ERR);
+                        fail(FileError.NOT_FOUND_ERR);
                     }
                 );
             }
@@ -396,7 +396,7 @@ module.exports = {
             var storageFolderTem = Windows.Storage.ApplicationData.current.temporaryFolder;
 
         if (storageFolder.path == storageFolderPer.path || storageFolder.path == storageFolderTem.path) {
-            fail && fail(FileError.NO_MODIFICATION_ALLOWED_ERR);
+            fail(FileError.NO_MODIFICATION_ALLOWED_ERR);
             return;
         }
 
@@ -485,7 +485,7 @@ module.exports = {
                         function (storageFile) {
                             win(new FileEntry(storageFile.name, storageFile.path));
                         }, function () {
-                            fail && fail(FileError.PATH_EXISTS_ERR);
+                            fail(FileError.PATH_EXISTS_ERR);
                         }
                     );
                 } else if (flag.create === true && flag.exclusive === false) {
@@ -493,12 +493,12 @@ module.exports = {
                         function (storageFile) {
                             win(new FileEntry(storageFile.name, storageFile.path));
                         }, function () {
-                            fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                            fail(FileError.INVALID_MODIFICATION_ERR);
                         }
                     );
                 } else if (flag.create === false) {
                     if (/\?|\\|\*|\||\"|<|>|\:|\//g.test(path)) {
-                        fail && fail(FileError.ENCODING_ERR);
+                        fail(FileError.ENCODING_ERR);
                         return;
                     }
                     storageFolder.getFileAsync(path).done(
@@ -508,15 +508,15 @@ module.exports = {
                             // check if path actually points to a folder
                             storageFolder.getFolderAsync(path).done(
                                 function () {
-                                    fail && fail(FileError.TYPE_MISMATCH_ERR);
+                                    fail(FileError.TYPE_MISMATCH_ERR);
                                 }, function () {
-                                    fail && fail(FileError.NOT_FOUND_ERR);
+                                    fail(FileError.NOT_FOUND_ERR);
                                 });
                         }
                     );
                 }
             }, function () {
-                fail && fail(FileError.NOT_FOUND_ERR);
+                fail(FileError.NOT_FOUND_ERR);
             }
         );
     },
@@ -548,7 +548,7 @@ module.exports = {
                 win(result);
             });
 
-        }, function () { fail && fail(FileError.NOT_FOUND_ERR); });
+        }, function () { fail(FileError.NOT_FOUND_ERR); });
     },
 
     write: function (win, fail, args) {
@@ -581,15 +581,15 @@ module.exports = {
                             done(function () {
                                 win(data.length);
                             }, function () {
-                                fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                fail(FileError.INVALID_MODIFICATION_ERR);
                             });
                     }, function() {
-                        fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                        fail(FileError.INVALID_MODIFICATION_ERR);
                     }
                 );
                 
             }, function() {
-                fail && fail(FileError.NOT_FOUND_ERR);
+                fail(FileError.NOT_FOUND_ERR);
             });
     },
 
@@ -624,16 +624,16 @@ module.exports = {
                                     Windows.Storage.FileIO.writeTextAsync(newStorageFile, fileContent).done(function () {
                                         win(String(fileContent).length);
                                     }, function () {
-                                        fail && fail(FileError.NO_MODIFICATION_ALLOWED_ERR);
+                                        fail(FileError.NO_MODIFICATION_ALLOWED_ERR);
                                     });
                                 });
                             });
                         };
                         entry.getParent(successCallBack, null);
-                    }, function () { fail && fail(FileError.NOT_FOUND_ERR); });
+                    }, function () { fail(FileError.NOT_FOUND_ERR); });
                 }
             });
-        }, function () { fail && fail(FileError.NOT_FOUND_ERR); });
+        }, function () { fail(FileError.NOT_FOUND_ERR); });
     },
 
     copyTo: function (success, fail, args) { // ["fullPath","parent", "newName"]
@@ -644,7 +644,7 @@ module.exports = {
 
         //name can't be invalid
         if (/\?|\\|\*|\||\"|<|>|\:|\//g.test(name)) {
-            fail && fail(FileError.ENCODING_ERR);
+            fail(FileError.ENCODING_ERR);
             return;
         }
         // copy
@@ -658,18 +658,18 @@ module.exports = {
                         return getFolderFromPathAsync(parentPath);
                     }, function () {
 
-                        fail && fail(FileError.NOT_FOUND_ERR);
+                        fail(FileError.NOT_FOUND_ERR);
                     }).then(function (storageFolder) {
                         storageFileTop.copyAsync(storageFolder, name, Windows.Storage.NameCollisionOption.failIfExists).then(function (storageFile) {
 
                             success(new FileEntry(storageFile.name, storageFile.path));
                         }, function () {
 
-                            fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                            fail(FileError.INVALID_MODIFICATION_ERR);
                         });
                     }, function () {
 
-                        fail && fail(FileError.NOT_FOUND_ERR);
+                        fail(FileError.NOT_FOUND_ERR);
                     });
                 };
                 var copyFinish = function (srcPath, parentPath) {
@@ -721,7 +721,7 @@ module.exports = {
                                     WinJS.Promise.join(filePromiseArr).done(function () {
                                         coreCopy(storageFolderTop, complete);
                                     }, function() {
-                                        fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                        fail(FileError.INVALID_MODIFICATION_ERR);
                                     });
                                 });
                             });
@@ -731,12 +731,12 @@ module.exports = {
                                 storageFolder.createFolderAsync(name, Windows.Storage.CreationCollisionOption.openIfExists).then(function (newStorageFolder) {
                                     //can't copy onto itself
                                     if (srcPath == newStorageFolder.path) {
-                                        fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                        fail(FileError.INVALID_MODIFICATION_ERR);
                                         return;
                                     }
                                     //can't copy into itself
                                     if (srcPath == parentPath) {
-                                        fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                        fail(FileError.INVALID_MODIFICATION_ERR);
                                         return;
                                     }
                                     copyFiles(srcPath, newStorageFolder.path).then(function () {
@@ -744,15 +744,15 @@ module.exports = {
                                             function (storageFolder) {
                                                 success(new DirectoryEntry(storageFolder.name, storageFolder.path));
                                             },
-                                            function () { fail && fail(FileError.NOT_FOUND_ERR); }
+                                            function () { fail(FileError.NOT_FOUND_ERR); }
                                         );
                                     });
-                                }, function () { fail && fail(FileError.INVALID_MODIFICATION_ERR); });
-                            }, function () { fail && fail(FileError.INVALID_MODIFICATION_ERR); });
+                                }, function () { fail(FileError.INVALID_MODIFICATION_ERR); });
+                            }, function () { fail(FileError.INVALID_MODIFICATION_ERR); });
                         };
                         copyFinish(srcPath, parentFullPath);
                     }, function () {
-                        fail && fail(FileError.NOT_FOUND_ERR);
+                        fail(FileError.NOT_FOUND_ERR);
                     }
                 );
             }
@@ -768,7 +768,7 @@ module.exports = {
 
         //name can't be invalid
         if (/\?|\\|\*|\||\"|<|>|\:|\//g.test(name)) {
-            fail && fail(FileError.ENCODING_ERR);
+            fail(FileError.ENCODING_ERR);
             return;
         }
 
@@ -781,21 +781,21 @@ module.exports = {
                         storageFileTop = storageFile;
                         return getFolderFromPathAsync(parentPath);
                     }, function () {
-                        fail && fail(FileError.NOT_FOUND_ERR);
+                        fail(FileError.NOT_FOUND_ERR);
                     }).then(function (storageFolder) {
                         storageFileTop.moveAsync(storageFolder, name, Windows.Storage.NameCollisionOption.replaceExisting).then(function () {
                             success(new FileEntry(name, storageFileTop.path));
                         }, function () {
-                            fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                            fail(FileError.INVALID_MODIFICATION_ERR);
                         });
                     }, function () {
-                        fail && fail(FileError.NOT_FOUND_ERR);
+                        fail(FileError.NOT_FOUND_ERR);
                     });
                 };
                 var moveFinish = function (srcPath, parentPath) {
                     //can't copy onto itself
                     if (srcPath == parentPath + "\\" + name) {
-                        fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                        fail(FileError.INVALID_MODIFICATION_ERR);
                         return;
                     }
                     moveFiles(srcPath, parentFullPath);
@@ -855,27 +855,27 @@ module.exports = {
                                 originFolderTop = originFolder;
                                 return getFolderFromPathAsync(parentPath);
                             }, function () {
-                                fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                fail(FileError.INVALID_MODIFICATION_ERR);
                             }).then(function (storageFolder) {
                                 return storageFolder.createFolderAsync(name, Windows.Storage.CreationCollisionOption.openIfExists);
                             }, function () {
-                                fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                fail(FileError.INVALID_MODIFICATION_ERR);
                             }).then(function (newStorageFolder) {
                                 //can't move onto directory that is not empty
                                 newStorageFolder.createFileQuery().getFilesAsync().then(function (fileList) {
                                     newStorageFolder.createFolderQuery().getFoldersAsync().then(function (folderList) {
                                         if (fileList.length !== 0 || folderList.length !== 0) {
-                                            fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                            fail(FileError.INVALID_MODIFICATION_ERR);
                                             return;
                                         }
                                         //can't copy onto itself
                                         if (srcPath == newStorageFolder.path) {
-                                            fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                            fail(FileError.INVALID_MODIFICATION_ERR);
                                             return;
                                         }
                                         //can't copy into itself
                                         if (srcPath == parentPath) {
-                                            fail && fail(FileError.INVALID_MODIFICATION_ERR);
+                                            fail(FileError.INVALID_MODIFICATION_ERR);
                                             return;
                                         }
                                         moveFiles(srcPath, newStorageFolder.path).then(function () {
@@ -887,12 +887,12 @@ module.exports = {
                                         }, function () { console.log("error!"); });
                                     });
                                 });
-                            }, function () { fail && fail(FileError.INVALID_MODIFICATION_ERR); });
+                            }, function () { fail(FileError.INVALID_MODIFICATION_ERR); });
 
                         };
                         moveFinish(srcPath, parentFullPath);
                     }, function () {
-                        fail && fail(FileError.NOT_FOUND_ERR);
+                        fail(FileError.NOT_FOUND_ERR);
                     }
                 );
             }
@@ -924,7 +924,7 @@ module.exports = {
 
         var MAX_SIZE = 10000000000;
         if (size > MAX_SIZE) {
-            fail && fail(FileError.QUOTA_EXCEEDED_ERR);
+            fail(FileError.QUOTA_EXCEEDED_ERR);
             return;
         }
 
@@ -956,7 +956,7 @@ module.exports = {
             // method should not let read files outside of the [APP HASH]/Local or [APP HASH]/temp folders
             if (path.indexOf(Windows.Storage.ApplicationData.current.temporaryFolder.path) != 0 &&
                 path.indexOf(Windows.Storage.ApplicationData.current.localFolder.path) != 0) {
-                fail && fail(FileError.ENCODING_ERR);
+                fail(FileError.ENCODING_ERR);
                 return;
             }
         }
@@ -969,7 +969,7 @@ module.exports = {
                     function (storageFolder) {
                         success(new DirectoryEntry(storageFolder.name, storageFolder.path + "/", null, storageFolder.path + "/"));
                     }, function () {
-                        fail && fail(FileError.NOT_FOUND_ERR);
+                        fail(FileError.NOT_FOUND_ERR);
                     }
                 );
             }
