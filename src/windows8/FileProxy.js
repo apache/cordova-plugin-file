@@ -940,3 +940,5 @@ module.exports = {
     
 
 };
+
+require("cordova/exec/proxy").add("File",module.exports);
