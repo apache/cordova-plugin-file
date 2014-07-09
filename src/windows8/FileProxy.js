@@ -43,13 +43,8 @@ function nativePathToCordova(path) {
     return cleanPath;
 };
 
-function getFolderFromPathAsync(path) {
-    return Windows.Storage.StorageFolder.getFolderFromPathAsync(path);
-};
-
-function getFileFromPathAsync(path) {
-    return Windows.Storage.StorageFile.getFileFromPathAsync(path);
-};
+var getFolderFromPathAsync = Windows.Storage.StorageFolder.getFolderFromPathAsync;
+var getFileFromPathAsync = Windows.Storage.StorageFile.getFileFromPathAsync;
 
 
 module.exports = {
