@@ -82,12 +82,10 @@ exports.defineAutoTests = function () {
                 console.log(JSON.stringify(e));
             };
             window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
-                console.log('File API test Init: Setting PERSISTENT FS.');
                 root = fileSystem.root;
                 // set in file.tests.js
                 persistent_root = root;
                 window.requestFileSystem(LocalFileSystem.TEMPORARY, 0, function (fileSystem) {
-                    console.log('File API test Init: Setting TEMPORARY FS.');
                     temp_root = fileSystem.root;
                     // set in file.tests.js
                     done();
@@ -98,7 +96,7 @@ exports.defineAutoTests = function () {
         // deletes specified file or directory
         var deleteEntry = function (name, success, error) {
             // deletes entry, if it exists
-            window.resolveLocalFileSystemURI(root.toURL() + '/' + name, function (entry) {
+            window.resolveLocalFileSystemURL(root.toURL() + '/' + name, function (entry) {
                 if (entry.isDirectory === true) {
                     entry.removeRecursively(success, error);
                 } else {
@@ -225,9 +223,9 @@ exports.defineAutoTests = function () {
                     window.requestFileSystem(-1, 0, succeed.bind(null, done, 'window.requestFileSystem'), fail);
                 });
             });
-            describe('window.resolveLocalFileSystemURI', function () {
+            describe('window.resolveLocalFileSystemURL', function () {
                 it("file.spec.8 should be defined", function () {
-                    expect(window.resolveLocalFileSystemURI).toBeDefined();
+                    expect(window.resolveLocalFileSystemURL).toBeDefined();
                 });
                 it("file.spec.9 should resolve a valid file name", function (done) {
                     var fileName = 'file.spec.9';
@@ -280,7 +278,7 @@ exports.defineAutoTests = function () {
                     };
                     // create a new file entry
                     createFile(fileName, function (entry) {
-                        window.resolveLocalFileSystemURI(entry.toURL() + "?1234567890", win, failed.bind(null, done, 'window.resolveLocalFileSystemURI - Error resolving file URI: ' + entry.toURL()));
+                        window.resolveLocalFileSystemURL(entry.toURL() + "?1234567890", win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving file URI: ' + entry.toURL()));
                     }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
                 });
                 it("file.spec.11 should error (NOT_FOUND_ERR) when resolving (non-existent) invalid file name", function (done) {
@@ -291,7 +289,7 @@ exports.defineAutoTests = function () {
                         done();
                     };
                     // lookup file system entry
-                    window.resolveLocalFileSystemURI(fileName, succeed.bind(null, done, 'window.resolveLocalFileSystemURI - Error unexpected callback resolving file URI: ' + fileName), fail);
+                    window.resolveLocalFileSystemURL(fileName, succeed.bind(null, done, 'window.resolveLocalFileSystemURL - Error unexpected callback resolving file URI: ' + fileName), fail);
                 });
                 it("file.spec.12 should error (ENCODING_ERR) when resolving invalid URI with leading /", function (done) {
                     var fileName = "/this.is.not.a.valid.url",
@@ -301,7 +299,7 @@ exports.defineAutoTests = function () {
                         done();
                     };
                     // lookup file system entry
-                    window.resolveLocalFileSystemURI(fileName, succeed.bind(null, done, 'window.resolveLocalFileSystemURI - Error unexpected callback resolving file URI: ' + fileName), fail);
+                    window.resolveLocalFileSystemURL(fileName, succeed.bind(null, done, 'window.resolveLocalFileSystemURL - Error unexpected callback resolving file URI: ' + fileName), fail);
                 });
             });
         });
@@ -343,7 +341,7 @@ exports.defineAutoTests = function () {
                     expect(entry.removeRecursively).toBeDefined();
                     done();
                 };
-                window.resolveLocalFileSystemURI(root.toURL(), win, failed.bind(null, done, 'window.resolveLocalFileSystemURI - Error resolving file URI: ' + root.toURL()));
+                window.resolveLocalFileSystemURL(root.toURL(), win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving file URI: ' + root.toURL()));
             });
         });
         describe('DirectoryEntry', function () {
@@ -496,7 +494,7 @@ exports.defineAutoTests = function () {
                     create : false
                 }, succeed.bind(null, done, 'root.getDirectory - Error unexpected callback, directory should not exists: ' + dirName), fail);
             });
-            it("file.spec.24 DirectoryEntry.getDirectory: create new dir with space then resolveFileSystemURI", function (done) {
+            it("file.spec.24 DirectoryEntry.getDirectory: create new dir with space then resolveLocalFileSystemURL", function (done) {
                 var dirName = "de create dir",
                 dirPath = joinURL(root.fullPath, encodeURIComponent(dirName)),
                 getDir = function (dirEntry) {
@@ -504,7 +502,7 @@ exports.defineAutoTests = function () {
                     expect(dirEntry.filesystem).toBe(root.filesystem);
                     var dirURI = dirEntry.toURL();
                     // now encode URI and try to resolve
-                    window.resolveLocalFileSystemURI(dirURI, win, failed.bind(null, done, 'window.resolveLocalFileSystemURI - getDir function - Error resolving directory: ' + dirURI));
+                    window.resolveLocalFileSystemURL(dirURI, win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - getDir function - Error resolving directory: ' + dirURI));
                 },
                 win = function (directory) {
                     expect(directory).toBeDefined();
@@ -527,13 +525,13 @@ exports.defineAutoTests = function () {
             // handled by the implementation.
             // If a particular platform uses paths internally rather than URLs, // then that platform should careful to pass them correctly to its
             // backend.
-            xit("file.spec.25 DirectoryEntry.getDirectory: create new dir with space resolveFileSystemURI with encoded URI", function (done) {
+            xit("file.spec.25 DirectoryEntry.getDirectory: create new dir with space resolveLocalFileSystemURL with encoded URI", function (done) {
                 var dirName = "de create dir2",
                 dirPath = joinURL(root.fullPath, dirName),
                 getDir = function (dirEntry) {
                     var dirURI = dirEntry.toURL();
                     // now encode URI and try to resolve
-                    window.resolveLocalFileSystemURI(encodeURI(dirURI), win, failed.bind(null, done, 'window.resolveLocalFileSystemURI - getDir function - Error resolving directory: ' + dirURI));
+                    window.resolveLocalFileSystemURL(encodeURI(dirURI), win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - getDir function - Error resolving directory: ' + dirURI));
                 },
                 win = function (directory) {
                     expect(directory).toBeDefined();
@@ -2643,12 +2641,12 @@ exports.defineAutoTests = function () {
                      * paths are still valid.
                      */
                     cordova.exec(function (localPath) {
-                        window.resolveLocalFileSystemURI("file://" + encodeURI(localPath), function (fileEntry) {
+                        window.resolveLocalFileSystemURL("file://" + encodeURI(localPath), function (fileEntry) {
                             expect(fileEntry.toURL()).toEqual(originalEntry.toURL());
                             // cleanup
                             deleteFile(localFilename);
                             done();
-                        }, failed.bind(null, done, 'window.resolveLocalFileSystemURI - Error resolving URI: file://' + encodeURI(localPath)));
+                        }, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving URI: file://' + encodeURI(localPath)));
                     }, unsupportedOperation, 'File', '_getLocalFilesystemPath', [entry.toURL()]);
                 }, failed.bind(null, done, 'root.getFile - Error creating file: ' + localFilename));
                 if (unsupportedOperation) {
@@ -2668,13 +2666,13 @@ exports.defineAutoTests = function () {
                 // create a new file entry
                 createFile("../" + fileName, function (entry) {
                     // lookup file system entry
-                    window.resolveLocalFileSystemURI(entry.toURL(), function (fileEntry) {
+                    window.resolveLocalFileSystemURL(entry.toURL(), function (fileEntry) {
                         expect(fileEntry).toBeDefined();
                         expect(fileEntry.name).toCanonicallyMatch(fileName);
                         // cleanup
                         deleteEntry(fileName);
                         done();
-                    }, failed.bind(null, done, 'window.resolveLocalFileSystemURI - Error resolving URI: ' + entry.toURL()));
+                    }, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving URI: ' + entry.toURL()));
                 }, failed.bind(null, done, 'createFile - Error creating file: ../' + fileName));
             });
             it("file.spec.111 should not traverse above above the root directory", function (done) {
