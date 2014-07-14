@@ -857,7 +857,7 @@ exports.defineAutoTests = function () {
         describe('FileEntry', function () {
             it("file.spec.41 should be define FileEntry methods", function (done) {
                 var fileName = "fe.methods",
-                itFileEntry = function (fileEntry) {
+                testFileEntry = function (fileEntry) {
                     expect(fileEntry).toBeDefined();
                     expect(typeof fileEntry.createWriter).toBe('function');
                     expect(typeof fileEntry.file).toBe('function');
@@ -868,30 +868,30 @@ exports.defineAutoTests = function () {
                 // create a new file entry to kick off it
                 root.getFile(fileName, {
                     create : true
-                }, itFileEntry, failed.bind(null, done, 'root.getFile - Error creating file : ' + fileName));
+                }, testFileEntry, failed.bind(null, done, 'root.getFile - Error creating file : ' + fileName));
             });
             it("file.spec.42 createWriter should return a FileWriter object", function (done) {
                 var fileName = "fe.createWriter",
-                itFile,
-                itWriter = function (writer) {
+                testFile,
+                testWriter = function (writer) {
                     expect(writer).toBeDefined();
                     expect(writer instanceof FileWriter).toBe(true);
                     // cleanup
-                    itFile.remove(null, null);
+                    testFile.remove(null, null);
                     done();
                 };
                 // create a new file entry to kick off it
                 root.getFile(fileName, {
                     create : true
                 }, function (fileEntry) {
-                    itFile = fileEntry;
-                    fileEntry.createWriter(itWriter, failed.bind(null, done, 'fileEntry.createWriter - Error creating Writer from entry'));
+                    testFile = fileEntry;
+                    fileEntry.createWriter(testWriter, failed.bind(null, done, 'fileEntry.createWriter - Error creating Writer from entry'));
                 }, failed.bind(null, done, 'root.getFile - Error creating file : ' + fileName));
             });
             it("file.spec.43 file should return a File object", function (done) {
                 var fileName = "fe.file",
                 newFile,
-                itFile = function (file) {
+                testFile = function (file) {
                     expect(file).toBeDefined();
                     expect(file instanceof File).toBe(true);
                     // cleanup
@@ -903,7 +903,7 @@ exports.defineAutoTests = function () {
                     create : true
                 }, function (fileEntry) {
                     newFile = fileEntry;
-                    fileEntry.file(itFile, failed.bind(null, done, 'fileEntry.file - Error reading file using fileEntry: ' + fileEntry.name));
+                    fileEntry.file(testFile, failed.bind(null, done, 'fileEntry.file - Error reading file using fileEntry: ' + fileEntry.name));
                 }, failed.bind(null, done, 'root.getFile - Error creating file : ' + fileName));
             });
             it("file.spec.44 file: on File that has been removed", function (done) {
@@ -1356,7 +1356,7 @@ exports.defineAutoTests = function () {
                             root.getFile(file1, {
                                 create : false
                             }, succeed.bind(null, done, 'root.getFile - Unexpected success callback, it should not get invalid or moved file: ' + file1), function (error) {
-                                //expect(navigator.fileMgr.itFileExists(srcPath) === false, "original file should not exist.");
+                                //expect(navigator.fileMgr.testFileExists(srcPath) === false, "original file should not exist.");
                                 expect(error).toBeDefined();
                                 expect(error).toBeFileError(FileError.NOT_FOUND_ERR);
                                 // cleanup
@@ -1388,7 +1388,7 @@ exports.defineAutoTests = function () {
                                 expect(entry.isDirectory).toBe(false);
                                 expect(entry.fullPath).toCanonicallyMatch(dstPath);
                                 expect(entry.name).toCanonicallyMatch(file1);
-                                // it the moved file exists
+                                // test the moved file exists
                                 directory.getFile(file1, {
                                     create : false
                                 }, function (fileEntry) {
@@ -1432,7 +1432,7 @@ exports.defineAutoTests = function () {
                                 expect(directory.isDirectory).toBe(true);
                                 expect(directory.fullPath).toCanonicallyMatch(dstPath);
                                 expect(directory.name).toCanonicallyMatch(dstDir);
-                                // it that moved file exists in destination dir
+                                // test that moved file exists in destination dir
                                 directory.getFile(file1, {
                                     create : false
                                 }, function (fileEntry) {
@@ -1522,13 +1522,13 @@ exports.defineAutoTests = function () {
                                 expect(dirEntry.isDirectory).toBe(true);
                                 expect(dirEntry.fullPath).toCanonicallyMatch(dstPath);
                                 expect(dirEntry.name).toCanonicallyMatch(dstDir);
-                                // it that moved file exists in destination dir
+                                // test that moved file exists in destination dir
                                 dirEntry.getFile(file1, {
                                     create : false
                                 }, function (fileEntry) {
                                     expect(fileEntry).toBeDefined();
                                     expect(fileEntry.fullPath).toCanonicallyMatch(filePath);
-                                    // it that the moved file no longer exists in original dir
+                                    // test that the moved file no longer exists in original dir
                                     root.getFile(file1, {
                                         create : false
                                     }, succeed.bind(null, done, 'root.getFile - Unexpected success callback, it should not get invalid or moved file: ' + file1), function (error) {
@@ -1560,7 +1560,7 @@ exports.defineAutoTests = function () {
                         directory.moveTo(root, null, succeed.bind(null, done, 'directory.moveTo - Unexpected success callback, it should not move directory to invalid path'), function (error) {
                             expect(error).toBeDefined();
                             expect(error).toBeFileError(FileError.INVALID_MODIFICATION_ERR);
-                            // it that original dir still exists
+                            // test that original dir still exists
                             root.getDirectory(srcDir, {
                                 create : false
                             }, function (dirEntry) {
@@ -1613,7 +1613,7 @@ exports.defineAutoTests = function () {
                     entry.moveTo(root, null, succeed.bind(null, done, 'entry.moveTo - Unexpected success callback, it should not move a file: ' + file1 + ' into the same parent'), function (error) {
                         expect(error).toBeDefined();
                         expect(error).toBeFileError(FileError.INVALID_MODIFICATION_ERR);
-                        //it that original file still exists
+                        //test that original file still exists
                         root.getFile(file1, {
                             create : false
                         }, function (fileEntry) {
@@ -1687,14 +1687,14 @@ exports.defineAutoTests = function () {
                         entry.moveTo(root, file1, succeed.bind(null, done, 'entry.moveTo - Unexpected success callback, it should not move : \n' + srcDir + ' into root directory renamed as ' + file1 + '\n' + file1 + ' file already exists'), function (error) {
                             expect(error).toBeDefined();
                             expect(error).toBeFileError(FileError.INVALID_MODIFICATION_ERR);
-                            // it that original directory exists
+                            // test that original directory exists
                             root.getDirectory(srcDir, {
                                 create : false
                             }, function (dirEntry) {
                                 // returning confirms existence so just check fullPath entry
                                 expect(dirEntry).toBeDefined();
                                 expect(dirEntry.fullPath).toCanonicallyMatch(dirPath);
-                                // it that original file exists
+                                // test that original file exists
                                 root.getFile(file1, {
                                     create : false
                                 }, function (fileEntry) {
@@ -1732,7 +1732,7 @@ exports.defineAutoTests = function () {
                                 // returning confirms existence so just check fullPath entry
                                 expect(dirEntry).toBeDefined();
                                 expect(dirEntry.fullPath).toCanonicallyMatch(dirPath);
-                                // it that original file still exists
+                                // test that original file still exists
                                 root.getFile(file1, {
                                     create : false
                                 }, function (fileEntry) {
@@ -1819,7 +1819,7 @@ exports.defineAutoTests = function () {
                             }, succeed.bind(null, done, 'root.getFile - Unexpected success callback, file: ' + file1 + ' should not exists'), function (error) {
                                 expect(error).toBeDefined();
                                 expect(error).toBeFileError(FileError.NOT_FOUND_ERR);
-                                // it that new file exists
+                                // test that new file exists
                                 root.getFile(file2, {
                                     create : false
                                 }, function (fileEntry) {
@@ -2281,7 +2281,7 @@ exports.defineAutoTests = function () {
             });
             it("file.spec.100 should be able to write XML data", function (done) {
                 var fileName = "writer.xml", // file content
-                content = '<?xml version="1.0" encoding="UTF-8"?>\n<it prop="ack">\nData\n</it>\n', // for iting file length
+                content = '<?xml version="1.0" encoding="UTF-8"?>\n<test prop="ack">\nData\n</test>\n', // for testing file length
                 length = content.length;
                 // creates file, then write XML data
                 createFile(fileName, function (fileEntry) {
@@ -2302,7 +2302,7 @@ exports.defineAutoTests = function () {
             });
             it("file.spec.101 should be able to write JSON data", function (done) {
                 var fileName = "writer.json", // file content
-                content = '{ "name": "Guy Incognito", "email": "here@there.com" }', // for iting file length
+                content = '{ "name": "Guy Incognito", "email": "here@there.com" }', // for testing file length
                 length = content.length;
                 // creates file, then write JSON content
                 createFile(fileName, function (fileEntry) {
@@ -2323,11 +2323,11 @@ exports.defineAutoTests = function () {
             });
             it("file.spec.102 should be able to seek", function (done) {
                 var fileName = "writer.seek", // file content
-                content = "There is an exception to every rule. Except this one.", // for iting file length
+                content = "There is an exception to every rule. Except this one.", // for testing file length
                 length = content.length;
                 // creates file, then write JSON content
                 createFile(fileName, function (fileEntry) {
-                    // writes file content and its writer.seek
+                    // writes file content and tests writer.seek
                     fileEntry.createWriter(function (writer) {
                         //Verifier declaration
                         var verifier = function () {
