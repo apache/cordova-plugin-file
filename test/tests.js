@@ -3047,11 +3047,99 @@ exports.defineAutoTests = function () {
     //File API describe
 
 };
-/*
+//******************************************************************************************
+//***************************************Manual Tests***************************************
+//******************************************************************************************
+
 exports.defineManualTests = function (contentEl, createActionButton) {
-createActionButton('Dump device', function () {
-console.log(JSON.stringify(window.device, null, '\t'));
-});
+
+    function resolveFs(fsname) {
+        var fsURL = "cdvfile://localhost/" + fsname + "/";
+        logMessage("Resolving URL: " + fsURL);
+        resolveLocalFileSystemURL(fsURL, function (entry) {
+            logMessage("Success", 'green');
+            logMessage(entry.toURL(), 'blue');
+            logMessage(entry.toInternalURL(), 'blue');
+            logMessage("Resolving URL: " + entry.toURL());
+            resolveLocalFileSystemURL(entry.toURL(), function (entry2) {
+                logMessage("Success", 'green');
+                logMessage(entry2.toURL(), 'blue');
+                logMessage(entry2.toInternalURL(), 'blue');
+            }, logError("resolveLocalFileSystemURL"));
+        }, logError("resolveLocalFileSystemURL"));
+    }
+
+    function testPrivateURL() {
+        requestFileSystem(TEMPORARY, 0, function (fileSystem) {
+            logMessage("Temporary root is at " + fileSystem.root.toNativeURL());
+            fileSystem.root.getFile("testfile", {
+                create : true
+            }, function (entry) {
+                logMessage("Temporary file is at " + entry.toNativeURL());
+                if (entry.toNativeURL().substring(0, 12) == "file:///var/") {
+                    logMessage("File starts with /var/, trying /private/var");
+                    var newURL = "file://localhost/private/var/" + entry.toNativeURL().substring(12) + "?and=another_thing";
+                    //var newURL = entry.toNativeURL();
+                    logMessage(newURL, 'blue');
+                    resolveLocalFileSystemURL(newURL, function (newEntry) {
+                        logMessage("Successfully resolved.", 'green');
+                        logMessage(newEntry.toURL(), 'blue');
+                        logMessage(newEntry.toNativeURL(), 'blue');
+                    }, logError("resolveLocalFileSystemURL"));
+                }
+            }, logError("getFile"));
+        }, logError("requestFileSystem"));
+    }
+
+    function clearLog() {
+        var log = document.getElementById("log--content");
+        log.innerHTML = "";
+    }
+
+    function logMessage(message, color) {
+        var log = document.getElementById("log--content");
+        var logLine = document.createElement('div');
+        if (color) {
+            logLine.style.color = color;
+        }
+        logLine.innerHTML = message;
+        log.appendChild(logLine);
+    }
+
+    function logError(serviceName) {
+        return function (err) {
+            logMessage("ERROR: " + serviceName + " " + JSON.stringify(err), "red");
+        };
+    }
+
+    var fsRoots = {
+        "ios" : "library,library-nosync,documents,documents-nosync,cache,bundle,root,private",
+        "android" : "files,files-external,documents,sdcard,cache,cache-external,root"
+    };
+
+    //Add title and align to content
+    var div = document.createElement('h2'),
+    content = document.createTextNode('File Systems');
+    div.appendChild(content);
+    content = document.getElementById('content');
+    content.setAttribute("align", "center");
+    content.appendChild(div);
+
+    if (fsRoots.hasOwnProperty(cordova.platformId)) {
+        (fsRoots[cordova.platformId].split(',')).forEach(function (fs) {
+            if (cordova.platformId === 'ios' && fs === 'private') {
+                createActionButton("Test private URL (iOS)", function () {
+                    clearLog();
+                    document.getElementById('log').classList.add('expanded');
+                    testPrivateURL();
+                }, 'content');
+            } else {
+                createActionButton(fs, function () {
+                    clearLog();
+                    document.getElementById('log').classList.add('expanded');
+                    resolveFs(fs);
+                }, 'content');
+            }
+        });
+    }
 };
-});
-*/
