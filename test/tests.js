@@ -998,7 +998,6 @@ exports.defineAutoTests = function () {
                 // create a new directory entry
                 createDirectory(dirName, function (entry) {
                     entry.getParent(function (parent) {
-                        //alert("parent: "+JSON.stringify(parent));
                         expect(parent).toBeDefined();
                         expect(parent.fullPath).toCanonicallyMatch(rootPath);
                         // cleanup
@@ -3092,12 +3091,12 @@ exports.defineManualTests = function (contentEl, createActionButton) {
     }
 
     function clearLog() {
-        var log = document.getElementById("log--content");
+        var log = document.getElementById("info");
         log.innerHTML = "";
     }
 
     function logMessage(message, color) {
-        var log = document.getElementById("log--content");
+        var log = document.getElementById("info");
         var logLine = document.createElement('div');
         if (color) {
             logLine.style.color = color;
@@ -3118,28 +3117,34 @@ exports.defineManualTests = function (contentEl, createActionButton) {
     };
 
     //Add title and align to content
-    var div = document.createElement('h2'),
-    content = document.createTextNode('File Systems');
-    div.appendChild(content);
-    content = document.getElementById('content');
-    content.setAttribute("align", "center");
-    content.appendChild(div);
-
+    var div = document.createElement('h2');
+    div.appendChild(document.createTextNode('File Systems'));
+    div.setAttribute("align", "center");
+    contentEl.appendChild(div);
+    
+    div = document.createElement('div');
+    div.setAttribute("id", "button");
+    div.setAttribute("align", "center");
+    contentEl.appendChild(div);
     if (fsRoots.hasOwnProperty(cordova.platformId)) {
         (fsRoots[cordova.platformId].split(',')).forEach(function (fs) {
             if (cordova.platformId === 'ios' && fs === 'private') {
                 createActionButton("Test private URL (iOS)", function () {
                     clearLog();
-                    document.getElementById('log').classList.add('expanded');
                     testPrivateURL();
-                }, 'content');
+                }, 'button');
             } else {
                 createActionButton(fs, function () {
                     clearLog();
-                    document.getElementById('log').classList.add('expanded');
                     resolveFs(fs);
-                }, 'content');
+                }, 'button');
             }
         });
     }
+    
+    
+    div = document.createElement('div');
+    div.setAttribute("id", "info");
+    div.setAttribute("align", "center");
+    contentEl.appendChild(div);
 };
