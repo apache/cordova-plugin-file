@@ -278,6 +278,9 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <js-module src="www/fileSystems-roots.js" name="fileSystems-roots">
             <runs/>
         </js-module>
+        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
+            <merges target="cordova" />
+        </js-module>
         <js-module src="www/blackberry10/copyTo.js" name="copyToProxy" />
         <js-module src="www/blackberry10/getDirectory.js" name="getDirectoryProxy" />
         <js-module src="www/blackberry10/getFile.js" name="getFileProxy" />
@@ -298,7 +301,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <js-module src="www/blackberry10/setMetadata.js" name="setMetadataProxy" />
         <js-module src="www/blackberry10/truncate.js" name="truncateProxy" />
         <js-module src="www/blackberry10/write.js" name="writeProxy" />
-        <source-file src="src/blackberry10/index.js" />
+        <source-file src="src/blackberry10/index.js" target-dir="File" />
     </platform>
 
     <!-- windows8 -->

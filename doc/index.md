@@ -63,22 +63,22 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
 `DirectoryEntry` using `window.resolveLocalFileSystemURL()`.
 
 * `cordova.file.applicationDirectory` - Read-only directory where the application 
-  is installed. (_iOS_, _Android_)
+  is installed. (_iOS_, _Android_, _BlackBerry 10_)
 
 * `cordova.file.applicationStorageDirectory` - Root directory of the application's 
   sandbox; on iOS this location is read-only (but specific subdirectories [like 
   `/Documents`] are read-write). All data contained within is private to the app. (
-  _iOS_, _Android_)
+  _iOS_, _Android_, _BlackBerry 10_)
 
 * `cordova.file.dataDirectory` - Persistent and private data storage within the 
   application's sandbox using internal memory (on Android, if you need to use 
   external memory, use `.externalDataDirectory`). On iOS, this directory is not 
-  synced with iCloud (use `.syncedDataDirectory`). (_iOS_, _Android_)
+  synced with iCloud (use `.syncedDataDirectory`). (_iOS_, _Android_, _BlackBerry 10_)
 
 * `cordova.file.cacheDirectory` -  Directory for cached data files or any files 
   that your app can re-create easily. The OS may delete these files when the device 
   runs low on storage, nevertheless, apps should not rely on the OS to delete files 
-  in here. (_iOS_, _Android_)
+  in here. (_iOS_, _Android_, _BlackBerry 10_)
 
 * `cordova.file.externalApplicationStorageDirectory` - Application space on 
   external storage. (_Android_)
@@ -89,7 +89,7 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
 * `cordova.file.externalCacheDirectory` - Application cache on external storage. 
   (_Android_)
 
-* `cordova.file.externalRootDirectory` - External storage (SD card) root. (_Android_)
+* `cordova.file.externalRootDirectory` - External storage (SD card) root. (_Android_, _BlackBerry 10_)
 
 * `cordova.file.tempDirectory` - Temp directory that the OS can clear at will. Do not 
   rely on the OS to clear this directory; your app should always remove files as 
@@ -100,6 +100,8 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
 
 * `cordova.file.documentsDirectory` - Files private to the app, but that are meaningful 
   to other application (e.g. Office files). (_iOS_)
+
+* `cordova.file.sharedDirectory` - Files globally available to all applications (_BlackBerry 10_)
 
 ## File System Layouts
 
@@ -159,6 +161,19 @@ the `cordova.file.*` properties map to physical paths on a real device.
 
 **Note**: If external storage can't be mounted, the `cordova.file.external*` 
 properties are `null`.
+
+### BlackBerry 10 File System Layout
+
+| Device Path                                                  | `cordova.file.*`            | r/w? | persistent? | OS clears | private |
+|:-------------------------------------------------------------|:----------------------------|:----:|:-----------:|:---------:|:-------:|
+| `file:///accounts/1000/appdata/<app id>/`                    | applicationStorageDirectory | r/o  |     N/A     |     N/A   |   Yes   |
+| &nbsp;&nbsp;&nbsp;`app/native`                               | applicationDirectory        | r/o  |     N/A     |     N/A   |   Yes   |
+| &nbsp;&nbsp;&nbsp;`data/webviews/webfs/temporary/local__0`   | cacheDirectory              | r/w  |     No      |     Yes   |   Yes   |
+| &nbsp;&nbsp;&nbsp;`data/webviews/webfs/persistent/local__0`  | dataDirectory               | r/w  |     Yes     |     No    |   Yes   |
+| `file:///accounts/1000/removable/sdcard`                     | externalRemovableDirectory  | r/w  |     Yes     |     No    |   No    |
+| `file:///accounts/1000/shared`                               | sharedDirectory             | r/w  |     Yes     |     No    |   No    |
+
+*Note*: When application is deployed to work perimeter, all paths are relative to /accounts/1000-enterprise.
 
 ## Android Quirks
 
