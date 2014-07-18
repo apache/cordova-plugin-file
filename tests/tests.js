@@ -2408,7 +2408,7 @@ exports.defineAutoTests = function () {
             });
             it("file.spec.105 should be able to write binary data from a Blob", function (done) {
                 // Skip test if Blobs are not supported (e.g.: Android 2.3).
-                if ((typeof window.Blob != 'function' && typeof window.WebKitBlobBuilder == 'undefined') || typeof window.ArrayBuffer == 'undefined') {
+                if ((typeof window.Blob == 'undefined' && typeof window.WebKitBlobBuilder == 'undefined') || typeof window.ArrayBuffer == 'undefined') {
                     expect(true).toFailWithMessage('Platform does not supported this feature');
                     done();
                     return;
@@ -2544,7 +2544,7 @@ exports.defineAutoTests = function () {
             });
             it("file.spec.108 should be able to write binary data from a File", function (done) {
                 // Skip test if Blobs are not supported (e.g.: Android 2.3).
-                if (typeof window.Blob != 'function' && typeof window.WebKitBlobBuilder == 'undefined') {
+                if (typeof window.Blob == 'undefined' && typeof window.WebKitBlobBuilder == 'undefined') {
                     expect(true).toFailWithMessage('Platform does not supported this feature');
                     done();
                 }
