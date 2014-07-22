@@ -1501,6 +1501,35 @@ namespace WPCordovaClassLib.Cordova.Commands
             }
         }
 
+        private string RemoveExtraSlash(string path) {
+            if (path.StartsWith("//")) {
+                path = path.Remove(0, 1);
+                path = RemoveExtraSlash(path);
+            }
+            return path;
+        }
+
+        private string ResolvePath(string parentPath, string path)
+        {   
+            string absolutePath = null;
+            
+            if (path.Contains(".."))
+            {
+                if (parentPath.Length > 1 && parentPath.StartsWith("/") && parentPath !="/")
+                {
+                    parentPath = RemoveExtraSlash(parentPath);
+                }
+                
+                string fullPath = Path.GetFullPath(Path.Combine(parentPath, path));
+                absolutePath = fullPath.Replace(Path.GetPathRoot(fullPath), @"//");
+            }
+            else
+            {
+                absolutePath = Path.Combine(parentPath + "/", path);
+            }
+            return absolutePath;
+        }
+
         private void GetFileOrDirectory(string options, bool getDirectory)
         {
             FileOptions fOptions = new FileOptions();
@@ -1539,13 +1568,13 @@ namespace WPCordovaClassLib.Cordova.Commands
 
                 try
                 {
-                    path = Path.Combine(fOptions.FullPath + "/", fOptions.Path);
+                    path = ResolvePath(fOptions.FullPath, fOptions.Path);
                 }
                 catch (Exception)
                 {
                     DispatchCommandResult(new PluginResult(PluginResult.Status.ERROR, ENCODING_ERR), callbackId);
                     return;
-                }        
+                }
 
                 using (IsolatedStorageFile isoFile = IsolatedStorageFile.GetUserStoreForApplication())
                 {
