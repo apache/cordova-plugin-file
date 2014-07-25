@@ -316,6 +316,16 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <js-module src="src/firefoxos/FileProxy.js" name="FileProxy">
             <runs />
         </js-module>
+
+        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
+            <merges target="cordova" />
+            <runs/>
+        </js-module>
+
+        <!-- Firefox OS specific file apis -->
+        <js-module src="www/firefoxos/FileSystem.js" name="firefoxFileSystem">
+            <merges target="window.FileSystem" />
+        </js-module>
     </platform>
 
 </plugin>
