@@ -42,7 +42,7 @@ var DirectoryEntry = function(name, fullPath, fileSystem, nativeURL) {
         fullPath += "/";
     }
     // add trailing slash if it is missing
-    if (!/\/$/.test(nativeURL)) {
+    if (nativeURL && !/\/$/.test(nativeURL)) {
         nativeURL += "/";
     }
     DirectoryEntry.__super__.constructor.call(this, false, true, name, fullPath, fileSystem, nativeURL);
