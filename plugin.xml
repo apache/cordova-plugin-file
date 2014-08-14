@@ -171,6 +171,13 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <js-module src="www/android/FileSystem.js" name="androidFileSystem">
             <merges target="window.FileSystem" />
         </js-module>
+        <js-module src="www/fileSystems-roots.js" name="fileSystems-roots">
+            <runs/>
+        </js-module>
+        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
+            <merges target="cordova" />
+            <runs/>
+        </js-module>
     </platform>
 
     <!-- ubuntu -->
