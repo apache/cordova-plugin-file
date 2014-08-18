@@ -3159,13 +3159,11 @@ exports.defineManualTests = function (contentEl, createActionButton) {
     div.appendChild(document.createTextNode('For each test above, file or directory should be successfully found. ' +
         'Status box should say Resolving URL was Success. The first URL resolved is the internal URL. ' +
         'The second URL resolved is the absolute URL. Blue URLs must match.'));
-    div.setAttribute("align", "center");
     contentEl.appendChild(div);
 
     div = document.createElement('h3');
     div.appendChild(document.createTextNode('For Test private URL (iOS), the private URL (first blue URL in status box) ' +
         'should be successfully resolved. Status box should say Successfully resolved. Both blue URLs below ' +
         'that should match.'));
-    div.setAttribute("align", "center");
     contentEl.appendChild(div);
 };
