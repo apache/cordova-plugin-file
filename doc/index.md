@@ -265,8 +265,13 @@ as a shim on top of indexedDB.
  
 * Does not fail when removing non-empty directories
 * Does not support metadata for directories
-* Does not support `requestAllFileSystems` and `resolveLocalFileSystemURI` methods
 * Methods `copyTo` and `moveTo` do not support directories
+
+The following data paths are supported:
+* `applicationDirectory` - Uses `xhr` to get local files that are packaged with the app.
+* `dataDirectory` - For persistent app-specific data files.
+* `cacheDirectory` - Cached files that should survive app restarts (Apps should not rely
+on the OS to delete files in here).
 
 ## Upgrading Notes
 
