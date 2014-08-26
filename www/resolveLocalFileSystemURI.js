@@ -51,7 +51,9 @@ module.exports.resolveLocalFileSystemURL = function(uri, successCallback, errorC
         if (entry) {
             if (successCallback) {
                 // create appropriate Entry object
-                var fsName = (entry.filesystem && entry.filesystem.name) || (entry.filesystem == window.PERSISTENT ? 'persistent' : 'temporary');
+                // The entry should have either a filesystemName property, or a filesystem property with a name
+                // For backwards compatibility, also accept window.PERSISTENT (0)
+                var fsName = entry.filesystemName || (entry.filesystem && entry.filesystem.name) || (entry.filesystem == window.PERSISTENT ? 'persistent' : 'temporary');
                 fileSystems.getFs(fsName, function(fs) {
                     if (!fs) {
                         fs = new FileSystem(fsName, {name:"", fullPath:"/"});
