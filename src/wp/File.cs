@@ -235,13 +235,16 @@ namespace WPCordovaClassLib.Cordova.Commands
             {
                 using (IsolatedStorageFile isoFile = IsolatedStorageFile.GetUserStoreForApplication())
                 {
+                    bool IsFile = isoFile.FileExists(filePath);
+                    bool IsDirectory = isoFile.DirectoryExists(filePath);
+
                     if (string.IsNullOrEmpty(filePath))
                     {
                         throw new FileNotFoundException("File doesn't exist");
                     }
-                    else if (!isoFile.FileExists(filePath))
+                    else if (!IsFile && !IsDirectory)
                     {
-                        // attempt to get it from the resources
+                    // attempt to get it from the resources
                         if (filePath.IndexOf("www") == 0)
                         {
                             Uri fileUri = new Uri(filePath, UriKind.Relative);
@@ -260,11 +263,25 @@ namespace WPCordovaClassLib.Cordova.Commands
                     }
                     else
                     {
-                        //TODO get file size the other way if possible                
-                        using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream(filePath, FileMode.Open, FileAccess.Read, isoFile))
+                        //TODO get file size the other way if possible
+                        //Use StreamResourceInfo to get directory Size.
+                        if (IsDirectory)
                         {
-                            this.Size = stream.Length;
+                            Uri fileUri = new Uri(filePath, UriKind.Relative);
+                            StreamResourceInfo streamInfo = Application.GetResourceStream(fileUri);
+                            if (streamInfo != null)
+                            {
+                                this.Size = streamInfo.Stream.Length;
+                            }
                         }
+                        else
+                        {
+                            using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream(filePath, FileMode.Open, FileAccess.Read, isoFile))
+                            {
+                                this.Size = stream.Length;
+                            }
+                        }
+
                         this.FullPath = filePath;
                         this.FileName = System.IO.Path.GetFileName(filePath);
                         this.LastModifiedDate = isoFile.GetLastWriteTime(filePath).DateTime.ToString();
