@@ -99,7 +99,7 @@ module.exports = function(evtType, dict)
   if (dict && dict.target)
   {
     // Override target property
-    Object.defineProperty(evt,'target',{ get:function() { return(dict.target); } });
+    Object.defineProperty(evt,'target',{ get:function() { return(dict.target); }, set:function(value) { } });
   }
   return(evt);
 };
