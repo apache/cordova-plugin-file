@@ -24,44 +24,82 @@
 // if so, use that approach,
 // otherwise fill-in with our own implementation.
 //
-// NOTE: right now we always fill in with our own. Down the road would be nice if we can use whatever is native in the webview.
-var ProgressEvent = (function() {
-    /*
-    var createEvent = function(data) {
-        var event = document.createEvent('Events');
-        event.initEvent('ProgressEvent', false, false);
-        if (data) {
-            for (var i in data) {
-                if (data.hasOwnProperty(i)) {
-                    event[i] = data[i];
-                }
-            }
-            if (data.target) {
-                // TODO: cannot call <some_custom_object>.dispatchEvent
-                // need to first figure out how to implement EventTarget
-            }
-        }
-        return event;
+var ProgressEvent = (function(global)
+{
+  try
+  {
+    // Detect available ProgressEvent support
+    (new global.ProgressEvent('load')).preventDefault();
+    return(global.ProgressEvent);
+  }
+  catch(e)
+  {
+    // Part or all of implementation will need polyfilling
+  }
+  var nativeProgressEvent = global.ProgressEvent;
+  var createProgressEvent;
+  try
+  {
+    // Detect support for creating ProgressEvents via deprecated method
+    document.createEvent('ProgressEvent');
+    createProgressEvent = function() { return(document.createEvent('ProgressEvent')); };
+  }
+  catch(e)
+  {
+    // Polyfill ProgressEvent creation
+    createProgressEvent = function()
+    {
+      var evt = document.createEvent('Event');
+      evt.initProgressEvent = function(evtType, bubbles, cancelable, lengthComputable, loaded, total)
+      {
+        this.initEvent(evtType,bubbles,cancelable);
+        this.lengthComputable = lengthComputable;
+        this.loaded = loaded;
+        this.total = total;
+      };
+      return(evt);
     };
-    try {
-        var ev = createEvent({type:"abort",target:document});
-        return function ProgressEvent(type, data) {
-            data.type = type;
-            return createEvent(data);
-        };
-    } catch(e){
-    */
-        return function ProgressEvent(type, dict) {
-            this.type = type;
-            this.bubbles = false;
-            this.cancelBubble = false;
-            this.cancelable = false;
-            this.lengthComputable = false;
-            this.loaded = dict && dict.loaded ? dict.loaded : 0;
-            this.total = dict && dict.total ? dict.total : 0;
-            this.target = dict && dict.target ? dict.target : null;
-        };
-    //}
-})();
+  }
+  
+  // Create polyfill ProgressEvent
+  var ProgressEvent = function(eventType, dict)
+  {
+    var evt = createProgressEvent();
+    dict = dict || {};
+    var bubbles = dict.bubbles || false;
+    var cancelable = dict.cancelable || false;
+    var lengthComputable = dict.lengthComputable || false;
+    var loaded = dict.loaded || 0;
+    var total = dict.total || 0;
+    evt.initProgressEvent(eventType,bubbles,cancelable,lengthComputable,loaded,total);
+    return(evt);
+  };
 
-module.exports = ProgressEvent;
+  // Link polyfill ProgressEvent with Event prototype chain
+  if (!(ProgressEvent.prototype = nativeProgressEvent && ProgressEvent.prototype))
+  {
+    try
+    {
+      ProgressEvent.prototype = Object.create(Event.prototype);
+      ProgressEvent.prototype.constructor = ProgressEvent;
+    }
+    catch(e)
+    {
+      ProgressEvent.prototype = Event.prototype;
+    }
+  }
+  return(ProgressEvent);
+})(this);
+
+
+// FileReader/FileWriter of Cordova file plugin need ProgressEvent creation to be wrapped to support target objects included in dictionary
+module.exports = function(evtType, dict)
+{
+  var evt = new ProgressEvent(evtType,dict);
+  if (dict && dict.target)
+  {
+    // Override target property
+    Object.defineProperty(evt,'target',{ get:function() { return(dict.target); } });
+  }
+  return(evt);
+};
