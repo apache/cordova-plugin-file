@@ -249,11 +249,7 @@ exports.defineAutoTests = function () {
                         expect(fileEntry).toBeDefined();
                         expect(fileEntry.name).toCanonicallyMatch(fileName);
                         expect(fileEntry.toURL()).not.toMatch(/^cdvfile:/, 'should not use cdvfile URL');
-                        if (cordova.platformId === 'windowsphone') {
-                            expect(fileEntry.toURL()).not.toMatch(/\/$/, 'URL end with a slash');
-                        } else {
-                            expect(fileEntry.toURL()).toMatch(/\/$/, 'URL end with a slash');
-                        }
+                        expect(fileEntry.toURL()).toMatch(/\/$/, 'URL end with a slash');
                         // cleanup
                         deleteEntry(fileName);
                         done();
@@ -750,8 +746,8 @@ exports.defineAutoTests = function () {
                 // remove root file system
                 root.removeRecursively(succeed.bind(null, done, 'root.removeRecursively - Unexpected success callback, root cannot be removed'), remove);
             });
-        });
-        describe('DirectoryReader interface', function () {
+        }); 
+        describe('DirectoryReader interface', function () {  
             describe("readEntries", function () {
                 it("file.spec.37 should read contents of existing directory", function (done) {
                     var reader,
@@ -2684,7 +2680,7 @@ exports.defineAutoTests = function () {
                     }, function (fileEntry) {
                         expect(fileEntry).toBeDefined();
                         expect(fileEntry.name).toBe(fileName);
-                        expect(fileEntry.fullPath).toBe('/' + fileName);
+                        expect(fileEntry.fullPath).toCanonicallyMatch('/' + fileName);
                         // cleanup
                         deleteEntry(fileName);
                         done();
@@ -2703,7 +2699,7 @@ exports.defineAutoTests = function () {
                         }, function (fileEntry) {
                             expect(fileEntry).toBeDefined();
                             expect(fileEntry.name).toBe(fileName);
-                            expect(fileEntry.fullPath).toBe('/' + fileName);
+                            expect(fileEntry.fullPath).toCanonicallyMatch('/' + fileName);
                             // cleanup
                             deleteEntry(fileName);
                             deleteEntry(dirName);
@@ -2831,7 +2827,7 @@ exports.defineAutoTests = function () {
                 // create a new file entry
                 createFile(fileName, function (entry) {
                     resolveLocalFileSystemURL(entry.toNativeURL(), function (fileEntry) {
-                        expect(fileEntry.fullPath).toEqual("/" + fileName);
+                        expect(fileEntry.fullPath).toCanonicallyMatch("/" + fileName);
                         // cleanup
                         deleteEntry(fileName);
                         done();
@@ -2845,7 +2841,7 @@ exports.defineAutoTests = function () {
                     var url = entry.toNativeURL();
                     url = url.replace("///", "//localhost/");
                     resolveLocalFileSystemURL(url, function (fileEntry) {
-                        expect(fileEntry.fullPath).toEqual("/" + fileName);
+                        expect(fileEntry.fullPath).toCanonicallyMatch("/" + fileName);
                         // cleanup
                         deleteEntry(fileName);
                         done();
@@ -2859,7 +2855,7 @@ exports.defineAutoTests = function () {
                     var url = entry.toNativeURL();
                     url = url + "?test/test";
                     resolveLocalFileSystemURL(url, function (fileEntry) {
-                        expect(fileEntry.fullPath).toEqual("/" + fileName);
+                        expect(fileEntry.fullPath).toCanonicallyMatch("/" + fileName);
                         // cleanup
                         deleteEntry(fileName);
                         done();
@@ -2873,7 +2869,7 @@ exports.defineAutoTests = function () {
                     var url = entry.toNativeURL();
                     url = url.replace("///", "//localhost/") + "?test/test";
                     resolveLocalFileSystemURL(url, function (fileEntry) {
-                        expect(fileEntry.fullPath).toEqual("/" + fileName);
+                        expect(fileEntry.fullPath).toCanonicallyMatch("/" + fileName);
                         // cleanup
                         deleteEntry(fileName);
                         done();
