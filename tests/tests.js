@@ -3022,7 +3022,7 @@ exports.defineAutoTests = function () {
             });
             it("file.spec.129 cordova.file.*Directory are set", function () {
                 var expectedPaths = ['applicationDirectory', 'applicationStorageDirectory', 'dataDirectory', 'cacheDirectory'];
-                if (cordova.platformId == 'android') {
+                if (cordova.platformId == 'android' || cordova.platformId == 'amazon-fireos') {
                     expectedPaths.push('externalApplicationStorageDirectory', 'externalRootDirectory', 'externalCacheDirectory', 'externalDataDirectory');
                 } else if (cordova.platformId == 'blackberry10') {
                     expectedPaths.push('externalRootDirectory', 'sharedDirectory');
@@ -3111,7 +3111,8 @@ exports.defineManualTests = function (contentEl, createActionButton) {
 
     var fsRoots = {
         "ios" : "library,library-nosync,documents,documents-nosync,cache,bundle,root,private",
-        "android" : "files,files-external,documents,sdcard,cache,cache-external,root"
+        "android" : "files,files-external,documents,sdcard,cache,cache-external,root",
+        "amazon-fireos" : "files,files-external,documents,sdcard,cache,cache-external,root"
     };
 
     //Add title and align to content
