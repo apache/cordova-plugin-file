@@ -1,15 +1,15 @@
 /*  
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
-	
-	http://www.apache.org/licenses/LICENSE-2.0
-	
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 */
 
 using System;
@@ -233,59 +233,50 @@ namespace WPCordovaClassLib.Cordova.Commands
 
             public FileMetadata(string filePath)
             {
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    throw new FileNotFoundException("File doesn't exist");
+                }
+
+                this.FullPath = filePath;
+                this.Size = 0;
+                this.FileName = string.Empty;
+
                 using (IsolatedStorageFile isoFile = IsolatedStorageFile.GetUserStoreForApplication())
                 {
                     bool IsFile = isoFile.FileExists(filePath);
                     bool IsDirectory = isoFile.DirectoryExists(filePath);
 
-                    if (string.IsNullOrEmpty(filePath))
-                    {
-                        throw new FileNotFoundException("File doesn't exist");
-                    }
-                    else if (!IsFile && !IsDirectory)
-                    {
-                    // attempt to get it from the resources
-                        if (filePath.IndexOf("www") == 0)
+                        if (!IsDirectory)
                         {
-                            Uri fileUri = new Uri(filePath, UriKind.Relative);
-                            StreamResourceInfo streamInfo = Application.GetResourceStream(fileUri);
-                            if (streamInfo != null)
+                            if (!IsFile)      // special case, if isoFile cannot find it, it might still be part of the app-package
                             {
-                                this.Size = streamInfo.Stream.Length;
-                                this.FileName = filePath.Substring(filePath.LastIndexOf("/") + 1);
-                                this.FullPath = filePath;
+                                // attempt to get it from the resources
+
+                                Uri fileUri = new Uri(filePath, UriKind.Relative);
+                                StreamResourceInfo streamInfo = Application.GetResourceStream(fileUri);
+                                if (streamInfo != null)
+                                {
+                                    this.Size = streamInfo.Stream.Length;
+                                    this.FileName = filePath.Substring(filePath.LastIndexOf("/") + 1);
+                                }
+                                else
+                                {
+                                    throw new FileNotFoundException("File doesn't exist");
+                                }
                             }
-                        }
-                        else
-                        {
-                            throw new FileNotFoundException("File doesn't exist");
-                        }
-                    }
-                    else
-                    {
-                        //TODO get file size the other way if possible
-                        //Use StreamResourceInfo to get directory Size.
-                        if (IsDirectory)
-                        {
-                            Uri fileUri = new Uri(filePath, UriKind.Relative);
-                            StreamResourceInfo streamInfo = Application.GetResourceStream(fileUri);
-                            if (streamInfo != null)
+                            else
                             {
-                                this.Size = streamInfo.Stream.Length;
-                            }
-                        }
-                        else
-                        {
-                            using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream(filePath, FileMode.Open, FileAccess.Read, isoFile))
-                            {
-                                this.Size = stream.Length;
+                                using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream(filePath, FileMode.Open, FileAccess.Read, isoFile))
+                                {
+                                    this.Size = stream.Length;
+                                }
+
+                                this.FileName = System.IO.Path.GetFileName(filePath);
+                                this.LastModifiedDate = isoFile.GetLastWriteTime(filePath).DateTime.ToString();
                             }
                         }
 
-                        this.FullPath = filePath;
-                        this.FileName = System.IO.Path.GetFileName(filePath);
-                        this.LastModifiedDate = isoFile.GetLastWriteTime(filePath).DateTime.ToString();
-                    }
                     this.Type = MimeTypeMapper.GetMimeType(this.FileName);
                 }
             }
@@ -917,7 +908,7 @@ namespace WPCordovaClassLib.Cordova.Commands
             string filePath = optStings[0];
             string callbackId = optStings[1];
 
-            if (filePath != null)
+            if (!string.IsNullOrEmpty(filePath))
             {
                 try
                 {
@@ -935,6 +926,10 @@ namespace WPCordovaClassLib.Cordova.Commands
                         DispatchCommandResult(new PluginResult(PluginResult.Status.ERROR, NOT_READABLE_ERR), callbackId);
                     }
                 }
+            }
+            else
+            {
+                DispatchCommandResult(new PluginResult(PluginResult.Status.ERROR, NOT_FOUND_ERR), callbackId);
             }
         }
 
@@ -1609,7 +1604,7 @@ namespace WPCordovaClassLib.Cordova.Commands
 
                         // need to make sure the parent exists
                         // it is an error to create a directory whose immediate parent does not yet exist
-			            // see issue: https://issues.apache.org/jira/browse/CB-339
+                        // see issue: https://issues.apache.org/jira/browse/CB-339
                         string[] pathParts = path.Split('/');
                         string builtPath = pathParts[0];
                         for (int n = 1; n < pathParts.Length - 1; n++)
