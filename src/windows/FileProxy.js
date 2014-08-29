@@ -895,9 +895,8 @@ module.exports = {
 
     resolveLocalFileSystemURI: function (success, fail, args) {
 
-        var uri = cordovaPathToNative(args[0]);
-
-        var path = uri;
+        var uri = args[0];
+        var path = cordovaPathToNative(uri);
 
         // support for file name with parameters
         if (/\?/g.test(path)) {
@@ -909,13 +908,21 @@ module.exports = {
             path = decodeURI(path);
         }
 
-        // support for special path start with file:///
-        if (path.substr(0, 8) == "file:///") {
-            path = Windows.Storage.ApplicationData.current.localFolder.path + "\\" + String(path).substr(8);
+        var msappdataLocalPrefix = 'ms-appdata:///local/',
+            msappdataTempPrefix = 'ms-appdata:///temp/',
+            msappdataLocalPath = Windows.Storage.ApplicationData.current.localFolder.path + '\\',
+            msappdataTempPath = Windows.Storage.ApplicationData.current.temporaryFolder.path + '\\';
+
+        // support for special path start with file:/// or ms-appdata://
+        if (uri.indexOf("file:///") === 0 ) {
+            path = msappdataLocalPath + uri.substr(8).replace('/', '\\');
+        } else if (uri.indexOf(msappdataLocalPrefix) === 0) {
+            path = msappdataLocalPath + uri.replace(msappdataLocalPrefix, '').replace('/', '\\');
+        } else if (uri.indexOf(msappdataTempPrefix) === 0) {
+            path = msappdataTempPath + uri.replace(msappdataTempPrefix, '').replace('/', '\\');
         } else {
             // method should not let read files outside of the [APP HASH]/Local or [APP HASH]/temp folders
-            if (path.indexOf(Windows.Storage.ApplicationData.current.temporaryFolder.path) != 0 &&
-                path.indexOf(Windows.Storage.ApplicationData.current.localFolder.path) != 0) {
+            if (path.indexOf(msappdataTempPath) != 0 && path.indexOf(msappdataLocalPath) != 0) {
                 fail(FileError.NOT_FOUND_ERR);
                 return;
             }
