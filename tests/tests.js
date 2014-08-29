@@ -2622,10 +2622,7 @@ exports.defineAutoTests = function () {
              */
             it("file.spec.109 should be able to resolve a file:/// URL", function (done) {
                 var localFilename = 'file.txt';
-                var originalEntry,
-                unsupportedOperation = function () {
-                    return true;
-                };
+                var originalEntry;
                 root.getFile(localFilename, {
                     create : true
                 }, function (entry) {
@@ -2642,11 +2639,8 @@ exports.defineAutoTests = function () {
                             deleteFile(localFilename);
                             done();
                         }, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving URI: file://' + encodeURI(localPath)));
-                    }, unsupportedOperation, 'File', '_getLocalFilesystemPath', [entry.toURL()]);
+                    }, done, 'File', '_getLocalFilesystemPath', [entry.toURL()]);
                 }, failed.bind(null, done, 'root.getFile - Error creating file: ' + localFilename));
-                if (unsupportedOperation) {
-                    done();
-                }
             });
         });
         //Backwards Compatibility
