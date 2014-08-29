@@ -2921,7 +2921,7 @@ exports.defineAutoTests = function () {
                 var file1 = "entry.copy.file1b",
                 file2 = "entry.copy.file2b",
                 sourceEntry,
-                fullPath = joinURL(root.fullPath, file2),
+                fullPath = joinURL(temp_root.fullPath, file2),
                 validateFile = function (entry) {
                     expect(entry).toBeDefined();
                     expect(entry.isFile).toBe(true);
@@ -2990,7 +2990,7 @@ exports.defineAutoTests = function () {
                 var file1 = "entry.copy.file1b",
                 file2 = "entry.copy.file2b",
                 sourceEntry,
-                fullPath = joinURL(root.fullPath, file2),
+                fullPath = joinURL(temp_root.fullPath, file2),
                 validateFile = function (entry) {
                     expect(entry).toBeDefined();
                     expect(entry.isFile).toBe(true);
