@@ -41,6 +41,7 @@
 var info = require('org.apache.cordova.file.bb10FileSystemInfo'),
     requestAnimationFrame = cordova.require('org.apache.cordova.file.bb10RequestAnimationFrame'),
     createEntryFromNative = require('org.apache.cordova.file.bb10CreateEntryFromNative'),
+    DEFAULT_SIZE = 5*1024*1024,
     SANDBOXED = true,
     UNSANDBOXED = false;
 
@@ -110,7 +111,7 @@ function resolveLocal(success, fail, request, options) {
 //validate parameters and set sandbox
 function resolve(success, fail, path, fsType, sandbox, options, size) {
     options = options || { create: false };
-    size = size || 0;
+    size = size || DEFAULT_SIZE;
     if (size > info.MAX_SIZE) {
         //bb10 does not respect quota; fail at unreasonably large size
         fail(FileError.QUOTA_EXCEEDED_ERR);
