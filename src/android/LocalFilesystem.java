@@ -38,6 +38,9 @@ import org.json.JSONObject;
 
 import android.util.Base64;
 import android.net.Uri;
+import android.content.Context;
+import android.content.Intent;
+import android.app.Activity;
 
 public class LocalFilesystem extends Filesystem {
 
@@ -96,7 +99,7 @@ public class LocalFilesystem extends Filesystem {
 	    if (isAbsolutePath) {
 	        rawPath = rawPath.substring(1);
 	    }
-	    ArrayList<String> components = new ArrayList<String>(Arrays.asList(rawPath.split("/+")));
+	    ArrayList<String> components = new ArrayList<String>(Arrays.asList(rawPath.split("/")));
 	    for (int index = 0; index < components.size(); ++index) {
 	        if (components.get(index).equals("..")) {
 	            components.remove(index);
@@ -141,7 +144,19 @@ public class LocalFilesystem extends Filesystem {
           throw new IOException();
       }
       try {
-          return LocalFilesystem.makeEntryForURL(inputURL, fp.isDirectory(),  Uri.fromFile(fp).toString());
+    	  JSONObject entry = new JSONObject();
+    	  entry.put("isFile", fp.isFile());
+    	  entry.put("isDirectory", fp.isDirectory());
+    	  entry.put("name", fp.getName());
+    	  entry.put("fullPath", inputURL.fullPath);
+    	  // The file system can't be specified, as it would lead to an infinite loop.
+    	  // But we can specify the name of the FS, and the rest can be reconstructed
+    	  // in JS.
+    	  entry.put("filesystemName", inputURL.filesystemName);
+    	  // Backwards compatibility
+    	  entry.put("filesystem", "temporary".equals(name) ? 0 : 1);
+    	  entry.put("nativeURL", Uri.fromFile(fp).toString());
+          return entry;
       } catch (JSONException e) {
     	  throw new IOException();
       }
@@ -579,6 +594,7 @@ public class LocalFilesystem extends Filesystem {
             	// Always close the output
             	out.close();
             }
+			broadcastNewFile(inputURL);
         }
         catch (NullPointerException e)
         {
@@ -588,6 +604,32 @@ public class LocalFilesystem extends Filesystem {
         }
 
         return rawData.length;
+	}
+	
+	 /**
+     * Send broadcast of new file so files appear over MTP
+     *
+     * @param inputURL
+     */
+	private void broadcastNewFile(LocalFilesystemURL inputURL) {
+		//Get the activity
+		Activity activity = this.cordova.getActivity();
+		
+		//Get the context
+		Context context = activity.getApplicationContext();
+		
+		//Get file
+		File file = new File(this.filesystemPathForURL(inputURL));
+		if (file != null) {
+			//Create the URI
+			Uri uri = Uri.fromFile(file);
+			
+			//Create the intent
+			Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri);
+			
+			//Send broadcast of new file
+			context.sendBroadcast(intent);
+		}
 	}
 
 	@Override
