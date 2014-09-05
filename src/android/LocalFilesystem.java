@@ -38,6 +38,9 @@ import org.json.JSONObject;
 
 import android.util.Base64;
 import android.net.Uri;
+import android.content.Context;
+import android.content.Intent;
+import android.app.Activity;
 
 public class LocalFilesystem extends Filesystem {
 
@@ -579,6 +582,7 @@ public class LocalFilesystem extends Filesystem {
             	// Always close the output
             	out.close();
             }
+			broadcastNewFile(inputURL);
         }
         catch (NullPointerException e)
         {
@@ -588,6 +592,32 @@ public class LocalFilesystem extends Filesystem {
         }
 
         return rawData.length;
+	}
+	
+	 /**
+     * Send broadcast of new file so files appear over MTP
+     *
+     * @param inputURL
+     */
+	private void broadcastNewFile(LocalFilesystemURL inputURL) {
+		//Get the activity
+		Activity activity = this.cordova.getActivity();
+		
+		//Get the context
+		Context context = activity.getApplicationContext();
+		
+		//Get file
+		File file = new File(this.filesystemPathForURL(inputURL));
+		if (file != null) {
+			//Create the URI
+			Uri uri = Uri.fromFile(file);
+			
+			//Create the intent
+			Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri);
+			
+			//Send broadcast of new file
+			context.sendBroadcast(intent);
+		}
 	}
 
 	@Override
