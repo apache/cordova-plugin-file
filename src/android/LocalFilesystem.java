@@ -582,7 +582,7 @@ public class LocalFilesystem extends Filesystem {
             	// Always close the output
             	out.close();
             }
-			broadcastNewFile(inputURL);
+            broadcastNewFile(inputURL);
         }
         catch (NullPointerException e)
         {
@@ -600,15 +600,14 @@ public class LocalFilesystem extends Filesystem {
      * @param inputURL
      */
 	private void broadcastNewFile(LocalFilesystemURL inputURL) {
-		//Get the activity
-		Activity activity = this.cordova.getActivity();
-		
-		//Get the context
-		Context context = activity.getApplicationContext();
-		
-		//Get file
 		File file = new File(this.filesystemPathForURL(inputURL));
-		if (file != null) {
+		if (file.exists()) {
+			//Get the activity
+			Activity activity = this.cordova.getActivity();
+		
+			//Get the context
+			Context context = activity.getApplicationContext();
+		
 			//Create the URI
 			Uri uri = Uri.fromFile(file);
 			
