@@ -138,7 +138,7 @@ Obwohl technisch ein Implementierungsdetail, kann es sehr hilfreich zu wissen wi
 
 *Hinweis*: Wenn die Anwendung bereitgestellt wird, um Perimeter zu arbeiten, alle Pfade sind relativ /accounts/1000-enterprise.
 
-## Android Macken
+## Android Eigenarten
 
 ### Android permanenten Speicherort
 

@@ -42,7 +42,7 @@ Para tener una visión general de otras opciones de almacenamiento, consulte [Gu
 
 ## Plataformas soportadas
 
-*   Amazon fuego OS
+*   Amazon fire OS
 *   Android
 *   BlackBerry 10
 *   Firefox OS
