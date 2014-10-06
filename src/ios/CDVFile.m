@@ -958,29 +958,30 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
  */
 - (void)write:(CDVInvokedUrlCommand*)command
 {
-    NSString* callbackId = command.callbackId;
-    NSArray* arguments = command.arguments;
+    [self.commandDelegate runInBackground:^ {
+        NSString* callbackId = command.callbackId;
+        NSArray* arguments = command.arguments;
 
-    // arguments
-    CDVFilesystemURL* localURI = [self fileSystemURLforArg:command.arguments[0]];
-    id argData = [arguments objectAtIndex:1];
-    unsigned long long pos = (unsigned long long)[[arguments objectAtIndex:2] longLongValue];
+        // arguments
+        CDVFilesystemURL* localURI = [self fileSystemURLforArg:command.arguments[0]];
+        id argData = [arguments objectAtIndex:1];
+        unsigned long long pos = (unsigned long long)[[arguments objectAtIndex:2] longLongValue];
 
-    NSObject<CDVFileSystem> *fs = [self filesystemForURL:localURI];
+        NSObject<CDVFileSystem> *fs = [self filesystemForURL:localURI];
 
 
-    [fs truncateFileAtURL:localURI atPosition:pos];
-    CDVPluginResult *result;
-    if ([argData isKindOfClass:[NSString class]]) {
-        NSData *encData = [argData dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:YES];
-        result = [fs writeToFileAtURL:localURI withData:encData append:YES];
-    } else if ([argData isKindOfClass:[NSData class]]) {
-        result = [fs writeToFileAtURL:localURI withData:argData append:YES];
-    } else {
-        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid parameter type"];
-    }
-    [self.commandDelegate sendPluginResult:result callbackId:callbackId];
-
+        [fs truncateFileAtURL:localURI atPosition:pos];
+        CDVPluginResult *result;
+        if ([argData isKindOfClass:[NSString class]]) {
+            NSData *encData = [argData dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:YES];
+            result = [fs writeToFileAtURL:localURI withData:encData append:YES];
+        } else if ([argData isKindOfClass:[NSData class]]) {
+            result = [fs writeToFileAtURL:localURI withData:argData append:YES];
+        } else {
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid parameter type"];
+        }
+        [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+    }];
 }
 
 #pragma mark Methods for converting between URLs and paths
