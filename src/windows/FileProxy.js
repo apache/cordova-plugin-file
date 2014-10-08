@@ -61,6 +61,46 @@ function getFilesystemFromPath(path) {
 var getFolderFromPathAsync = Windows.Storage.StorageFolder.getFolderFromPathAsync;
 var getFileFromPathAsync = Windows.Storage.StorageFile.getFileFromPathAsync;
 
+var writeBytesAsync = Windows.Storage.FileIO.writeBytesAsync;
+var writeTextAsync = Windows.Storage.FileIO.writeTextAsync;
+var writeBlobAsync = function writeBlobAsync(storageFile, data) {
+    return new WinJS.Promise(function (resolve, reject) {
+        storageFile.openAsync(Windows.Storage.FileAccessMode.readWrite).then(
+            function (output) {
+                var input;
+                if (data.detachStream) {
+                    input = data.detachStream();
+                }
+                else {
+                    input = data.msDetachStream();
+                }
+
+                // Copy the stream from the blob to the File stream 
+                Windows.Storage.Streams.RandomAccessStream.copyAsync(input, output).then(
+                    function () {
+                        output.flushAsync().done(
+                            function () {
+                                input.close();
+                                output.close();
+
+                                resolve(data.length);
+                            },
+                            function () {
+                                reject(FileError.INVALID_MODIFICATION_ERR);
+                            }
+                        );
+                    },
+                    function () {
+                        reject(FileError.INVALID_MODIFICATION_ERR);
+                    }
+                );
+            },
+            function () {
+                reject(FileError.INVALID_MODIFICATION_ERR);
+            }
+        );
+    });
+};
 
 module.exports = {
 
@@ -516,38 +556,50 @@ module.exports = {
             isBinary = args[3];
 
         if (data instanceof ArrayBuffer) {
-            data = Array.apply(null, new Uint8Array(data));
+            var dataView = new DataView(data);
+            data = new Blob([dataView]);
         }
-        
-        var writePromise = isBinary ? Windows.Storage.FileIO.writeBytesAsync : Windows.Storage.FileIO.writeTextAsync;
 
-        
         fileName = fileName.split("/").join("\\");
-
 
         // split path to folder and file name
         var path = fileName.substring(0, fileName.lastIndexOf('\\')),
             file = fileName.split('\\').pop();
-        
 
         getFolderFromPathAsync(path).done(
             function(storageFolder) {
                 storageFolder.createFileAsync(file, Windows.Storage.CreationCollisionOption.openIfExists).done(
                     function(storageFile) {
-                        writePromise(storageFile, data).
-                            done(function () {
+                        var writePromise;
+                        if (data instanceof Blob || data instanceof File) {
+                            writePromise = writeBlobAsync;
+                        }
+                        else if (isBinary) {
+                            writePromise = writeBytesAsync;
+                        }
+                        else {
+                            writePromise = writeTextAsync;
+                        }
+
+                        writePromise(storageFile, data).done(
+                            function () {
                                 win(data.length);
-                            }, function () {
+                            },
+                            function () {
                                 fail(FileError.INVALID_MODIFICATION_ERR);
-                            });
-                    }, function() {
+                            }
+                        );
+                    },
+                    function () {
                         fail(FileError.INVALID_MODIFICATION_ERR);
                     }
                 );
-                
-            }, function() {
+
+            },
+            function () {
                 fail(FileError.NOT_FOUND_ERR);
-            });
+            }
+        );
     },
 
     truncate: function (win, fail, args) { // ["fileName","size"]
