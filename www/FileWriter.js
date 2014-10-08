@@ -1,4 +1,4 @@
-/*
+﻿/*
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -99,11 +99,11 @@ FileWriter.prototype.write = function(data) {
 
     var that=this;
     var supportsBinary = (typeof window.Blob !== 'undefined' && typeof window.ArrayBuffer !== 'undefined');
-    var isOkForWindows = (cordova.platformId === "windows8" || cordova.platformId === "windows") && (data instanceof Blob || data instanceof File);
+    var isProxySupportBlobNatively = (cordova.platformId === "windows8" || cordova.platformId === "windows");
     var isBinary;
 
     // Check to see if the incoming data is a blob
-    if (!isOkForWindows && (data instanceof File || (supportsBinary && data instanceof Blob))) {
+    if (data instanceof File || (!isProxySupportBlobNatively && supportsBinary && data instanceof Blob)) {
         var fileReader = new FileReader();
         fileReader.onload = function() {
             // Call this method again, with the arraybuffer as argument

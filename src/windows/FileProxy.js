@@ -67,13 +67,7 @@ var writeBlobAsync = function writeBlobAsync(storageFile, data) {
     return new WinJS.Promise(function (resolve, reject) {
         storageFile.openAsync(Windows.Storage.FileAccessMode.readWrite).then(
             function (output) {
-                var input;
-                if (data.detachStream) {
-                    input = data.detachStream();
-                }
-                else {
-                    input = data.msDetachStream();
-                }
+                var input = (data.detachStream || data.msDetachStream).call(data);
 
                 // Copy the stream from the blob to the File stream 
                 Windows.Storage.Streams.RandomAccessStream.copyAsync(input, output).then(
@@ -100,6 +94,10 @@ var writeBlobAsync = function writeBlobAsync(storageFile, data) {
             }
         );
     });
+};
+
+var writeArrayBufferAsync = function writeArrayBufferAsync(storageFile, data) {
+    return writeBlobAsync(storageFile, new Blob([data]));
 };
 
 module.exports = {
@@ -555,32 +553,39 @@ module.exports = {
             position = args[2],
             isBinary = args[3];
 
-        if (data instanceof ArrayBuffer) {
-            var dataView = new DataView(data);
-            data = new Blob([dataView]);
-        }
-
         fileName = fileName.split("/").join("\\");
 
         // split path to folder and file name
         var path = fileName.substring(0, fileName.lastIndexOf('\\')),
             file = fileName.split('\\').pop();
 
-        getFolderFromPathAsync(path).done(
-            function(storageFolder) {
-                storageFolder.createFileAsync(file, Windows.Storage.CreationCollisionOption.openIfExists).done(
-                    function(storageFile) {
-                        var writePromise;
-                        if (data instanceof Blob || data instanceof File) {
-                            writePromise = writeBlobAsync;
-                        }
-                        else if (isBinary) {
-                            writePromise = writeBytesAsync;
-                        }
-                        else {
-                            writePromise = writeTextAsync;
-                        }
+        function getWriteMethodForData(data, isBinary) {
+            
+            if (data instanceof Blob) {
+                return writeBlobAsync;
+            }
 
+            if (data instanceof ArrayBuffer) {
+                return writeArrayBufferAsync;
+            }
+
+            if (isBinary) {
+                return writeBytesAsync;
+            }
+
+            if (typeof data === 'string') {
+                return writeTextAsync;
+            }
+
+            throw new Error('Unsupported data type for write method');          
+        }
+
+        var writePromise = getWriteMethodForData(data, isBinary);
+
+        getFolderFromPathAsync(path).done(
+            function (storageFolder) {
+                storageFolder.createFileAsync(file, Windows.Storage.CreationCollisionOption.openIfExists).done(
+                    function (storageFile) {
                         writePromise(storageFile, data).done(
                             function () {
                                 win(data.length);
