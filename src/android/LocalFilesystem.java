@@ -31,6 +31,7 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import android.content.res.AssetManager;
 import org.apache.cordova.CordovaInterface;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -135,19 +136,18 @@ public class LocalFilesystem extends Filesystem {
 
 	@Override
 	public JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException {
-      File fp = new File(filesystemPathForURL(inputURL));
-
-      if (!fp.exists()) {
-          throw new FileNotFoundException();
-      }
-      if (!fp.canRead()) {
-          throw new IOException();
-      }
-      try {
-          return LocalFilesystem.makeEntryForURL(inputURL, fp.isDirectory(),  Uri.fromFile(fp).toString());
-      } catch (JSONException e) {
-    	  throw new IOException();
-      }
+            FileProxy fp = new FileProxy(filesystemPathForURL(inputURL), cordova);
+            if (!fp.exists()) {
+                throw new FileNotFoundException();
+            }
+            if (!fp.canRead()) {
+                throw new IOException();
+            }
+            try {
+                return LocalFilesystem.makeEntryForURL(inputURL, fp.isDirectory(), Uri.fromFile(fp).toString());
+            } catch (JSONException e) {
+                throw new IOException();
+            }
 	}
 
 	@Override
@@ -176,8 +176,8 @@ public class LocalFilesystem extends Filesystem {
         } else {
         	requestedURL = URLforFullPath(normalizePath(inputURL.fullPath + "/" + path));
         }
-        
-        File fp = new File(this.filesystemPathForURL(requestedURL));
+
+        FileProxy fp = new FileProxy(this.filesystemPathForURL(requestedURL), cordova);
 
         if (create) {
             if (exclusive && fp.exists()) {
@@ -214,7 +214,7 @@ public class LocalFilesystem extends Filesystem {
 	@Override
 	public boolean removeFileAtLocalURL(LocalFilesystemURL inputURL) throws InvalidModificationException {
 
-        File fp = new File(filesystemPathForURL(inputURL));
+        FileProxy fp = new FileProxy(filesystemPathForURL(inputURL), cordova);
 
         // You can't delete a directory that is not empty
         if (fp.isDirectory() && fp.list().length > 0) {
@@ -226,13 +226,13 @@ public class LocalFilesystem extends Filesystem {
 
 	@Override
 	public boolean recursiveRemoveFileAtLocalURL(LocalFilesystemURL inputURL) throws FileExistsException {
-        File directory = new File(filesystemPathForURL(inputURL));
+        FileProxy directory = new FileProxy(filesystemPathForURL(inputURL), cordova);
     	return removeDirRecursively(directory);
 	}
 	
-	protected boolean removeDirRecursively(File directory) throws FileExistsException {
+	protected boolean removeDirRecursively(FileProxy directory) throws FileExistsException {
         if (directory.isDirectory()) {
-            for (File file : directory.listFiles()) {
+            for (FileProxy file : directory.listFiles()) {
                 removeDirRecursively(file);
             }
         }
@@ -246,7 +246,7 @@ public class LocalFilesystem extends Filesystem {
 
 	@Override
 	public JSONArray readEntriesAtLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException {
-        File fp = new File(filesystemPathForURL(inputURL));
+        FileProxy fp = new FileProxy(filesystemPathForURL(inputURL), cordova);
 
         if (!fp.exists()) {
             // The directory we are listing doesn't exist so we should fail.
@@ -256,7 +256,7 @@ public class LocalFilesystem extends Filesystem {
         JSONArray entries = new JSONArray();
 
         if (fp.isDirectory()) {
-            File[] files = fp.listFiles();
+            FileProxy[] files = fp.listFiles();
             for (int i = 0; i < files.length; i++) {
                 if (files[i].canRead()) {
                     try {
@@ -272,7 +272,7 @@ public class LocalFilesystem extends Filesystem {
 
 	@Override
 	public JSONObject getFileMetadataForLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException {
-        File file = new File(filesystemPathForURL(inputURL));
+        FileProxy file = new FileProxy(filesystemPathForURL(inputURL), cordova);
 
         if (!file.exists()) {
             throw new FileNotFoundException("File at " + inputURL.URL + " does not exist.");
@@ -296,8 +296,8 @@ public class LocalFilesystem extends Filesystem {
      * Check to see if the user attempted to copy an entry into its parent without changing its name,
      * or attempted to copy a directory into a directory that it contains directly or indirectly.
      *
-     * @param srcDir
-     * @param destinationDir
+     * @param src
+     * @param dest
      * @return
      */
     private boolean isCopyOnItself(String src, String dest) {
@@ -305,7 +305,7 @@ public class LocalFilesystem extends Filesystem {
         // This weird test is to determine if we are copying or moving a directory into itself.
         // Copy /sdcard/myDir to /sdcard/myDir-backup is okay but
         // Copy /sdcard/myDir to /sdcard/myDir/backup should throw an INVALID_MODIFICATION_ERR
-        if (dest.startsWith(src) && dest.indexOf(File.separator, src.length() - 1) != -1) {
+        if (dest.startsWith(src) && dest.indexOf(FileProxy.separator, src.length() - 1) != -1) {
             return true;
         }
 
@@ -322,7 +322,7 @@ public class LocalFilesystem extends Filesystem {
      * @throws InvalidModificationException
      * @throws JSONException
      */
-    private JSONObject copyFile(File srcFile, File destFile) throws IOException, InvalidModificationException, JSONException {
+    private JSONObject copyFile(FileProxy srcFile, FileProxy destFile) throws IOException, InvalidModificationException, JSONException {
         // Renaming a file to an existing directory should fail
         if (destFile.exists() && destFile.isDirectory()) {
             throw new InvalidModificationException("Can't rename a file to a directory");
@@ -336,20 +336,26 @@ public class LocalFilesystem extends Filesystem {
     /**
      * Moved this code into it's own method so moveTo could use it when the move is across file systems
      */
-    private void copyAction(File srcFile, File destFile)
+    private void copyAction(FileProxy srcFile, FileProxy destFile)
             throws FileNotFoundException, IOException {
-        FileInputStream istream = new FileInputStream(srcFile);
-        FileOutputStream ostream = new FileOutputStream(destFile);
-        FileChannel input = istream.getChannel();
-        FileChannel output = ostream.getChannel();
+        InputStream istream;
+        if (srcFile.isInAssets()){
+            istream = cordova.getActivity().getAssets().open(srcFile.getAssetsPath());
+        } else
+            istream = new FileInputStream(srcFile);
 
+        OutputStream ostream = new FileOutputStream(destFile);
         try {
-            input.transferTo(0, input.size(), output);
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        //read from is to buffer
+        while((bytesRead = istream.read(buffer)) !=-1){
+            ostream.write(buffer, 0, bytesRead);
+        }
         } finally {
             istream.close();
+            ostream.flush();
             ostream.close();
-            input.close();
-            output.close();
         }
     }
 
@@ -364,7 +370,7 @@ public class LocalFilesystem extends Filesystem {
      * @throws NoModificationAllowedException
      * @throws InvalidModificationException
      */
-    private JSONObject copyDirectory(File srcDir, File destinationDir) throws JSONException, IOException, NoModificationAllowedException, InvalidModificationException {
+    private JSONObject copyDirectory(FileProxy srcDir, FileProxy destinationDir) throws JSONException, IOException, NoModificationAllowedException, InvalidModificationException {
         // Renaming a file to an existing directory should fail
         if (destinationDir.exists() && destinationDir.isFile()) {
             throw new InvalidModificationException("Can't rename a file to a directory");
@@ -384,8 +390,8 @@ public class LocalFilesystem extends Filesystem {
         }
         
 
-        for (File file : srcDir.listFiles()) {
-            File destination = new File(destinationDir.getAbsoluteFile() + File.separator + file.getName());
+        for (FileProxy file : srcDir.listFiles()) {
+            FileProxy destination = new FileProxy(destinationDir.getAbsoluteFile() + FileProxy.separator + file.getName(), cordova);
             if (file.isDirectory()) {
                 copyDirectory(file, destination);
             } else {
@@ -406,11 +412,17 @@ public class LocalFilesystem extends Filesystem {
      * @throws InvalidModificationException
      * @throws JSONException
      */
-    private JSONObject moveFile(File srcFile, File destFile) throws IOException, JSONException, InvalidModificationException {
+    private JSONObject moveFile(FileProxy srcFile, FileProxy destFile) throws IOException, JSONException, InvalidModificationException {
         // Renaming a file to an existing directory should fail
         if (destFile.exists() && destFile.isDirectory()) {
             throw new InvalidModificationException("Can't rename a file to a directory");
         }
+
+        //Check src directory can be del
+        if (!srcFile.canWrite()) {
+            throw new IOException("Can't delete source directory");
+        }
+
 
         // Try to rename the file
         if (!srcFile.renameTo(destFile)) {
@@ -441,10 +453,15 @@ public class LocalFilesystem extends Filesystem {
      * @throws NoModificationAllowedException
      * @throws FileExistsException
      */
-    private JSONObject moveDirectory(File srcDir, File destinationDir) throws IOException, JSONException, InvalidModificationException, NoModificationAllowedException, FileExistsException {
+    private JSONObject moveDirectory(FileProxy srcDir, FileProxy destinationDir) throws IOException, JSONException, InvalidModificationException, NoModificationAllowedException, FileExistsException {
         // Renaming a file to an existing directory should fail
         if (destinationDir.exists() && destinationDir.isFile()) {
             throw new InvalidModificationException("Can't rename a file to a directory");
+        }
+
+        //Check src directory can be del
+        if (!srcDir.canWrite()) {
+            throw new IOException("Can't delete source directory");
         }
 
         // Check to make sure we are not copying the directory into itself
@@ -482,7 +499,7 @@ public class LocalFilesystem extends Filesystem {
 
 		// Check to see if the destination directory exists
         String newParent = this.filesystemPathForURL(destURL);
-        File destinationDir = new File(newParent);
+        FileProxy destinationDir = new FileProxy(newParent, cordova);
         if (!destinationDir.exists()) {
             // The destination does not exist so we should fail.
             throw new FileNotFoundException("The source does not exist");
@@ -495,9 +512,9 @@ public class LocalFilesystem extends Filesystem {
             final LocalFilesystemURL destinationURL = makeDestinationURL(newName, srcURL, destURL);
 
 	        String srcFilesystemPath = srcFs.filesystemPathForURL(srcURL);
-            File sourceFile = new File(srcFilesystemPath);
+            FileProxy sourceFile = new FileProxy(srcFilesystemPath, cordova);
             String destFilesystemPath = this.filesystemPathForURL(destinationURL);
-            File destinationFile = new File(destFilesystemPath);
+            FileProxy destinationFile = new FileProxy(destFilesystemPath, cordova);
 
             if (!sourceFile.exists()) {
 	            // The file/directory we are copying doesn't exist so we should fail.
@@ -533,7 +550,7 @@ public class LocalFilesystem extends Filesystem {
     public void readFileAtURL(LocalFilesystemURL inputURL, long start, long end,
 			ReadFileCallback readFileCallback) throws IOException {
 
-		File file = new File(this.filesystemPathForURL(inputURL));
+        FileProxy file = new FileProxy(this.filesystemPathForURL(inputURL), cordova);
         String contentType = FileHelper.getMimeTypeForExtension(file.getAbsolutePath());
 		
         if (end < 0) {
@@ -541,7 +558,12 @@ public class LocalFilesystem extends Filesystem {
         }
         long numBytesToRead = end - start;
 
-        InputStream rawInputStream = new FileInputStream(file);
+        InputStream rawInputStream;
+        if (file.isInAssets()){
+            rawInputStream = cordova.getActivity().getAssets().open(file.getAssetsPath());
+        } else
+            rawInputStream = new FileInputStream(file);
+
 		try {
 			if (start > 0) {
                 rawInputStream.skip(start);
@@ -621,7 +643,7 @@ public class LocalFilesystem extends Filesystem {
 
 	@Override
 	public long truncateFileAtURL(LocalFilesystemURL inputURL, long size) throws IOException {
-        File file = new File(filesystemPathForURL(inputURL));
+        FileProxy file = new FileProxy(filesystemPathForURL(inputURL), cordova);
 
         if (!file.exists()) {
             throw new FileNotFoundException("File at " + inputURL.URL + " does not exist.");
@@ -634,26 +656,23 @@ public class LocalFilesystem extends Filesystem {
                 channel.truncate(size);
                 return size;
             }
-
             return raf.length();
         } finally {
             raf.close();
         }
-
-
 	}
 
 	@Override
 	public boolean canRemoveFileAtLocalURL(LocalFilesystemURL inputURL) {
 		String path = filesystemPathForURL(inputURL);
-		File file = new File(path);
+        FileProxy file = new FileProxy(path, cordova);
 		return file.exists();
 	}
 
 	@Override
 	OutputStream getOutputStreamForURL(LocalFilesystemURL inputURL) throws FileNotFoundException {
 		String path = filesystemPathForURL(inputURL);
-		File file = new File(path);
+        FileProxy file = new FileProxy(path, cordova);
 		FileOutputStream os = new FileOutputStream(file);
 		return os;
 	}
