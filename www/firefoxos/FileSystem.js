@@ -19,7 +19,7 @@
  *
 */
 
-FILESYSTEM_PREFIX = "cdvfile://";
+FILESYSTEM_PREFIX = "file:///";
 
 module.exports = {
     __format__: function(fullPath) {
