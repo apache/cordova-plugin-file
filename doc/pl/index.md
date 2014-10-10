@@ -96,14 +96,14 @@ Chociaż technicznie implementacyjnym, może być bardzo przydatne wiedzieć, ja
 |    `Library`                                 | -                           | Biblioteka            | r/w  |   Tak   |     Nr      |      Tak?      |   Tak    |
 |       `NoCloud/`                             | dataDirectory               | Biblioteka nosync     | r/w  |   Tak   |     Nr      |       Nr       |   Tak    |
 |       `Cloud/`                               | syncedDataDirectory         | -                     | r/w  |   Tak   |     Nr      |      Tak       |   Tak    |
-|       `Caches/`                              | cacheDirectory              | pamięci podręcznej    | r/w  |  Tak *  | Tak \* * *| |       Nr       |   Tak    |
-|    `tmp/`                                    | tempDirectory               | -                     | r/w  | Nie * * | Tak \* * *| |       Nr       |   Tak    |
+|       `Caches/`                              | cacheDirectory              | pamięci podręcznej    | r/w  |  Tak *  | Tak * * *| |       Nr       |   Tak    |
+|    `tmp/`                                    | tempDirectory               | -                     | r/w  | Nie * * | Tak * * *| |       Nr       |   Tak    |
 
 * Pliki utrzymywały aplikacja zostanie ponownie uruchomiony i uaktualnienia, ale w tym katalogu mogą być rozliczone, gdy OS pragnienia. Aplikacji powinny być w stanie odtworzyć zawartość, która może być usunięta.
 
 * * Plików może utrzymywać się po ponownym uruchomieniu aplikacji, ale nie opierają się na tym zachowaniu. Pliki nie są gwarantowane w aktualizacji. Aplikacji należy usunąć pliki z tego katalogu, gdy ma to zastosowanie, ponieważ system operacyjny nie gwarantuje Kiedy (lub nawet jeśli) te pliki zostaną usunięte.
 
-\* * *| System operacyjny może wyczyścić zawartość w tym katalogu, gdy czuje, że jest to konieczne, ale nie powoływać się na to. Należy wyczyścić ten katalog jako odpowiednie dla aplikacji.
+* * *| System operacyjny może wyczyścić zawartość w tym katalogu, gdy czuje, że jest to konieczne, ale nie powoływać się na to. Należy wyczyścić ten katalog jako odpowiednie dla aplikacji.
 
 ### Układ systemu Android plików
 
