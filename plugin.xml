@@ -313,7 +313,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
 
     <!-- windows8 -->
     <platform name="windows8">
-        <js-module src="src/windows8/FileProxy.js" name="FileProxy">
+        <js-module src="src/windows/FileProxy.js" name="FileProxy">
             <merges target="" />
         </js-module>
     </platform>
