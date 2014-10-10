@@ -96,14 +96,14 @@ Obwohl technisch ein Implementierungsdetail, kann es sehr hilfreich zu wissen wi
 |    `Library`                                 | -                           | Bibliothek            | R/w  |     Ja      |    Nein    | Ja?  |   Ja    |
 |       `NoCloud/`                             | dataDirectory               | Bibliothek-nosync     | R/w  |     Ja      |    Nein    | Nein |   Ja    |
 |       `Cloud/`                               | syncedDataDirectory         | -                     | R/w  |     Ja      |    Nein    |  Ja  |   Ja    |
-|       `Caches/`                              | cacheDirectory              | Cache                 | R/w  |    Ja *     | Ja \* * *| | Nein |   Ja    |
-|    `tmp/`                                    | tempDirectory               | -                     | R/w  |  Nicht * *  | Ja \* * *| | Nein |   Ja    |
+|       `Caches/`                              | cacheDirectory              | Cache                 | R/w  |    Ja *     | Ja * * *| | Nein |   Ja    |
+|    `tmp/`                                    | tempDirectory               | -                     | R/w  |  Nicht * *  | Ja * * *| | Nein |   Ja    |
 
 * Dateien werden hinweg app Neustarts und Upgrades beibehalten, aber dieses Verzeichnis kann gelöscht werden, wenn das OS begehrt. Ihre Anwendung sollte in der Lage, Inhalte zu erschaffen, die möglicherweise gelöscht werden.
 
 * *-Dateien kann über app-Neustarts beizubehalten, aber verlasse dich nicht auf dieses Verhalten. Dateien sind nicht unbedingt Aktuelles beibehalten. Ihre Anwendung sollte Dateien aus diesem Verzeichnis entfernen, wenn es gilt, diese Dateien werden entfernt, da das OS nicht wann (oder auch wenn) garantiert.
 
-\* * *| The OS kann den Inhalt dieses Verzeichnisses löschen, wenn es sich anfühlt, ist es erforderlich, aber verlassen Sie sich nicht dazu. Sie sollten dieses Verzeichnis entsprechend Ihrer Anwendung deaktivieren.
+* * *| The OS kann den Inhalt dieses Verzeichnisses löschen, wenn es sich anfühlt, ist es erforderlich, aber verlassen Sie sich nicht dazu. Sie sollten dieses Verzeichnis entsprechend Ihrer Anwendung deaktivieren.
 
 ### Android File System-Layout
 

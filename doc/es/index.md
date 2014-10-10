@@ -96,14 +96,14 @@ Aunque técnicamente un detalle de la implementación, puede ser muy útil saber
 |    `Library`                                 | -                           | Biblioteca            |  r/w  |      Sí       |     No     |      ¿Sí?      |   Sí    |
 |       `NoCloud/`                             | dataDirectory               | Biblioteca-nosync     |  r/w  |      Sí       |     No     |       No       |   Sí    |
 |       `Cloud/`                               | syncedDataDirectory         | -                     |  r/w  |      Sí       |     No     |       Sí       |   Sí    |
-|       `Caches/`                              | cacheDirectory              | caché                 |  r/w  |     Sí *      | Si \* * *| |       No       |   Sí    |
-|    `tmp/`                                    | tempDirectory               | -                     |  r/w  |    No * *     | Si \* * *| |       No       |   Sí    |
+|       `Caches/`                              | cacheDirectory              | caché                 |  r/w  |     Sí *      | Si * * *| |       No       |   Sí    |
+|    `tmp/`                                    | tempDirectory               | -                     |  r/w  |    No * *     | Si * * *| |       No       |   Sí    |
 
 * Archivos persisten a través de la aplicación se reinicia y actualizaciones, pero este directorio puede ser despejó cuando el OS desea. Su aplicación debe ser capaz de recrear cualquier contenido que puede ser eliminado.
 
 * * Archivos pueden persistir a través de la aplicación se reinicia, pero no confiar en este comportamiento. Los archivos no se garantizan que persisten a través de actualizaciones. Su aplicación debe eliminar los archivos de este directorio cuando es aplicable, como el sistema operativo no garantiza cuando (o incluso si) estos archivos se quitan.
 
-\* * *| OS la puede borrar el contenido de este directorio cuando se siente que es necesario, pero no dependen de éste. Debe borrar este directorio según sea apropiado para su aplicación.
+* * *| OS la puede borrar el contenido de este directorio cuando se siente que es necesario, pero no dependen de éste. Debe borrar este directorio según sea apropiado para su aplicación.
 
 ### Disposición del sistema Android File
 

@@ -96,14 +96,14 @@ Bien que techniquement un détail d'implémentation, il peut être très utile d
 |    `Library`                                 | -                           | Bibliothèque          |  r/w  |      Oui      |     Non     | Oui ? |  Oui  |
 |       `NoCloud/`                             | dataDirectory               | Bibliothèque-nosync   |  r/w  |      Oui      |     Non     |  Non  |  Oui  |
 |       `Cloud/`                               | syncedDataDirectory         | -                     |  r/w  |      Oui      |     Non     |  Oui  |  Oui  |
-|       `Caches/`                              | cacheDirectory              | cache                 |  r/w  |     Oui *     | Oui \* * *| |  Non  |  Oui  |
-|    `tmp/`                                    | tempDirectory               | -                     |  r/w  |    Ne * *     | Oui \* * *| |  Non  |  Oui  |
+|       `Caches/`                              | cacheDirectory              | cache                 |  r/w  |     Oui *     | Oui * * *| |  Non  |  Oui  |
+|    `tmp/`                                    | tempDirectory               | -                     |  r/w  |    Ne * *     | Oui * * *| |  Non  |  Oui  |
 
 * Fichiers persistent à travers les redémarrages de l'application et mises à niveau, mais ce répertoire peut être effacé à chaque fois que les désirs de l'OS. Votre application doit être en mesure de recréer tout contenu qui pourrait être supprimé.
 
 * * Fichiers peuvent persister redémarrages de l'application, mais ne vous fiez pas ce comportement. Les fichiers ne sont pas garantis à persister dans l'ensemble de mises à jour. Votre application doit supprimer les fichiers de ce répertoire lorsqu'elle s'applique, comme le système d'exploitation ne garantit pas quand (ou même si) ces fichiers sont supprimés.
 
-\* * *| L'OS peut effacer le contenu de ce répertoire chaque fois qu'il se sent il est nécessaire, mais ne comptez pas là-dessus. Vous devez supprimer ce répertoire comme approprié pour votre application.
+* * *| L'OS peut effacer le contenu de ce répertoire chaque fois qu'il se sent il est nécessaire, mais ne comptez pas là-dessus. Vous devez supprimer ce répertoire comme approprié pour votre application.
 
 ### Agencement de système de fichiers Android
 
