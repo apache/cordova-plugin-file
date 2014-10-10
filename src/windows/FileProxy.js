@@ -64,35 +64,21 @@ var getFileFromPathAsync = Windows.Storage.StorageFile.getFileFromPathAsync;
 var writeBytesAsync = Windows.Storage.FileIO.writeBytesAsync;
 var writeTextAsync = Windows.Storage.FileIO.writeTextAsync;
 var writeBlobAsync = function writeBlobAsync(storageFile, data) {
-    return new WinJS.Promise(function (resolve, reject) {
-        storageFile.openAsync(Windows.Storage.FileAccessMode.readWrite).then(
-            function (output) {
-                var input = (data.detachStream || data.msDetachStream).call(data);
+    return storageFile.openAsync(Windows.Storage.FileAccessMode.readWrite)
+    .then(function (output) {
+        var dataSize = data.size;
+        var input = (data.detachStream || data.msDetachStream).call(data);
 
-                // Copy the stream from the blob to the File stream 
-                Windows.Storage.Streams.RandomAccessStream.copyAsync(input, output).then(
-                    function () {
-                        output.flushAsync().done(
-                            function () {
-                                input.close();
-                                output.close();
+        // Copy the stream from the blob to the File stream 
+        return Windows.Storage.Streams.RandomAccessStream.copyAsync(input, output)
+        .then(function () {
+            return output.flushAsync().then(function () {
+                input.close();
+                output.close();
 
-                                resolve(data.length);
-                            },
-                            function () {
-                                reject(FileError.INVALID_MODIFICATION_ERR);
-                            }
-                        );
-                    },
-                    function () {
-                        reject(FileError.INVALID_MODIFICATION_ERR);
-                    }
-                );
-            },
-            function () {
-                reject(FileError.INVALID_MODIFICATION_ERR);
-            }
-        );
+                return dataSize;
+            });
+        });
     });
 };
 
@@ -363,12 +349,9 @@ module.exports = {
         var fullPath = cordovaPathToNative(args[0]);
 
         getFileFromPathAsync(fullPath).then(
-            function (sFile) {
-                getFileFromPathAsync(fullPath).done(function (storageFile) {
+            function (storageFile) {
                     storageFile.deleteAsync().done(win, function () {
                         fail(FileError.INVALID_MODIFICATION_ERR);
-
-                    });
                 });
             },
             function () {
@@ -587,8 +570,9 @@ module.exports = {
                 storageFolder.createFileAsync(file, Windows.Storage.CreationCollisionOption.openIfExists).done(
                     function (storageFile) {
                         writePromise(storageFile, data).done(
-                            function () {
-                                win(data.length);
+                            function (bytesWritten) {
+                                var written = bytesWritten || data.length;
+                                win(written);
                             },
                             function () {
                                 fail(FileError.INVALID_MODIFICATION_ERR);
