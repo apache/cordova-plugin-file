@@ -98,8 +98,40 @@ module.exports = function(evtType, dict)
   var evt = new ProgressEvent(evtType,dict);
   if (dict && dict.target)
   {
-    // Override target property
-    Object.defineProperty(evt,'target',{ get:function() { return(dict.target); }, set:function(value) { } });
+    // Override target property if possible
+    try
+    {
+      Object.defineProperty(evt,'target',{ get:function() { return(dict.target); }, set:function(value) { } });
+    }
+    catch(e)
+    {
+      // Some versions of Webkit (affecting iOS 6.x/7.x, BB 10.2.x) have native ProgressEvents with target being an unconfigurable property.  Wrap instead.
+      var theWrapper = {};
+      for(var attr in evt)
+      {
+        if (attr == 'target')
+          Object.defineProperty(theWrapper,'target',{ get:function() { return(dict.target); }, set:function(value) {} });
+        else if (typeof evt[attr] == 'function')
+          theWrapper[attr] = (function(thisObject,functionName){ return(function() { return(thisObject[functionName].apply(thisObject,arguments)); }); })(evt,attr);
+        else  // value
+        {
+          var origPropDesc = Object.getOwnPropertyDescriptor(evt,attr);
+          if (origPropDesc)
+          {
+            var newPropDesc = { configurable:origPropDesc.configurable, enumerable:origPropDesc.enumerable };
+            newPropDesc.get = (function(thisObject,attrName){ return(function() { return(thisObject[attrName]); }) })(evt,attr);
+            if (origPropDesc.writable)
+              newPropDesc.set = (function(thisObject,attrName){ return(function(value) { thisObject[attrName] = value; }) })(evt,attr);
+            else
+              newPropDesc.set = function() {};  // write-NOP
+            Object.defineProperty(theWrapper,attr,newPropDesc);
+          }
+          else  // mimic with simple get/set handler
+            Object.defineProperty(theWrapper,attr,{ get:function() { return(evt[attr]); }, set:function(val) { evt[attr] = val; } });
+        }
+      }
+      return(theWrapper);
+    }
   }
   return(evt);
 };
