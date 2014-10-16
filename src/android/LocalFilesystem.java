@@ -593,6 +593,31 @@ public class LocalFilesystem extends Filesystem {
 
         return rawData.length;
 	}
+	
+	 /**
+     * Send broadcast of new file so files appear over MTP
+     *
+     * @param inputURL
+     */
+	private void broadcastNewFile(LocalFilesystemURL inputURL) {
+		File file = new File(this.filesystemPathForURL(inputURL));
+		if (file.exists()) {
+			//Get the activity
+			Activity activity = this.cordova.getActivity();
+		
+			//Get the context
+			Context context = activity.getApplicationContext();
+		
+			//Create the URI
+			Uri uri = Uri.fromFile(file);
+			
+			//Create the intent
+			Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri);
+			
+			//Send broadcast of new file
+			context.sendBroadcast(intent);
+		}
+	}
 
      /**
      * Send broadcast of new file so files appear over MTP
