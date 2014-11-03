@@ -62,9 +62,7 @@ function cordovaPathToNative(path) {
     // turn / into \\
     var cleanPath = path.replace(/\//g, '\\');
     // turn  \\ into \
-    cleanPath = cleanPath.replace(/\\\\/g, '\\');
-    // strip end \\ characters
-    cleanPath = cleanPath.replace(/\\+$/g, '');
+    cleanPath = cleanPath.replace(/\\+/g, '\\');
     return cleanPath;
 }
 
@@ -151,7 +149,7 @@ function getFilesystemFromPath(path) {
     var allfs = getAllFS();
     Object.keys(allfs).some(function(fsn) {
     	var fs = allfs[fsn];
-    	if (path.indexOf(fs.root.fullPath) === 0)
+    	if (path.indexOf(fs.winpath) === 0)
     		res = fs;
     	return res;
     });
@@ -168,7 +166,7 @@ function pathFromURL(url) {
 	}
 	if (path.indexOf("file:/")===0) {
 		if (path.indexOf("file://") !== 0) {
-			uri = "file:///" + uri.substr(6);
+			url = "file:///" + url.substr(6);
 		}
 	}
 	
@@ -190,7 +188,7 @@ function getFilesystemFromURL(url) {
 	url=url.replace(msapplhRE,'ms-appdata:///');
 	var res;
 	if (url.indexOf("file:/")===0)
-		res = getFilesystemFromPath(cordovaPathToNative(pathFromURL(url)));
+		res = getFilesystemFromPath(pathFromURL(url));
 	else {
 		var allfs = getAllFS();
 		Object.keys(allfs).every(function(fsn) {
