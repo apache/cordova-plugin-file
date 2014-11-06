@@ -40,6 +40,15 @@ For usage, please refer to HTML5 Rocks' excellent [FileSystem article.](http://w
 For an overview of other storage options, refer to Cordova's
 [storage guide](http://cordova.apache.org/docs/en/edge/cordova_storage_storage.md.html).
 
+This plugin defines global `cordova.file` object.
+
+Although in the global scope, it is not available until after the `deviceready` event.
+
+    document.addEventListener("deviceready", onDeviceReady, false);
+    function onDeviceReady() {
+        console.log(cordova.file);
+    }
+
 ## Installation
 
     cordova plugin add org.apache.cordova.file
