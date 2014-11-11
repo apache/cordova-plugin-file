@@ -305,11 +305,7 @@ public class LocalFilesystem extends Filesystem {
         // This weird test is to determine if we are copying or moving a directory into itself.
         // Copy /sdcard/myDir to /sdcard/myDir-backup is okay but
         // Copy /sdcard/myDir to /sdcard/myDir/backup should throw an INVALID_MODIFICATION_ERR
-        if (dest.startsWith(src) && dest.indexOf(File.separator, src.length() - 1) != -1) {
-            return true;
-        }
-
-        return false;
+        return dest.equals(src) || dest.startsWith(src + File.separator);
     }
 
     /**

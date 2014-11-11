@@ -1599,6 +1599,24 @@ exports.defineAutoTests = function () {
                     });
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
             });
+            it("file.spec.130 moveTo: directory into similar directory", function (done) {
+                var srcDir = "entry.move.dis.srcDir",
+                dstDir = "entry.move.dis.srcDir-backup",
+                srcPath = joinURL(root.fullPath, srcDir);
+                // create a new directory entry to kick off it
+                createDirectory(srcDir, function (srcDirEntry) {
+                deleteEntry(dstDir, function () {
+                createDirectory(dstDir, function (dstDirEntry) {
+                    // move source directory into itself
+                    srcDirEntry.moveTo(dstDirEntry, 'file', function (newDirEntry) {
+                        expect(newDirEntry).toBeDefined();
+                        deleteEntry(dstDir);
+                        done();
+                    }, failed.bind(null, done, 'directory.moveTo - Error moving a directory into a similarly-named directory: ' + srcDir));
+                }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + dstDir));
+                }, failed.bind(null, done, 'deleteEntry - Error deleting directory : ' + dstDir));
+                }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
+            });
             it("file.spec.72 moveTo: file onto itself", function (done) {
                 var file1 = "entry.move.fos.file1",
                 filePath = joinURL(root.fullPath, file1);
