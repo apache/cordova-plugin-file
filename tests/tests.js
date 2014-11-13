@@ -1,4 +1,4 @@
-/*
+﻿/*
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements. See the NOTICE file
@@ -18,6 +18,8 @@
  *
  */
 exports.defineAutoTests = function () {
+    var isWindows = (cordova.platformId == "windows") || (navigator.appVersion.indexOf("MSAppHost/1.0") !== -1);
+
     describe('File API', function () {
         // Adding a Jasmine helper matcher, to report errors when comparing to FileError better.
         var fileErrorMap = {
@@ -2692,7 +2694,7 @@ exports.defineAutoTests = function () {
                     }, function (fileEntry) {
                         expect(fileEntry).toBeDefined();
                         expect(fileEntry.name).toBe(fileName);
-                        expect(fileEntry.fullPath).toCanonicallyMatch('/' + fileName);
+                        expect(fileEntry.fullPath).toCanonicallyMatch(root.fullPath +'/' + fileName);
                         // cleanup
                         deleteEntry(fileName);
                         done();
@@ -2740,14 +2742,19 @@ exports.defineAutoTests = function () {
             var pathExpect = cordova.platformId === 'windowsphone' ? "//nativ" : "file://";
             it("file.spec.114 fileEntry should have a toNativeURL method", function (done) {
                 var fileName = "native.file.uri";
+                if (isWindows) {
+                    var rootPath = root.fullPath;
+                    pathExpect = rootPath.substr(0, rootPath.indexOf(":"));
+                }
                 // create a new file entry
                 createFile(fileName, function (entry) {
                     expect(entry.toNativeURL).toBeDefined();
                     expect(entry.name).toCanonicallyMatch(fileName);
                     expect(typeof entry.toNativeURL).toBe('function');
                     var nativeURL = entry.toNativeURL();
+                    var indexOfRoot = isWindows ? rootPath.indexOf(":") : 7;
                     expect(typeof nativeURL).toBe("string");
-                    expect(nativeURL.substring(0, 7)).toEqual(pathExpect);
+                    expect(nativeURL.substring(0, indexOfRoot)).toEqual(pathExpect);
                     expect(nativeURL.substring(nativeURL.length - fileName.length)).toEqual(fileName);
                     // cleanup
                     deleteEntry(fileName);
@@ -2764,8 +2771,9 @@ exports.defineAutoTests = function () {
                     expect(entries[0].toNativeURL).toBeDefined();
                     expect(typeof entries[0].toNativeURL).toBe('function');
                     var nativeURL = entries[0].toNativeURL();
+                    var indexOfRoot = (isWindows) ? nativeURL.indexOf(":") : 7;
                     expect(typeof nativeURL).toBe("string");
-                    expect(nativeURL.substring(0, 7)).toEqual(pathExpect);
+                    expect(nativeURL.substring(0, indexOfRoot)).toEqual(pathExpect);
                     expect(nativeURL.substring(nativeURL.length - fileName.length)).toEqual(fileName);
                     // cleanup
                     directory.removeRecursively(null, null);
@@ -2792,8 +2800,9 @@ exports.defineAutoTests = function () {
                         expect(entry.name).toCanonicallyMatch(fileName);
                         expect(typeof entry.toNativeURL).toBe('function');
                         var nativeURL = entry.toNativeURL();
+                        var indexOfRoot = (isWindows) ? nativeURL.indexOf(":") : 7;
                         expect(typeof nativeURL).toBe("string");
-                        expect(nativeURL.substring(0, 7)).toEqual(pathExpect);
+                        expect(nativeURL.substring(0, indexOfRoot)).toEqual(pathExpect);
                         expect(nativeURL.substring(nativeURL.length - fileName.length)).toEqual(fileName);
                         // cleanup
                         deleteEntry(fileName);
@@ -2839,7 +2848,7 @@ exports.defineAutoTests = function () {
                 // create a new file entry
                 createFile(fileName, function (entry) {
                     resolveLocalFileSystemURL(entry.toNativeURL(), function (fileEntry) {
-                        expect(fileEntry.fullPath).toCanonicallyMatch("/" + fileName);
+                        expect(fileEntry.fullPath).toCanonicallyMatch(root.fullPath + "/" + fileName);
                         // cleanup
                         deleteEntry(fileName);
                         done();
@@ -2853,7 +2862,7 @@ exports.defineAutoTests = function () {
                     var url = entry.toNativeURL();
                     url = url.replace("///", "//localhost/");
                     resolveLocalFileSystemURL(url, function (fileEntry) {
-                        expect(fileEntry.fullPath).toCanonicallyMatch("/" + fileName);
+                        expect(fileEntry.fullPath).toCanonicallyMatch(root.fullPath + "/" + fileName);
                         // cleanup
                         deleteEntry(fileName);
                         done();
@@ -2867,7 +2876,7 @@ exports.defineAutoTests = function () {
                     var url = entry.toNativeURL();
                     url = url + "?test/test";
                     resolveLocalFileSystemURL(url, function (fileEntry) {
-                        expect(fileEntry.fullPath).toCanonicallyMatch("/" + fileName);
+                        expect(fileEntry.fullPath).toCanonicallyMatch(root.fullPath + "/" + fileName);
                         // cleanup
                         deleteEntry(fileName);
                         done();
@@ -2881,7 +2890,7 @@ exports.defineAutoTests = function () {
                     var url = entry.toNativeURL();
                     url = url.replace("///", "//localhost/") + "?test/test";
                     resolveLocalFileSystemURL(url, function (fileEntry) {
-                        expect(fileEntry.fullPath).toCanonicallyMatch("/" + fileName);
+                        expect(fileEntry.fullPath).toCanonicallyMatch(root.fullPath + "/" + fileName);
                         // cleanup
                         deleteEntry(fileName);
                         done();
