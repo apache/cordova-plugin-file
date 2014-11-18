@@ -78,7 +78,13 @@
     [dirEntry setObject:fullPath forKey:@"fullPath"];
     [dirEntry setObject:lastPart forKey:@"name"];
     [dirEntry setObject:self.name forKey: @"filesystemName"];
-    dirEntry[@"nativeURL"] = [[NSURL fileURLWithPath:[self filesystemPathForFullPath:fullPath]] absoluteString];
+    
+    NSString* nativeURL = [[NSURL fileURLWithPath:[self filesystemPathForFullPath:fullPath]] absoluteString];
+    SEL sel = NSSelectorFromString(@"nativeURL:");
+    if ([self respondsToSelector:sel]) {
+        nativeURL = ((NSString* (*)(id, SEL, id))[self methodForSelector:sel])(self, sel, fullPath);
+    }
+    dirEntry[@"nativeURL"] = nativeURL;
 
     return dirEntry;
 }
