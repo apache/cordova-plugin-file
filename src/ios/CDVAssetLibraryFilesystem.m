@@ -71,7 +71,13 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
     [dirEntry setObject:fullPath forKey:@"fullPath"];
     [dirEntry setObject:lastPart forKey:@"name"];
     [dirEntry setObject:self.name forKey: @"filesystemName"];
-    dirEntry[@"nativeURL"] = [NSString stringWithFormat:@"assets-library:/%@",fullPath];
+    
+    NSString* nativeURL = [NSString stringWithFormat:@"assets-library:/%@",fullPath];
+    SEL sel = NSSelectorFromString(@"nativeURL:");
+    if ([self respondsToSelector:sel]) {
+        nativeURL = ((NSString* (*)(id, SEL, id))[self methodForSelector:sel])(self, sel, fullPath);
+    }
+    dirEntry[@"nativeURL"] = nativeURL;
 
     return dirEntry;
 }
