@@ -316,12 +316,18 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <js-module src="src/windows/FileProxy.js" name="FileProxy">
             <merges target="" />
         </js-module>
+        <js-module src="www/windows/FileSystem.js" name="windowsFileSystem">
+            <merges target="window.FileSystem" />
+        </js-module>
     </platform>
 
     <!-- windows -->
     <platform name="windows">
         <js-module src="src/windows/FileProxy.js" name="FileProxy">
             <merges target="" />
+        </js-module>
+        <js-module src="www/windows/FileSystem.js" name="windowsFileSystem">
+            <merges target="window.FileSystem" />
         </js-module>
     </platform>
 
