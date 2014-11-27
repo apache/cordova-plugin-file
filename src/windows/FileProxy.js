@@ -951,16 +951,16 @@ module.exports = {
 
         var msappdataLocalPrefix = 'ms-appdata:///local/',
             msappdataTempPrefix = 'ms-appdata:///temp/',
-            msappdataLocalPath = Windows.Storage.ApplicationData.current.localFolder.path + '\\',
-            msappdataTempPath = Windows.Storage.ApplicationData.current.temporaryFolder.path + '\\';
+            msappdataLocalPath = Windows.Storage.ApplicationData.current.localFolder.path,
+            msappdataTempPath = Windows.Storage.ApplicationData.current.temporaryFolder.path;
 
         // support for special path start with file:/// or ms-appdata://
         if (uri.indexOf("file:///") === 0 ) {
             path = msappdataLocalPath + uri.substr(8).replace('/', '\\');
         } else if (uri.indexOf(msappdataLocalPrefix) === 0) {
-            path = msappdataLocalPath + uri.replace(msappdataLocalPrefix, '').replace('/', '\\');
+            path = msappdataLocalPath + '\\' + uri.replace(msappdataLocalPrefix, '').replace('/', '\\');
         } else if (uri.indexOf(msappdataTempPrefix) === 0) {
-            path = msappdataTempPath + uri.replace(msappdataTempPrefix, '').replace('/', '\\');
+            path = msappdataTempPath + '\\' + uri.replace(msappdataTempPrefix, '').replace('/', '\\');
         } else {
             // method should not let read files outside of the [APP HASH]/Local or [APP HASH]/temp folders
             if (path.indexOf(msappdataTempPath) != 0 && path.indexOf(msappdataLocalPath) != 0) {
