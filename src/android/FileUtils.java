@@ -352,7 +352,18 @@ public class FileUtils extends CordovaPlugin {
                 }
             }, callbackContext);
         } else if (action.equals("requestAllPaths")) {
-            callbackContext.success(requestAllPaths());
+            cordova.getThreadPool().execute(
+                    new Runnable() {
+                        public void run() {
+                        	try {
+					callbackContext.success(requestAllPaths());
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+                        }
+                    }
+            );
         } else if (action.equals("requestFileSystem")) {
             final int fstype=args.getInt(0);
             final long size = args.optLong(1);
