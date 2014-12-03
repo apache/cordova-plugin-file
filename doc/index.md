@@ -267,6 +267,20 @@ unable to access their previously-stored files.
 If your application is new, or has never previously stored files in the
 persistent filesystem, then the `Library` setting is generally recommended.
 
+If you want to use the iosExtraFileSystems location (document-nosync, library-nosync ...) , you should set these tags in the config.xml:
+
+    <preference name="iosPersistentFileLocation" value="Library" />
+    <preference name="iosExtraFilesystems" value="library-nosync" />
+    
+And then request the file system with the option 3:
+
+    window.requestFileSystem(3, 0, function(fs){
+      //do something with fs open at the iosExtraFilesystems var location
+    }, function(){
+      console.log("failed to get file system”)
+    });
+
+
 ## Firefox OS Quirks
 
 The File System API is not natively supported by Firefox OS and is implemented
