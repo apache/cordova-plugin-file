@@ -275,3 +275,21 @@
 * CB-6923 Adding support to handle relative paths
 * Style improvements on Manual tests
 * CB-7094 Ported File manual tests
+
+### 1.3.2 (Dec 02, 2014)
+* Gets rid of thread block error in File plugin
+* CB-7917 Made tests file.spec.114 - 116 pass for **Windows** platform
+* CB-7977 Mention `deviceready` in plugin docs
+* CB-7602: Fix `isCopyOnItself` logic
+* CB-7700 cordova-plugin-file documentation translation: cordova-plugin-file
+* Use one proxy for both **Windows** and **Windows8** platforms
+* CB-6994 Fixes result, returned by proxy's write method
+* [fxos] update `__format__` to match `pathsPrefix`
+* CB-6994 Improves merged code to be able to write a File
+* Optimize `FileProxy` for **Windows** platforms
+* Synchronize changes with **Windows** platform
+* Fix function write for big files on **Windows 8**
+* Write file in background
+* CB-7487 **Android** Broadcast file write This allows MTP USB shares to show the file immediately without reboot/manual refresh using 3rd party app.
+* CB-7700 cordova-plugin-file documentation translation: cordova-plugin-file
+* CB-7571 Bump version of nested plugin to match parent plugin
