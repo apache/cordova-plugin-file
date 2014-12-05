@@ -2654,18 +2654,18 @@ exports.defineAutoTests = function () {
                 var fileName = "resolve.file.uri";
                 var dirName = "resolve.dir.uri";
                 // create a new file entry
-				createDirectory(dirName, function () {
-					createFile(dirName+"/../" + fileName, function (entry) {
-						// lookup file system entry
-						window.resolveLocalFileSystemURL(entry.toURL(), function (fileEntry) {
-							expect(fileEntry).toBeDefined();
-							expect(fileEntry.name).toCanonicallyMatch(fileName);
-							// cleanup
-							deleteEntry(fileName);
-							done();
-						}, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving URI: ' + entry.toURL()));
-					}, failed.bind(null, done, 'createFile - Error creating file: ../' + fileName));
-				}, failed.bind(null, done, 'createDirectory - Error creating directory: ' + dirName));
+                createDirectory(dirName, function () {
+                    createFile(dirName+"/../" + fileName, function (entry) {
+                        // lookup file system entry
+                        window.resolveLocalFileSystemURL(entry.toURL(), function (fileEntry) {
+                            expect(fileEntry).toBeDefined();
+                            expect(fileEntry.name).toCanonicallyMatch(fileName);
+                            // cleanup
+                            deleteEntry(fileName);
+                            done();
+                        }, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving URI: ' + entry.toURL()));
+                    }, failed.bind(null, done, 'createFile - Error creating file: ../' + fileName));
+                }, failed.bind(null, done, 'createDirectory - Error creating directory: ' + dirName));
             });
             it("file.spec.111 should not traverse above above the root directory", function (done) {
                 var fileName = "traverse.file.uri";
@@ -2676,8 +2676,8 @@ exports.defineAutoTests = function () {
                         create : false
                     }, succeed.bind(null, done, "root.getFile('../"+fileName+ "')- Unexpected success callback, it should not traverse abvoe the root directory"), 
                     function (error) {
-                    	expect(error).toBeDefined();
-                    	done();
+                        expect(error).toBeDefined();
+                        done();
                     });
                 }, failed.bind(null, done, 'createFile - Error creating file: ../' + fileName));
             });
@@ -2709,10 +2709,10 @@ exports.defineAutoTests = function () {
                     create : false
                 }, succeed.bind(null, done, 'root.getFile - Unexpected success callback, it should not locate nonexistent file: ' + fileName), function (error) {
                     expect(error).toBeDefined();
-                    if (cordova.platformId == "windows")
-                    	expect(error).toBeFileError(FileError.SECURITY_ERR);
+                    if (cordova.platformId == "windows8" || cordova.platformId == "windows")
+                        expect(error).toBeFileError(FileError.SECURITY_ERR);
                     else
-						expect(error).toBeFileError(FileError.NOT_FOUND_ERR);
+                        expect(error).toBeFileError(FileError.NOT_FOUND_ERR);
                     done();
                 });
             });
@@ -2722,7 +2722,10 @@ exports.defineAutoTests = function () {
             /* These specs verify that FileEntries have a toNativeURL method
              * which appears to be sane.
              */
-            var pathExpect = cordova.platformId === 'windowsphone' ? "//nativ" : "file://";
+            var pathExpect = cordova.platformId === 'windowsphone' ? "//nativ" : 
+                (cordova.platformId == "windows8" || cordova.platformId == "windows")?
+                "ms-appdata:/":
+                "file://";
             it("file.spec.114 fileEntry should have a toNativeURL method", function (done) {
                 var fileName = "native.file.uri";
                 // create a new file entry
@@ -2732,8 +2735,7 @@ exports.defineAutoTests = function () {
                     expect(typeof entry.toNativeURL).toBe('function');
                     var nativeURL = entry.toNativeURL();
                     expect(typeof nativeURL).toBe("string");
-                    if (cordova.platformId != "windows")
-						expect(nativeURL.substring(0, 7)).toEqual(pathExpect);
+                    expect(nativeURL.substring(0, pathExpect.length)).toEqual(pathExpect);
                     expect(nativeURL.substring(nativeURL.length - fileName.length)).toEqual(fileName);
                     // cleanup
                     deleteEntry(fileName);
@@ -2751,8 +2753,7 @@ exports.defineAutoTests = function () {
                     expect(typeof entries[0].toNativeURL).toBe('function');
                     var nativeURL = entries[0].toNativeURL();
                     expect(typeof nativeURL).toBe("string");
-                    if (cordova.platformId != "windows")
-						expect(nativeURL.substring(0, 7)).toEqual(pathExpect);
+                    expect(nativeURL.substring(0, pathExpect.length)).toEqual(pathExpect);
                     expect(nativeURL.substring(nativeURL.length - fileName.length)).toEqual(fileName);
                     // cleanup
                     directory.removeRecursively(null, null);
@@ -2780,8 +2781,7 @@ exports.defineAutoTests = function () {
                         expect(typeof entry.toNativeURL).toBe('function');
                         var nativeURL = entry.toNativeURL();
                         expect(typeof nativeURL).toBe("string");
-                        if (cordova.platformId != "windows")
-                        	expect(nativeURL.substring(0, 7)).toEqual(pathExpect);
+                        expect(nativeURL.substring(0, pathExpect.length)).toEqual(pathExpect);
                         expect(nativeURL.substring(nativeURL.length - fileName.length)).toEqual(fileName);
                         // cleanup
                         deleteEntry(fileName);
