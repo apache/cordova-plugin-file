@@ -21,6 +21,7 @@
 #import "CDVFile.h"
 #import "CDVLocalFilesystem.h"
 #import "CDVAssetLibraryFilesystem.h"
+#import <objc/message.h>
 
 CDVFile *filePlugin = nil;
 
@@ -173,6 +174,24 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 @synthesize rootDocsPath, appDocsPath, appLibraryPath, appTempPath, userHasAllowed, fileSystems=fileSystems_;
 
 - (void)registerFilesystem:(NSObject<CDVFileSystem> *)fs {
+    __weak CDVFile* weakSelf = self;
+    SEL sel = NSSelectorFromString(@"urlTransformer");
+    // for backwards compatibility - we check if this property is there
+    // we create a wrapper block because the urlTransformer property
+    // on the commandDelegate might be set dynamically at a future time
+    // (and not dependent on plugin loading order)
+    if ([self.commandDelegate respondsToSelector:sel]) {
+        fs.urlTransformer = ^NSURL*(NSURL* urlToTransform) {
+            // grab the block from the commandDelegate
+            NSURL* (^urlTransformer)(NSURL*) = ((id(*)(id, SEL))objc_msgSend)(weakSelf.commandDelegate, sel);
+            // if block is not null, we call it
+            if (urlTransformer) {
+                return urlTransformer(urlToTransform);
+            } else { // else we return the same url
+                return urlToTransform;
+            }
+        };
+    }
     [fileSystems_ addObject:fs];
 }
 
