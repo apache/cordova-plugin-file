@@ -80,6 +80,7 @@ typedef int CDVFileError;
 - (NSDictionary*)makeEntryForPath:(NSString*)fullPath isDirectory:(BOOL)isDir;
 
 @property (nonatomic,strong) NSString *name;
+@property (nonatomic, copy) NSURL*(^urlTransformer)(NSURL*);
 
 @optional
 - (NSString *)filesystemPathForURL:(CDVFilesystemURL *)localURI;

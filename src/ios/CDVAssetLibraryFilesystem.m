@@ -29,7 +29,7 @@ NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 NSString* const kCDVAssetsLibraryScheme = @"assets-library";
 
 @implementation CDVAssetLibraryFilesystem
-@synthesize name=_name;
+@synthesize name=_name, urlTransformer;
 
 
 /*
@@ -71,7 +71,12 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
     [dirEntry setObject:fullPath forKey:@"fullPath"];
     [dirEntry setObject:lastPart forKey:@"name"];
     [dirEntry setObject:self.name forKey: @"filesystemName"];
-    dirEntry[@"nativeURL"] = [NSString stringWithFormat:@"assets-library:/%@",fullPath];
+    
+    NSURL* nativeURL = [NSURL URLWithString:[NSString stringWithFormat:@"assets-library:/%@",fullPath]];
+    if (self.urlTransformer) {
+        nativeURL = self.urlTransformer(nativeURL);
+    }
+    dirEntry[@"nativeURL"] = [nativeURL absoluteString];
 
     return dirEntry;
 }
