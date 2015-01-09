@@ -73,11 +73,7 @@ public class ContentFilesystem extends Filesystem {
 	@Override
 	public JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException {
 	    if ("/".equals(inputURL.fullPath)) {
-            try {
-                return LocalFilesystem.makeEntryForURL(inputURL, true, inputURL.URL.toString());
-            } catch (JSONException e) {
-                throw new IOException();
-            }
+            return LocalFilesystem.makeEntryForURL(inputURL, true, inputURL.URL.toString());
 	    }
 
 		// Get the cursor to validate that the file exists
@@ -97,11 +93,7 @@ public class ContentFilesystem extends Filesystem {
 		} else {
 			filePath = "file://" + filePath;
 		}
-		try {
-			return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, false /*fp.isDirectory()*/, filePath);
-		} catch (JSONException e) {
-			throw new IOException();
-		}
+        return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, false /*fp.isDirectory()*/, filePath);
 	}
 	
     @Override

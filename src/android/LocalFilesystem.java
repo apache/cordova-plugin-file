@@ -143,11 +143,7 @@ public class LocalFilesystem extends Filesystem {
       if (!fp.canRead()) {
           throw new IOException();
       }
-      try {
-          return LocalFilesystem.makeEntryForURL(inputURL, fp.isDirectory(),  Uri.fromFile(fp).toString());
-      } catch (JSONException e) {
-    	  throw new IOException();
-      }
+      return LocalFilesystem.makeEntryForURL(inputURL, fp.isDirectory(),  Uri.fromFile(fp).toString());
 	}
 
 	@Override
@@ -259,10 +255,7 @@ public class LocalFilesystem extends Filesystem {
             File[] files = fp.listFiles();
             for (int i = 0; i < files.length; i++) {
                 if (files[i].canRead()) {
-                    try {
-						entries.put(makeEntryForPath(fullPathForFilesystemPath(files[i].getAbsolutePath()), inputURL.filesystemName, files[i].isDirectory(), Uri.fromFile(files[i]).toString()));
-					} catch (JSONException e) {
-					}
+                    entries.put(makeEntryForPath(fullPathForFilesystemPath(files[i].getAbsolutePath()), inputURL.filesystemName, files[i].isDirectory(), Uri.fromFile(files[i]).toString()));
                 }
             }
         }

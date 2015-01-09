@@ -37,31 +37,35 @@ public abstract class Filesystem {
 		public void handleData(InputStream inputStream, String contentType) throws IOException;
 	}
 
-	public static JSONObject makeEntryForPath(String path, String fsName, Boolean isDir, String nativeURL)
-			throws JSONException {
-        JSONObject entry = new JSONObject();
+	public static JSONObject makeEntryForPath(String path, String fsName, Boolean isDir, String nativeURL) {
+        try {
+            JSONObject entry = new JSONObject();
 
-        int end = path.endsWith("/") ? 1 : 0;
-        String[] parts = path.substring(0,path.length()-end).split("/+");
-        String fileName = parts[parts.length-1];
-        entry.put("isFile", !isDir);
-        entry.put("isDirectory", isDir);
-        entry.put("name", fileName);
-        entry.put("fullPath", path);
-        // The file system can't be specified, as it would lead to an infinite loop,
-        // but the filesystem name can be.
-        entry.put("filesystemName", fsName);
-        // Backwards compatibility
-        entry.put("filesystem", "temporary".equals(fsName) ? 0 : 1);
+            int end = path.endsWith("/") ? 1 : 0;
+            String[] parts = path.substring(0, path.length() - end).split("/+");
+            String fileName = parts[parts.length - 1];
+            entry.put("isFile", !isDir);
+            entry.put("isDirectory", isDir);
+            entry.put("name", fileName);
+            entry.put("fullPath", path);
+            // The file system can't be specified, as it would lead to an infinite loop,
+            // but the filesystem name can be.
+            entry.put("filesystemName", fsName);
+            // Backwards compatibility
+            entry.put("filesystem", "temporary".equals(fsName) ? 0 : 1);
 
-        if (isDir && !nativeURL.endsWith("/")) {
-            nativeURL += "/";
+            if (isDir && !nativeURL.endsWith("/")) {
+                nativeURL += "/";
+            }
+            entry.put("nativeURL", nativeURL);
+            return entry;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-    	entry.put("nativeURL", nativeURL);
-        return entry;
     }
 
-    public static JSONObject makeEntryForURL(LocalFilesystemURL inputURL, Boolean isDir, String nativeURL) throws JSONException {
+    public static JSONObject makeEntryForURL(LocalFilesystemURL inputURL, Boolean isDir, String nativeURL) {
         return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, isDir, nativeURL);
     }
 
