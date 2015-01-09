@@ -219,6 +219,10 @@ public class FileUtils extends CordovaPlugin {
     
     @Override
     public Uri remapUri(Uri uri) {
+        // Remap only cdvfile: URLs (not content:).
+        if (!LocalFilesystemURL.FILESYSTEM_PROTOCOL.equals(uri.getScheme())) {
+            return null;
+        }
         try {
         	LocalFilesystemURL inputURL = new LocalFilesystemURL(uri);
         	Filesystem fs = this.filesystemForURL(inputURL);
@@ -227,7 +231,7 @@ public class FileUtils extends CordovaPlugin {
         	}
         	String path = fs.filesystemPathForURL(inputURL);
         	if (path != null) {
-        		return Uri.parse("file:///" + fs.filesystemPathForURL(inputURL));
+        		return Uri.parse("file://" + fs.filesystemPathForURL(inputURL));
         	}
         	return null;
         } catch (IllegalArgumentException e) {
