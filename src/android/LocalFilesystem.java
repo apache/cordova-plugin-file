@@ -44,17 +44,18 @@ import android.app.Activity;
 
 public class LocalFilesystem extends Filesystem {
 
-	private String fsRoot;
 	private CordovaInterface cordova;
 
-	public LocalFilesystem(String name, CordovaInterface cordova, String fsRoot) {
-		this.name = name;
-		this.fsRoot = fsRoot;
+    public LocalFilesystem(String name, CordovaInterface cordova, String rootPath) {
+        this(name, cordova, Uri.fromFile(new File(rootPath)));
+    }
+	public LocalFilesystem(String name, CordovaInterface cordova, Uri rootUri) {
+        super(rootUri, name);
 		this.cordova = cordova;
 	}
 
-	public String filesystemPathForFullPath(String fullPath) {
-	    String path = new File(this.fsRoot, fullPath).toString();
+    public String filesystemPathForFullPath(String fullPath) {
+	    String path = new File(rootUri.getPath(), fullPath).toString();
         int questionMark = path.indexOf("?");
         if (questionMark >= 0) {
           path = path.substring(0, questionMark);
@@ -71,8 +72,8 @@ public class LocalFilesystem extends Filesystem {
 	}
 
 	private String fullPathForFilesystemPath(String absolutePath) {
-		if (absolutePath != null && absolutePath.startsWith(this.fsRoot)) {
-			return absolutePath.substring(this.fsRoot.length());
+		if (absolutePath != null && absolutePath.startsWith(rootUri.getPath())) {
+			return absolutePath.substring(rootUri.getPath().length());
 		}
 		return null;
 	}
@@ -288,10 +289,6 @@ public class LocalFilesystem extends Filesystem {
     /**
      * Check to see if the user attempted to copy an entry into its parent without changing its name,
      * or attempted to copy a directory into a directory that it contains directly or indirectly.
-     *
-     * @param srcDir
-     * @param destinationDir
-     * @return
      */
     private boolean isCopyOnItself(String src, String dest) {
 

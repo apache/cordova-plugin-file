@@ -112,10 +112,10 @@ public class FileUtils extends CordovaPlugin {
                 if (fsRoot != null) {
                     File newRoot = new File(fsRoot);
                     if (newRoot.mkdirs() || newRoot.isDirectory()) {
-                        registerFilesystem(new LocalFilesystem(fsName, cordova, fsRoot));
+                        registerFilesystem(new LocalFilesystem(fsName, cordova, Uri.fromFile(newRoot)));
                         installedFileSystems.add(fsName);
                     } else {
-                       Log.d(LOG_TAG, "Unable to create root dir for fileystem \"" + fsName + "\", skipping");
+                       Log.d(LOG_TAG, "Unable to create root dir for filesystem \"" + fsName + "\", skipping");
                     }
                 } else {
                     Log.d(LOG_TAG, "Unrecognized extra filesystem identifier: " + fsName);
@@ -194,7 +194,7 @@ public class FileUtils extends CordovaPlugin {
     		// per spec.
     		this.registerFilesystem(new LocalFilesystem("temporary", cordova, tempRoot));
     		this.registerFilesystem(new LocalFilesystem("persistent", cordova, persistentRoot));
-    		this.registerFilesystem(new ContentFilesystem("content", cordova, webView));
+    		this.registerFilesystem(new ContentFilesystem(cordova, webView));
 
             registerExtraFileSystems(getExtraFileSystemsPreference(activity), getAvailableFileSystems(activity));
 
@@ -849,10 +849,8 @@ public class FileUtils extends CordovaPlugin {
         if (rootFs == null) {
             throw new IOException("No filesystem of type requested");        	
         }
-        LocalFilesystemURL rootURL = new LocalFilesystemURL(LocalFilesystemURL.FILESYSTEM_PROTOCOL + "://localhost/"+rootFs.name+"/");
-
         fs.put("name", rootFs.name);
-        fs.put("root", rootFs.getEntryForLocalURL(rootURL));
+        fs.put("root", rootFs.getRootEntry());
         return fs;
     }
 
@@ -868,8 +866,7 @@ public class FileUtils extends CordovaPlugin {
     private JSONArray requestAllFileSystems() throws IOException, JSONException {
         JSONArray ret = new JSONArray();
         for (Filesystem fs : filesystems) {
-            LocalFilesystemURL rootURL = new LocalFilesystemURL(LocalFilesystemURL.FILESYSTEM_PROTOCOL + "://localhost/"+fs.name+"/");
-            ret.put(fs.getEntryForLocalURL(rootURL));
+            ret.put(fs.getRootEntry());
         }
         return ret;
     }

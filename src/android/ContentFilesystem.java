@@ -46,8 +46,8 @@ public class ContentFilesystem extends Filesystem {
 	private CordovaInterface cordova;
 	private CordovaResourceApi resourceApi;
 	
-	public ContentFilesystem(String name, CordovaInterface cordova, CordovaWebView webView) {
-		this.name = name;
+	public ContentFilesystem(CordovaInterface cordova, CordovaWebView webView) {
+		super(Uri.parse("content://"), "content");
 		this.cordova = cordova;
 
 		Class webViewClass = webView.getClass();

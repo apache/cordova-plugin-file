@@ -18,6 +18,8 @@
  */
 package org.apache.cordova.file;
 
+import android.net.Uri;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilterInputStream;
@@ -31,9 +33,17 @@ import org.json.JSONObject;
 
 public abstract class Filesystem {
 
-	public String name;
-	
-	public interface ReadFileCallback {
+    protected final Uri rootUri;
+    public final String name;
+    private final JSONObject rootEntry;
+
+    public Filesystem(Uri rootUri, String name) {
+        this.rootUri = rootUri;
+        this.name = name;
+        rootEntry = makeEntryForPath("/", name, true, rootUri.toString());
+    }
+
+    public interface ReadFileCallback {
 		public void handleData(InputStream inputStream, String contentType) throws IOException;
 	}
 
@@ -81,6 +91,14 @@ public abstract class Filesystem {
 	abstract JSONArray readEntriesAtLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException;
 
 	abstract JSONObject getFileMetadataForLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException;
+
+    public Uri getRootUri() {
+        return rootUri;
+    }
+
+    public JSONObject getRootEntry() {
+        return rootEntry;
+    }
 
 	public JSONObject getParentForLocalURL(LocalFilesystemURL inputURL) throws IOException {
 		LocalFilesystemURL newURL = new LocalFilesystemURL(inputURL.URL);
