@@ -962,6 +962,11 @@ module.exports = {
         } else if (uri.indexOf(msappdataTempPrefix) === 0) {
             path = msappdataTempPath + uri.replace(msappdataTempPrefix, '').replace('/', '\\');
         } else {
+            // due to spec 12 it should fail with error (ENCODING_ERR) when resolving invalid URI with leading /
+            if (path.substr(0, 1) === '\\') {
+                fail(FileError.ENCODING_ERR);
+                return;
+            }
             // method should not let read files outside of the [APP HASH]/Local or [APP HASH]/temp folders
             if (path.indexOf(msappdataTempPath) != 0 && path.indexOf(msappdataLocalPath) != 0) {
                 fail(FileError.NOT_FOUND_ERR);
