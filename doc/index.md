@@ -62,6 +62,7 @@ Although in the global scope, it is not available until after the `deviceready` 
 - iOS
 - Windows Phone 7 and 8*
 - Windows 8*
+- Browser
 
 \* _These platforms do not support `FileReader.readAsArrayBuffer` nor `FileWriter.write(blob)`._
 
@@ -281,6 +282,79 @@ The following data paths are supported:
 * `dataDirectory` - For persistent app-specific data files.
 * `cacheDirectory` - Cached files that should survive app restarts (Apps should not rely
 on the OS to delete files in here).
+
+## Browser Quirks
+
+### Common quirks and remarks
+- Each browser uses its own sandboxed filesystem. IE and Firefox use IndexedDB as a base.
+All browsers use forward slash as directory separator in a path.
+- Directory entries have to be created successively. 
+For example, the call `fs.root.getDirectory('dir1/dir2', {create:true}, successCallback, errorCallback)` 
+will fail if dir1 did not exist.
+- The plugin requests user permission to use persistent storage at the application first start. 
+- Plugin supports `cdvfile://localhost` (local resources) only. I.e. external resources are not supported via `cdvfile`.
+- The plugin does not follow ["File System API 8.3 Naming restrictions"](http://www.w3.org/TR/2011/WD-file-system-api-20110419/#naming-restrictions).
+- Blob and File' `close` function is not supported.
+- `FileSaver` and `BlobBuilder` are not supported by this plugin and don't have stubs.
+- The plugin does not support `requestAllFileSystems`. This function is also missing in the specifications.
+- Entries in directory will not be removed if you use `create: true` flag for existing directory.
+- Files created via constructor are not supported. You should use entry.file method instead.
+- Each browser uses its own form for blob URL references.
+- `readAsDataURL` function is supported, but the mediatype in Chrome depends on entry name extension, 
+mediatype in IE is always empty (which is the same as `text-plain` according the specification), 
+the mediatype in Firefox is always `application/octet-stream`. 
+For example, if the content is `abcdefg` then Firefox returns `data:application/octet-stream;base64,YWJjZGVmZw==`,
+IE returns `data:;base64,YWJjZGVmZw==`, Chrome returns `data:<mediatype depending on extension of entry name>;base64,YWJjZGVmZw==`.
+- `toInternalURL` returns the path in the form `file:///persistent/path/to/entry` (Firefox, IE). 
+Chrome returns the path in the form `cdvfile://localhost/persistent/file`.
+
+### Chrome quirks
+- Chrome filesystem is not immediately ready after device ready event. As a workaround you can subscribe to `filePluginIsReady` event.
+Example: 
+```javascript
+window.addEventListener('filePluginIsReady', function(){ console.log('File plugin is ready');}, false);
+```
+You can use `window.isFilePluginReadyRaised` function to check whether event was already raised.
+- window.requestFileSystem TEMPORARY and PERSISTENT filesystem quotas are not limited in Chrome.
+- To increase persistent storage in Chrome you need to call `window.initPersistentFileSystem` method. Persistent storage quota is 5 MB by default.
+- Chrome requires `--allow-file-access-from-files` run argument to support API via `file:///` protocol.
+- `File` object will be not changed if you use flag `{create:true}` when getting an existing `Entry`.
+- events `cancelable` property is set to true in Chrome. This is contrary to the [specification](http://dev.w3.org/2009/dap/file-system/file-writer.html).
+- `toURL` function in Chrome returns `filesystem:`-prefixed path depending on application host. 
+For example, `filesystem:file:///persistent/somefile.txt`, `filesystem:http://localhost:8080/persistent/somefile.txt`.
+- `toURL` function result does not contain trailing slash in case of directory entry. 
+Chrome resolves directories with slash-trailed urls correctly though.
+- `resolveLocalFileSystemURL` method requires the inbound `url` to have `filesystem` prefix. For example, `url` parameter for `resolveLocalFileSystemURL`
+should be in the form `filesystem:file:///persistent/somefile.txt` as opposed to the form `file:///persistent/somefile.txt` in Android.
+- Deprecated `toNativeURL` function is not supported and does not have a stub.
+- `setMetadata` function is not stated in the specifications and not supported.
+- INVALID_MODIFICATION_ERR (code: 9) is thrown instead of SYNTAX_ERR(code: 8) on requesting of a non-existant filesystem.
+- INVALID_MODIFICATION_ERR (code: 9) is thrown instead of PATH_EXISTS_ERR(code: 12) on trying to exclusively create a file or directory, which already exists.
+- INVALID_MODIFICATION_ERR (code: 9) is thrown instead of  NO_MODIFICATION_ALLOWED_ERR(code: 6) on trying to call removeRecursively on the root file system.
+- INVALID_MODIFICATION_ERR (code: 9) is thrown instead of NOT_FOUND_ERR(code: 1) on trying to moveTo directory that does not exist.
+
+### IndexedDB-based impl quirks (Firefox and IE)
+- `.` and `..` are not supported.
+- IE does not support `file:///`-mode; only hosted mode is supported (http://localhost:xxxx).
+- Firefox filesystem size is not limited but each 50MB extension will request a user permission.
+IE10 allows up to 10mb of combined AppCache and IndexedDB used in implementation of filesystem without prompting, 
+once you hit that level you will be asked if you want to allow it to be increased up to a max of 250mb per site.
+So `size` parameter for `requestFileSystem` function does not affect filesystem in Firefox and IE.
+- `readAsBinaryString` function is not stated in the Specs and not supported in IE and does not have a stub.
+- `file.type` is always null.
+- You should not create entry using DirectoryEntry instance callback result which was deleted. 
+Otherwise, you will get a 'hanging entry'.
+- Before you can read a file, which was just written you need to get a new instance of this file.
+- `setMetadata` function, which is not stated in the Specs supports `modificationTime` field change only. 
+- `copyTo` and `moveTo` functions do not support directories.
+- Directories metadata is not supported.
+- Both Entry.remove and directoryEntry.removeRecursively don't fail when removing 
+non-empty directories - directories being removed are cleaned along with contents instead.
+- `abort` and `truncate` functions are not supported.
+- progress events are not fired. For example, this handler will be not executed:
+```javascript
+writer.onprogress = function() { /*commands*/ };
+```
 
 ## Upgrading Notes
 

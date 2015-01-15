@@ -342,4 +342,24 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         </js-module>
     </platform>
 
+    <platform name="browser">
+        <!-- File for Chrome -->
+        <js-module src="www/browser/Preparing.js" name="Preparing">
+            <runs />
+        </js-module>
+
+        <js-module src="src/browser/FileProxy.js" name="browserFileProxy">
+            <runs />
+        </js-module>
+        
+        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
+            <merges target="cordova" />
+            <runs />
+        </js-module>
+
+        <js-module src="www/browser/FileSystem.js" name="firefoxFileSystem">
+            <merges target="window.FileSystem" />
+        </js-module>
+    </platform>
+
 </plugin>
