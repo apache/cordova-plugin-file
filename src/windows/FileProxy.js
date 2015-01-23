@@ -31,8 +31,10 @@ var Entry = require('./Entry'),
 
 // Some private helper functions, hidden by the module
 function cordovaPathToNative(path) {
+    // unescape path provided
+    var cleanPath = decodeURI(path);
     // turn / into \\
-    var cleanPath = path.replace(/\//g, '\\');
+    cleanPath = cleanPath.replace(/\//g, '\\');
     // turn  \\ into \
     cleanPath = cleanPath.replace(/\\\\/g, '\\');
     // strip end \\ characters
@@ -313,7 +315,7 @@ module.exports = {
                 } else if (flag.create === true && flag.exclusive === false) {
                     storageFolder.createFolderAsync(path, Windows.Storage.CreationCollisionOption.openIfExists).done(
                         function (storageFolder) {
-                            win(new DirectoryEntry(storageFolder.name, storageFolder.path + "/", getFilesystemFromPath(storageFolder.path + "/")));
+                            win(new DirectoryEntry(storageFolder.name, nativePathToCordova(storageFolder.path), getFilesystemFromPath(storageFolder.path + "/")));
                         }, function () {
                             fail(FileError.INVALID_MODIFICATION_ERR);
                         }
