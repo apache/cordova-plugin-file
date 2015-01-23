@@ -868,8 +868,8 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         [fs readFileAtURL:localURI start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
             CDVPluginResult* result = nil;
             if (data != nil) {
-                // TODO: Would be faster to base64 encode directly to the final string.
-                NSString* output = [NSString stringWithFormat:@"data:%@;base64,%@", mimeType, [data base64EncodedString]];
+                NSString* b64str = [data base64EncodedStringWithOptions:0];
+                NSString* output = [NSString stringWithFormat:@"data:%@;base64,%@", mimeType, b64str];
                 result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:output];
             } else {
                 result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:errorCode];
