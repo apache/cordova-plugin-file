@@ -1945,6 +1945,7 @@ exports.defineAutoTests = function () {
                 expect(typeof reader.readAsText).toBe('function');
                 expect(typeof reader.readAsArrayBuffer).toBe('function');
                 expect(typeof reader.abort).toBe('function');
+                expect(reader.result).toBe(null);
             });
         });
         //FileReader
