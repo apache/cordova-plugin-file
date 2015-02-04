@@ -237,9 +237,7 @@ exports.defineAutoTests = function () {
                         expect(fileEntry.toURL()).not.toMatch(/^cdvfile:/, 'should not use cdvfile URL');
                         expect(fileEntry.toURL()).not.toMatch(/\/$/, 'URL should not end with a slash');
                         // Clean-up
-                        deleteEntry(fileName);
-                        //End
-                        done();
+                        deleteEntry(fileName, done);
                     };
                     createFile(fileName, function (entry) {
                         window.resolveLocalFileSystemURL(entry.toURL(), win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving file URL: ' + entry.toURL()));
@@ -253,8 +251,7 @@ exports.defineAutoTests = function () {
                         expect(fileEntry.toURL()).not.toMatch(/^cdvfile:/, 'should not use cdvfile URL');
                         expect(fileEntry.toURL()).toMatch(/\/$/, 'URL end with a slash');
                         // cleanup
-                        deleteEntry(fileName);
-                        done();
+                        deleteEntry(fileName, done);
                     };
                     function gotDirectory(entry) {
                         // lookup file system entry
@@ -271,8 +268,7 @@ exports.defineAutoTests = function () {
                         }
                         expect(fileEntry.name).toBe(fileName);
                         // cleanup
-                        deleteEntry(fileName);
-                        done();
+                        deleteEntry(fileName, done);
                     };
                     // create a new file entry
                     createFile(fileName, function (entry) {
@@ -366,8 +362,7 @@ exports.defineAutoTests = function () {
                     expect(entry.name).toCanonicallyMatch(fileName);
                     expect(entry.fullPath).toCanonicallyMatch(filePath);
                     // cleanup
-                    entry.remove(null, null);
-                    done();
+                    entry.remove(done, null);
                 };
                 // create:true, exclusive:false, file does not exist
                 root.getFile(fileName, {
@@ -384,8 +379,7 @@ exports.defineAutoTests = function () {
                     expect(entry.name).toBe(fileName);
                     expect(entry.fullPath).toCanonicallyMatch(filePath);
                     // cleanup
-                    entry.remove(null, null);
-                    done();
+                    entry.remove(done, null);
                 };
                 // create:true, exclusive:true, file does not exist
                 root.getFile(fileName, {
@@ -409,8 +403,7 @@ exports.defineAutoTests = function () {
                     expect(entry.name).toCanonicallyMatch(fileName);
                     expect(entry.fullPath).toCanonicallyMatch(filePath);
                     // cleanup
-                    entry.remove(null, fail);
-                    done();
+                    entry.remove(done, fail);
                 };
                 // create file to kick off it
                 root.getFile(fileName, {
@@ -433,8 +426,7 @@ exports.defineAutoTests = function () {
                     expect(error).toBeDefined();
                     expect(error).toBeFileError(FileError.PATH_EXISTS_ERR);
                     // cleanup
-                    existingFile.remove(null, null);
-                    done();
+                    existingFile.remove(done, null);
                 };
                 // create file to kick off it
                 root.getFile(fileName, {
@@ -453,8 +445,7 @@ exports.defineAutoTests = function () {
                     expect(entry.filesystem).toBeDefined();
                     expect(entry.filesystem).toBe(root.filesystem);
                     //clean up
-                    entry.remove(null, null);
-                    done();
+                    entry.remove(done, null);
                 },
                 getFile = function (file) {
                     // create:false, exclusive:false, file exists
@@ -509,8 +500,7 @@ exports.defineAutoTests = function () {
                     expect(directory.name).toCanonicallyMatch(dirName);
                     expect(directory.fullPath).toCanonicallyMatch(joinURL(root.fullPath, dirName));
                     // cleanup
-                    directory.remove(null, null);
-                    done();
+                    directory.remove(done, null);
                 };
                 // create:true, exclusive:false, directory does not exist
                 root.getDirectory(dirName, {
@@ -538,8 +528,7 @@ exports.defineAutoTests = function () {
                     expect(directory.name).toCanonicallyMatch(dirName);
                     expect(directory.fullPath).toCanonicallyMatch(dirPath);
                     // cleanup
-                    directory.remove(null, null);
-                    done();
+                    directory.remove(done, null);
                 };
                 // create:true, exclusive:false, directory does not exist
                 root.getDirectory(dirName, {
@@ -558,8 +547,7 @@ exports.defineAutoTests = function () {
                     expect(directory.filesystem).toBeDefined();
                     expect(directory.filesystem).toBe(root.filesystem);
                     // cleanup
-                    directory.remove(null, null);
-                    done();
+                    directory.remove(done, null);
                 };
                 // create:true, exclusive:false, directory does not exist
                 root.getDirectory(dirName, {
@@ -578,8 +566,7 @@ exports.defineAutoTests = function () {
                     expect(directory.filesystem).toBeDefined();
                     expect(directory.filesystem).toBe(root.filesystem);
                     // cleanup
-                    directory.remove(null, null);
-                    done();
+                    directory.remove(done, null);
                 };
                 // create:true, exclusive:true, directory does not exist
                 root.getDirectory(dirName, {
@@ -597,8 +584,7 @@ exports.defineAutoTests = function () {
                     expect(directory.name).toCanonicallyMatch(dirName);
                     expect(directory.fullPath).toCanonicallyMatch(dirPath);
                     // cleanup
-                    directory.remove(null, null);
-                    done();
+                    directory.remove(done, null);
                 };
                 // create directory to kick off it
                 root.getDirectory(dirName, {
@@ -617,8 +603,7 @@ exports.defineAutoTests = function () {
                     expect(error).toBeDefined();
                     expect(error).toBeFileError(FileError.PATH_EXISTS_ERR);
                     // cleanup
-                    existingDir.remove(null, null);
-                    done();
+                    existingDir.remove(done, null);
                 };
                 // create directory to kick off it
                 root.getDirectory(dirName, {
@@ -642,8 +627,7 @@ exports.defineAutoTests = function () {
                     expect(directory.name).toCanonicallyMatch(dirName);
                     expect(directory.fullPath).toCanonicallyMatch(dirPath);
                     // cleanup
-                    directory.remove(null, null);
-                    done();
+                    directory.remove(done, null);
                 };
                 // create directory to kick it off
                 root.getDirectory(dirName, {
@@ -674,8 +658,7 @@ exports.defineAutoTests = function () {
                     expect(error).toBeDefined();
                     expect(error).toBeFileError(FileError.TYPE_MISMATCH_ERR);
                     // cleanup
-                    existingFile.remove(null, null);
-                    done();
+                    existingFile.remove(done, null);
                 };
                 // create file to kick off it
                 root.getFile(fileName, {
@@ -695,8 +678,7 @@ exports.defineAutoTests = function () {
                     expect(error).toBeDefined();
                     expect(error).toBeFileError(FileError.TYPE_MISMATCH_ERR);
                     // cleanup
-                    existingDir.remove(null, null);
-                    done();
+                    existingDir.remove(done, null);
                 };
                 // create directory to kick off it
                 root.getDirectory(dirName, {
@@ -781,8 +763,7 @@ exports.defineAutoTests = function () {
                                 expect(entries[0].filesystem).not.toBe(null);
                                 expect(entries[0].filesystem instanceof FileSystem).toBe(true);
                                 // cleanup
-                                directory.removeRecursively(null, null);
-                                done();
+                                directory.removeRecursively(done, null);
                             }, failed.bind(null, done, 'reader.readEntries - Error reading entries from directory: ' + dirName));
                         }, failed.bind(null, done, 'directory.getFile - Error creating file : ' + fileName));
                     }, failed.bind(null, done, 'root.getDirectory - Error creating directory : ' + dirName));
@@ -806,8 +787,7 @@ exports.defineAutoTests = function () {
                                 expect(entries_ instanceof Array).toBe(true);
                                 expect(entries_.length).toBe(0);
                                 //Clean up
-                                entry.remove();
-                                done();
+                                entry.remove(done, null);
                             }, failed.bind(null, done, 'reader.readEntries - Error during SECOND reading of entries from [root] directory'));
                         }, failed.bind(null, done, 'reader.readEntries - Error during FIRST reading of entries from [root] directory'));
                     }, failed.bind(null, done, 'root.getFile - Error creating file : ' + fileName));
@@ -860,8 +840,7 @@ exports.defineAutoTests = function () {
                     expect(typeof fileEntry.createWriter).toBe('function');
                     expect(typeof fileEntry.file).toBe('function');
                     // cleanup
-                    fileEntry.remove(null, null);
-                    done();
+                    fileEntry.remove(done, null);
                 };
                 // create a new file entry to kick off it
                 root.getFile(fileName, {
@@ -875,8 +854,7 @@ exports.defineAutoTests = function () {
                     expect(writer).toBeDefined();
                     expect(writer instanceof FileWriter).toBe(true);
                     // cleanup
-                    testFile.remove(null, null);
-                    done();
+                    testFile.remove(done, null);
                 };
                 // create a new file entry to kick off it
                 root.getFile(fileName, {
@@ -893,8 +871,7 @@ exports.defineAutoTests = function () {
                     expect(file).toBeDefined();
                     expect(file instanceof File).toBe(true);
                     // cleanup
-                    newFile.remove(null, null);
-                    done();
+                    newFile.remove(done, null);
                 };
                 // create a new file entry to kick off it
                 root.getFile(fileName, {
@@ -941,8 +918,7 @@ exports.defineAutoTests = function () {
                     expect(typeof entry.createWriter).toBe('function');
                     expect(typeof entry.file).toBe('function');
                     // Clean up
-                    deleteEntry(fileName);
-                    done();
+                    deleteEntry(fileName, done);
                 };
                 // create a new file entry
                 createFile(fileName, winEntry, failed.bind(null, done, 'createFile - Error creating file : ' + fileName));
@@ -956,8 +932,7 @@ exports.defineAutoTests = function () {
                         expect(metadata.modificationTime instanceof Date).toBe(true);
                         expect(typeof metadata.size).toBe("number");
                         // cleanup
-                        deleteEntry(fileName);
-                        done();
+                        deleteEntry(fileName, done);
                     }, failed.bind(null, done, 'entry.getMetadata - Error getting metadata from entry : ' + fileName));
                 }, failed.bind(null, done, 'createFile - Error creating file : ' + fileName));
             });
@@ -971,8 +946,7 @@ exports.defineAutoTests = function () {
                         expect(typeof metadata.size).toBe("number");
                         expect(metadata.size).toBe(0);
                         // cleanup
-                        deleteEntry(dirName);
-                        done();
+                        deleteEntry(dirName, done);
                     }, failed.bind(null, done, 'entry.getMetadata - Error getting metadata from entry : ' + dirName));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + dirName));
             });
@@ -985,8 +959,7 @@ exports.defineAutoTests = function () {
                         expect(parent).toBeDefined();
                         expect(parent.fullPath).toCanonicallyMatch(rootPath);
                         // cleanup
-                        deleteEntry(fileName);
-                        done();
+                        deleteEntry(fileName, done);
                     }, failed.bind(null, done, 'entry.getParent - Error getting parent directory of file : ' + fileName));
                 }, failed.bind(null, done, 'createFile - Error creating file : ' + fileName));
             });
@@ -999,8 +972,7 @@ exports.defineAutoTests = function () {
                         expect(parent).toBeDefined();
                         expect(parent.fullPath).toCanonicallyMatch(rootPath);
                         // cleanup
-                        deleteEntry(dirName);
-                        done();
+                        deleteEntry(dirName, done);
                     }, failed.bind(null, done, 'entry.getParent - Error getting parent directory of directory : ' + dirName));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + dirName));
             });
@@ -1022,8 +994,7 @@ exports.defineAutoTests = function () {
                     expect(uri).toBeDefined();
                     expect(uri.indexOf(rootPath)).not.toBe(-1);
                     // cleanup
-                    deleteEntry(fileName);
-                    done();
+                    deleteEntry(fileName, done);
                 };
                 // create a new file entry
                 createFile(fileName, winURI, failed.bind(null, done, 'createFile - Error creating file : ' + fileName));
@@ -1041,8 +1012,7 @@ exports.defineAutoTests = function () {
                         expect(uri).toContain('/num%201/num%202/');
                         expect(uri.indexOf(rootPath)).not.toBe(-1);
                         // cleanup
-                        deleteEntry(dirName_1);
-                        done();
+                        deleteEntry(dirName_1, done);
                     }, failed.bind(null, done, 'entry.getDirectory - Error creating directory : ' + dirName_2));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + dirName_1));
             });
@@ -1056,8 +1026,7 @@ exports.defineAutoTests = function () {
                             expect(error).toBeDefined();
                             expect(error).toBeFileError(FileError.NOT_FOUND_ERR);
                             // cleanup
-                            deleteEntry(fileName);
-                            done();
+                            deleteEntry(fileName, done);
                         });
                     }, failed.bind(null, done, 'entry.remove - Error removing entry : ' + fileName));
                 }, failed.bind(null, done, 'createFile - Error creating file : ' + fileName));
@@ -1072,8 +1041,7 @@ exports.defineAutoTests = function () {
                             expect(error).toBeDefined();
                             expect(error).toBeFileError(FileError.NOT_FOUND_ERR);
                             // cleanup
-                            deleteEntry(dirName);
-                            done();
+                            deleteEntry(dirName, done);
                         });
                     }, failed.bind(null, done, 'entry.remove - Error removing entry : ' + dirName));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + dirName));
@@ -1094,8 +1062,7 @@ exports.defineAutoTests = function () {
                                 expect(entry).toBeDefined();
                                 expect(entry.fullPath).toCanonicallyMatch(fullPath);
                                 // cleanup
-                                deleteEntry(dirName);
-                                done();
+                                deleteEntry(dirName, done);
                             }, failed.bind(null, done, 'root.getDirectory - Error getting directory : ' + dirName));
                         });
                     }, failed.bind(null, done, 'entry.getFile - Error creating file : ' + fileName + ' inside of ' + dirName));
@@ -1132,9 +1099,9 @@ exports.defineAutoTests = function () {
                                 expect(entry2.fullPath).toCanonicallyMatch(fullPath);
                                 expect(entry2.name).toCanonicallyMatch(file2);
                                 // cleanup
-                                deleteEntry(file1);
-                                deleteEntry(file2);
-                                done();
+                                deleteEntry(file1, function () {
+                                    deleteEntry(file2, done);
+                                });
                             }, failed.bind(null, done, 'root.getFile - Error getting copied file : ' + file2));
                         }, failed.bind(null, done, 'fileEntry.copyTo - Error copying file : ' + file2));
                     }, failed.bind(null, done, 'createFile - Error creating file : ' + file1));
@@ -1149,8 +1116,7 @@ exports.defineAutoTests = function () {
                         expect(error).toBeDefined();
                         expect(error).toBeFileError(FileError.INVALID_MODIFICATION_ERR);
                         // cleanup
-                        deleteEntry(file1);
-                        done();
+                        deleteEntry(file1, done);
                     });
                 }, failed.bind(null, done, 'createFile - Error creating file : ' + file1));
             });
@@ -1190,9 +1156,9 @@ exports.defineAutoTests = function () {
                                         expect(fileEntry.fullPath).toCanonicallyMatch(filePath);
                                         expect(fileEntry.name).toCanonicallyMatch(file1);
                                         // cleanup
-                                        deleteEntry(srcDir);
-                                        deleteEntry(dstDir);
-                                        done();
+                                        deleteEntry(srcDir, function () {
+                                            deleteEntry(dstDir, done);
+                                        });
                                     }, failed.bind(null, done, 'dirEntry.getFile - Error getting file : ' + file1));
                                 }, failed.bind(null, done, 'root.getDirectory - Error getting copied directory : ' + dstDir));
                             }, failed.bind(null, done, 'directory.copyTo - Error copying directory : ' + srcDir + ' to :' + dstDir));
@@ -1235,9 +1201,9 @@ exports.defineAutoTests = function () {
                                         expect(fileEntry.fullPath).toCanonicallyMatch(filePath);
                                         expect(fileEntry.name).toCanonicallyMatch(file1);
                                         // cleanup
-                                        deleteEntry(srcDir);
-                                        deleteEntry(dstDir);
-                                        done();
+                                        deleteEntry(srcDir, function () {
+                                            deleteEntry(dstDir, done);
+                                        });
                                     }, failed.bind(null, done, 'dirEntry.getFile - Error getting file : ' + file1));
                                 }, failed.bind(null, done, 'root.getDirectory - Error getting copied directory : ' + dstDir));
                             }, failed.bind(null, done, 'directory.copyTo - Error copying directory : ' + srcDir + ' to :' + dstDir));
@@ -1271,8 +1237,7 @@ exports.defineAutoTests = function () {
                                     expect(fileEntry).toBeDefined();
                                     expect(fileEntry.fullPath).toCanonicallyMatch(filePath);
                                     // cleanup
-                                    deleteEntry(srcDir);
-                                    done();
+                                    deleteEntry(srcDir, done);
                                 }, failed.bind(null, done, 'dirEntry.getFile - Error getting file : ' + file1));
                             }, failed.bind(null, done, 'root.getDirectory - Error getting directory : ' + srcDir));
                         });
@@ -1296,8 +1261,7 @@ exports.defineAutoTests = function () {
                             expect(dirEntry).toBeDefined();
                             expect(dirEntry.fullPath).toCanonicallyMatch(srcPath);
                             // cleanup
-                            deleteEntry(srcDir);
-                            done();
+                            deleteEntry(srcDir, done);
                         }, failed.bind(null, done, 'root.getDirectory - Error getting directory : ' + srcDir));
                     });
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
@@ -1327,8 +1291,7 @@ exports.defineAutoTests = function () {
                         expect(error).toBeDefined();
                         expect(error).toBeFileError(FileError.ENCODING_ERR);
                         // cleanup
-                        deleteEntry(file1);
-                        done();
+                        deleteEntry(file1, done);
                     });
                 }, failed.bind(null, done, 'createFile - Error creating file : ' + file1));
             });
@@ -1357,9 +1320,9 @@ exports.defineAutoTests = function () {
                                 expect(error).toBeDefined();
                                 expect(error).toBeFileError(FileError.NOT_FOUND_ERR);
                                 // cleanup
-                                deleteEntry(file1);
-                                deleteEntry(file2);
-                                done();
+                                deleteEntry(file1, function () {
+                                    deleteEntry(file2, done);
+                                });
                             });
                         }, failed.bind(null, done, 'root.getFile - Error getting file : ' + file2));
                     }, failed.bind(null, done, 'entry.moveTo - Error moving file : ' + file1 + ' to root as: ' + file2));
@@ -1397,9 +1360,9 @@ exports.defineAutoTests = function () {
                                         expect(error).toBeDefined();
                                         expect(error).toBeFileError(FileError.NOT_FOUND_ERR);
                                         // cleanup
-                                        deleteEntry(file1);
-                                        deleteEntry(dir);
-                                        done();
+                                        deleteEntry(file1, function () {
+                                            deleteEntry(dir, done);
+                                        });
                                     });
                                 }, failed.bind(null, done, 'directory.getFile - Error getting file : ' + file1 + ' from: ' + dir));
                             }, failed.bind(null, done, 'entry.moveTo - Error moving file : ' + file1 + ' to: ' + dir + ' with the same name'));
@@ -1442,9 +1405,9 @@ exports.defineAutoTests = function () {
                                         expect(error).toBeDefined();
                                         expect(error).toBeFileError(FileError.NOT_FOUND_ERR);
                                         // cleanup
-                                        deleteEntry(srcDir);
-                                        deleteEntry(dstDir);
-                                        done();
+                                        deleteEntry(srcDir, function() {
+                                            deleteEntry(dstDir, done);
+                                        });
                                     });
                                 }, failed.bind(null, done, 'directory.getFile - Error getting file : ' + file1 + ' from: ' + srcDir));
                             }, failed.bind(null, done, 'entry.moveTo - Error moving directory : ' + srcDir + ' to root as: ' + dstDir));
@@ -1487,9 +1450,9 @@ exports.defineAutoTests = function () {
                                         expect(error).toBeDefined();
                                         expect(error).toBeFileError(FileError.NOT_FOUND_ERR);
                                         // cleanup
-                                        deleteEntry(srcDir);
-                                        deleteEntry(dstDir);
-                                        done();
+                                        deleteEntry(srcDir, function() {
+                                            deleteEntry(dstDir, done);
+                                        });
                                     });
                                 }, failed.bind(null, done, 'directory.getFile - Error getting file : ' + file1 + ' from: ' + srcDir));
                             }, failed.bind(null, done, 'entry.moveTo - Error moving directory : ' + srcDir + ' to root as: ' + dstDir));
@@ -1532,9 +1495,9 @@ exports.defineAutoTests = function () {
                                         expect(error).toBeDefined();
                                         expect(error).toBeFileError(FileError.NOT_FOUND_ERR);
                                         // cleanup
-                                        deleteEntry(srcDir);
-                                        deleteEntry(dstDir);
-                                        done();
+                                        deleteEntry(srcDir, function() {
+                                            deleteEntry(dstDir, done);
+                                        });
                                     });
                                 }, failed.bind(null, done, 'directory.getFile - Error getting file : ' + file1 + ' from: ' + dstDir));
                             }, failed.bind(null, done, 'directory.moveTo - Error moving directory : ' + srcDir + ' to root as: ' + dstDir));
@@ -1570,8 +1533,7 @@ exports.defineAutoTests = function () {
                                     expect(fileEntry).toBeDefined();
                                     expect(fileEntry.fullPath).toCanonicallyMatch(filePath);
                                     // cleanup
-                                    deleteEntry(srcDir);
-                                    done();
+                                    deleteEntry(srcDir, done);
                                 }, failed.bind(null, done, 'dirEntry.getFile - Error getting file : ' + file1 + ' from: ' + srcDir));
                             }, failed.bind(null, done, 'root.getDirectory - Error getting directory : ' + srcDir));
                         });
@@ -1595,8 +1557,7 @@ exports.defineAutoTests = function () {
                             expect(entry).toBeDefined();
                             expect(entry.fullPath).toCanonicallyMatch(srcPath);
                             // cleanup
-                            deleteEntry(srcDir);
-                            done();
+                            deleteEntry(srcDir, done);
                         }, failed.bind(null, done, 'root.getDirectory - Error getting directory, making sure that original directory still exists: ' + srcDir));
                     });
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
@@ -1612,8 +1573,7 @@ exports.defineAutoTests = function () {
                     // move source directory into itself
                     srcDirEntry.moveTo(dstDirEntry, 'file', function (newDirEntry) {
                         expect(newDirEntry).toBeDefined();
-                        deleteEntry(dstDir);
-                        done();
+                        deleteEntry(dstDir, done);
                     }, failed.bind(null, done, 'directory.moveTo - Error moving a directory into a similarly-named directory: ' + srcDir));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + dstDir));
                 }, failed.bind(null, done, 'deleteEntry - Error deleting directory : ' + dstDir));
@@ -1635,8 +1595,7 @@ exports.defineAutoTests = function () {
                             expect(fileEntry).toBeDefined();
                             expect(fileEntry.fullPath).toCanonicallyMatch(filePath);
                             // cleanup
-                            deleteEntry(file1);
-                            done();
+                            deleteEntry(file1, done);
                         }, failed.bind(null, done, 'root.getFile - Error getting file, making sure that original file still exists: ' + file1));
                     });
                 }, failed.bind(null, done, 'createFile - Error creating file : ' + file1));
@@ -1676,9 +1635,9 @@ exports.defineAutoTests = function () {
                                             expect(fileEntry).toBeDefined();
                                             expect(fileEntry.fullPath).toCanonicallyMatch(filePath);
                                             // cleanup
-                                            deleteEntry(file1);
-                                            deleteEntry(dstDir);
-                                            done();
+                                            deleteEntry(file1, function () {
+                                                deleteEntry(dstDir, done);
+                                            });
                                         }, failed.bind(null, done, 'root.getFile - Error getting file, making sure that original file still exists: ' + file1));
                                     }, failed.bind(null, done, 'directory.getDirectory - Error getting directory, making sure that original directory still exists: ' + subDir));
                                 });
@@ -1716,9 +1675,9 @@ exports.defineAutoTests = function () {
                                     expect(fileEntry).toBeDefined();
                                     expect(fileEntry.fullPath).toCanonicallyMatch(filePath);
                                     // cleanup
-                                    deleteEntry(file1);
-                                    deleteEntry(srcDir);
-                                    done();
+                                    deleteEntry(file1, function () {
+                                        deleteEntry(srcDir, done);
+                                    });
                                 }, failed.bind(null, done, 'root.getFile - Error getting file, making sure that original file still exists: ' + file1));
                             }, failed.bind(null, done, 'directory.getDirectory - Error getting directory, making sure that original directory still exists: ' + srcDir));
                         });
@@ -1754,9 +1713,9 @@ exports.defineAutoTests = function () {
                                     expect(fileEntry).toBeDefined();
                                     expect(fileEntry.fullPath).toCanonicallyMatch(filePath);
                                     // cleanup
-                                    deleteEntry(file1);
-                                    deleteEntry(srcDir);
-                                    done();
+                                    deleteEntry(file1, function () {
+                                        deleteEntry(srcDir, done);
+                                    });
                                 }, failed.bind(null, done, 'root.getFile - Error getting file, making sure that original file still exists: ' + file1));
                             }, failed.bind(null, done, 'root.getDirectory - Error getting directory, making sure that original directory still exists: ' + srcDir));
                         });
@@ -1799,9 +1758,9 @@ exports.defineAutoTests = function () {
                                             expect(srcEntry).toBeDefined();
                                             expect(srcEntry.fullPath).toCanonicallyMatch(srcPath);
                                             // cleanup
-                                            deleteEntry(srcDir);
-                                            deleteEntry(dstDir);
-                                            done();
+                                            deleteEntry(srcDir, function () {
+                                                deleteEntry(dstDir, done);
+                                            });
                                         }, failed.bind(null, done, 'root.getDirectory - Error getting directory, making sure that original directory still exists: ' + srcDir));
                                     }, failed.bind(null, done, 'directory.getDirectory - Error getting directory, making sure that original directory still exists: ' + subDir));
                                 });
@@ -1841,9 +1800,9 @@ exports.defineAutoTests = function () {
                                     expect(fileEntry).toBeDefined();
                                     expect(fileEntry.fullPath).toCanonicallyMatch(file2Path);
                                     // cleanup
-                                    deleteEntry(file1);
-                                    deleteEntry(file2);
-                                    done();
+                                    deleteEntry(file1, function () {
+                                        deleteEntry(file2, done);
+                                    });
                                 }, failed.bind(null, done, 'root.getFile - Error getting moved file: ' + file2));
                             });
                         }, failed.bind(null, done, 'entry.moveTo - Error moving file : ' + file1 + ' to root as: ' + file2));
@@ -1889,9 +1848,9 @@ exports.defineAutoTests = function () {
                                             expect(error).toBeDefined();
                                             expect(error).toBeFileError(FileError.NOT_FOUND_ERR);
                                             // cleanup
-                                            deleteEntry(srcDir);
-                                            deleteEntry(dstDir);
-                                            done();
+                                            deleteEntry(srcDir, function () {
+                                                deleteEntry(dstDir, done);
+                                            });
                                         });
                                     }, failed.bind(null, done, 'dirEntry.getFile - Error getting moved file: ' + file1));
                                 }, failed.bind(null, done, 'entry.moveTo - Error moving directory : ' + srcDir + ' to root as: ' + dstDir));
@@ -1929,8 +1888,7 @@ exports.defineAutoTests = function () {
                         expect(error).toBeDefined();
                         expect(error).toBeFileError(FileError.ENCODING_ERR);
                         // cleanup
-                        deleteEntry(file1);
-                        done();
+                        deleteEntry(file1, done);
                     });
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + file1));
             });
@@ -2164,8 +2122,7 @@ exports.defineAutoTests = function () {
                         expect(typeof writer.truncate).toBe('function');
                         expect(typeof writer.abort).toBe('function');
                         // cleanup
-                        deleteFile(fileName);
-                        done();
+                        deleteFile(fileName, done);
                     }, failed.bind(null, done, 'fileEntry.createWriter - Error creating writer using fileEntry: ' + fileEntry.name));
                 }, failed.bind(null, done, 'root.getFile - Error creating file: ' + fileName));
             });
@@ -2192,8 +2149,7 @@ exports.defineAutoTests = function () {
                             expect(writer.length).toBe(length);
                             expect(writer.position).toBe(length);
                             // cleanup
-                            deleteFile(fileName);
-                            done();
+                            deleteFile(fileName, done);
                         };
                         //Write process
                         writer.onwriteend = verifier;
@@ -2224,8 +2180,7 @@ exports.defineAutoTests = function () {
                             expect(writer.length).toBe(length);
                             expect(writer.position).toBe(length);
                             // cleanup
-                            deleteFile(fileName);
-                            done();
+                            deleteFile(fileName, done);
                         };
                         //Write process
                         writer.onwriteend = verifier;
@@ -2255,8 +2210,7 @@ exports.defineAutoTests = function () {
                             expect(writer.length).toBe(length);
                             expect(writer.position).toBe(length);
                             // cleanup
-                            deleteFile(fileName);
-                            done();
+                            deleteFile(fileName, done);
                         };
                         //Write process
                         writer.onwriteend = verifier;
@@ -2286,8 +2240,7 @@ exports.defineAutoTests = function () {
                             expect(writer.length).toBe(length);
                             expect(writer.position).toBe(length);
                             // cleanup
-                            deleteFile(fileName);
-                            done();
+                            deleteFile(fileName, done);
                         };
                         //Write process
                         writer.onwriteend = verifier;
@@ -2307,8 +2260,7 @@ exports.defineAutoTests = function () {
                             expect(writer.length).toBe(length);
                             expect(writer.position).toBe(length);
                             // cleanup
-                            deleteFile(fileName);
-                            done();
+                            deleteFile(fileName, done);
                         };
                         //Write process
                         writer.onwriteend = verifier;
@@ -2328,8 +2280,7 @@ exports.defineAutoTests = function () {
                             expect(writer.length).toBe(length);
                             expect(writer.position).toBe(length);
                             // cleanup
-                            deleteFile(fileName);
-                            done();
+                            deleteFile(fileName, done);
                         };
                         //Write process
                         writer.onwriteend = verifier;
@@ -2355,8 +2306,7 @@ exports.defineAutoTests = function () {
                             writer.seek(10);
                             expect(writer.position).toBe(10);
                             // cleanup
-                            deleteFile(fileName);
-                            done();
+                            deleteFile(fileName, done);
                         };
                         //Write process
                         writer.onwriteend = verifier;
@@ -2377,8 +2327,7 @@ exports.defineAutoTests = function () {
                             expect(writer.length).toBe(36);
                             expect(writer.position).toBe(36);
                             // cleanup
-                            deleteFile(fileName);
-                            done();
+                            deleteFile(fileName, done);
                         };
                         //Write process
                         writer.onwriteend = function () {
@@ -2413,8 +2362,7 @@ exports.defineAutoTests = function () {
                             expect(writer.length).toBe(length);
                             expect(writer.position).toBe(length);
                             // cleanup
-                            deleteFile(fileName);
-                            done();
+                            deleteFile(fileName, done);
                         };
                         //Write process
                         writer.onwriteend = verifier;
@@ -2462,8 +2410,7 @@ exports.defineAutoTests = function () {
                                 expect(writer.length).toBe(length);
                                 expect(writer.position).toBe(length);
                                 // cleanup
-                                deleteFile(fileName);
-                                done();
+                                deleteFile(fileName, done);
                             };
                             //Write process
                             writer.onwriteend = verifier;
@@ -2479,8 +2426,7 @@ exports.defineAutoTests = function () {
                 verifier = function (outputFileWriter) {
                     expect(outputFileWriter.length).toBe(dummyFileText.length);
                     expect(outputFileWriter.position).toBe(dummyFileText.length);
-                    deleteFile(outputFileName);
-                    done();
+                    deleteFile(outputFileName, done);
                 },
                 writeFile = function (fileName, fileData, win) {
                     var theWriter,
@@ -2522,8 +2468,7 @@ exports.defineAutoTests = function () {
                 verifier = function (outputFileWriter) {
                     expect(outputFileWriter.length).toBe(10);
                     expect(outputFileWriter.position).toBe(10);
-                    deleteFile(outputFileName);
-                    done();
+                    deleteFile(outputFileName, done);
                 },
                 writeFile = function (fileName, fileData, win) {
                     var theWriter,
@@ -2682,8 +2627,7 @@ exports.defineAutoTests = function () {
                             expect(fileEntry).toBeDefined();
                             expect(fileEntry.name).toCanonicallyMatch(fileName);
                             // cleanup
-                            deleteEntry(fileName);
-                            done();
+                            deleteEntry(fileName, done);
                         }, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving URI: ' + entry.toURL()));
                     }, failed.bind(null, done, 'createFile - Error creating file: ../' + fileName));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory: ' + dirName));
@@ -2720,9 +2664,9 @@ exports.defineAutoTests = function () {
                             expect(fileEntry.name).toBe(fileName);
                             expect(fileEntry.fullPath).toCanonicallyMatch('/' + fileName);
                             // cleanup
-                            deleteEntry(fileName);
-                            deleteEntry(dirName);
-                            done();
+                            deleteEntry(fileName, function () {
+                                deleteEntry(dirName, done);
+                            });
                         }, failed.bind(null, done, 'entry.getFile - Error getting file: ' + fileName + ' recently created above: ' + dirName));
                     }, failed.bind(null, done, 'createDirectory - Error creating directory: ' + dirName));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
@@ -2765,8 +2709,7 @@ exports.defineAutoTests = function () {
                     expect(nativeURL.substring(0, pathExpect.length)).toEqual(pathExpect);
                     expect(nativeURL.substring(nativeURL.length - fileName.length)).toEqual(fileName);
                     // cleanup
-                    deleteEntry(fileName);
-                    done();
+                    deleteEntry(fileName, done);
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
             it("file.spec.115 DirectoryReader should return entries with toNativeURL method", function (done) {
@@ -2813,8 +2756,7 @@ exports.defineAutoTests = function () {
                         expect(nativeURL.substring(0, pathExpect.length)).toEqual(pathExpect);
                         expect(nativeURL.substring(nativeURL.length - fileName.length)).toEqual(fileName);
                         // cleanup
-                        deleteEntry(fileName);
-                        done();
+                        deleteEntry(fileName, done);
                     }, failed.bind(null, done, 'resolveLocalFileSystemURL - Error resolving file URL: ' + entry.toURL()));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
@@ -2858,8 +2800,7 @@ exports.defineAutoTests = function () {
                     resolveLocalFileSystemURL(entry.toNativeURL(), function (fileEntry) {
                         expect(fileEntry.fullPath).toCanonicallyMatch(root.fullPath + "/" + fileName);
                         // cleanup
-                        deleteEntry(fileName);
-                        done();
+                        deleteEntry(fileName, done);
                     }, failed.bind(null, done, 'resolveLocalFileSystemURL - Error resolving file URL: ' + entry.toNativeURL()));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
@@ -2872,8 +2813,7 @@ exports.defineAutoTests = function () {
                     resolveLocalFileSystemURL(url, function (fileEntry) {
                         expect(fileEntry.fullPath).toCanonicallyMatch(root.fullPath + "/" + fileName);
                         // cleanup
-                        deleteEntry(fileName);
-                        done();
+                        deleteEntry(fileName, done);
                     }, failed.bind(null, done, 'resolveLocalFileSystemURL - Error resolving file URL: ' + url));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
@@ -2886,8 +2826,7 @@ exports.defineAutoTests = function () {
                     resolveLocalFileSystemURL(url, function (fileEntry) {
                         expect(fileEntry.fullPath).toCanonicallyMatch(root.fullPath + "/" + fileName);
                         // cleanup
-                        deleteEntry(fileName);
-                        done();
+                        deleteEntry(fileName, done);
                     }, failed.bind(null, done, 'resolveLocalFileSystemURL - Error resolving file URL: ' + url));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
@@ -2900,8 +2839,7 @@ exports.defineAutoTests = function () {
                     resolveLocalFileSystemURL(url, function (fileEntry) {
                         expect(fileEntry.fullPath).toCanonicallyMatch(root.fullPath + "/" + fileName);
                         // cleanup
-                        deleteEntry(fileName);
-                        done();
+                        deleteEntry(fileName, done);
                     }, failed.bind(null, done, 'resolveLocalFileSystemURL - Error resolving file URL: ' + url));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
