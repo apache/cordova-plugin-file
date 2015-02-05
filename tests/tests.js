@@ -2695,11 +2695,15 @@ exports.defineAutoTests = function () {
                     // lookup file system entry
                     root.getFile('../' + fileName, {
                         create : false
-                    }, succeed.bind(null, done, "root.getFile('../"+fileName+ "')- Unexpected success callback, it should not traverse abvoe the root directory"), 
-                    function (error) {
-                        expect(error).toBeDefined();
+                    }, function (fileEntry) {
+                        // Note: we expect this to still resolve, as the correct behaviour is to ignore the ../, not to fail out.
+                        expect(fileEntry).toBeDefined();
+                        expect(fileEntry.name).toBe(fileName);
+                        expect(fileEntry.fullPath).toCanonicallyMatch(root.fullPath +'/' + fileName);
+                        // cleanup
+                        deleteEntry(fileName);
                         done();
-                    });
+                    }, failed.bind(null, done, 'root.getFile - Error getting file: ../' + fileName));
                 }, failed.bind(null, done, 'createFile - Error creating file: ../' + fileName));
             });
             it("file.spec.112 should traverse above above the current directory", function (done) {
