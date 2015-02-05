@@ -293,3 +293,16 @@
 * CB-7487 **Android** Broadcast file write This allows MTP USB shares to show the file immediately without reboot/manual refresh using 3rd party app.
 * CB-7700 cordova-plugin-file documentation translation: cordova-plugin-file
 * CB-7571 Bump version of nested plugin to match parent plugin
+
+### 1.3.3 (Feb 04, 2015)
+* CB-7927 Encoding data to bytes instead of chars when writing a file.
+* ios: Fix compile warning about implicit int conversion
+* CB-8351 ios: Use base64EncodedStringWithOptions instead of CordovaLib's class extension
+* CB-8351 ios: Use argumentForIndex rather than NSArray extension
+* CB-8351 ios: Use a local copy of valueForKeyIsNumber rather than CordovaLib's version
+* windows: Handle url's containing absolute windows path starting with drive letter and colon (encoded as %3A) through root FS
+* windows: Rework to use normal url form
+* android: refactor: Make Filesystem base class store its own name, rootUri, and rootEntry
+* android: Simplify code a bit by making makeEntryForPath not throw JSONException
+* CB-6431 android: Fix plugin breaking content: URLs
+* CB-7375 Never create new FileSystem instances (except on windows since they don't implement requestAllFileSystems())
