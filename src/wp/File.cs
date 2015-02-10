@@ -326,6 +326,26 @@ namespace WPCordovaClassLib.Cordova.Commands
             [DataMember(Name = "fullPath")]
             public string FullPath { get; set; }
 
+            /// <summary>
+            /// URI encoded fullpath
+            /// </summary>
+            [DataMember(Name = "nativeURL")]
+            public string NativeURL
+            {
+                set { }
+                get
+                {
+                    string escaped = Uri.EscapeUriString(this.FullPath);
+                    escaped = escaped.Replace("//", "/");
+                    if (escaped.StartsWith("/"))
+                    {
+                        escaped = escaped.Insert(0, "/");
+                    }
+                    return escaped;
+                }
+
+            }
+
             public bool IsResource { get; set; }
 
             public static FileEntry GetEntry(string filePath, bool bIsRes=false)
@@ -623,6 +643,39 @@ namespace WPCordovaClassLib.Cordova.Commands
             }
         }
 
+        private byte[] readFileBytes(string filePath,int startPos,int endPos, IsolatedStorageFile isoFile)
+        {
+            byte[] buffer;
+            using (IsolatedStorageFileStream reader = isoFile.OpenFile(filePath, FileMode.Open, FileAccess.Read))
+            {
+                if (startPos < 0)
+                {
+                    startPos = Math.Max((int)reader.Length + startPos, 0);
+                }
+                else if (startPos > 0)
+                {
+                    startPos = Math.Min((int)reader.Length, startPos);
+                }
+
+                if (endPos > 0)
+                {
+                    endPos = Math.Min((int)reader.Length, endPos);
+                }
+                else if (endPos < 0)
+                {
+                    endPos = Math.Max(endPos + (int)reader.Length, 0);
+                }
+
+
+                buffer = new byte[endPos - startPos];
+
+                reader.Seek(startPos, SeekOrigin.Begin);
+                reader.Read(buffer, 0, buffer.Length);
+            }
+
+            return buffer;
+        }
+
         public void readAsArrayBuffer(string options)
         {
             string[] optStrings = getOptionStrings(options);
@@ -630,7 +683,30 @@ namespace WPCordovaClassLib.Cordova.Commands
             int startPos = int.Parse(optStrings[1]);
             int endPos = int.Parse(optStrings[2]);
             string callbackId = optStrings[3];
-            DispatchCommandResult(new PluginResult(PluginResult.Status.ERROR), callbackId);
+
+            try
+            {
+                byte[] buffer;
+
+                using (IsolatedStorageFile isoFile = IsolatedStorageFile.GetUserStoreForApplication())
+                {
+                    if (!isoFile.FileExists(filePath))
+                    {
+                        readResourceAsText(options);
+                        return;
+                    }
+                    buffer = readFileBytes(filePath, startPos, endPos, isoFile);
+                }
+
+                DispatchCommandResult(new PluginResult(PluginResult.Status.OK, buffer), callbackId);
+            }
+            catch (Exception ex)
+            {
+                if (!this.HandleException(ex, callbackId))
+                {
+                    DispatchCommandResult(new PluginResult(PluginResult.Status.ERROR, NOT_READABLE_ERR), callbackId);
+                }
+            }
         }
 
         public void readAsBinaryString(string options)
@@ -640,7 +716,35 @@ namespace WPCordovaClassLib.Cordova.Commands
             int startPos = int.Parse(optStrings[1]);
             int endPos = int.Parse(optStrings[2]);
             string callbackId = optStrings[3];
-            DispatchCommandResult(new PluginResult(PluginResult.Status.ERROR), callbackId);
+            //DispatchCommandResult(new PluginResult(PluginResult.Status.ERROR), callbackId);
+
+            try
+            {
+                string result;
+
+                using (IsolatedStorageFile isoFile = IsolatedStorageFile.GetUserStoreForApplication())
+                {
+                    if (!isoFile.FileExists(filePath))
+                    {
+                        readResourceAsText(options);
+                        return;
+                    }
+                    
+                    byte[] buffer = readFileBytes(filePath, startPos, endPos, isoFile);
+
+                    result = System.Text.Encoding.UTF8.GetString(buffer, 0, buffer.Length);
+                    
+                }
+
+                DispatchCommandResult(new PluginResult(PluginResult.Status.OK, result), callbackId);
+            }
+            catch (Exception ex)
+            {
+                if (!this.HandleException(ex, callbackId))
+                {
+                    DispatchCommandResult(new PluginResult(PluginResult.Status.ERROR, NOT_READABLE_ERR), callbackId);
+                }
+            }
         }
 
         public void readAsText(string options)
@@ -665,35 +769,8 @@ namespace WPCordovaClassLib.Cordova.Commands
                     }
                     Encoding encoding = Encoding.GetEncoding(encStr);
 
-                    using (IsolatedStorageFileStream reader = isoFile.OpenFile(filePath, FileMode.Open, FileAccess.Read))
-                    {
-                        if (startPos < 0)
-                        {
-                            startPos = Math.Max((int)reader.Length + startPos, 0);
-                        }
-                        else if (startPos > 0)
-                        {
-                            startPos = Math.Min((int)reader.Length, startPos);
-                        }
-
-                        if (endPos > 0)
-                        {
-                            endPos = Math.Min((int)reader.Length, endPos);
-                        }
-                        else if (endPos < 0)
-                        {
-                            endPos = Math.Max(endPos + (int)reader.Length, 0);
-                        }
-
-
-                        var buffer = new byte[endPos - startPos];
-
-                        reader.Seek(startPos, SeekOrigin.Begin);
-                        reader.Read(buffer, 0, buffer.Length);
-
-                        text = encoding.GetString(buffer, 0, buffer.Length);
-                       
-                    }
+                    byte[] buffer = this.readFileBytes(filePath, startPos, endPos, isoFile);
+                    text = encoding.GetString(buffer, 0, buffer.Length);
                 }
 
                 DispatchCommandResult(new PluginResult(PluginResult.Status.OK, text), callbackId);
@@ -812,7 +889,7 @@ namespace WPCordovaClassLib.Cordova.Commands
                 }
 
                 byte[] dataToWrite = isBinary ? JSON.JsonHelper.Deserialize<byte[]>(data) :
-                    System.Text.Encoding.UTF8.GetBytes(data);
+                                     System.Text.Encoding.UTF8.GetBytes(data);
 
                 using (IsolatedStorageFile isoFile = IsolatedStorageFile.GetUserStoreForApplication())
                 {
