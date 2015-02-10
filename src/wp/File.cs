@@ -343,7 +343,6 @@ namespace WPCordovaClassLib.Cordova.Commands
                     }
                     return escaped;
                 }
-
             }
 
             public bool IsResource { get; set; }
@@ -656,7 +655,6 @@ namespace WPCordovaClassLib.Cordova.Commands
                 {
                     startPos = Math.Min((int)reader.Length, startPos);
                 }
-
                 if (endPos > 0)
                 {
                     endPos = Math.Min((int)reader.Length, endPos);
@@ -666,9 +664,7 @@ namespace WPCordovaClassLib.Cordova.Commands
                     endPos = Math.Max(endPos + (int)reader.Length, 0);
                 }
 
-
                 buffer = new byte[endPos - startPos];
-
                 reader.Seek(startPos, SeekOrigin.Begin);
                 reader.Read(buffer, 0, buffer.Length);
             }
@@ -716,7 +712,6 @@ namespace WPCordovaClassLib.Cordova.Commands
             int startPos = int.Parse(optStrings[1]);
             int endPos = int.Parse(optStrings[2]);
             string callbackId = optStrings[3];
-            //DispatchCommandResult(new PluginResult(PluginResult.Status.ERROR), callbackId);
 
             try
             {
@@ -731,7 +726,6 @@ namespace WPCordovaClassLib.Cordova.Commands
                     }
                     
                     byte[] buffer = readFileBytes(filePath, startPos, endPos, isoFile);
-
                     result = System.Text.Encoding.UTF8.GetString(buffer, 0, buffer.Length);
                     
                 }
@@ -772,7 +766,6 @@ namespace WPCordovaClassLib.Cordova.Commands
                     byte[] buffer = this.readFileBytes(filePath, startPos, endPos, isoFile);
                     text = encoding.GetString(buffer, 0, buffer.Length);
                 }
-
                 DispatchCommandResult(new PluginResult(PluginResult.Status.OK, text), callbackId);
             }
             catch (Exception ex)
