@@ -2734,10 +2734,7 @@ exports.defineAutoTests = function () {
                     create : false
                 }, succeed.bind(null, done, 'root.getFile - Unexpected success callback, it should not locate nonexistent file: ' + fileName), function (error) {
                     expect(error).toBeDefined();
-                    if (cordova.platformId == "windows8" || cordova.platformId == "windows")
-                        expect(error).toBeFileError(FileError.SECURITY_ERR);
-                    else
-                        expect(error).toBeFileError(FileError.NOT_FOUND_ERR);
+                    expect(error).toBeFileError(FileError.NOT_FOUND_ERR);
                     done();
                 });
             });
