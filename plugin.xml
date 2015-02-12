@@ -315,6 +315,11 @@ xmlns:android="http://schemas.android.com/apk/res/android"
     <platform name="windows8">
         <js-module src="src/windows/FileProxy.js" name="FileProxy">
             <merges target="" />
+        </js-module>        
+
+        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
+            <merges target="cordova" />
+            <runs/>
         </js-module>
     </platform>
 
@@ -322,6 +327,11 @@ xmlns:android="http://schemas.android.com/apk/res/android"
     <platform name="windows">
         <js-module src="src/windows/FileProxy.js" name="FileProxy">
             <merges target="" />
+        </js-module>        
+
+        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
+            <merges target="cordova" />
+            <runs/>
         </js-module>
     </platform>
 

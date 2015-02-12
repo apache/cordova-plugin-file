@@ -47,10 +47,39 @@ var DirectoryEntry = function(name, fullPath, filesystemName, nativeURL) {
 };
 
 utils.extend(DirectoryEntry, Entry);
-
   
-var getFolderFromPathAsync = Windows.Storage.StorageFolder.getFolderFromPathAsync;
-var getFileFromPathAsync = Windows.Storage.StorageFile.getFileFromPathAsync;
+function getFileFromPathAsync(path) {
+    if (path.indexOf("ms-appx:///") === 0) {
+        return Windows.Storage.StorageFile.getFileFromApplicationUriAsync(new Windows.Foundation.Uri(path));
+    }
+
+    return Windows.Storage.StorageFile.getFileFromPathAsync(path);
+}
+
+function getFolderFromPathAsync(path) {
+    if (path.indexOf(pathsPrefix.picturesLibrary) === 0) {
+        return new WinJS.Promise(function (completeDispatch, errorDispatch, progressDispatch) {
+            completeDispatch(Windows.Storage.KnownFolders.picturesLibrary);
+        });
+    }
+    if (path.indexOf(pathsPrefix.musicLibrary) === 0) {
+        return new WinJS.Promise(function (completeDispatch, errorDispatch, progressDispatch) {
+            completeDispatch(Windows.Storage.KnownFolders.musicLibrary);
+        });
+    }
+    if (path.indexOf(pathsPrefix.documentsLibrary) === 0) {
+        return new WinJS.Promise(function (completeDispatch, errorDispatch, progressDispatch) {
+            completeDispatch(Windows.Storage.KnownFolders.documentsLibrary);
+        });
+    }    
+    if (path.indexOf(pathsPrefix.videosLibrary) === 0) {
+        return new WinJS.Promise(function (completeDispatch, errorDispatch, progressDispatch) {
+            completeDispatch(Windows.Storage.KnownFolders.videosLibrary);
+        });
+    }
+
+    return Windows.Storage.StorageFolder.getFolderFromPathAsync(path);
+}
 
 var writeBytesAsync = Windows.Storage.FileIO.writeBytesAsync;
 var writeTextAsync = Windows.Storage.FileIO.writeTextAsync;
@@ -108,7 +137,8 @@ var WinFS = function(name, root) {
         this.winpath += "/";
     }
     this.makeNativeURL = function(path) {
-        return encodeURI(this.root.nativeURL + sanitize(path.replace(':','%3A')));};
+        return encodeURI(this.root.nativeURL + sanitize(path.replace(':','%3A')));
+    };
     root.fullPath = '/';
     if (!root.nativeURL)
             root.nativeURL = 'file://'+sanitize(this.winpath + root.fullPath).replace(':','%3A');
@@ -122,24 +152,66 @@ WinFS.prototype.__format__ = function(fullPath) {
     return 'cdvfile://localhost' + path;
 };
 
-var AllFileSystems; 
+var pathsPrefix = {
+    // Read-only directory where the application is installed.
+    applicationDirectory: nativePathToCordova(Windows.ApplicationModel.Package.current.installedLocation.path + '\\'),
+    // Where to put app-specific data files.
+    dataDirectory: nativePathToCordova(Windows.Storage.ApplicationData.current.localFolder.path + '\\'),
+    // Where to put app-specific data files that are going to be roomed for all divices.
+    roamingDirectory: nativePathToCordova(Windows.Storage.ApplicationData.current.roamingFolder.path + '\\'),
+    // Cached files that should survive app restarts.
+    // Apps should not rely on the OS to delete files in here.
+    cacheDirectory: nativePathToCordova(Windows.Storage.ApplicationData.current.temporaryFolder.path + '\\')
+};
 
+//Pictures Library of the user shared by all apps. Needs to specify permissions to access folder
+try {
+    pathsPrefix.picturesLibrary = nativePathToCordova(Windows.Storage.KnownFolders.picturesLibrary.folderRelativeId + '\\');
+} catch (err) { }
+
+//Music Library of the user shared by all apps. Needs to specify permissions to access folder
+try {
+    pathsPrefix.musicLibrary = nativePathToCordova(Windows.Storage.KnownFolders.musicLibrary.folderRelativeId + '\\');
+} catch (err) { }
+//Documents Library of the user shared by all apps. Needs to specify permissions to access folder
+try {
+    pathsPrefix.documentsLibrary = nativePathToCordova(Windows.Storage.KnownFolders.documentsLibrary.folderRelativeId + '\\');
+} catch (err) { }
+//Videos Library of the user shared by all apps. Needs to specify permissions to access folder
+try {
+    pathsPrefix.videosLibrary = nativePathToCordova(Windows.Storage.KnownFolders.videosLibrary.folderRelativeId + '\\');
+} catch (err) { }
+
+var AllFileSystems; 
 function getAllFS() {
     if (!AllFileSystems) {
         var storageFolderPermanent = Windows.Storage.ApplicationData.current.localFolder.path,
             storageFolderTemporary = Windows.Storage.ApplicationData.current.temporaryFolder.path;
+
         AllFileSystems = {
             'persistent':
             Object.freeze(new WinFS('persistent', { 
                 name: 'persistent', 
                 nativeURL: 'ms-appdata:///local',
-                winpath: nativePathToCordova(Windows.Storage.ApplicationData.current.localFolder.path)  
+                winpath: pathsPrefix.dataDirectory  
             })),
             'temporary':
             Object.freeze(new WinFS('temporary', { 
                 name: 'temporary', 
                 nativeURL: 'ms-appdata:///temp',
-                winpath: nativePathToCordova(Windows.Storage.ApplicationData.current.temporaryFolder.path)
+                winpath: pathsPrefix.cacheDirectory
+            })),
+            'roaming':
+            Object.freeze(new WinFS('roaming', { 
+                name: 'roaming', 
+                nativeURL: 'ms-appdata:///roaming',
+                winpath: pathsPrefix.roamingDirectory
+            })),
+            'application':
+            Object.freeze(new WinFS('application', { 
+                name: 'application', 
+                nativeURL: 'ms-appx:///',
+                winpath: pathsPrefix.applicationDirectory
             })),
             'root':
             Object.freeze(new WinFS('root', { 
@@ -148,6 +220,30 @@ function getAllFS() {
                 winpath: ''
             }))
         };
+
+        //Permission needed for these
+        if (pathsPrefix.picturesLibrary) {
+            AllFileSystems.picturesLibrary = Object.freeze(new WinFS('picturesLibrary', { 
+                name: 'picturesLibrary', 
+                winpath: pathsPrefix.picturesLibrary 
+            }));
+        } else if (pathsPrefix.musicLibrary) {
+            AllFileSystems.musicLibrary = Object.freeze(new WinFS('musicLibrary', { 
+                name: 'musicLibrary', 
+                winpath: pathsPrefix.musicLibrary 
+            }));
+        } else if (pathsPrefix.documentsLibrary) {
+            AllFileSystems.documentsLibrary = Object.freeze(new WinFS('documentsLibrary', { 
+                name: 'documentsLibrary', 
+                winpath: pathsPrefix.documentsLibrary 
+            }));
+        } else if (pathsPrefix.videosLibrary) {
+            AllFileSystems.videosLibrary = Object.freeze(new WinFS('videosLibrary', { 
+                name: 'videosLibrary', 
+                winpath: pathsPrefix.videosLibrary 
+            }));
+        }
+
     }
     return AllFileSystems;
 }
@@ -1105,7 +1201,6 @@ module.exports = {
     },
 
     resolveLocalFileSystemURI: function (success, fail, args) {
-
         var uri = args[0];
         var inputURL;
 
@@ -1132,6 +1227,10 @@ module.exports = {
                 );
             }
         );
+    },
+
+    requestAllPaths: function (successCallback) {
+        successCallback(pathsPrefix);
     }
     
 
