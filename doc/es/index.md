@@ -35,6 +35,16 @@ Para tener una visión general de otras opciones de almacenamiento, consulte [Gu
 
  [2]: http://cordova.apache.org/docs/en/edge/cordova_storage_storage.md.html
 
+Este plugin define global `cordova.file` objeto.
+
+Aunque en el ámbito global, no estará disponible hasta después de la `deviceready` evento.
+
+    document.addEventListener("deviceready", onDeviceReady, false);
+    function onDeviceReady() {
+        console.log(cordova.file);
+    }
+    
+
 ## Instalación
 
     cordova plugin add org.apache.cordova.file
@@ -49,6 +59,7 @@ Para tener una visión general de otras opciones de almacenamiento, consulte [Gu
 *   iOS
 *   Windows Phone 7 y 8 *
 *   Windows 8 *
+*   Explorador
 
 * *No son compatibles con estas plataformas `FileReader.readAsArrayBuffer` ni `FileWriter.write(blob)` .*
 
@@ -152,14 +163,12 @@ Si la tarjeta SD no estaba disponible, entonces versiones anteriores podría alm
 
 Ahora es posible elegir si desea almacenar archivos en la ubicación de almacenamiento del archivo interno, o usando la lógica anterior, con una preferencia en de la aplicación `config.xml` archivo. Para ello, añada una de estas dos líneas a `config.xml` :
 
-    <preference name="AndroidPersistentFileLocation" value="Internal" />
-    
-    <preference name="AndroidPersistentFileLocation" value="Compatibility" />
+    < nombre de preferencia = "AndroidPersistentFileLocation" value = "Internal" / >< nombre de preferencia = "AndroidPersistentFileLocation" value = "Compatibilidad" / >
     
 
 Sin esta línea, se utilizará el archivo plugin `Compatibility` como valor predeterminado. Si una etiqueta de preferencia está presente y no es uno de estos valores, no se iniciará la aplicación.
 
-Si su solicitud se ha enviado previamente a los usuarios, mediante una mayor (1.0 pre) versión de este plugin y archivos almacenados en el sistema de ficheros persistente, entonces debería establecer la preferencia en `Compatibility` . Cambiar la ubicación para "Internal" significa que los usuarios existentes que actualización su aplicación pueden ser incapaces de acceder a sus archivos previamente almacenadas, dependiendo de su dispositivo.
+Si su solicitud se ha enviado previamente a los usuarios, usando un mayor (1.0 pre) versión de este plugin y archivos almacenados en el sistema de ficheros persistente, entonces debería establecer la preferencia en `Compatibility` . Cambiar la ubicación para "Internal" significa que los usuarios existentes que actualización su aplicación pueden ser incapaces de acceder a sus archivos previamente almacenadas, dependiendo de su dispositivo.
 
 Si su solicitud es nuevo, o nunca antes ha almacenado archivos en el sistema de ficheros persistente, entonces el `Internal` generalmente se recomienda el ajuste.
 
@@ -182,7 +191,7 @@ Ahora es posible elegir si desea almacenar archivos en los documentos o director
 
 Sin esta línea, se utilizará el archivo plugin `Compatibility` como valor predeterminado. Si una etiqueta de preferencia está presente y no es uno de estos valores, no se iniciará la aplicación.
 
-Si su solicitud se ha enviado previamente a los usuarios, mediante una mayor (1.0 pre) versión de este plugin y archivos almacenados en el sistema de ficheros persistente, entonces debería establecer la preferencia en `Compatibility` . Cambiar la ubicación de `Library` significa que los usuarios existentes que actualización su aplicación sería incapaces de acceder a sus archivos previamente almacenadas.
+Si su solicitud se ha enviado previamente a los usuarios, usando un mayor (1.0 pre) versión de este plugin y archivos almacenados en el sistema de ficheros persistente, entonces debería establecer la preferencia en `Compatibility` . Cambiar la ubicación de `Library` significa que los usuarios existentes que actualización su aplicación sería incapaces de acceder a sus archivos previamente almacenadas.
 
 Si su solicitud es nuevo, o nunca antes ha almacenado archivos en el sistema de ficheros persistente, entonces el `Library` generalmente se recomienda el ajuste.
 
@@ -196,30 +205,82 @@ La API de sistema de archivo de forma nativa no es compatible con Firefox OS y s
 
 Se admiten las siguientes rutas de datos: * `applicationDirectory` -usa `xhr` para obtener los archivos locales que están envasados con la aplicación. * `dataDirectory` - Para archivos de datos específicos de aplicación persistente. * `cacheDirectory` -En caché archivos que deben sobrevivir se reinicia la aplicación (aplicaciones no deben confiar en el sistema operativo para eliminar archivos aquí).
 
+## Navegador rarezas
+
+### Rarezas y observaciones comunes
+
+*   Cada navegador utiliza su propio sistema de ficheros un espacio aislado. IE y Firefox utilizan IndexedDB como base. Todos los navegadores utilizan diagonal como separador de directorio en un camino.
+*   Las entradas de directorio deben crearse sucesivamente. Por ejemplo, la llamada `fs.root.getDirectory (' dir1/dir2 ', {create:true}, successCallback, errorCallback)` se producirá un error si no existiera dir1.
+*   El plugin solicita permiso de usuario para usar almacenamiento persistente en el primer comienzo de la aplicación. 
+*   Plugin soporta `cdvfile://localhost` (recursos locales) solamente. Es decir, no se admiten los recursos externos vía `cdvfile`.
+*   El plugin no sigue ["Archivo sistema API 8.3 nombrando restricciones"][4].
+*   BLOB y archivo ' `close` la función no es compatible.
+*   `FileSaver` y `BlobBuilder` no son compatibles con este plugin y no tengo recibos.
+*   El plugin no es compatible con `requestAllFileSystems`. Esta función también está desaparecida en las especificaciones.
+*   No se quitarán las entradas de directorio Si utilizas `create: true` bandera de directorio existente.
+*   No se admiten archivos creados mediante el constructor. Debe utilizar método entry.file en su lugar.
+*   Cada navegador utiliza su propia forma de blob URL referencias.
+*   se admite la función `readAsDataURL`, pero el mediatype en cromo depende de la extensión de nombre de entrada, mediatype en IE siempre está vacío (que es lo mismo como `plain-text` según la especificación), el mediatype en Firefox siempre es `application/octet-stream`. Por ejemplo, si el contenido es `abcdefg` entonces Firefox devuelve `datos: aplicación / octet-stream; base64, YWJjZGVmZw ==`, es decir devuelve `datos:; base64, YWJjZGVmZw ==`, cromo devuelve `datos: < mediatype dependiendo de la extensión de nombre de la entrada >; base64, YWJjZGVmZw ==`.
+*   `toInternalURL` devuelve la ruta de la forma `file:///persistent/path/to/entry` (Firefox, IE). Cromo devuelve la ruta de acceso en el formulario `cdvfile://localhost/persistent/file`.
+
+ [4]: http://www.w3.org/TR/2011/WD-file-system-api-20110419/#naming-restrictions
+
+### Rarezas de Chrome
+
+*   Filesystem de Chrome no es inmediatamente después de evento ready dispositivo. Como solución temporal puede suscribirse al evento `filePluginIsReady`. Ejemplo: 
+
+    javascript
+    window.addEventListener('filePluginIsReady', function(){ console.log('File plugin is ready');}, false);
+    
+
+Puede utilizar la función `window.isFilePluginReadyRaised` para verificar si ya se provoca el evento. -window.requestFileSystem temporal y persistente filesystem cuotas no están limitadas en cromo. -Para aumentar el almacenamiento persistente en cromo necesitas llamar el método `window.initPersistentFileSystem`. Cuota de almacenamiento persistente es de 5 MB por defecto. -Chrome requiere `--permitir-archivo-acceso-de-archivos` ejecutar argumento al soporte API mediante protocolo `file:///`. -`Archivo` objeto no cambiará si utilizas bandera `{create:true}` cuando una `entrada` de existente. -eventos `cancelable` propiedad está establecida en true en cromo. Esto es contrario a la [Especificación][5]. -función de `toURL` en Chrome devuelve `filesystem:`-prefijo camino dependiendo de host de la aplicación. Por ejemplo, `filesystem:file:///persistent/somefile.txt`, `filesystem:http://localhost:8080/persistent/somefile.txt`. -resultado de la función de `toURL` no contiene barra en caso de entrada en el directorio. Cromo resuelve directorios con urls slash-siguió correctamente sin embargo. -método `resolveLocalFileSystemURL` requiere la entrantes `url` que tienen prefijo `filesystem`. Por ejemplo, el parámetro de `url` para `resolveLocalFileSystemURL` debería estar en la forma `filesystem:file:///persistent/somefile.txt` en comparación con la forma `file:///persistent/somefile.txt` en Android. -Obsoleto `toNativeURL` función no es compatible y no tiene un trozo. -función de `setMetadata` no es indicada en las especificaciones y no admite. -INVALID_MODIFICATION_ERR (código: 9) se lanza en lugar de SYNTAX_ERR(code: 8) a petición de un sistema de ficheros inexistentes. -INVALID_MODIFICATION_ERR (código: 9) se lanza en vez de PATH_EXISTS_ERR(code: 12) en intentar exclusivamente crear un archivo o directorio, que ya existe. -INVALID_MODIFICATION_ERR (código: 9) se lanza en lugar de NO_MODIFICATION_ALLOWED_ERR(code: 6) para tratar de llamar a removeRecursively en el sistema de archivos raíz. -INVALID_MODIFICATION_ERR (código: 9) se lanza en vez de NOT_FOUND_ERR(code: 1) en tratar de moveTo directorio que no existe.
+
+ [5]: http://dev.w3.org/2009/dap/file-system/file-writer.html
+
+### Impl base IndexedDB rarezas (IE y Firefox)
+
+*   `.` y `..` no son compatibles.
+*   IE no soporta `file:///`-modo; modo alojado sólo es compatible (http://localhost:xxxx).
+*   Tamaño del sistema de archivos de Firefox no es limitada pero cada extensión de 50 MB solicitará un permiso de usuario. IE10 permite hasta 10mb de combinados AppCache y IndexedDB utilizados en la implementación del sistema de ficheros sin preguntar, cuando llegas a ese nivel que se le preguntará si desea permitir que ser aumentada hasta un máximo de 250 mb por sitio. Para que `size` parámetro para la función `requestFileSystem` no afecta sistema de ficheros en Firefox y IE.
+*   la función `readAsBinaryString` no se indica en las especificaciones y no compatible con IE y no tiene un trozo.
+*   `file.type` siempre es null.
+*   No debe crear entrada utilizando DirectoryEntry resultado de devolución de llamada de instancia que fue borrado. De lo contrario, obtendrá una entrada' colgar'.
+*   Antes de que se puede leer un archivo, el cual fue escrito sólo que necesitas una nueva instancia de este archivo.
+*   la función `setMetadata`, que no es indicada en las especificaciones soporta sólo el cambio de campo `modificationTime`. 
+*   `copyTo` y `moveTo` funciones no son compatibles con directorios.
+*   Metadatos de directorios no es compatible.
+*   Tanto Entry.remove y directoryEntry.removeRecursively no fallan al retirar no vacía directorios - directorios de ser eliminados se limpian junto con contenido en su lugar.
+*   `abort` y `truncate` las funciones no son compatibles.
+*   eventos de progreso no están despedidos. Por ejemplo, este controlador no ejecutará:
+
+    javascript
+    writer.onprogress = function() { /*commands*/ };
+    
+
 ## Actualización de notas
 
-En v1.0.0 de este plugin, la `FileEntry` y `DirectoryEntry` han cambiado las estructuras, para estar más acorde con las especificaciones publicadas.
+En v1.0.0 de este plugin, han cambiado las estructuras `FileEntry` y `DirectoryEntry`, para estar más acorde con las especificaciones publicadas.
 
-Versiones anteriores (pre-1.0.0) del plugin almacenan el dispositivo-absoluto-archivo-ubicación en la `fullPath` propiedad de `Entry` objetos. Estos caminos típicamente parecería
+Versiones anteriores (pre-1.0.0) del plugin almacenan el dispositivo-absoluto-archivo-ubicación en la propiedad `fullPath` de objetos de `entrada`. Estos caminos típicamente parecería
 
     /var/mobile/Applications/<application UUID>/Documents/path/to/file  (iOS)
     /storage/emulated/0/path/to/file                                    (Android)
     
 
-Estas rutas también fueron devueltos por el `toURL()` método de la `Entry` objetos.
+Estas rutas también fueron devueltos por el método `toURL()` de los objetos de `entrada`.
 
-Con v1.0.0, la `fullPath` es la ruta del archivo, *relativo a la raíz del sistema de archivos HTML*. Así, los caminos anteriores que ahora ambos ser representado por un `FileEntry` objeto con un `fullPath` de
+Con v1.0.0, el atributo `fullPath` es la ruta del archivo, *relativo a la raíz del sistema de archivos HTML*. Así, los caminos más arriba sería ahora ambos ser representado por un objeto `FileEntry` con un `fullPath` de
 
     /path/to/file
     
 
-Si su aplicación funciona con dispositivo-absoluto-caminos, y previamente obtenido esos caminos a través de la `fullPath` propiedad de `Entry` objetos, entonces debe actualizar su código para utilizar `entry.toURL()` en su lugar.
+Si su aplicación funciona con dispositivo-absoluto-caminos, y previamente obtenido esos caminos a través de la propiedad `fullPath` de objetos de `Entry`, deberá actualizar el código para utilizar `entry.toURL()` en su lugar.
 
-Para atrás compatibilidad, el `resolveLocalFileSystemURL()` método aceptará un dispositivo-absoluto-trayectoria y volverá un `Entry` objeto correspondiente, mientras exista ese archivo dentro o el `TEMPORARY` o `PERSISTENT` filesystems.
+Para atrás compatibilidad, el método `resolveLocalFileSystemURL()` a aceptar un dispositivo-absoluto-trayectoria y devolverá un objeto de `Entry` correspondiente que, mientras exista ese archivo dentro de los sistemas de ficheros `TEMPORARY` o la `PERSISTENT`.
 
-Esto ha sido particularmente un problema con el plugin de transferencia de archivos, que anteriormente utilizado dispositivo-absoluto-caminos (y todavía puede aceptarlas). Se ha actualizado para que funcione correctamente con las URLs de FileSystem, reemplazando así `entry.fullPath` con `entry.toURL()` debe resolver cualquier problema conseguir ese plugin para trabajar con archivos en el dispositivo.
+Esto ha sido particularmente un problema con el plugin de transferencia de archivos, que anteriormente utilizado dispositivo-absoluto-caminos (y todavía puede aceptarlas). Ha sido actualizado para funcionar correctamente con sistema de ficheros URLs, para reemplazar `entry.fullPath` con `entry.toURL()` debe resolver cualquier problema conseguir ese plugin para trabajar con archivos en el dispositivo.
 
-En v1.1.0 el valor devuelto de `toURL()` fue cambiado (véase \[CB-6394\] (https://issues.apache.org/jira/browse/CB-6394)) para devolver una dirección URL absoluta 'file://'. siempre que sea posible. Para asegurar una ' cdvfile:'-URL puede usar `toInternalURL()` ahora. Este método devolverá ahora filesystem URLs de la forma
+En v1.1.0 el valor devuelto por `toURL()` fue cambiado (consulte \[CB-6394\] (https://issues.apache.org/jira/browse/CB-6394)) para devolver una dirección URL absoluta 'file://'. siempre que sea posible. Para asegurar una ' cdvfile:'-URL ahora puede utilizar `toInternalURL()`. Este método devolverá ahora filesystem URLs de la forma
 
     cdvfile://localhost/persistent/path/to/file
     
@@ -247,7 +308,7 @@ Cuando se produce un error, uno de los siguientes códigos se utilizará.
 
 ## Configurando el Plugin (opcional)
 
-El conjunto de los sistemas de ficheros disponibles puede ser configurado por plataforma. Tanto iOS y Android reconocen un <preference> etiqueta en `config.xml` que nombra a los sistemas de archivos para ser instalado. De forma predeterminada, se activan todas las raíces del sistema de archivos.
+El conjunto de los sistemas de ficheros disponibles puede ser configurado por plataforma. Tanto iOS y Android reconocen un <preference> etiqueta en el `archivo config.xml` que nombra a los sistemas de archivos para ser instalado. De forma predeterminada, se activan todas las raíces del sistema de archivos.
 
     <preference name="iosExtraFilesystems" value="library,library-nosync,documents,documents-nosync,cache,bundle,root" />
     <preference name="AndroidExtraFilesystems" value="files,files-external,documents,sdcard,cache,cache-external,root" />
@@ -255,21 +316,21 @@ El conjunto de los sistemas de ficheros disponibles puede ser configurado por pl
 
 ### Android
 
-*   `files`: Directorio de almacenamiento de archivos internos de la aplicación
-*   `files-external`: Directorio de almacenamiento del la aplicación archivo externo
-*   `sdcard`: El directorio de almacenamiento de archivo externo global (esta es la raíz de la tarjeta SD, si uno está instalado). Debes tener el `android.permission.WRITE_EXTERNAL_STORAGE` permiso para usar esto.
-*   `cache`: Directorio de la aplicación la memoria caché interna
-*   `cache-external`: Directorio de caché externo de la aplicación
-*   `root`: El sistema de archivos de todo el dispositivo
+*   `files`: directorio de almacenamiento de archivo interno de la aplicación
+*   `files-external`: directorio de almacenamiento de archivo externo de la aplicación
+*   `sdcard`: el directorio de almacenamiento de archivo externo global (esta es la raíz de la tarjeta SD, si uno está instalado). Debe tener el permiso de `android.permission.WRITE_EXTERNAL_STORAGE` a usar esto.
+*   `cache`: directorio de memoria caché interna de la aplicación
+*   `cache-external`: directorio de caché externo de la aplicación
+*   `root`: el sistema de archivos de todo el dispositivo
 
-Android también es compatible con un sistema de archivos especial llamado "documentos", que representa un subdirectorio "/ documentos /" dentro del sistema de archivos "archivos".
+Android también es compatible con un sistema de archivos especial llamado "documents", que representa un subdirectorio "/Documents/" dentro del sistema de archivos "archivos".
 
 ### iOS
 
-*   `library`: Directorio de la aplicación la biblioteca
-*   `documents`: Directorio de documentos de la solicitud
-*   `cache`: Directorio de caché de la aplicación la
-*   `bundle`: Paquete la aplicación; la ubicación de la aplicación en sí mismo en el disco (sólo lectura)
-*   `root`: El sistema de archivos de todo el dispositivo
+*   `library`: directorio de bibliotecas de la aplicación
+*   `documents`: directorio de documentos de la aplicación
+*   `cache`: directorio de caché de la aplicación
+*   `bundle`: paquete de la aplicación; la ubicación de la aplicación en sí mismo en el disco (sólo lectura)
+*   `root`: el sistema de archivos de todo el dispositivo
 
-De forma predeterminada, los directorios de documentos y la biblioteca pueden ser sincronizados con iCloud. También puede solicitar dos sistemas de archivos adicionales, `library-nosync` y `documents-nosync` , que representa un directorio especial no sincronizados dentro de la `/Library` o `/Documents` sistema de ficheros.
+De forma predeterminada, los directorios de documentos y la biblioteca pueden ser sincronizados con iCloud. También puede solicitar dos sistemas adicionales, `library-nosync` y `documents-nosync`, que representan un directorio especial no sincronizados dentro de la `/Library` o sistema de ficheros `/Documents`.
