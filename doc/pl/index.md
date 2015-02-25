@@ -35,6 +35,16 @@ Omówienie innych opcji przechowywania odnoszą się do Cordova z [magazynu prze
 
  [2]: http://cordova.apache.org/docs/en/edge/cordova_storage_storage.md.html
 
+Ten plugin określa globalne `cordova.file` obiektu.
+
+Chociaż w globalnym zasięgu, to nie dostępne dopiero po `deviceready` imprezie.
+
+    document.addEventListener("deviceready", onDeviceReady, false);
+    function onDeviceReady() {
+        console.log(cordova.file);
+    }
+    
+
 ## Instalacja
 
     cordova plugin add org.apache.cordova.file
@@ -49,12 +59,13 @@ Omówienie innych opcji przechowywania odnoszą się do Cordova z [magazynu prze
 *   iOS
 *   Windows Phone 7 i 8 *
 *   Windows 8 *
+*   Przeglądarka
 
-* *Nie obsługują te platformy `FileReader.readAsArrayBuffer` , ani `FileWriter.write(blob)` .*
+* *Nie obsługują tych platform, `FileReader.readAsArrayBuffer` ani `FileWriter.write(blob)`.*
 
 ## Gdzie przechowywać pliki
 
-Od v1.2.0 znajdują się adresy URL do katalogów ważne systemu plików. Każdy adres URL jest w formie *file:///path/to/spot/*i mogą być konwertowane na `DirectoryEntry` za pomocą`window.resolveLocalFileSystemURL()`.
+Od v1.2.0 znajdują się adresy URL do katalogów ważne systemu plików. Każdy adres URL jest w formie *file:///path/to/spot/* i mogą być konwertowane na `DirectoryEntry` za pomocą `window.resolveLocalFileSystemURL()`.
 
 *   `cordova.file.applicationDirectory`-Tylko do odczytu katalogu gdzie jest zainstalowana aplikacja. (*iOS*, *Android*, *BlackBerry 10*)
 
@@ -82,7 +93,7 @@ Od v1.2.0 znajdują się adresy URL do katalogów ważne systemu plików. Każdy
 
 ## Plik System układy
 
-Chociaż technicznie implementacyjnym, może być bardzo przydatne wiedzieć, jak `cordova.file.*` Właściwości mapy fizycznej ścieżki na prawdziwe urządzenie.
+Chociaż technicznie implementacyjnym, może być bardzo przydatne wiedzieć, jak `cordova.file.*` właściwości mapy fizycznej ścieżki na prawdziwe urządzenie.
 
 ### iOS układ systemu plików
 
@@ -123,7 +134,7 @@ Chociaż technicznie implementacyjnym, może być bardzo przydatne wiedzieć, ja
 
 * * System operacyjny nie usunąć ten katalog automatycznie; Jesteś odpowiedzialny za zarządzanie zawartość siebie. Należy użytkownik przeczyścić pamięć podręczną ręcznie, zawartość katalogu są usuwane.
 
-**Uwaga**: Jeśli nie mogą być montowane pamięci masowej, `cordova.file.external*` Właściwości są`null`.
+**Uwaga**: Jeśli nie mogą być montowane pamięci masowej, właściwości `cordova.file.external*` są `wartości null`.
 
 ### Układ systemu plików blackBerry 10
 
@@ -148,20 +159,20 @@ Istnieje wiele prawidłowe lokalizacje do przechowywania trwałych plików na te
 
 Poprzednie wersje pluginu wybrać lokalizację plików tymczasowych i trwałe podczas uruchamiania, czy urządzenie twierdził, że karta SD (lub równoważne magazynowanie podzia³) był montowany w oparciu. Czy karta SD została zamontowana, czy duży wewnętrzny magazynowanie podzia³ był dostępny (takie jak na Nexus urządzenia,) a następnie trwałe pliki będą przechowywane w katalogu głównego tego miejsca. Oznaczało to, że wszystkie aplikacje Cordova może Zobacz wszystkie pliki dostępne na karcie.
 
-Jeśli karta SD nie był dostępny, a następnie poprzednie wersje będzie przechowywać dane w `/data/data/<packageId>` , która izoluje aplikacje od siebie, ale nadal może spowodować danych, które mają być współużytkowane przez użytkowników.
+Jeśli karta SD nie był dostępny, a następnie poprzednie wersje będzie przechowywać dane w `/data/data/<packageId>`, która izoluje aplikacje od siebie, ale nadal może spowodować danych, które mają być współużytkowane przez użytkowników.
 
-Teraz jest możliwe, aby zdecydować, czy do przechowywania plików w lokalizacji magazynu plików, lub przy użyciu poprzedniej logiki, z preferencją w aplikacji `config.xml` pliku. Aby to zrobić, należy dodać jeden z tych dwóch linii do `config.xml` :
+Teraz jest możliwe, aby zdecydować, czy do przechowywania plików w lokalizacji magazynu plików, lub przy użyciu poprzednich logiki, z preferencją w aplikacji w pliku `config.xml`. Aby to zrobić, Dodaj jedną z tych dwóch linii do `pliku config.xml`:
 
     <preference name="AndroidPersistentFileLocation" value="Internal" />
     
     <preference name="AndroidPersistentFileLocation" value="Compatibility" />
     
 
-Bez tej linii, użyje pliku plugin `Compatibility` jako domyślny. Jeśli znacznik preferencji jest obecny i to nie jedną z tych wartości, aplikacja nie zostanie uruchomiona.
+Bez tej linii wtyczki pliku będzie używać `Compatibility` jako domyślny. Jeśli znacznik preferencji jest obecny i to nie jedną z tych wartości, aplikacja nie zostanie uruchomiona.
 
-Jeśli aplikacja wcześniej zostało wysłane do użytkowników, przy użyciu starszych (pre-1.0) wersję tego pluginu oraz pliki przechowywane w trwałych plików, a następnie należy ustawić preferencje `Compatibility` . Przełączania lokalizacji do "Wewnętrznego" oznacza, że istniejących użytkowników, którzy ich aplikacja może być niesłabnący wobec dostęp ich wcześniej zapisane pliki, w zależności od ich urządzenie.
+Jeśli aplikacja wcześniej zostało wysłane do użytkowników, przy użyciu starszych (pre-1.0) wersję tego pluginu i ma zapisane na dysku pliki w trwałych plików, a następnie należy ustawić preferencje do `Compatibility`. Przełączania lokalizacji do "Internal" oznacza, że istniejących użytkowników, którzy ich aplikacja może być niesłabnący wobec dostęp ich wcześniej zapisane pliki, w zależności od ich urządzenie.
 
-Jeśli aplikacja jest nowy, lub nigdy wcześniej przechowywane pliki w trwałych plików, a następnie `Internal` ustawienie jest zwykle zalecane.
+Jeśli aplikacja jest nowy, lub ma nigdy wcześniej przechowywane pliki w systemie plików trwałe, ustawienie `Internal` generalnie jest zalecane.
 
 ## Dziwactwa iOS
 
@@ -173,18 +184,18 @@ Jeśli aplikacja jest nowy, lub nigdy wcześniej przechowywane pliki w trwałych
 
 Istnieją dwa ważne miejsca trwałe pliki na urządzenia iOS: katalogu dokumentów i katalogu biblioteki. Poprzednie wersje pluginu tylko kiedykolwiek przechowywane trwałe pliki w katalogu dokumentów. To miał ten efekt uboczny od rozpoznawalności wszystkie pliki aplikacji w iTunes, który był często niezamierzone, zwłaszcza dla aplikacji, które obsługują wiele małych plików, zamiast produkuje kompletne dokumenty do wywozu, który jest przeznaczenie katalogu.
 
-Teraz jest możliwe, aby zdecydować, czy do przechowywania danych w dokumentach lub katalogu biblioteki, z preferencją w aplikacji `config.xml` pliku. Aby to zrobić, należy dodać jeden z tych dwóch linii do `config.xml` :
+Teraz jest możliwe, aby zdecydować, czy do przechowywania plików w dokumentach lub katalogu biblioteki, z preferencją w pliku `config.xml` aplikacji. Aby to zrobić, Dodaj jedną z tych dwóch linii do `pliku config.xml`:
 
     <preference name="iosPersistentFileLocation" value="Library" />
     
     <preference name="iosPersistentFileLocation" value="Compatibility" />
     
 
-Bez tej linii, użyje pliku plugin `Compatibility` jako domyślny. Jeśli znacznik preferencji jest obecny i to nie jedną z tych wartości, aplikacja nie zostanie uruchomiona.
+Bez tej linii wtyczki pliku będzie używać `Compatibility` jako domyślny. Jeśli znacznik preferencji jest obecny i to nie jedną z tych wartości, aplikacja nie zostanie uruchomiona.
 
-Jeśli aplikacja wcześniej zostało wysłane do użytkowników, przy użyciu starszych (pre-1.0) wersję tego pluginu oraz pliki przechowywane w trwałych plików, a następnie należy ustawić preferencje `Compatibility` . Przełączania lokalizacji `Library` oznaczałoby, że istniejących użytkowników, którzy ich aplikacja będzie niesłabnący wobec dostęp ich wcześniej zapisane pliki.
+Jeśli aplikacja wcześniej zostało wysłane do użytkowników, przy użyciu starszych (pre-1.0) wersję tego pluginu i ma zapisane na dysku pliki w trwałych plików, a następnie należy ustawić preferencje do `Compatibility`. Przełączania lokalizacji do `Library` oznaczałoby, że istniejących użytkowników, którzy ich aplikacja będzie niesłabnący wobec dostęp ich wcześniej zapisane pliki.
 
-Jeśli aplikacja jest nowy, lub nigdy wcześniej przechowywane pliki w trwałych plików, a następnie `Library` ustawienie jest zwykle zalecane.
+Jeśli aplikacja jest nowy, lub nigdy wcześniej przechowywane pliki w trwałych plików, ustawień `Library` ogólnie jest zalecane.
 
 ## Firefox OS dziwactwa
 
@@ -194,32 +205,84 @@ API systemu plików nie jest obsługiwany macierzyście przez Firefox OS i jest 
 *   Nie obsługuje metadane dla katalogów
 *   Metody `copyTo` i `moveTo` nie obsługuje katalogi
 
-Obsługiwane są następujące ścieżki danych: * `applicationDirectory` -używa `xhr` Aby uzyskać lokalne pliki, które są pakowane z aplikacji. * `dataDirectory` - Na trwałe dane specyficzne dla aplikacji pliki. * `cacheDirectory` -Buforowane pliki, które powinny przetrwać ponowne uruchomienie aplikacji (aplikacje nie powinny polegać na OS, aby usunąć pliki tutaj).
+Obsługiwane są następujące ścieżki danych: * `applicationDirectory` - używa `xhr`, aby uzyskać lokalne pliki, które są pakowane z aplikacji. * `dataDirectory` - na trwałe dane specyficzne dla aplikacji pliki. * `cacheDirectory` - buforowanych plików, które powinny przetrwać ponowne uruchomienie aplikacji (aplikacje nie powinny polegać na OS, aby usunąć pliki tutaj).
+
+## Quirks przeglądarki
+
+### Wspólne dziwactw i uwagi
+
+*   Każda przeglądarka używa własnej piaskownicy plików. IE i Firefox Użyj IndexedDB jako podstawa. Wszystkie przeglądarki za pomocą ukośnika jako separatora katalogu ścieżka.
+*   Wpisy w katalogu mają być tworzone sukcesywnie. Na przykład wywołanie `fs.root.getDirectory (' dir1/dir2 ', {create:true}, successCallback, errorCallback)` zakończy się niepowodzeniem, jeśli nie istnieje dir1.
+*   Plugin żądania użytkownika uprawnień do używania trwałe przechowywanie przy pierwszym uruchomieniu aplikacji. 
+*   Wtyczka obsługuje `cdvfile://localhost` (lokalne zasoby) tylko. Czyli zewnętrznych zasobów nie są obsługiwane przez `cdvfile`.
+*   Plugin nie następować po ["Plik API systemu nazw 8.3 ograniczenia"][4].
+*   Obiektu BLOB i pliku "`close` funkcja nie jest obsługiwana.
+*   `FileSaver` i `BlobBuilder` nie są obsługiwane przez ten plugin i nie ma artykułów.
+*   Plugin nie obsługuje `requestAllFileSystems`. Ta funkcja jest również brak w specyfikacji.
+*   Wpisy w katalogu nie zostaną usunięte, jeśli używasz `create: true` flaga dla istniejącego katalogu.
+*   Pliki utworzone za pomocą konstruktora nie są obsługiwane. Zamiast tego należy użyć metody entry.file.
+*   Każda przeglądarka używa własnej postaci URL odwołania blob.
+*   `readAsDataURL` funkcja jest obsługiwana, ale mediatype w Chrome zależy od wejścia z rozszerzeniem, mediatype w IE zawsze jest pusty (który jest taki sam jak `zwykły tekst` według specyfikacji), mediatype w Firefox jest zawsze `aplikacji/oktet strumień`. Na przykład, jeśli treść jest `abcdefg` Firefox wraca z `danych: stosowanie / octet-stream, base64, YWJjZGVmZw ==`, czyli zwraca `danych:; base64, YWJjZGVmZw ==`, Chrome zwraca `danych: < mediatype w zależności od rozszerzenia nazwy; > base64, YWJjZGVmZw ==`.
+*   `toInternalURL` zwraca ścieżkę w postaci `file:///persistent/path/to/entry` (Firefox, IE). Chrom zwraca ścieżkę w postaci `cdvfile://localhost/persistent/file`.
+
+ [4]: http://www.w3.org/TR/2011/WD-file-system-api-20110419/#naming-restrictions
+
+### Dziwactwa chrom
+
+*   Chrom plików nie jest od razu gotowy po gotowe urządzenia. Jako rozwiązanie alternatywne można subskrybować zdarzenia `filePluginIsReady`. Przykład: 
+
+    javascript
+    window.addEventListener('filePluginIsReady', function(){ console.log('File plugin is ready');}, false);
+    
+
+Funkcja `window.isFilePluginReadyRaised` służy do sprawdzenia, czy zdarzenie już została podniesiona. -kwoty plików tymczasowych i trwałe window.requestFileSystem nie są ograniczone w Chrome. -W celu zwiększenia trwałego magazynu w Chrome, należy wywołać metodę `window.initPersistentFileSystem`. Domyślnie trwałe dyskowa jest 5 MB. -Chrome wymaga `--pozwalają--dostęp z plików` uruchomić argument na poparcie API za pośrednictwem protokołu `file:///`. -`Plik` obiekt będzie nie zmieniło jeśli flaga `{create:true}` gdy już istniejący `wpis`. -wydarzenia `zwrotu` właściwość jest zestaw true w Chrome. Jest to sprzeczne ze [specyfikacji][5]. -Funkcja `toURL` w Chrome zwraca `plików:`-poprzedzona ścieżką w zależności od aplikacji hosta. Na przykład, `filesystem:file:///persistent/somefile.txt`, `filesystem:http://localhost:8080/persistent/somefile.txt`. -wynik funkcji `toURL` nie zawierają ukośnika w wpis w katalogu. Chrom usuwa katalogi z ciąć doczepiane adresów URL poprawnie choć. -Metoda `resolveLocalFileSystemURL` wymaga przychodzących `url` mają prefiks `plików`. Na przykład parametr `adresu url` do `resolveLocalFileSystemURL` powinny być w formie `filesystem:file:///persistent/somefile.txt`, w przeciwieństwie do formularza `file:///persistent/somefile.txt` w Android. -Przestarzałe `toNativeURL` funkcja nie jest obsługiwana i nie tylko. -Funkcja `setMetadata` jest nie podane w specyfikacji i nie jest obsługiwane. -INVALID_MODIFICATION_ERR (kod: 9) jest generowany zamiast SYNTAX_ERR(code: 8) na żądanie nieistniejącą plików. -INVALID_MODIFICATION_ERR (kod: 9) jest generowany zamiast PATH_EXISTS_ERR(code: 12) próbuje stworzyć wyłącznie pliku lub katalogu, który już istnieje. -INVALID_MODIFICATION_ERR (kod: 9) jest generowany zamiast NO_MODIFICATION_ALLOWED_ERR(code: 6) na próby wywołania removeRecursively w głównym systemie plików. -INVALID_MODIFICATION_ERR (kod: 9) jest generowany zamiast NOT_FOUND_ERR(code: 1) na trudny do katalogu moveTo, który nie istnieje.
+
+ [5]: http://dev.w3.org/2009/dap/file-system/file-writer.html
+
+### Na bazie IndexedDB impl dziwactw (Firefox i IE)
+
+*   `.` i `.` nie są obsługiwane.
+*   IE obsługuje `file:///`-tryb; tylko obsługiwane tryb jest obsługiwany (http://localhost:xxxx).
+*   Rozmiar plików Firefox nie jest ograniczona, ale każde rozszerzenie 50MB zwróci użytkownikowi uprawnienia. IE10 pozwala maksymalnie 10mb połączone "appcache" i IndexedDB używane w implementacji systemu plików bez monitowania, gdy trafisz na tym poziomie, które uzyskasz, jeśli chcesz mogła ona zostać zwiększony do max 250mb na stronie. Więc `rozmiar` parametru funkcja `requestFileSystem` nie wpływa na system plików Firefox i IE.
+*   `readAsBinaryString` funkcja nie jest określona w specyfikacji i nie obsługiwane w IE i nie tylko.
+*   `File.Type` ma zawsze wartość null.
+*   Nie należy utworzyć wpis za pomocą DirectoryEntry wystąpienie wynik wywołania zwrotnego, który został usunięty. W przeciwnym razie dostaniesz wpisem"wiszące".
+*   Zanim będzie można przeczytać plik, który został napisany tylko trzeba uzyskać nowe wystąpienie tego pliku.
+*   Funkcja `setMetadata`, która nie jest określona w specyfikacji obsługuje tylko zmian pola `modificationTime`. 
+*   `copyTo` i `moveTo` funkcji nie obsługuje katalogi.
+*   Metadanych w katalogów nie jest obsługiwana.
+*   Zarówno Entry.remove i directoryEntry.removeRecursively nie usuwając niepuste katalogi - katalogi są usuwane są czyszczone z treści zamiast.
+*   `abort` i `truncate` funkcje nie są obsługiwane.
+*   zdarzenia postępu nie są zwalniani. Na przykład to obsługa będzie nie wykonywane:
+
+    javascript
+    writer.onprogress = function() { /*commands*/ };
+    
 
 ## Uaktualniania notatek
 
-W v1.0.0 ten plugin `FileEntry` i `DirectoryEntry` struktur zmieniły się, aby być bardziej zgodnie z opublikowaną specyfikacją.
+W v1.0.0 tego pluginu struktury `FileEntry` i `DirectoryEntry` zmieniły się więcej zgodnie z opublikowaną specyfikacją.
 
-Poprzednie wersje (pre-1.0.0) plugin przechowywane urządzenia bezwzględna plik lokalizacja w `fullPath` Właściwość `Entry` obiektów. Te ścieżki zazwyczaj będzie wyglądać
+Poprzednie wersje (pre-1.0.0) plugin przechowywane urządzenia bezwzględna plik lokalizacja we właściwości `fullPath` `wpis` obiektów. Te ścieżki zazwyczaj będzie wyglądać
 
     /var/mobile/Applications/<application UUID>/Documents/path/to/file  (iOS)
     /storage/emulated/0/path/to/file                                    (Android)
     
 
-Te ścieżki również zostały zwrócone przez `toURL()` Metoda `Entry` obiektów.
+Te ścieżki były także zwracany przez metodę `toURL()` `Entry` obiektów.
 
-Z v1.0.0 `fullPath` atrybut jest ścieżką do pliku, *względem katalogu głównego systemu plików HTML*. Tak, powyżej ścieżki będzie teraz zarówno reprezentowana przez `FileEntry` obiekt z `fullPath` z
+Z v1.0.0 atrybut `fullPath` jest ścieżką do pliku, *względem katalogu głównego systemu plików HTML*. Tak powyżej ścieżki będzie teraz zarówno być reprezentowane przez obiekt `FileEntry` z `fullPath` o
 
     /path/to/file
     
 
-Jeśli aplikacja działa z ścieżki bezwzględnej urządzeń, i możesz wcześniej źródło tych ścieżek za pomocą `fullPath` Właściwość `Entry` obiektów, a następnie należy zaktualizować kod, aby użyć `entry.toURL()` zamiast.
+Jeśli aplikacja działa z ścieżki bezwzględnej urządzeń, i możesz wcześniej źródło tych ścieżek przez właściwość `fullPath` `wpis` obiektów, należy zaktualizować kod, aby zamiast tego użyj `entry.toURL()`.
 
-Do tyłu zgodności, `resolveLocalFileSystemURL()` Metoda akceptuje pomysł ścieżka bezwzględna i zwróci `Entry` obiektu odpowiadającego mu, tak długo, jak ten plik istnieje w albo `TEMPORARY` lub `PERSISTENT` plików.
+Dla wstecznej kompatybilności, Metoda `resolveLocalFileSystemURL()` będzie zaakceptować urządzenia ścieżka bezwzględna i zwróci obiekt `Entry` odpowiadający, tak długo, jak ten plik istnieje w albo `TEMPORARY` lub `PERSISTENT` systemy plików.
 
-To szczególnie został problem z pluginem transferu plików, które poprzednio używane ścieżki bezwzględnej urządzeń (i wciąż można je przyjąć). To został zaktualizowany, aby działać poprawnie z adresów URL plików, więc wymiana `entry.fullPath` z `entry.toURL()` powinno rozwiązać wszelkie problemy dostawanie ten plugin do pracy z plików w pamięci urządzenia.
+To szczególnie został problem z pluginem transferu plików, które poprzednio używane ścieżki bezwzględnej urządzeń (i wciąż można je przyjąć). Została zaktualizowana do pracy poprawnie z adresów URL plików, więc wymiana `entry.fullPath` z `entry.toURL()` powinno rozwiązać wszelkie problemy dostawanie ten plugin do pracy z plików w pamięci urządzenia.
 
-W v1.1.0 wartość zwracana z `toURL()` został zmieniony (patrz \[CB-6394\] (https://issues.apache.org/jira/browse/CB-6394)) zwraca adres URL absolutnej "file://". wszędzie tam, gdzie jest to możliwe. Aby zapewnić ' cdvfile:'-URL można użyć `toInternalURL()` teraz. Ta metoda zwróci teraz adresy URL plików formularza
+W v1.1.0 wartość zwracana przez `toURL()` został zmieniony (patrz \[CB-6394\] (https://issues.apache.org/jira/browse/CB-6394)) zwraca adres URL absolutnej "file://". wszędzie tam, gdzie jest to możliwe. Aby zapewnić ' cdvfile:'-URL można użyć `toInternalURL()` teraz. Ta metoda zwróci teraz adresy URL plików formularza
 
     cdvfile://localhost/persistent/path/to/file
     
@@ -247,7 +310,7 @@ Gdy błąd jest generowany, jeden z następujących kodów będzie służyć.
 
 ## Konfigurowanie wtyczka (opcjonalny)
 
-Zestaw dostępnych plików może być skonfigurowany na platformie. Zarówno iOS i Android <preference> uchwyt w `config.xml` które nazwy plików do instalacji. Domyślnie włączone są wszystkie korzenie systemu plików.
+Zestaw dostępnych plików może być skonfigurowany na platformie. Zarówno iOS i Android <preference> Tag w `pliku config.xml`, których nazwy plików do instalacji. Domyślnie włączone są wszystkie korzenie systemu plików.
 
     <preference name="iosExtraFilesystems" value="library,library-nosync,documents,documents-nosync,cache,bundle,root" />
     <preference name="AndroidExtraFilesystems" value="files,files-external,documents,sdcard,cache,cache-external,root" />
@@ -255,21 +318,21 @@ Zestaw dostępnych plików może być skonfigurowany na platformie. Zarówno iOS
 
 ### Android
 
-*   `files`: Katalog plików aplikacja
-*   `files-external`: Katalog aplikacji zewnętrznych plików
-*   `sdcard`: Globalny plik zewnętrzny magazyn katalogu (to jest głównym karty SD, jeśli jedna jest zainstalowana). Musisz mieć `android.permission.WRITE_EXTERNAL_STORAGE` uprawnienie do korzystania z tego.
-*   `cache`: Katalogu stosowanie wewnętrznej pamięci podręcznej
-*   `cache-external`: Katalog aplikacji zewnętrznych pamięci podręcznej
-*   `root`: Całe urządzenie systemu plików
+*   `files`: katalogu przechowywania plików aplikacji
+*   `files-external`: katalog aplikacji zewnętrznych plików
+*   `sdcard`: katalog globalny plik zewnętrzny (to jest głównym karty SD, jeśli jedna jest zainstalowana). Musi mieć uprawnienia `android.permission.WRITE_EXTERNAL_STORAGE` wobec używać ten.
+*   `cache`: katalogu wewnętrznej pamięci podręcznej aplikacji
+*   `cache-external`: katalogu aplikacji zewnętrznych pamięci podręcznej
+*   `root`: całe urządzenie systemu plików
 
 Android obsługuje również specjalnych plików o nazwie "dokumenty", który reprezentuje podkatalog "/ dokumenty /" w ramach systemu plików "pliki".
 
 ### iOS
 
-*   `library`: Katalog biblioteki aplikacji
-*   `documents`: Katalog dokumentów wniosek
-*   `cache`: W katalogu pamięci podręcznej aplikacja
-*   `bundle`: Pakiet aplikacji; Lokalizacja aplikacji na dysku (tylko do odczytu)
-*   `root`: Całe urządzenie systemu plików
+*   `library`: katalog biblioteki aplikacji
+*   `documents`: dokumenty katalogu aplikacji
+*   `cache`: katalogu pamięci podręcznej aplikacji
+*   `bundle`: pakiet aplikacji; Lokalizacja aplikacji na dysku (tylko do odczytu)
+*   `root`: całe urządzenie systemu plików
 
-Domyślnie katalogi biblioteki i dokumenty mogą być synchronizowane iCloud. Można również zażądać dwóch dodatkowych plików, `library-nosync` i `documents-nosync` , które stanowią specjalny katalog nie zsynchronizowane w `/Library` lub `/Documents` systemu plików.
+Domyślnie katalogi biblioteki i dokumenty mogą być synchronizowane iCloud. Można również zażądać dwóch dodatkowych plików, `library-nosync` i `documents-nosync`, które stanowią specjalny katalog nie zsynchronizowane w `/Library` lub systemu plików `/Documents`.

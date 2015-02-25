@@ -35,6 +35,16 @@ Finden Sie einen Überblick über andere Speicheroptionen Cordovas [Speicher-Fü
 
  [2]: http://cordova.apache.org/docs/en/edge/cordova_storage_storage.md.html
 
+Dieses Plugin wird global `cordova.file`-Objekt definiert.
+
+Obwohl im globalen Gültigkeitsbereich, steht es nicht bis nach dem `deviceready`-Ereignis.
+
+    document.addEventListener("deviceready", onDeviceReady, false);
+    function onDeviceReady() {
+        console.log(cordova.file);
+    }
+    
+
 ## Installation
 
     cordova plugin add org.apache.cordova.file
@@ -49,12 +59,13 @@ Finden Sie einen Überblick über andere Speicheroptionen Cordovas [Speicher-Fü
 *   iOS
 *   Windows Phone 7 und 8 *
 *   Windows 8 *
+*   Browser
 
-* *Diese Plattformen unterstützen nicht `FileReader.readAsArrayBuffer` noch `FileWriter.write(blob)` .*
+* *Diese Plattformen unterstützen nicht `FileReader.readAsArrayBuffer` noch `FileWriter.write(blob)`.*
 
 ## Wo Dateien gespeichert
 
-Stand: V1 werden URLs auf wichtige Datei-System-Verzeichnisse zur Verfügung gestellt. Jede URL in der Form *file:///path/to/spot/*ist, und konvertiert werden können eine `DirectoryEntry` mit`window.resolveLocalFileSystemURL()`.
+Stand: V1 werden URLs auf wichtige Datei-System-Verzeichnisse zur Verfügung gestellt. Jede URL in der Form *file:///path/to/spot/* ist, und ein `DirectoryEntry` mit `window.resolveLocalFileSystemURL()` konvertiert werden können.
 
 *   `cordova.file.applicationDirectory`-Die schreibgeschützten Verzeichnis, in dem die Anwendung installiert ist. (*iOS*, *Android*, *BlackBerry 10*)
 
@@ -82,7 +93,7 @@ Stand: V1 werden URLs auf wichtige Datei-System-Verzeichnisse zur Verfügung ges
 
 ## Dateisystemlayouts
 
-Obwohl technisch ein Implementierungsdetail, kann es sehr hilfreich zu wissen wie die `cordova.file.*` Eigenschaften anzeigen auf physischen Pfade auf einem echten Gerät.
+Obwohl technisch ein Implementierungsdetail, kann es sehr hilfreich zu wissen, wie die `cordova.file.*`-Eigenschaften physikalische Pfade auf einem echten Gerät zugeordnet sein.
 
 ### iOS-Datei-System-Layout
 
@@ -123,7 +134,7 @@ Obwohl technisch ein Implementierungsdetail, kann es sehr hilfreich zu wissen wi
 
 * * The OS nicht klar dieses Verzeichnis automatisch; Sie sind verantwortlich für die Inhalte selbst verwalten. Der Benutzer den Cache manuell löschen sollte, werden der Inhalt des Verzeichnisses entfernt.
 
-**Hinweis**: Wenn externe Speichergeräte nicht bereitgestellt werden kann, die `cordova.file.external*` Eigenschaften sind`null`.
+**Hinweis**: Wenn externe Speichergeräte nicht bereitgestellt werden kann, sind die `cordova.file.external*` Eigenschaften `null`.
 
 ### BlackBerry 10-File-System-Layout
 
@@ -148,20 +159,20 @@ Es gibt mehrere gültige Speicherorte, persistente Dateien auf einem Android-Ger
 
 Frühere Versionen des Plugins wählen würde, den Speicherort der temporären und permanenten Dateien beim Start, basierend auf, ob das Gerät behauptete, dass die SD-Karte (oder gleichwertige Speicherpartition) bereitgestellt wurde. Wenn die SD-Karte eingelegt wurde, oder wenn eine große interne Speicherpartition verfügbar war (wie auf Nexus-Geräten) und dann in die Wurzel dieses Raumes, die persistenten Dateien gespeichert werden. Dies bedeutete, dass alle Cordova apps aller verfügbaren Dateien auf der Karte sehen konnte.
 
-Wenn die SD-Karte nicht verfügbar war, dann Vorgängerversionen Daten unter speichern würde `/data/data/<packageId>` , die isoliert Anwendungen voneinander, aber möglicherweise noch Ursache Daten zwischen Benutzern freigegeben werden.
+Wenn die SD-Karte nicht verfügbar war, dann Vorgängerversionen Daten unter speichern würde `/data/data/<packageId>`, die isoliert Anwendungen voneinander, aber möglicherweise noch Ursache Daten zwischen Benutzern freigegeben werden.
 
-Es ist nun möglich, auszuwählen, ob zum Speichern von Dateien in den internen Datei-Speicherort oder unter Verwendung der bisherigen Logik mit einer Vorliebe in Ihrer Anwendung `config.xml` Datei. Hierzu fügen Sie eines dieser beiden Linien zu `config.xml` :
+Es ist jetzt möglich, ob Sie Dateien der internen Datei-Speicherort oder unter Verwendung der bisherigen Logik, mit einer Präferenz in der Anwendung-`config.xml`-Datei speichern möchten. Hierzu fügen Sie eine dieser zwei Zeilen zu `"config.xml"`:
 
     <preference name="AndroidPersistentFileLocation" value="Internal" />
     
     <preference name="AndroidPersistentFileLocation" value="Compatibility" />
     
 
-Ohne diese Zeile das Datei-Plugin verwendet `Compatibility` als Standard. Wenn ein Präferenz-Tag vorhanden ist, und nicht einen der folgenden Werte, wird die Anwendung nicht gestartet.
+Ohne diese Zeile wird das Datei Plugin `Compatibility` als Standard verwenden. Wenn ein Präferenz-Tag vorhanden ist, und nicht einen der folgenden Werte, wird die Anwendung nicht gestartet.
 
-Wenn Ihre Anwendung für Benutzer zuvor versandt wird, mithilfe eines älteren (Pre-1.0) Version dieses Plugins und gespeicherte Dateien im permanenten Dateisystem hat, dann legen Sie die Voreinstellung "" auf `Compatibility` . Wechseln die Location auf "Internal" würde bedeuten, dass Benutzer, die aktualisieren Sie ihre Anwendung, möglicherweise nicht auf ihre zuvor gespeicherte Dateien, abhängig von ihrem Gerät zugreifen.
+Wenn Ihre Anwendung für Benutzer zuvor versandt wird, mithilfe eines älteren (Pre-1.0) Version dieses Plugins und gespeicherte Dateien im permanenten Dateisystem hat, dann sollten Sie die Einstellung zur `Compatibility` einstellen. Wechseln die Location auf "Internal" würde bedeuten, dass Benutzer, die aktualisieren Sie ihre Anwendung, möglicherweise nicht auf ihre zuvor gespeicherte Dateien, abhängig von ihrem Gerät zugreifen.
 
-Wenn die Anwendung neu, oder nie zuvor, Dateien im Dateisystem persistent gespeichert hat, dann die `Internal` Einstellung wird im Allgemeinen empfohlen.
+Wenn Ihre Anwendung neu ist, oder nie zuvor Dateien im Dateisystem persistent gespeichert hat, wird die `Internal` Einstellung in der Regel empfohlen.
 
 ## iOS Macken
 
@@ -173,18 +184,18 @@ Wenn die Anwendung neu, oder nie zuvor, Dateien im Dateisystem persistent gespei
 
 Es gibt zwei gültige Speicherorte persistente Dateien auf ein iOS-Gerät speichern: das Dokumenten-Verzeichnis und das Verzeichnis Library. Frühere Versionen des Plugins gespeichert immer nur persistente Dateien im Verzeichnis Dokumente. Dies hatte den Nebeneffekt einer Anwendung Dateien in iTunes, die oft unbeabsichtigte, speziell für Anwendungen, die viele kleine Dateien behandeln war, sichtbar zu machen, anstatt komplette Dokumente für den Export, die den beabsichtigten Zweck des Verzeichnisses ist zu produzieren.
 
-Es ist nun möglich, auszuwählen, ob zum Speichern von Dateien in Dokumente oder Verzeichnis Library mit einer Vorliebe in Ihrer Anwendung `config.xml` Datei. Hierzu fügen Sie eines dieser beiden Linien zu `config.xml` :
+Es ist jetzt möglich, ob Sie Dateien in Dokumente oder Verzeichnis Library mit einer Präferenz in der Anwendung-`config.xml`-Datei speichern möchten. Hierzu fügen Sie eine dieser zwei Zeilen zu `"config.xml"`:
 
     <preference name="iosPersistentFileLocation" value="Library" />
     
     <preference name="iosPersistentFileLocation" value="Compatibility" />
     
 
-Ohne diese Zeile das Datei-Plugin verwendet `Compatibility` als Standard. Wenn ein Präferenz-Tag vorhanden ist, und nicht einen der folgenden Werte, wird die Anwendung nicht gestartet.
+Ohne diese Zeile wird das Datei Plugin `Compatibility` als Standard verwenden. Wenn ein Präferenz-Tag vorhanden ist, und nicht einen der folgenden Werte, wird die Anwendung nicht gestartet.
 
-Wenn Ihre Anwendung für Benutzer zuvor versandt wird, mithilfe eines älteren (Pre-1.0) Version dieses Plugins und gespeicherte Dateien im permanenten Dateisystem hat, dann legen Sie die Voreinstellung "" auf `Compatibility` . Wechsel der Lage zu `Library` würde bedeuten, dass Benutzer, aktualisieren Sie ihre Anwendung, nicht in der Lage, ihre zuvor gespeicherte Dateien zugreifen.
+Wenn Ihre Anwendung für Benutzer zuvor versandt wird, mithilfe eines älteren (Pre-1.0) Version dieses Plugins und gespeicherte Dateien im permanenten Dateisystem hat, dann sollten Sie die Einstellung zur `Compatibility` einstellen. Standort zur `Library` wechseln würde bedeuten, dass Benutzer, die ihre Anwendung aktualisieren nicht in der Lage wäre, ihre zuvor gespeicherte Dateien zugreifen.
 
-Wenn die Anwendung neu, oder nie zuvor, Dateien im Dateisystem persistent gespeichert hat, dann die `Library` Einstellung wird im Allgemeinen empfohlen.
+Wenn die Anwendung neu, oder nie zuvor Dateien im Dateisystem persistent gespeichert hat, wird die Einstellung der `Library` allgemein empfohlen.
 
 ## Firefox OS Macken
 
@@ -194,32 +205,84 @@ Der Datei-System-API wird von Firefox-OS nicht nativ unterstützt und wird als e
 *   Metadaten wird für Verzeichnisse nicht unterstützt.
 *   Methoden `copyTo` und `moveTo` unterstützen keine Verzeichnisse
 
-Die folgenden Datenpfade werden unterstützt: * `applicationDirectory` -verwendet `xhr` um lokale Dateien zu erhalten, die mit der app verpackt sind. * `dataDirectory` - Für persistente app-spezifische Daten-Dateien. * `cacheDirectory` -Cache-Dateien, die app startet überleben sollte (Apps sollten nicht vom Betriebssystem zum Löschen von Dateien hier verlassen).
+Die folgenden Datenpfade werden unterstützt: * `applicationDirectory` - `xhr` verwendet, um lokale Dateien erhalten, die mit der app verpackt sind. *`dataDirectory` - für persistente app-spezifische Daten-Dateien. *`cacheDirectory` - Cache-Dateien, die app startet überleben sollte (Apps sollten nicht vom Betriebssystem zum Löschen von Dateien hier verlassen).
+
+## Browser-Eigenheiten
+
+### Gemeinsamen Macken und Bemerkungen
+
+*   Jeder Browser verwendet ein eigene Sandbox Dateisystem. IE und Firefox verwenden IndexedDB als Basis. Alle Browser verwenden Schrägstrich als Verzeichnistrennzeichen in einem Pfad.
+*   Directory-Einträge müssen nacheinander erstellt werden. Z. B. der Aufruf `fs.root.getDirectory ("dir1/Ordner2 ', {create:true}, SuccessCallback, ErrorCallback)` schlägt fehl, wenn dir1 nicht existierte.
+*   Das Plugin fordert Benutzer die Berechtigung zum permanenten Speicher beim ersten Start Anwendung verwenden. 
+*   Plugin unterstützt `Cdvfile://localhost` (lokale Ressourcen) nur. D.h. externe Ressourcen nicht über `Cdvfile` unterstützt.
+*   Das Plugin folgt nicht ["File System API 8.3 Naming Einschränkungen"][4].
+*   BLOB und Datei "`close`-Funktion wird nicht unterstützt.
+*   `FileSaver` und `BlobBuilder` werden von diesem Plugin nicht unterstützt und müssen nicht geboren.
+*   Das Plugin unterstützt keine `RequestAllFileSystems`. Diese Funktion fehlt auch in den Spezifikationen.
+*   Einträge im Verzeichnis werden nicht entfernt werden, wenn Sie verwenden `create: true` Flag für vorhandenes Verzeichnis.
+*   Über Konstruktor erstellte Dateien werden nicht unterstützt. Sie sollten stattdessen die entry.file-Methode verwenden.
+*   Jeder Browser verwendet eine eigene Form für Blob-URL-Verweise.
+*   `readAsDataURL`-Funktion wird unterstützt, aber die Mediatype in Chrom hängt von der Eintrag Namenerweiterung, Mediatype im IE immer leer ist (das ist dasselbe wie `Text-Plain` gemäß der Spezifikation), Mediatype in Firefox ist immer `Application/Octet-Stream`. Beispielsweise, wenn der Inhalt `Abcdefg` gibt dann Firefox `Daten: Anwendung / Octet-Stream; base64, YWJjZGVmZw ==`, IE gibt `Daten:; base64, YWJjZGVmZw ==`, Chrom gibt `Daten: < Mediatype je nach Erweiterung des Eintragsnamens >; base64, YWJjZGVmZw ==`.
+*   `ToInternalURL` gibt den Pfad zurück, in der Form `file:///persistent/path/to/entry` (Firefox, IE). Chrom gibt den Pfad zurück, in der Form `cdvfile://localhost/persistent/file`.
+
+ [4]: http://www.w3.org/TR/2011/WD-file-system-api-20110419/#naming-restrictions
+
+### Chrom-Macken
+
+*   Chrom-Dateisystem ist nicht sofort nach Gerät bereit. Als Workaround können Sie `FilePluginIsReady`-Ereignis abonnieren. Beispiel: 
+
+    javascript
+    window.addEventListener('filePluginIsReady', function(){ console.log('File plugin is ready');}, false);
+    
+
+`Window.isFilePluginReadyRaised`-Funktion können Sie überprüfen, ob Ereignis bereits ausgelöst wurde. -window.requestFileSystem temporär und PERSISTENTE Dateisystem-Quoten sind nicht begrenzt, in Chrom. -Um die dauerhafte Speicherung in Chrom zu erhöhen benötigen Sie `window.initPersistentFileSystem`-Methode aufrufen. Permanenter Speicherkontingent beträgt 5 MB standardmäßig. -Chrome erforderlich `--erlauben-Datei-Zugriff-aus-Files` Argument an den Support API via `file:///` Protokoll führen. -`Datei`-Objekt wird nicht geändert werden, wenn Sie Flag verwenden `{create:true}` als einen vorhandenen `Eintrag` zu erhalten. -Veranstaltungen `cancelable`-Eigenschaft festgelegt ist in Chrom wahr. Dies widerspricht der [Spezifikation][5]. -`toURL`-Funktion in Chrome zurück `Dateisystem:`-Pfad je nach Anwendungshost vorangestellt. Z. B. `filesystem:file:///persistent/somefile.txt`, `Filesystem:http://localhost:8080/persistent/somefile.txt`. -`toURL` Funktionsergebnis enthält keine nachgestellten Schrägstrich bei Verzeichniseintrag. Chrom löst Verzeichnisse mit Schrägstrich-gezogene Urls aber korrekt. -`ResolveLocalFileSystemURL`-Methode erfordert die eingehenden `Url` `Dateisystem` Präfix haben. Beispielsweise sollte die `Url`-Parameter für `ResolveLocalFileSystemURL` in der Form `filesystem:file:///persistent/somefile.txt` im Gegensatz zu der Form `file:///persistent/somefile.txt` in Android. -Veraltete `ToNativeURL`-Funktion wird nicht unterstützt und muss keinen Stub. -`SetMetadata`-Funktion ist nicht in den Spezifikationen angegeben und nicht unterstützt. -INVALID_MODIFICATION_ERR (Code: 9) wird ausgelöst, statt SYNTAX_ERR(code: 8) auf anfordern des Dateisystems nicht existent. -INVALID_MODIFICATION_ERR (Code: 9) wird ausgelöst, anstatt PATH_EXISTS_ERR(code: 12) zu versuchen, die ausschließlich eine Datei oder ein Verzeichnis zu erstellen, die bereits vorhanden ist. -INVALID_MODIFICATION_ERR (Code: 9) wird ausgelöst, anstatt NO_MODIFICATION_ALLOWED_ERR(code: 6) zu versuchen, rufen Sie RemoveRecursively auf das Root-Dateisystem. -INVALID_MODIFICATION_ERR (Code: 9) wird ausgelöst, anstatt NOT_FOUND_ERR(code: 1) zu versuchen, MoveTo-Verzeichnis, das nicht vorhanden ist.
+
+ [5]: http://dev.w3.org/2009/dap/file-system/file-writer.html
+
+### Auf der Grundlage von IndexedDB Impl Macken (Firefox und IE)
+
+*   `.` und `.` werden nicht unterstützt.
+*   IE unterstützt keine `file:///`-Modus; nur der Modus für gehostete ist unterstützten (Http://localhost:xxxx).
+*   Firefox Dateisystem Größe ist nicht begrenzt, aber jede 50MB-Erweiterung wird eine Benutzer die Berechtigung anzufordern. IE10 können bis zu 10mb kombinierte AppCache und IndexedDB in Implementierung des Dateisystems verwendet, ohne Aufforderung, sobald Sie dieses Niveau, werden, das Sie aufgefordert werden schlagen, wenn Sie es bis Max 250 mb pro Standort erhöht werden sollen. `Size`-Parameter für `RequestFileSystem` Funktion wirkt also nicht Dateisystem in Firefox und IE.
+*   `ReadAsBinaryString` Funktion heißt es nicht in die Angaben und in IE nicht unterstützt und muss keinen Stub.
+*   `file.Type` ist immer null.
+*   Sie sollten nicht erstellen Eintrag mit DirectoryEntry Instanz Rückrufergebnis, die gelöscht wurde. Andernfalls erhalten Sie einen "hängende Eintrag".
+*   Bevor Sie eine Datei lesen können, die gerade geschrieben wurde, müssen Sie eine neue Instanz dieser Datei erhalten.
+*   `SetMetadata`-Funktion, die nicht in den Specs genannt unterstützt Feldänderung nur `ModificationTime`. 
+*   `CopyTo` und `MoveTo`-Funktionen unterstützen keine Verzeichnisse.
+*   Verzeichnisse-Metadaten werden nicht unterstützt.
+*   Beide Entry.remove und directoryEntry.removeRecursively nicht scheitern, wenn nicht leere Verzeichnisse entfernen - Verzeichnisse entfernt werden stattdessen zusammen mit Inhalt gereinigt.
+*   `abort` und `truncate`-Funktionen werden nicht unterstützt.
+*   Progress-Ereignisse werden nicht ausgelöst. Beispielsweise wird dieser Handler nicht ausgeführt werden:
+
+    javascript
+    writer.onprogress = function() { /*commands*/ };
+    
 
 ## Upgrade Notes
 
-In v1.0.0 des Plugins die `FileEntry` und `DirectoryEntry` Strukturen haben sich geändert, um mehr im Einklang mit der veröffentlichten Spezifikation zu sein.
+In v1.0.0 dieses Plugins haben die `FileEntry` und `DirectoryEntry` Strukturen geändert, um mehr im Einklang mit der veröffentlichten Spezifikation sein.
 
-Vorgängerversionen (Pre-1.0.0) des Plugins gespeichert den Gerät-Absolute-Dateispeicherort in der `fullPath` -Eigenschaft der `Entry` Objekte. Diese Pfade würde in der Regel aussehen
+Vorgängerversionen (Pre-1.0.0) des Plugins den Gerät-Absolute-Dateispeicherort in der Eigenschaft `fullPath` `Entry` Objekte gespeichert. Diese Pfade würde in der Regel aussehen
 
     /var/mobile/Applications/<application UUID>/Documents/path/to/file  (iOS)
     /storage/emulated/0/path/to/file                                    (Android)
     
 
-Diese Pfade wurden auch zurückgegeben, indem die `toURL()` -Methode des der `Entry` Objekte.
+Diese Pfade wurden auch von der `toURL()`-Methode der `Entry` Objekte zurückgegeben.
 
-Mit v1.0.0 das `fullPath` -Attribut ist der Pfad zu der Datei, *relativ zum Stammverzeichnis des Dateisystems HTML*. Also die oben genannten Pfade würden jetzt beide durch dargestellt werden ein `FileEntry` -Objekt mit einer `fullPath` von
+Mit v1.0.0 ist das `fullPath`-Attribut den Pfad zu der Datei, *relativ zum Stammverzeichnis des Dateisystems HTML*. Also, würde die oben genannten Wege jetzt beide durch ein `FileEntry`-Objekt mit einem `fullPath` von dargestellt werden
 
     /path/to/file
     
 
-Wenn Ihre Anwendung mit absoluter Gerätepfade arbeitet und Sie zuvor diese Pfade durch abgerufenen die `fullPath` -Eigenschaft des `Entry` Objekte, dann Sie Ihren Code mithilfe von update sollte `entry.toURL()` statt.
+Wenn Ihre Anwendung mit absoluter Gerätepfade arbeitet und Sie zuvor diese Pfade durch die Eigenschaft `fullPath` `Entry` Objekte abgerufen, sollten dann Sie den Code, um stattdessen `entry.toURL()` verwenden aktualisieren.
 
-Für rückwärts Kompatibilität, die `resolveLocalFileSystemURL()` -Methode akzeptiert einen Absolute-Gerätepfad und kehren ein `Entry` Objekt entspricht, solange diese Datei innerhalb existiert der `TEMPORARY` oder `PERSISTENT` Dateisysteme.
+Für rückwärts Kompatibilität, die `resolveLocalFileSystemURL()`-Methode wird einen Absolute-Gerätepfad zu akzeptieren und kehrt ein `Entry`-Objekt entspricht, solange diese Datei in den `TEMPORARY` oder `PERSISTENT` Dateisysteme existiert.
 
-Dies wurde vor allem ein Problem mit dem File-Transfer-Plugin, die zuvor-Absolute-Gerätepfade verwendet (und kann damit noch einverstanden). Es wurde aktualisiert, um ordnungsgemäß mit Dateisystem-URLs, so anstelle `entry.fullPath` mit `entry.toURL()` sollte lösen Sie alle Probleme, die immer des Plugin zum Arbeiten mit Dateien auf dem Gerät.
+Dies wurde vor allem ein Problem mit dem File-Transfer-Plugin, die zuvor-Absolute-Gerätepfade verwendet (und kann damit noch einverstanden). Es wurde überarbeitet, um mit Dateisystem-URLs korrekt zu arbeiten, damit ersetzen `entry.fullPath` mit `entry.toURL()` immer das Plugin zum Arbeiten mit Dateien auf dem Gerät Probleme lösen sollte.
 
-In v1.1.0 der Rückgabewert der `toURL()` wurde geändert (siehe \[CB-6394\] (https://issues.apache.org/jira/browse/CB-6394)), um eine absolute "file://" URL zurückgeben. wo immer möglich. Sicherstellung einer ' Cdvfile:'-URL Sie können `toInternalURL()` jetzt. Diese Methode gibt jetzt Dateisystem URLs der Form zurück.
+In v1.1.0 wurde der Rückgabewert von `toURL()` (siehe \[CB-6394\] (https://issues.apache.org/jira/browse/CB-6394)) geändert, um eine absolute "file://" URL zurückgeben. wo immer möglich. Sicherstellung einer ' Cdvfile:'-URL können Sie an `toInternalURL()`. Diese Methode gibt jetzt Dateisystem URLs der Form zurück.
 
     cdvfile://localhost/persistent/path/to/file
     
@@ -247,7 +310,7 @@ Wenn ein Fehler ausgelöst wird, wird eines der folgenden Codes verwendet werden
 
 ## Konfigurieren das Plugin (Optional)
 
-Die Menge der verfügbaren Dateisysteme kann pro Plattform konfiguriert sein. Erkennen von iOS und Android ein <preference> -Tag im `config.xml` die Namen der Dateisysteme installiert werden. Standardmäßig sind alle Datei-System-Roots aktiviert.
+Die Menge der verfügbaren Dateisysteme kann pro Plattform konfiguriert sein. Erkennen von iOS und Android ein <preference> Tag in `"config.xml"` die Namen der Dateisysteme installiert werden. Standardmäßig sind alle Datei-System-Roots aktiviert.
 
     <preference name="iosExtraFilesystems" value="library,library-nosync,documents,documents-nosync,cache,bundle,root" />
     <preference name="AndroidExtraFilesystems" value="files,files-external,documents,sdcard,cache,cache-external,root" />
@@ -255,21 +318,21 @@ Die Menge der verfügbaren Dateisysteme kann pro Plattform konfiguriert sein. Er
 
 ### Android
 
-*   `files`: Die Anwendung interner Speicher Dateiverzeichnis
-*   `files-external`: Das Verzeichnis der Anwendung externe Datei Speicher
-*   `sdcard`: Das externe Globaldatei-Speicherverzeichnis (Dies ist die Wurzel der SD-Karte, sofern installiert). Sie müssen die `android.permission.WRITE_EXTERNAL_STORAGE` Erlaubnis, diese zu verwenden.
-*   `cache`: Internen Cache-Verzeichnis der Anwendung
-*   `cache-external`: Die Anwendung externer Cache-Verzeichnis
-*   `root`: Das gesamte Gerät-Dateisystem
+*   `files`: interne Datei-Speicher-Verzeichnis der Anwendung
+*   `files-external`: Verzeichnis der Anwendung externe Datei Speicher
+*   `sdcard`: das externe Globaldatei-Speicherverzeichnis (Dies ist die Wurzel der SD-Karte, sofern installiert). Sie benötigen die Berechtigung zur Verwendung dieses `android.permission.WRITE_EXTERNAL_STORAGE`.
+*   `cache`: internen Cache-Verzeichnis der Anwendung
+*   `cache-external`: externer Cache-Verzeichnis der Anwendung
+*   `root`: das gesamte Gerät-Dateisystem
 
-Android unterstützt auch eine spezielle Dateisystem mit dem Namen "Dokumente", die ein Unterverzeichnis "/ Dokumente /" die "Dateien" Dateisystem darstellt.
+Android unterstützt auch eine spezielle Dateisystem mit dem Namen "documents", die ein Unterverzeichnis "/Documents/" die "files" Dateisystem darstellt.
 
 ### iOS
 
-*   `library`: Bibliothek das Anwendungsverzeichnis
-*   `documents`: Dokumente das Anwendungsverzeichnis
+*   `library`: Bibliothek-Verzeichnis der Anwendung
+*   `documents`: Dokumente-Verzeichnis der Anwendung
 *   `cache`: Cache-Verzeichnis der Anwendung
-*   `bundle`: Die Anwendung Bündel; den Speicherort der die app selbst auf dem Datenträger (schreibgeschützt)
-*   `root`: Das gesamte Gerät-Dateisystem
+*   `bundle`: die Anwendung Bündel; den Speicherort der die app selbst auf dem Datenträger (schreibgeschützt)
+*   `root`: das gesamte Gerät-Dateisystem
 
-Standardmäßig können die Bibliothek und Dokumenten-Verzeichnisse mit iCloud synchronisiert werden. Können Sie auch beantragen, zwei zusätzliche Dateisysteme, `library-nosync` und `documents-nosync` , die repräsentieren eine spezielle nicht synchronisierten Verzeichnis innerhalb der `/Library` oder `/Documents` Dateisystem.
+Standardmäßig können die Bibliothek und Dokumenten-Verzeichnisse mit iCloud synchronisiert werden. Sie können auch verlangen, zwei zusätzliche Dateisysteme, `library-nosync` und `documents-nosync`, die einem speziellen nicht synchronisierten Verzeichnis innerhalb darstellen der `/Library` oder `/Documents`-Dateisystem.
