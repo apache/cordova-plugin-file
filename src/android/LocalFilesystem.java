@@ -28,10 +28,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.LOG;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,6 +45,7 @@ import android.content.Intent;
 import android.app.Activity;
 
 public class LocalFilesystem extends Filesystem {
+    private static final String LOG_TAG = "LocalFileSystem";
 
 	private CordovaInterface cordova;
 
@@ -324,18 +327,47 @@ public class LocalFilesystem extends Filesystem {
      */
     private void copyAction(File srcFile, File destFile)
             throws FileNotFoundException, IOException {
-        FileInputStream istream = new FileInputStream(srcFile);
-        FileOutputStream ostream = new FileOutputStream(destFile);
-        FileChannel input = istream.getChannel();
-        FileChannel output = ostream.getChannel();
+        FileInputStream istream = null;
+        FileOutputStream ostream = null;
+        FileChannel input = null;
+        FileChannel output = null;
 
         try {
+            istream = new FileInputStream(srcFile);
+            ostream = new FileOutputStream(destFile);
+            input = istream.getChannel();
+            output = ostream.getChannel();
+
             input.transferTo(0, input.size(), output);
         } finally {
-            istream.close();
-            ostream.close();
-            input.close();
-            output.close();
+            if (istream != null) {
+                try {
+                    istream.close();
+                } catch (IOException ioe) {
+                    LOG.d(LOG_TAG, "Exception closing input stream in copyAction", ioe);
+                }
+            }
+            if (ostream != null) {
+                try {
+                    ostream.close();
+                } catch (IOException ioe) {
+                    LOG.d(LOG_TAG, "Exception closing output stream in copyAction", ioe);
+                }
+            }
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException ioe) {
+                    LOG.d(LOG_TAG, "Exception closing input stream in copyAction", ioe);
+                }
+            }
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (IOException ioe) {
+                    LOG.d(LOG_TAG, "Exception closing output stream in copyAction", ioe);
+                }
+            }
         }
     }
 
@@ -527,15 +559,22 @@ public class LocalFilesystem extends Filesystem {
         }
         long numBytesToRead = end - start;
 
-        InputStream rawInputStream = new FileInputStream(file);
+        InputStream rawInputStream = null;
 		try {
+		    rawInputStream = new FileInputStream(file);
 			if (start > 0) {
                 rawInputStream.skip(start);
 			}
             LimitedInputStream inputStream = new LimitedInputStream(rawInputStream, numBytesToRead);
             readFileCallback.handleData(inputStream, contentType);
 		} finally {
-            rawInputStream.close();
+            if (rawInputStream != null) {
+                try {
+                    rawInputStream.close();
+                } catch (IOException ioe) {
+                    LOG.d(LOG_TAG, "Exception closing file in readFileAtURL", ioe);
+                }
+            }
 		}
 	}
     
@@ -553,20 +592,27 @@ public class LocalFilesystem extends Filesystem {
         if (isBinary) {
             rawData = Base64.decode(data, Base64.DEFAULT);
         } else {
-            rawData = data.getBytes();
+            rawData = data.getBytes(Charset.defaultCharset());
         }
         ByteArrayInputStream in = new ByteArrayInputStream(rawData);
         try
         {
         	byte buff[] = new byte[rawData.length];
-            FileOutputStream out = new FileOutputStream(this.filesystemPathForURL(inputURL), append);
+            FileOutputStream out = null;
             try {
+                out = new FileOutputStream(this.filesystemPathForURL(inputURL), append);
             	in.read(buff, 0, buff.length);
             	out.write(buff, 0, rawData.length);
             	out.flush();
             } finally {
             	// Always close the output
-            	out.close();
+                if (out != null) {
+                    try {
+                        out.close();
+                    } catch (IOException ioe) {
+                        LOG.d(LOG_TAG, "Exception closing file in writeToFileAtURL", ioe);
+                    }
+                }
             }
             broadcastNewFile(inputURL);
         }
@@ -613,8 +659,9 @@ public class LocalFilesystem extends Filesystem {
             throw new FileNotFoundException("File at " + inputURL.URL + " does not exist.");
         }
         
-        RandomAccessFile raf = new RandomAccessFile(filesystemPathForURL(inputURL), "rw");
+        RandomAccessFile raf = null;
         try {
+            raf = new RandomAccessFile(filesystemPathForURL(inputURL), "rw");
             if (raf.length() >= size) {
                 FileChannel channel = raf.getChannel();
                 channel.truncate(size);
@@ -623,7 +670,13 @@ public class LocalFilesystem extends Filesystem {
 
             return raf.length();
         } finally {
-            raf.close();
+            if (raf != null) {
+                try {
+                    raf.close();
+                } catch (IOException ioe) {
+                    LOG.d(LOG_TAG, "Exception closing file in truncateFileAtURL", ioe);
+                }
+            }
         }
 
 
