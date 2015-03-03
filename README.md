@@ -19,4 +19,6 @@
 
 # org.apache.cordova.file
 
+[![Build Status](https://travis-ci.org/apache/cordova-plugin-file.svg)](https://travis-ci.org/apache/cordova-plugin-file)
+
 Plugin documentation: [doc/index.md](doc/index.md)
