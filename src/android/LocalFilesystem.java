@@ -44,17 +44,14 @@ import android.content.Intent;
 import android.app.Activity;
 
 public class LocalFilesystem extends Filesystem {
-
-    private final CordovaResourceApi resourceApi;
     private final Context context;
 
     public LocalFilesystem(String name, Context context, CordovaResourceApi resourceApi, String rootPath) {
         this(name, context, resourceApi, Uri.fromFile(new File(rootPath)));
     }
 	public LocalFilesystem(String name, Context context, CordovaResourceApi resourceApi, Uri rootUri) {
-        super(rootUri, name);
+        super(rootUri, name, resourceApi);
 		this.context = context;
-        this.resourceApi = resourceApi;
 	}
 
     public String filesystemPathForFullPath(String fullPath) {

@@ -36,6 +36,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -43,31 +44,11 @@ import android.provider.OpenableColumns;
 
 public class ContentFilesystem extends Filesystem {
 
-	private CordovaInterface cordova;
-	private CordovaResourceApi resourceApi;
-	
-	public ContentFilesystem(CordovaInterface cordova, CordovaWebView webView) {
-		super(Uri.parse("content://"), "content");
-		this.cordova = cordova;
+    private final Context context;
 
-		Class webViewClass = webView.getClass();
-		PluginManager pm = null;
-		try {
-			Method gpm = webViewClass.getMethod("getPluginManager");
-			pm = (PluginManager) gpm.invoke(webView);
-		} catch (NoSuchMethodException e) {
-		} catch (IllegalAccessException e) {
-		} catch (InvocationTargetException e) {
-		}
-		if (pm == null) {
-			try {
-				Field pmf = webViewClass.getField("pluginManager");
-				pm = (PluginManager)pmf.get(webView);
-			} catch (NoSuchFieldException e) {
-			} catch (IllegalAccessException e) {
-			}
-		}
-		this.resourceApi = new CordovaResourceApi(webView.getContext(), pm);
+	public ContentFilesystem(Context context, CordovaResourceApi resourceApi) {
+		super(Uri.parse("content://"), "content", resourceApi);
+        this.context = context;
 	}
 	
 	@Override
@@ -130,7 +111,7 @@ public class ContentFilesystem extends Filesystem {
 		String filePath = filesystemPathForURL(inputURL);
 		File file = new File(filePath);
 		try {
-			this.cordova.getActivity().getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            context.getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
 					MediaStore.Images.Media.DATA + " = ?",
 					new String[] { filePath });
 		} catch (UnsupportedOperationException t) {
@@ -246,7 +227,7 @@ public class ContentFilesystem extends Filesystem {
 	}
 
 	protected Cursor openCursorForURL(LocalFilesystemURL url) {
-        ContentResolver contentResolver = this.cordova.getActivity().getContentResolver();
+        ContentResolver contentResolver = context.getContentResolver();
         Cursor cursor = contentResolver.query(url.URL, null, null, null, null);
         return cursor;
 	}

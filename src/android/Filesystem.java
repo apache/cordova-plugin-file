@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.cordova.CordovaResourceApi;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,12 +35,14 @@ import org.json.JSONObject;
 public abstract class Filesystem {
 
     protected final Uri rootUri;
+    protected final CordovaResourceApi resourceApi;
     public final String name;
     private final JSONObject rootEntry;
 
-    public Filesystem(Uri rootUri, String name) {
+    public Filesystem(Uri rootUri, String name, CordovaResourceApi resourceApi) {
         this.rootUri = rootUri;
         this.name = name;
+        this.resourceApi = resourceApi;
         rootEntry = makeEntryForPath("/", name, true, rootUri.toString());
     }
 

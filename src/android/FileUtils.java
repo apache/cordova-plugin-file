@@ -194,7 +194,7 @@ public class FileUtils extends CordovaPlugin {
     		// per spec.
     		this.registerFilesystem(new LocalFilesystem("temporary", webView.getContext(), webView.getResourceApi(), tempRoot));
     		this.registerFilesystem(new LocalFilesystem("persistent", webView.getContext(), webView.getResourceApi(), persistentRoot));
-    		this.registerFilesystem(new ContentFilesystem(cordova, webView));
+    		this.registerFilesystem(new ContentFilesystem(webView.getContext(), webView.getResourceApi()));
 
             registerExtraFileSystems(getExtraFileSystemsPreference(activity), getAvailableFileSystems(activity));
 
