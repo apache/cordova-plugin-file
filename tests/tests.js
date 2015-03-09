@@ -2189,7 +2189,6 @@ exports.defineAutoTests = function () {
                 };
                 var reader = new FileReader();
                 reader.onloadend = verifier;
-                reader.onerror = failed.bind(null, done, 'reader.onerror - Error reading file: ' + blob);
                 reader.readAsText(blob);
             });
             function writeDummyFile(writeBinary, callback, done) {
