@@ -78,8 +78,8 @@ public abstract class Filesystem {
         }
     }
 
-    public static JSONObject makeEntryForURL(LocalFilesystemURL inputURL, Boolean isDir, String nativeURL) {
-        return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, isDir, nativeURL);
+    public static JSONObject makeEntryForURL(LocalFilesystemURL inputURL, Boolean isDir, Uri nativeURL) {
+        return makeEntryForPath(inputURL.pathAndQuery, inputURL.fsName, isDir, nativeURL.toString());
     }
 
 	abstract JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException;
@@ -104,29 +104,27 @@ public abstract class Filesystem {
     }
 
 	public JSONObject getParentForLocalURL(LocalFilesystemURL inputURL) throws IOException {
-		LocalFilesystemURL newURL = new LocalFilesystemURL(inputURL.URL);
-	
-		if (!("".equals(inputURL.fullPath) || "/".equals(inputURL.fullPath))) {
-			String dirURL = inputURL.fullPath.replaceAll("/+$", "");
-			int lastPathStartsAt = dirURL.lastIndexOf('/')+1;
-			newURL.fullPath = newURL.fullPath.substring(0,lastPathStartsAt);
+        Uri parentUri = inputURL.uri;
+        String parentPath = new File(inputURL.uri.getPath()).getParent();
+        if (!"/".equals(parentPath)) {
+            parentUri = inputURL.uri.buildUpon().path(parentPath + '/').build();
 		}
-		return getEntryForLocalURL(newURL);
+		return getEntryForLocalURL(LocalFilesystemURL.parse(parentUri));
 	}
 
     protected LocalFilesystemURL makeDestinationURL(String newName, LocalFilesystemURL srcURL, LocalFilesystemURL destURL) {
         // I know this looks weird but it is to work around a JSON bug.
         if ("null".equals(newName) || "".equals(newName)) {
-            newName = srcURL.URL.getLastPathSegment();;
+            newName = srcURL.uri.getLastPathSegment();;
         }
 
-        String newDest = destURL.URL.toString();
+        String newDest = destURL.uri.toString();
         if (newDest.endsWith("/")) {
             newDest = newDest + newName;
         } else {
             newDest = newDest + "/" + newName;
         }
-        return new LocalFilesystemURL(newDest);
+        return LocalFilesystemURL.parse(newDest);
     }
     
 	/* Read a source URL (possibly from a different filesystem, srcFs,) and copy it to

@@ -53,28 +53,20 @@ public class ContentFilesystem extends Filesystem {
 	
 	@Override
 	public JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException {
-	    if ("/".equals(inputURL.fullPath)) {
-            return LocalFilesystem.makeEntryForURL(inputURL, true, inputURL.URL.toString());
+	    if ("/".equals(inputURL.uri.getPath())) {
+            return LocalFilesystem.makeEntryForURL(inputURL, true, inputURL.uri);
 	    }
 
 		// Get the cursor to validate that the file exists
 		Cursor cursor = openCursorForURL(inputURL);
-		String filePath = null;
-		try {
-			if (cursor == null || !cursor.moveToFirst()) {
-				throw new FileNotFoundException();
-			}
-			filePath = filesystemPathForCursor(cursor);
-		} finally {
-			if (cursor != null)
-				cursor.close();
-		}
-		if (filePath == null) {
-			filePath = inputURL.URL.toString();
+		File file = resourceApi.mapUriToFile(inputURL.uri);
+        Uri nativeUrl;
+		if (file == null) {
+            nativeUrl = inputURL.uri;
 		} else {
-			filePath = "file://" + filePath;
+            nativeUrl = Uri.fromFile(file);
 		}
-        return makeEntryForPath(inputURL.fullPath, inputURL.filesystemName, false /*fp.isDirectory()*/, filePath);
+        return makeEntryForURL(inputURL, false /*fp.isDirectory()*/, nativeUrl);
 	}
 	
     @Override
@@ -85,7 +77,7 @@ public class ContentFilesystem extends Filesystem {
         		throw new IOException("Cannot create content url");
             }
         }
-        LocalFilesystemURL requestedURL = new LocalFilesystemURL(Uri.withAppendedPath(inputURL.URL, fileName));
+        LocalFilesystemURL requestedURL = LocalFilesystemURL.parse(Uri.withAppendedPath(inputURL.uri, fileName));
         File fp = new File(this.filesystemPathForURL(requestedURL));
         if (!fp.exists()) {
             throw new FileNotFoundException("path does not exist");
@@ -100,7 +92,7 @@ public class ContentFilesystem extends Filesystem {
             }
         }
         // Return the directory
-        return makeEntryForPath(requestedURL.fullPath, requestedURL.filesystemName, directory, Uri.fromFile(fp).toString());
+        return makeEntryForURL(requestedURL, directory, Uri.fromFile(fp));
 
 	}
 
@@ -155,9 +147,9 @@ public class ContentFilesystem extends Filesystem {
         JSONObject metadata = new JSONObject();
         try {
         	metadata.put("size", size);
-        	metadata.put("type", resourceApi.getMimeType(inputURL.URL));
-        	metadata.put("name", inputURL.filesystemName);
-        	metadata.put("fullPath", inputURL.fullPath);
+        	metadata.put("type", resourceApi.getMimeType(inputURL.uri));
+        	metadata.put("name", name);
+        	metadata.put("fullPath", inputURL.pathAndQuery);
         	metadata.put("lastModifiedDate", lastModified);
         } catch (JSONException e) {
         	return null;
@@ -175,8 +167,8 @@ public class ContentFilesystem extends Filesystem {
             // Figure out where we should be copying to
             final LocalFilesystemURL destinationURL = makeDestinationURL(newName, srcURL, destURL);
 
-            OutputStream os = resourceApi.openOutputStream(destURL.URL);
-            CordovaResourceApi.OpenForReadResult ofrr = resourceApi.openForRead(srcURL.URL);
+            OutputStream os = resourceApi.openOutputStream(destURL.uri);
+            CordovaResourceApi.OpenForReadResult ofrr = resourceApi.openForRead(srcURL.uri);
             if (move && !srcFs.canRemoveFileAtLocalURL(srcURL)) {
                 throw new NoModificationAllowedException("Cannot move file at source URL");
             }
@@ -188,7 +180,7 @@ public class ContentFilesystem extends Filesystem {
             if (move) {
                 srcFs.removeFileAtLocalURL(srcURL);
             }
-            return makeEntryForURL(destinationURL, false, destinationURL.URL.toString());
+            return makeEntryForURL(destinationURL, false, destinationURL.uri);
         } else {
             // Need to copy the hard way
             return super.copyFileToURL(destURL, newName, srcFs, srcURL, move);
@@ -199,7 +191,7 @@ public class ContentFilesystem extends Filesystem {
 	@Override
     public void readFileAtURL(LocalFilesystemURL inputURL, long start, long end,
 			ReadFileCallback readFileCallback) throws IOException {
-		CordovaResourceApi.OpenForReadResult ofrr = resourceApi.openForRead(inputURL.URL);
+		CordovaResourceApi.OpenForReadResult ofrr = resourceApi.openForRead(inputURL.uri);
         if (end < 0) {
             end = ofrr.length;
         }
@@ -228,7 +220,7 @@ public class ContentFilesystem extends Filesystem {
 
 	protected Cursor openCursorForURL(LocalFilesystemURL url) {
         ContentResolver contentResolver = context.getContentResolver();
-        Cursor cursor = contentResolver.query(url.URL, null, null, null, null);
+        Cursor cursor = contentResolver.query(url.uri, null, null, null, null);
         return cursor;
 	}
 
@@ -257,7 +249,7 @@ public class ContentFilesystem extends Filesystem {
 
     @Override
     public String filesystemPathForURL(LocalFilesystemURL url) {
-        File f = resourceApi.mapUriToFile(url.URL);
+        File f = resourceApi.mapUriToFile(url.uri);
         return f == null ? null : f.getAbsolutePath();
     }
 
@@ -277,7 +269,7 @@ public class ContentFilesystem extends Filesystem {
 	@Override
 	OutputStream getOutputStreamForURL(LocalFilesystemURL inputURL)
 			throws IOException {
-		OutputStream os = resourceApi.openOutputStream(inputURL.URL);
+		OutputStream os = resourceApi.openOutputStream(inputURL.uri);
 		return os;
     }
 }

@@ -68,7 +68,7 @@ public class LocalFilesystem extends Filesystem {
 	
 	@Override
 	public String filesystemPathForURL(LocalFilesystemURL url) {
-		return filesystemPathForFullPath(url.fullPath);
+		return filesystemPathForFullPath(url.pathAndQuery);
 	}
 
 	private String fullPathForFilesystemPath(String absolutePath) {
@@ -81,9 +81,9 @@ public class LocalFilesystem extends Filesystem {
 	protected LocalFilesystemURL URLforFullPath(String fullPath) {
 	    if (fullPath != null) {
 	    	if (fullPath.startsWith("/")) {
-	    		return new LocalFilesystemURL(LocalFilesystemURL.FILESYSTEM_PROTOCOL + "://localhost/"+this.name+fullPath);
+	    		return LocalFilesystemURL.parse(LocalFilesystemURL.FILESYSTEM_PROTOCOL + "://localhost/"+this.name+fullPath);
 	    	}
-	        return new LocalFilesystemURL(LocalFilesystemURL.FILESYSTEM_PROTOCOL + "://localhost/"+this.name+"/"+fullPath);
+	        return LocalFilesystemURL.parse(LocalFilesystemURL.FILESYSTEM_PROTOCOL + "://localhost/"+this.name+"/"+fullPath);
 	    }
 	    return null;
 		
@@ -144,7 +144,7 @@ public class LocalFilesystem extends Filesystem {
       if (!fp.canRead()) {
           throw new IOException();
       }
-      return LocalFilesystem.makeEntryForURL(inputURL, fp.isDirectory(),  Uri.fromFile(fp).toString());
+      return LocalFilesystem.makeEntryForURL(inputURL, fp.isDirectory(),  Uri.fromFile(fp));
 	}
 
 	@Override
@@ -171,7 +171,7 @@ public class LocalFilesystem extends Filesystem {
         if (path.startsWith("/")) {
         	requestedURL = URLforFilesystemPath(path);
         } else {
-        	requestedURL = URLforFullPath(normalizePath(inputURL.fullPath + "/" + path));
+        	requestedURL = URLforFullPath(normalizePath(inputURL.pathAndQuery + "/" + path));
         }
         
         File fp = new File(this.filesystemPathForURL(requestedURL));
@@ -205,7 +205,7 @@ public class LocalFilesystem extends Filesystem {
         }
 
         // Return the directory
-        return makeEntryForPath(requestedURL.fullPath, requestedURL.filesystemName, directory, Uri.fromFile(fp).toString());
+        return makeEntryForPath(requestedURL.pathAndQuery, requestedURL.fsName, directory, Uri.fromFile(fp).toString());
 	}
 
 	@Override
@@ -256,7 +256,7 @@ public class LocalFilesystem extends Filesystem {
             File[] files = fp.listFiles();
             for (int i = 0; i < files.length; i++) {
                 if (files[i].canRead()) {
-                    entries.put(makeEntryForPath(fullPathForFilesystemPath(files[i].getAbsolutePath()), inputURL.filesystemName, files[i].isDirectory(), Uri.fromFile(files[i]).toString()));
+                    entries.put(makeEntryForPath(fullPathForFilesystemPath(files[i].getAbsolutePath()), inputURL.fsName, files[i].isDirectory(), Uri.fromFile(files[i]).toString()));
                 }
             }
         }
@@ -269,7 +269,7 @@ public class LocalFilesystem extends Filesystem {
         File file = new File(filesystemPathForURL(inputURL));
 
         if (!file.exists()) {
-            throw new FileNotFoundException("File at " + inputURL.URL + " does not exist.");
+            throw new FileNotFoundException("File at " + inputURL.uri + " does not exist.");
         }
 
         JSONObject metadata = new JSONObject();
@@ -278,7 +278,7 @@ public class LocalFilesystem extends Filesystem {
         	metadata.put("size", file.isDirectory() ? 0 : file.length());
         	metadata.put("type", resourceApi.getMimeType(Uri.fromFile(file)));
         	metadata.put("name", file.getName());
-        	metadata.put("fullPath", inputURL.fullPath);
+        	metadata.put("fullPath", inputURL.pathAndQuery);
         	metadata.put("lastModifiedDate", file.lastModified());
         } catch (JSONException e) {
         	return null;
@@ -599,7 +599,7 @@ public class LocalFilesystem extends Filesystem {
         File file = new File(filesystemPathForURL(inputURL));
 
         if (!file.exists()) {
-            throw new FileNotFoundException("File at " + inputURL.URL + " does not exist.");
+            throw new FileNotFoundException("File at " + inputURL.uri + " does not exist.");
         }
         
         RandomAccessFile raf = new RandomAccessFile(filesystemPathForURL(inputURL), "rw");

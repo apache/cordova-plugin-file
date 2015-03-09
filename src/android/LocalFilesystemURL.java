@@ -25,50 +25,39 @@ import android.net.Uri;
 public class LocalFilesystemURL {
 	
 	public static final String FILESYSTEM_PROTOCOL = "cdvfile";
-	
-	Uri URL;
-	String filesystemName;
-	String fullPath;
 
-	public LocalFilesystemURL(Uri URL) {
-		this.URL = URL;
-		this.filesystemName = this.filesystemNameForLocalURL(URL);
-		this.fullPath = this.fullPathForLocalURL(URL);
-	}
-	
-	private String fullPathForLocalURL(Uri URL) {
-		if (FILESYSTEM_PROTOCOL.equals(URL.getScheme()) && "localhost".equals(URL.getHost())) {
-			String path = URL.getPath();
-            if (URL.getQuery() != null) {
-                path = path + "?" + URL.getQuery();
-            }
-			return path.substring(path.indexOf('/', 1));
-		} else if ("content".equals(URL.getScheme())) {
-			String path = '/' + URL.getHost() + URL.getPath();
-			// Re-encode path component to handle Android 4.4+ Content URLs
-			return Uri.encode(path,"/");
-		}
-		return null;
+    public final Uri uri;
+    public final String fsName;
+    public final String pathAndQuery;
+
+	private LocalFilesystemURL(Uri uri, String fsName, String fsPath) {
+		this.uri = uri;
+        this.fsName = fsName;
+        this.pathAndQuery = fsPath;
 	}
 
-	private String filesystemNameForLocalURL(Uri URL) {
-		if (FILESYSTEM_PROTOCOL.equals(URL.getScheme()) && "localhost".equals(URL.getHost())) {
-			List<String> pathComponents = URL.getPathSegments();
-			if (pathComponents != null && pathComponents.size() > 0) {
-				return pathComponents.get(0);
-			}
-			return null;
-		} else if ("content".equals(URL.getScheme())) {
-			return "content";
-		}
-		return null;
-	}
+    public static LocalFilesystemURL parse(Uri uri) {
+        if (!FILESYSTEM_PROTOCOL.equals(uri.getScheme())) {
+            return null;
+        }
+        List<String> pathComponents = uri.getPathSegments();
+        if (pathComponents == null || pathComponents.size() == 0) {
+            return null;
+        }
+        String fsName = pathComponents.get(0);
+        String pathAndQuery = uri.getPath();
+        pathAndQuery = pathAndQuery.substring(pathAndQuery.indexOf('/', 1));
+        if (uri.getQuery() != null) {
+            pathAndQuery = pathAndQuery + "?" + uri.getQuery();
+        }
+        return new LocalFilesystemURL(uri, fsName, pathAndQuery);
+    }
 
-	public LocalFilesystemURL(String strURL) {
-		this(Uri.parse(strURL));
-	}
-	
+    public static LocalFilesystemURL parse(String uri) {
+        return parse(Uri.parse(uri));
+    }
+
     public String toString() {
-        return "cdvfile://localhost/" + this.filesystemName + this.fullPath;
+        return uri.toString();
     }
 }
