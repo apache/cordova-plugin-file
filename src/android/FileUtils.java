@@ -584,44 +584,26 @@ public class FileUtils extends CordovaPlugin {
     /**
      * Allows the user to look up the Entry for a file or directory referred to by a local URI.
      *
-     * @param url of the file/directory to look up
+     * @param uriString of the file/directory to look up
      * @return a JSONObject representing a Entry from the filesystem
      * @throws MalformedURLException if the url is not valid
      * @throws FileNotFoundException if the file does not exist
      * @throws IOException if the user can't read the file
      * @throws JSONException
      */
-    private JSONObject resolveLocalFileSystemURI(String url) throws IOException, JSONException {
+    private JSONObject resolveLocalFileSystemURI(String uriString) throws IOException, JSONException {
     	LocalFilesystemURL inputURL;
-    	if (url == null) {
+    	if (uriString == null) {
     		throw new MalformedURLException("Unrecognized filesystem URL");
     	}
-    	
-		/* Backwards-compatibility: Check for file:// urls */
-        if (url.startsWith("file:/")) {
-            if (!url.startsWith("file://")) {
-                url = "file:///" + url.substring(6);
-            }
-            String decoded = URLDecoder.decode(url, "UTF-8");
-    		/* This looks like a file url. Get the path, and see if any handlers recognize it. */
-    		String path;
-	        int questionMark = decoded.indexOf("?");
-            int pathEnd;
-	        if (questionMark < 0) {
-                pathEnd = decoded.length();
-	        } else {
-                pathEnd = questionMark;
-            }
+    	Uri uri = Uri.parse(uriString);
 
-            int thirdSlash = decoded.indexOf("/", 7);
-            if (thirdSlash < 0 || thirdSlash > pathEnd) {
-                path = "";
-            } else {
-                path = decoded.substring(thirdSlash, pathEnd);
-	        }
+		/* Backwards-compatibility: Check for file:// urls */
+        if ("file".equals(uri.getScheme())) {
+            String path = uri.getPath();
     		inputURL = this.filesystemURLforLocalPath(path);
     	} else {
-    		inputURL = new LocalFilesystemURL(url);
+    		inputURL = new LocalFilesystemURL(uri);
     	}
 
         try {
