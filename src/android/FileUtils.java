@@ -112,7 +112,7 @@ public class FileUtils extends CordovaPlugin {
                 if (fsRoot != null) {
                     File newRoot = new File(fsRoot);
                     if (newRoot.mkdirs() || newRoot.isDirectory()) {
-                        registerFilesystem(new LocalFilesystem(fsName, cordova, Uri.fromFile(newRoot)));
+                        registerFilesystem(new LocalFilesystem(fsName, webView.getContext(), webView.getResourceApi(), Uri.fromFile(newRoot)));
                         installedFileSystems.add(fsName);
                     } else {
                        Log.d(LOG_TAG, "Unable to create root dir for filesystem \"" + fsName + "\", skipping");
@@ -192,8 +192,8 @@ public class FileUtils extends CordovaPlugin {
     		// Note: The temporary and persistent filesystems need to be the first two
     		// registered, so that they will match window.TEMPORARY and window.PERSISTENT,
     		// per spec.
-    		this.registerFilesystem(new LocalFilesystem("temporary", cordova, tempRoot));
-    		this.registerFilesystem(new LocalFilesystem("persistent", cordova, persistentRoot));
+    		this.registerFilesystem(new LocalFilesystem("temporary", webView.getContext(), webView.getResourceApi(), tempRoot));
+    		this.registerFilesystem(new LocalFilesystem("persistent", webView.getContext(), webView.getResourceApi(), persistentRoot));
     		this.registerFilesystem(new ContentFilesystem(cordova, webView));
 
             registerExtraFileSystems(getExtraFileSystemsPreference(activity), getAvailableFileSystems(activity));

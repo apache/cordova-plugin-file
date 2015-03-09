@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaResourceApi;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,14 +45,16 @@ import android.app.Activity;
 
 public class LocalFilesystem extends Filesystem {
 
-	private CordovaInterface cordova;
+    private final CordovaResourceApi resourceApi;
+    private final Context context;
 
-    public LocalFilesystem(String name, CordovaInterface cordova, String rootPath) {
-        this(name, cordova, Uri.fromFile(new File(rootPath)));
+    public LocalFilesystem(String name, Context context, CordovaResourceApi resourceApi, String rootPath) {
+        this(name, context, resourceApi, Uri.fromFile(new File(rootPath)));
     }
-	public LocalFilesystem(String name, CordovaInterface cordova, Uri rootUri) {
+	public LocalFilesystem(String name, Context context, CordovaResourceApi resourceApi, Uri rootUri) {
         super(rootUri, name);
-		this.cordova = cordova;
+		this.context = context;
+        this.resourceApi = resourceApi;
 	}
 
     public String filesystemPathForFullPath(String fullPath) {
@@ -276,7 +279,7 @@ public class LocalFilesystem extends Filesystem {
         try {
             // Ensure that directories report a size of 0
         	metadata.put("size", file.isDirectory() ? 0 : file.length());
-        	metadata.put("type", FileHelper.getMimeType(file.getAbsolutePath(), cordova));
+        	metadata.put("type", resourceApi.getMimeType(Uri.fromFile(file)));
         	metadata.put("name", file.getName());
         	metadata.put("fullPath", inputURL.fullPath);
         	metadata.put("lastModifiedDate", file.lastModified());
@@ -520,7 +523,7 @@ public class LocalFilesystem extends Filesystem {
 			ReadFileCallback readFileCallback) throws IOException {
 
 		File file = new File(this.filesystemPathForURL(inputURL));
-        String contentType = FileHelper.getMimeTypeForExtension(file.getAbsolutePath());
+        String contentType = resourceApi.getMimeType(Uri.fromFile(file));
 		
         if (end < 0) {
             end = file.length();
@@ -588,19 +591,8 @@ public class LocalFilesystem extends Filesystem {
     private void broadcastNewFile(LocalFilesystemURL inputURL) {
         File file = new File(this.filesystemPathForURL(inputURL));
         if (file.exists()) {
-            //Get the activity
-            Activity activity = this.cordova.getActivity();
-
-            //Get the context
-            Context context = activity.getApplicationContext();
-
-            //Create the URI
             Uri uri = Uri.fromFile(file);
-
-            //Create the intent
             Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri);
-
-            //Send broadcast of new file
             context.sendBroadcast(intent);
         }
     }

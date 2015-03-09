@@ -28,6 +28,9 @@ xmlns:android="http://schemas.android.com/apk/res/android"
     <keywords>cordova,file</keywords>
     <repo>https://git-wip-us.apache.org/repos/asf/cordova-plugin-file.git</repo>
     <issue>https://issues.apache.org/jira/browse/CB/component/12320651</issue>
+    <engines>
+        <engine name="cordova-android" version=">=3.1.0" /><!-- Uses CordovaResourceApi -->
+    </engines>
 
     <js-module src="www/DirectoryEntry.js" name="DirectoryEntry">
         <clobbers target="window.DirectoryEntry" />
@@ -121,7 +124,6 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <source-file src="src/android/NoModificationAllowedException.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/TypeMismatchException.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/FileUtils.java" target-dir="src/org/apache/cordova/file" />
-        <source-file src="src/android/FileHelper.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/DirectoryManager.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/LocalFilesystemURL.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/Filesystem.java" target-dir="src/org/apache/cordova/file" />
