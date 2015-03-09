@@ -251,15 +251,6 @@ public class ContentFilesystem extends Filesystem {
         return cursor;
 	}
 
-	protected String filesystemPathForCursor(Cursor cursor) {
-        final String[] LOCAL_FILE_PROJECTION = { MediaStore.Images.Media.DATA };
-        int columnIndex = cursor.getColumnIndex(LOCAL_FILE_PROJECTION[0]);
-        if (columnIndex != -1) {
-            return cursor.getString(columnIndex);
-        }
-        return null;
-	}
-
 	protected Integer resourceSizeForCursor(Cursor cursor) {
         int columnIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
         if (columnIndex != -1) {
@@ -285,16 +276,8 @@ public class ContentFilesystem extends Filesystem {
 
     @Override
     public String filesystemPathForURL(LocalFilesystemURL url) {
-        Cursor cursor = openCursorForURL(url);
-        try {
-        	if (cursor != null && cursor.moveToFirst()) {
-        		return filesystemPathForCursor(cursor);
-        	}
-        } finally {
-            if (cursor != null)
-            	cursor.close();
-        }
-        return null;
+        File f = resourceApi.mapUriToFile(url.URL);
+        return f == null ? null : f.getAbsolutePath();
     }
 
 	@Override
