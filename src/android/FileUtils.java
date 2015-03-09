@@ -65,7 +65,7 @@ public class FileUtils extends CordovaPlugin {
     public static int QUOTA_EXCEEDED_ERR = 10;
     public static int TYPE_MISMATCH_ERR = 11;
     public static int PATH_EXISTS_ERR = 12;
-    
+
     public static int UNKNOWN_ERR = 1000;
     
     private boolean configured = false;
@@ -638,7 +638,6 @@ public class FileUtils extends CordovaPlugin {
     /**
      * Read the list of files from this directory.
      *
-     * @param fileName the directory to read from
      * @return a JSONArray containing JSONObjects that represent Entry objects.
      * @throws FileNotFoundException if the directory is not found.
      * @throws JSONException
@@ -661,8 +660,6 @@ public class FileUtils extends CordovaPlugin {
     /**
      * A setup method that handles the move/copy of files/directories
      *
-     * @param fileName to be copied/moved
-     * @param newParent is the location where the file will be copied/moved to
      * @param newName for the file directory to be called, if null use existing file name
      * @param move if false do a copy, if true do a move
      * @return a Entry object
@@ -699,7 +696,6 @@ public class FileUtils extends CordovaPlugin {
      * some of the contents of the directory may be deleted.
      * It is an error to attempt to delete the root directory of a filesystem.
      *
-     * @param filePath the directory to be removed
      * @return a boolean representing success of failure
      * @throws FileExistsException
      * @throws NoModificationAllowedException 
@@ -729,7 +725,6 @@ public class FileUtils extends CordovaPlugin {
      * Deletes a file or directory. It is an error to attempt to delete a directory that is not empty.
      * It is an error to attempt to delete the root directory of a filesystem.
      *
-     * @param filePath file or directory to be removed
      * @return a boolean representing success of failure
      * @throws NoModificationAllowedException
      * @throws InvalidModificationException
@@ -787,11 +782,6 @@ public class FileUtils extends CordovaPlugin {
     /**
      * Look up the parent DirectoryEntry containing this Entry.
      * If this Entry is the root of its filesystem, its parent is itself.
-     *
-     * @param filePath
-     * @return
-     * @throws JSONException
-     * @throws IOException 
      */
     private JSONObject getParent(String baseURLstr) throws JSONException, IOException {
         try {
@@ -810,11 +800,7 @@ public class FileUtils extends CordovaPlugin {
     /**
      * Returns a File that represents the current state of the file that this FileEntry represents.
      *
-     * @param filePath to entry
      * @return returns a JSONObject represent a W3C File object
-     * @throws FileNotFoundException
-     * @throws JSONException
-     * @throws MalformedURLException 
      */
     private JSONObject getFileMetadata(String baseURLstr) throws FileNotFoundException, JSONException, MalformedURLException {
         try {
@@ -858,10 +844,7 @@ public class FileUtils extends CordovaPlugin {
     /**
      * Requests a filesystem in which to store application data.
      *
-     * @param type of file system requested
      * @return a JSONObject representing the file system
-     * @throws IOException
-     * @throws JSONException
      */
     private JSONArray requestAllFileSystems() throws IOException, JSONException {
         JSONArray ret = new JSONArray();
@@ -939,14 +922,12 @@ public class FileUtils extends CordovaPlugin {
      * Read the contents of a file.
      * This is done in a background thread; the result is sent to the callback.
      *
-     * @param filename          The name of the file.
      * @param start             Start position in the file.
      * @param end               End position to stop at (exclusive).
      * @param callbackContext   The context through which to send the result.
      * @param encoding          The encoding to return contents as.  Typical value is UTF-8. (see http://www.iana.org/assignments/character-sets)
      * @param resultType        The desired type of data to send to the callback.
      * @return                  Contents of file.
-     * @throws MalformedURLException 
      */
     public void readFileAs(final String srcURLstr, final int start, final int end, final CallbackContext callbackContext, final String encoding, final int resultType) throws MalformedURLException {
         try {
@@ -1012,12 +993,9 @@ public class FileUtils extends CordovaPlugin {
     /**
      * Write contents of file.
      *
-     * @param filename			The name of the file.
      * @param data				The contents of the file.
      * @param offset			The position to begin writing the file.
      * @param isBinary          True if the file contents are base64-encoded binary data
-     * @throws FileNotFoundException, IOException
-     * @throws NoModificationAllowedException
      */
     /**/
     public long write(String srcURLstr, String data, int offset, boolean isBinary) throws FileNotFoundException, IOException, NoModificationAllowedException {
@@ -1037,11 +1015,6 @@ public class FileUtils extends CordovaPlugin {
 
     /**
      * Truncate the file to size
-     *
-     * @param filename
-     * @param size
-     * @throws FileNotFoundException, IOException
-     * @throws NoModificationAllowedException
      */
     private long truncateFile(String srcURLstr, long size) throws FileNotFoundException, IOException, NoModificationAllowedException {
         try {
