@@ -30,6 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaResourceApi;
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.LOG;
 import org.apache.cordova.PluginManager;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,6 +43,7 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 
 public class ContentFilesystem extends Filesystem {
+    private static final String LOG_TAG = "ContentFilesystem";
 
 	private CordovaInterface cordova;
 	private CordovaResourceApi resourceApi;
@@ -56,15 +58,20 @@ public class ContentFilesystem extends Filesystem {
 			Method gpm = webViewClass.getMethod("getPluginManager");
 			pm = (PluginManager) gpm.invoke(webView);
 		} catch (NoSuchMethodException e) {
+            LOG.d(LOG_TAG, "NoSuchMethodException", e);
 		} catch (IllegalAccessException e) {
+            LOG.d(LOG_TAG, "IllegalAccessException", e);
 		} catch (InvocationTargetException e) {
+            LOG.d(LOG_TAG, "InvocationTargetException", e);
 		}
 		if (pm == null) {
 			try {
 				Field pmf = webViewClass.getField("pluginManager");
 				pm = (PluginManager)pmf.get(webView);
 			} catch (NoSuchFieldException e) {
+                LOG.d(LOG_TAG, "NoSuchFieldException", e);
 			} catch (IllegalAccessException e) {
+	            LOG.d(LOG_TAG, "IllegalAccessException", e);
 			}
 		}
 		this.resourceApi = new CordovaResourceApi(webView.getContext(), pm);
@@ -137,6 +144,7 @@ public class ContentFilesystem extends Filesystem {
 			// Was seeing this on the File mobile-spec tests on 4.0.3 x86 emulator.
 			// The ContentResolver applies only when the file was registered in the
 			// first case, which is generally only the case with images.
+		    LOG.d(LOG_TAG, "UnsupportedOperationException", t);
 		}
 		return file.delete();
 	}

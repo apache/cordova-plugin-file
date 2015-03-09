@@ -52,19 +52,19 @@ import java.util.HashSet;
 public class FileUtils extends CordovaPlugin {
     private static final String LOG_TAG = "FileUtils";
 
-    public static int NOT_FOUND_ERR = 1;
-    public static int SECURITY_ERR = 2;
-    public static int ABORT_ERR = 3;
+    public static final int NOT_FOUND_ERR = 1;
+    public static final int SECURITY_ERR = 2;
+    public static final int ABORT_ERR = 3;
 
-    public static int NOT_READABLE_ERR = 4;
-    public static int ENCODING_ERR = 5;
-    public static int NO_MODIFICATION_ALLOWED_ERR = 6;
-    public static int INVALID_STATE_ERR = 7;
-    public static int SYNTAX_ERR = 8;
-    public static int INVALID_MODIFICATION_ERR = 9;
-    public static int QUOTA_EXCEEDED_ERR = 10;
-    public static int TYPE_MISMATCH_ERR = 11;
-    public static int PATH_EXISTS_ERR = 12;
+    public static final int NOT_READABLE_ERR = 4;
+    public static final int ENCODING_ERR = 5;
+    public static final int NO_MODIFICATION_ALLOWED_ERR = 6;
+    public static final int INVALID_STATE_ERR = 7;
+    public static final int SYNTAX_ERR = 8;
+    public static final int INVALID_MODIFICATION_ERR = 9;
+    public static final int QUOTA_EXCEEDED_ERR = 10;
+    public static final int TYPE_MISMATCH_ERR = 11;
+    public static final int PATH_EXISTS_ERR = 12;
     
     public static int UNKNOWN_ERR = 1000;
     
@@ -518,7 +518,9 @@ public class FileUtils extends CordovaPlugin {
             }
             return fs.filesystemPathForURL(inputURL);
         } catch (IllegalArgumentException e) {
-            throw new MalformedURLException("Unrecognized filesystem URL");
+            MalformedURLException malformedURLException = new MalformedURLException("Unrecognized filesystem URL");
+            malformedURLException.initCause(e);
+            throw malformedURLException;
         }
     }
 
@@ -554,7 +556,7 @@ public class FileUtils extends CordovaPlugin {
                 try {
                     f.run();
                 } catch ( Exception e) {
-                    e.printStackTrace();
+                    Log.d(LOG_TAG, "Exception in threadhelper: ", e);
                     if( e instanceof EncodingException){
                         callbackContext.error(FileUtils.ENCODING_ERR);
                     } else if(e instanceof FileNotFoundException) {
@@ -631,7 +633,9 @@ public class FileUtils extends CordovaPlugin {
         	}
         	return fs.getEntryForLocalURL(inputURL);
         } catch (IllegalArgumentException e) {
-        	throw new MalformedURLException("Unrecognized filesystem URL");
+            MalformedURLException malformedURLException = new MalformedURLException("Unrecognized filesystem URL");
+            malformedURLException.initCause(e);
+        	throw malformedURLException;
         }
     }   
     
@@ -654,7 +658,9 @@ public class FileUtils extends CordovaPlugin {
         	return fs.readEntriesAtLocalURL(inputURL);
         
         } catch (IllegalArgumentException e) {
-        	throw new MalformedURLException("Unrecognized filesystem URL");
+            MalformedURLException malformedURLException = new MalformedURLException("Unrecognized filesystem URL");
+            malformedURLException.initCause(e);
+        	throw malformedURLException;
         }
     }
 
@@ -720,7 +726,9 @@ public class FileUtils extends CordovaPlugin {
         	return fs.recursiveRemoveFileAtLocalURL(inputURL);
         
         } catch (IllegalArgumentException e) {
-        	throw new MalformedURLException("Unrecognized filesystem URL");
+            MalformedURLException malformedURLException = new MalformedURLException("Unrecognized filesystem URL");
+            malformedURLException.initCause(e);
+        	throw malformedURLException;
         }
     }
 
@@ -751,7 +759,9 @@ public class FileUtils extends CordovaPlugin {
         	return fs.removeFileAtLocalURL(inputURL);
         
         } catch (IllegalArgumentException e) {
-        	throw new MalformedURLException("Unrecognized filesystem URL");
+            MalformedURLException malformedURLException = new MalformedURLException("Unrecognized filesystem URL");
+            malformedURLException.initCause(e);
+        	throw malformedURLException;
         }
     }
 
@@ -779,7 +789,9 @@ public class FileUtils extends CordovaPlugin {
         	return fs.getFileForLocalURL(inputURL, path, options, directory);
         
         } catch (IllegalArgumentException e) {
-        	throw new MalformedURLException("Unrecognized filesystem URL");
+            MalformedURLException malformedURLException = new MalformedURLException("Unrecognized filesystem URL");
+            malformedURLException.initCause(e);
+            throw malformedURLException;
         }
 
     }
@@ -803,7 +815,9 @@ public class FileUtils extends CordovaPlugin {
         	return fs.getParentForLocalURL(inputURL);
         
         } catch (IllegalArgumentException e) {
-        	throw new MalformedURLException("Unrecognized filesystem URL");
+            MalformedURLException malformedURLException = new MalformedURLException("Unrecognized filesystem URL");
+            malformedURLException.initCause(e);
+            throw malformedURLException;
         }
     }
 
@@ -826,7 +840,9 @@ public class FileUtils extends CordovaPlugin {
         	return fs.getFileMetadataForLocalURL(inputURL);
         
         } catch (IllegalArgumentException e) {
-        	throw new MalformedURLException("Unrecognized filesystem URL");
+            MalformedURLException malformedURLException = new MalformedURLException("Unrecognized filesystem URL");
+            malformedURLException.initCause(e);
+            throw malformedURLException;
         }
     }
 
@@ -999,7 +1015,9 @@ public class FileUtils extends CordovaPlugin {
 
 
         } catch (IllegalArgumentException e) {
-        	throw new MalformedURLException("Unrecognized filesystem URL");
+            MalformedURLException malformedURLException = new MalformedURLException("Unrecognized filesystem URL");
+            malformedURLException.initCause(e);
+            throw malformedURLException;
         } catch (FileNotFoundException e) {
         	callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, NOT_FOUND_ERR));
         } catch (IOException e) {
@@ -1030,7 +1048,9 @@ public class FileUtils extends CordovaPlugin {
         
             long x = fs.writeToFileAtURL(inputURL, data, offset, isBinary); Log.d("TEST",srcURLstr + ": "+x); return x;
         } catch (IllegalArgumentException e) {
-        	throw new MalformedURLException("Unrecognized filesystem URL");
+            MalformedURLException malformedURLException = new MalformedURLException("Unrecognized filesystem URL");
+            malformedURLException.initCause(e);
+            throw malformedURLException;
         }
         
     }
@@ -1053,7 +1073,9 @@ public class FileUtils extends CordovaPlugin {
         
             return fs.truncateFileAtURL(inputURL, size);
         } catch (IllegalArgumentException e) {
-        	throw new MalformedURLException("Unrecognized filesystem URL");
+            MalformedURLException malformedURLException = new MalformedURLException("Unrecognized filesystem URL");
+            malformedURLException.initCause(e);
+            throw malformedURLException;
         }
     }
 }
