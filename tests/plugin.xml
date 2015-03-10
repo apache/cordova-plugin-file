@@ -29,4 +29,14 @@
 
     <js-module src="tests.js" name="tests">
     </js-module>
+
+    <platform name="android">
+        <source-file src="src/android/TestContentProvider.java" target-dir="src/org/apache/cordova/file/test" />
+        <config-file target="AndroidManifest.xml" parent="/*/application">
+            <provider
+                android:name="org.apache.cordova.file.test.TestContentProvider"
+                android:authorities="org.apache.cordova.file.testprovider"
+                android:exported="false" />
+        </config-file>
+    </platform>
 </plugin>

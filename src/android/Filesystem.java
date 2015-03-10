@@ -43,34 +43,36 @@ public abstract class Filesystem {
         this.rootUri = rootUri;
         this.name = name;
         this.resourceApi = resourceApi;
-        rootEntry = makeEntryForPath("/", name, true, rootUri.toString());
+        rootEntry = makeEntryForNativeUri(rootUri);
     }
 
     public interface ReadFileCallback {
 		public void handleData(InputStream inputStream, String contentType) throws IOException;
 	}
 
-	public static JSONObject makeEntryForPath(String path, String fsName, Boolean isDir, String nativeURL) {
+    public static JSONObject makeEntryForURL(LocalFilesystemURL inputURL, Uri nativeURL) {
         try {
-            JSONObject entry = new JSONObject();
-
+            String path = inputURL.path;
             int end = path.endsWith("/") ? 1 : 0;
             String[] parts = path.substring(0, path.length() - end).split("/+");
             String fileName = parts[parts.length - 1];
-            entry.put("isFile", !isDir);
-            entry.put("isDirectory", isDir);
+
+            JSONObject entry = new JSONObject();
+            entry.put("isFile", !inputURL.isDirectory);
+            entry.put("isDirectory", inputURL.isDirectory);
             entry.put("name", fileName);
             entry.put("fullPath", path);
             // The file system can't be specified, as it would lead to an infinite loop,
             // but the filesystem name can be.
-            entry.put("filesystemName", fsName);
+            entry.put("filesystemName", inputURL.fsName);
             // Backwards compatibility
-            entry.put("filesystem", "temporary".equals(fsName) ? 0 : 1);
+            entry.put("filesystem", "temporary".equals(inputURL.fsName) ? 0 : 1);
 
-            if (isDir && !nativeURL.endsWith("/")) {
-                nativeURL += "/";
+            String nativeUrlStr = nativeURL.toString();
+            if (inputURL.isDirectory && !nativeUrlStr.endsWith("/")) {
+                nativeUrlStr += "/";
             }
-            entry.put("nativeURL", nativeURL);
+            entry.put("nativeURL", nativeUrlStr);
             return entry;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -78,13 +80,21 @@ public abstract class Filesystem {
         }
     }
 
-    public static JSONObject makeEntryForURL(LocalFilesystemURL inputURL, Boolean isDir, Uri nativeURL) {
-        return makeEntryForPath(inputURL.pathAndQuery, inputURL.fsName, isDir, nativeURL.toString());
+    public JSONObject makeEntryForURL(LocalFilesystemURL inputURL) {
+        Uri nativeUri = toNativeUri(inputURL);
+        return makeEntryForURL(inputURL, nativeUri);
     }
 
-	abstract JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException;
+    public JSONObject makeEntryForNativeUri(Uri nativeUri) {
+        LocalFilesystemURL inputUrl = toLocalUri(nativeUri);
+        return makeEntryForURL(inputUrl, nativeUri);
+    }
 
-	abstract JSONObject getFileForLocalURL(LocalFilesystemURL inputURL, String path,
+    public JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException {
+        return makeEntryForURL(inputURL);
+    }
+
+    abstract JSONObject getFileForLocalURL(LocalFilesystemURL inputURL, String path,
 			JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException;
 
 	abstract boolean removeFileAtLocalURL(LocalFilesystemURL inputURL) throws InvalidModificationException, NoModificationAllowedException;
@@ -98,6 +108,9 @@ public abstract class Filesystem {
     public Uri getRootUri() {
         return rootUri;
     }
+
+    public abstract Uri toNativeUri(LocalFilesystemURL inputURL);
+    public abstract LocalFilesystemURL toLocalUri(Uri inputURL);
 
     public JSONObject getRootEntry() {
         return rootEntry;
@@ -126,57 +139,60 @@ public abstract class Filesystem {
         }
         return LocalFilesystemURL.parse(newDest);
     }
-    
+
 	/* Read a source URL (possibly from a different filesystem, srcFs,) and copy it to
 	 * the destination URL on this filesystem, optionally with a new filename.
 	 * If move is true, then this method should either perform an atomic move operation
 	 * or remove the source file when finished.
 	 */
-    JSONObject copyFileToURL(LocalFilesystemURL destURL, String newName,
+    public JSONObject copyFileToURL(LocalFilesystemURL destURL, String newName,
             Filesystem srcFs, LocalFilesystemURL srcURL, boolean move) throws IOException, InvalidModificationException, JSONException, NoModificationAllowedException, FileExistsException {
-        // This is "the hard way" -- transfer data between arbitrary filesystem urls/
-        // Gets an input stream from src, and writes its contents to an output stream
-        // from dest.
-
         // First, check to see that we can do it
-        if (!move || srcFs.canRemoveFileAtLocalURL(srcURL)) {
-            final LocalFilesystemURL destination = makeDestinationURL(newName, srcURL, destURL);
-            srcFs.readFileAtURL(srcURL, 0, -1, new ReadFileCallback() {
-                public void handleData(InputStream inputStream, String contentType) throws IOException {
-                    if (inputStream != null) {
-                        //write data to file
-                        OutputStream os = getOutputStreamForURL(destination);
-                        final int BUFFER_SIZE = 8192;
-                        byte[] buffer = new byte[BUFFER_SIZE];
-
-                        for (;;) {
-                            int bytesRead = inputStream.read(buffer, 0, BUFFER_SIZE);
-
-                            if (bytesRead <= 0) {
-                                break;
-                            }
-                            os.write(buffer, 0, bytesRead);
-                        }
-                        os.close();
-                    } else {
-                        throw new IOException("Cannot read file at source URL");
-                    }
-                }
-            });
-            if (move) {
-                // Delete original
-                srcFs.removeFileAtLocalURL(srcURL);
-            }
-            return getEntryForLocalURL(destination);
-        } else {
+        if (move && !srcFs.canRemoveFileAtLocalURL(srcURL)) {
             throw new NoModificationAllowedException("Cannot move file at source URL");
         }
+        final LocalFilesystemURL destination = makeDestinationURL(newName, srcURL, destURL);
+
+        Uri srcNativeUri = srcFs.toNativeUri(srcURL);
+
+        CordovaResourceApi.OpenForReadResult ofrr = resourceApi.openForRead(srcNativeUri);
+        OutputStream os = null;
+        try {
+            os = getOutputStreamForURL(destination);
+        } catch (IOException e) {
+            ofrr.inputStream.close();
+            throw e;
+        }
+        // Closes streams.
+        resourceApi.copyResource(ofrr, os);
+
+        if (move) {
+            srcFs.removeFileAtLocalURL(srcURL);
+        }
+        return getEntryForLocalURL(destination);
     }
 
-    abstract OutputStream getOutputStreamForURL(LocalFilesystemURL inputURL) throws IOException;
+    public OutputStream getOutputStreamForURL(LocalFilesystemURL inputURL) throws IOException {
+        return resourceApi.openOutputStream(toNativeUri(inputURL));
+    }
 
-    abstract void readFileAtURL(LocalFilesystemURL inputURL, long start, long end,
-			ReadFileCallback readFileCallback) throws IOException;
+    public void readFileAtURL(LocalFilesystemURL inputURL, long start, long end,
+                              ReadFileCallback readFileCallback) throws IOException {
+        CordovaResourceApi.OpenForReadResult ofrr = resourceApi.openForRead(toNativeUri(inputURL));
+        if (end < 0) {
+            end = ofrr.length;
+        }
+        long numBytesToRead = end - start;
+        try {
+            if (start > 0) {
+                ofrr.inputStream.skip(start);
+            }
+            LimitedInputStream inputStream = new LimitedInputStream(ofrr.inputStream, numBytesToRead);
+            readFileCallback.handleData(inputStream, ofrr.mimeType);
+        } finally {
+            ofrr.inputStream.close();
+        }
+    }
 
 	abstract long writeToFileAtURL(LocalFilesystemURL inputURL, String data, int offset,
 			boolean isBinary) throws NoModificationAllowedException, IOException;

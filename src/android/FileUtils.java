@@ -41,7 +41,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -503,6 +502,24 @@ public class FileUtils extends CordovaPlugin {
         return true;
     }
 
+    public LocalFilesystemURL resolveNativeUri(Uri nativeUri) {
+        LocalFilesystemURL localURL = null;
+
+        // Try all installed filesystems. Return the best matching URL
+        // (determined by the shortest resulting URL)
+        for (Filesystem fs : filesystems) {
+            LocalFilesystemURL url = fs.toLocalUri(nativeUri);
+            if (url != null) {
+                // A shorter fullPath implies that the filesystem is a better
+                // match for the local path than the previous best.
+                if (localURL == null || (url.uri.toString().length() < localURL.toString().length())) {
+                    localURL = url;
+                }
+            }
+        }
+        return localURL;
+    }
+
     /*
      * These two native-only methods can be used by other plugins to translate between
      * device file system paths and URLs. By design, there is no direct JavaScript
@@ -529,15 +546,13 @@ public class FileUtils extends CordovaPlugin {
         // Try all installed filesystems. Return the best matching URL
         // (determined by the shortest resulting URL)
         for (Filesystem fs: filesystems) {
-            if (fs != null) {
-                LocalFilesystemURL url = fs.URLforFilesystemPath(localPath);
-                if (url != null) {
-                    // A shorter fullPath implies that the filesystem is a better
-                    // match for the local path than the previous best.
-                    if (localURL == null || (url.pathAndQuery.length() < shortestFullPath)) {
-                        localURL = url;
-                        shortestFullPath = url.pathAndQuery.length();
-                    }
+            LocalFilesystemURL url = fs.URLforFilesystemPath(localPath);
+            if (url != null) {
+                // A shorter fullPath implies that the filesystem is a better
+                // match for the local path than the previous best.
+                if (localURL == null || (url.path.length() < shortestFullPath)) {
+                    localURL = url;
+                    shortestFullPath = url.path.length();
                 }
             }
         }
@@ -592,18 +607,15 @@ public class FileUtils extends CordovaPlugin {
      * @throws JSONException
      */
     private JSONObject resolveLocalFileSystemURI(String uriString) throws IOException, JSONException {
-    	LocalFilesystemURL inputURL;
     	if (uriString == null) {
     		throw new MalformedURLException("Unrecognized filesystem URL");
     	}
     	Uri uri = Uri.parse(uriString);
 
-		/* Backwards-compatibility: Check for file:// urls */
-        if ("file".equals(uri.getScheme())) {
-            String path = uri.getPath();
-    		inputURL = this.filesystemURLforLocalPath(path);
-    	} else {
-    		inputURL = LocalFilesystemURL.parse(uri);
+        LocalFilesystemURL inputURL = LocalFilesystemURL.parse(uri);
+        if (inputURL == null) {
+    		/* Check for file://, content:// urls */
+    		inputURL = resolveNativeUri(uri);
     	}
 
         try {
@@ -687,7 +699,7 @@ public class FileUtils extends CordovaPlugin {
         try {
         	LocalFilesystemURL inputURL = LocalFilesystemURL.parse(baseURLstr);
         	// You can't delete the root directory.
-        	if ("".equals(inputURL.pathAndQuery) || "/".equals(inputURL.pathAndQuery)) {
+        	if ("".equals(inputURL.path) || "/".equals(inputURL.path)) {
         		throw new NoModificationAllowedException("You can't delete the root directory");
         	}
 
@@ -716,7 +728,7 @@ public class FileUtils extends CordovaPlugin {
         try {
         	LocalFilesystemURL inputURL = LocalFilesystemURL.parse(baseURLstr);
         	// You can't delete the root directory.
-        	if ("".equals(inputURL.pathAndQuery) || "/".equals(inputURL.pathAndQuery)) {
+        	if ("".equals(inputURL.path) || "/".equals(inputURL.path)) {
 
         		throw new NoModificationAllowedException("You can't delete the root directory");
         	}

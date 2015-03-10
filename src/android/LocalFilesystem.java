@@ -24,14 +24,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaResourceApi;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,13 +38,12 @@ import android.util.Base64;
 import android.net.Uri;
 import android.content.Context;
 import android.content.Intent;
-import android.app.Activity;
 
 public class LocalFilesystem extends Filesystem {
     private final Context context;
 
     public LocalFilesystem(String name, Context context, CordovaResourceApi resourceApi, String rootPath) {
-        this(name, context, resourceApi, Uri.fromFile(new File(rootPath)));
+        this(name, context, resourceApi, Uri.fromFile(new File(rootPath)).buildUpon().appendPath("").build());
     }
 	public LocalFilesystem(String name, Context context, CordovaResourceApi resourceApi, Uri rootUri) {
         super(rootUri, name, resourceApi);
@@ -55,50 +51,91 @@ public class LocalFilesystem extends Filesystem {
 	}
 
     public String filesystemPathForFullPath(String fullPath) {
-	    String path = new File(rootUri.getPath(), fullPath).toString();
-        int questionMark = path.indexOf("?");
-        if (questionMark >= 0) {
-          path = path.substring(0, questionMark);
-        }
-	    if (path.length() > 1 && path.endsWith("/")) {
-	      path = path.substring(0, path.length()-1);
-	    }
-	    return path;
+	    return new File(rootUri.getPath(), fullPath).toString();
 	}
 	
 	@Override
 	public String filesystemPathForURL(LocalFilesystemURL url) {
-		return filesystemPathForFullPath(url.pathAndQuery);
+		return filesystemPathForFullPath(url.path);
 	}
 
 	private String fullPathForFilesystemPath(String absolutePath) {
 		if (absolutePath != null && absolutePath.startsWith(rootUri.getPath())) {
-			return absolutePath.substring(rootUri.getPath().length());
+			return absolutePath.substring(rootUri.getPath().length() - 1);
 		}
 		return null;
 	}
 
+    private Uri nativeUriForFullPath(String fullPath) {
+        Uri ret = null;
+        if (fullPath != null) {
+            String encodedPath = Uri.fromFile(new File(fullPath)).getEncodedPath();
+            if (encodedPath.startsWith("/")) {
+                encodedPath = encodedPath.substring(1);
+            }
+            ret = rootUri.buildUpon().appendEncodedPath(encodedPath).build();
+        }
+        return ret;
+    }
+
 	protected LocalFilesystemURL URLforFullPath(String fullPath) {
-	    if (fullPath != null) {
-	    	if (fullPath.startsWith("/")) {
-	    		return LocalFilesystemURL.parse(LocalFilesystemURL.FILESYSTEM_PROTOCOL + "://localhost/"+this.name+fullPath);
-	    	}
-	        return LocalFilesystemURL.parse(LocalFilesystemURL.FILESYSTEM_PROTOCOL + "://localhost/"+this.name+"/"+fullPath);
+        Uri nativeUri = nativeUriForFullPath(fullPath);
+	    if (nativeUri != null) {
+            return toLocalUri(nativeUri);
 	    }
 	    return null;
-		
 	}
+
+    @Override
+    public Uri toNativeUri(LocalFilesystemURL inputURL) {
+        return nativeUriForFullPath(inputURL.path);
+    }
+
+    @Override
+    public LocalFilesystemURL toLocalUri(Uri inputURL) {
+        if (!"file".equals(inputURL.getScheme())) {
+            return null;
+        }
+        File f = new File(inputURL.getPath());
+        // Removes and duplicate /s (e.g. file:///a//b/c)
+        Uri resolvedUri = Uri.fromFile(f);
+        String rootUriNoTrailingSlash = rootUri.getEncodedPath();
+        rootUriNoTrailingSlash = rootUriNoTrailingSlash.substring(0, rootUriNoTrailingSlash.length() - 1);
+        if (!resolvedUri.getEncodedPath().startsWith(rootUriNoTrailingSlash)) {
+            return null;
+        }
+        String subPath = resolvedUri.getEncodedPath().substring(rootUriNoTrailingSlash.length());
+        // Strip leading slash
+        if (!subPath.isEmpty()) {
+            subPath = subPath.substring(1);
+        }
+        Uri.Builder b = new Uri.Builder()
+            .scheme(LocalFilesystemURL.FILESYSTEM_PROTOCOL)
+            .authority("localhost")
+            .path(name);
+        if (!subPath.isEmpty()) {
+            b.appendEncodedPath(subPath);
+        }
+        if (f.isDirectory() || inputURL.getPath().endsWith("/")) {
+            // Add trailing / for directories.
+            b.appendEncodedPath("");
+        }
+        return LocalFilesystemURL.parse(b.build());
+    }
 	
 	@Override
 	public LocalFilesystemURL URLforFilesystemPath(String path) {
 	    return this.URLforFullPath(this.fullPathForFilesystemPath(path));
 	}
 
+    /**
+     * Removes multiple repeated //s, and collapses processes ../s.
+     */
 	protected String normalizePath(String rawPath) {
 	    // If this is an absolute path, trim the leading "/" and replace it later
 	    boolean isAbsolutePath = rawPath.startsWith("/");
 	    if (isAbsolutePath) {
-	        rawPath = rawPath.substring(1);
+	        rawPath = rawPath.replaceFirst("/+", "");
 	    }
 	    ArrayList<String> components = new ArrayList<String>(Arrays.asList(rawPath.split("/+")));
 	    for (int index = 0; index < components.size(); ++index) {
@@ -120,18 +157,12 @@ public class LocalFilesystem extends Filesystem {
 	    } else {
 	    	return normalizedPath.toString().substring(1);
 	    }
-
-
 	}
 
 	
 	@Override
-    public JSONObject makeEntryForFile(File file) throws JSONException {
-    	String path = this.fullPathForFilesystemPath(file.getAbsolutePath());
-    	if (path != null) {
-    		return makeEntryForPath(path, this.name, file.isDirectory(), Uri.fromFile(file).toString());
-    	}
-    	return null;
+    public JSONObject makeEntryForFile(File file) {
+        return makeEntryForNativeUri(Uri.fromFile(file));
     }
 
 	@Override
@@ -144,7 +175,7 @@ public class LocalFilesystem extends Filesystem {
       if (!fp.canRead()) {
           throw new IOException();
       }
-      return LocalFilesystem.makeEntryForURL(inputURL, fp.isDirectory(),  Uri.fromFile(fp));
+      return super.getEntryForLocalURL(inputURL);
 	}
 
 	@Override
@@ -168,10 +199,13 @@ public class LocalFilesystem extends Filesystem {
         LocalFilesystemURL requestedURL;
         
         // Check whether the supplied path is absolute or relative
+        if (directory && !path.endsWith("/")) {
+            path += "/";
+        }
         if (path.startsWith("/")) {
-        	requestedURL = URLforFilesystemPath(path);
+        	requestedURL = URLforFilesystemPath(normalizePath(path));
         } else {
-        	requestedURL = URLforFullPath(normalizePath(inputURL.pathAndQuery + "/" + path));
+        	requestedURL = URLforFullPath(normalizePath(inputURL.path + "/" + path));
         }
         
         File fp = new File(this.filesystemPathForURL(requestedURL));
@@ -205,7 +239,7 @@ public class LocalFilesystem extends Filesystem {
         }
 
         // Return the directory
-        return makeEntryForPath(requestedURL.pathAndQuery, requestedURL.fsName, directory, Uri.fromFile(fp).toString());
+        return makeEntryForURL(requestedURL);
 	}
 
 	@Override
@@ -256,7 +290,7 @@ public class LocalFilesystem extends Filesystem {
             File[] files = fp.listFiles();
             for (int i = 0; i < files.length; i++) {
                 if (files[i].canRead()) {
-                    entries.put(makeEntryForPath(fullPathForFilesystemPath(files[i].getAbsolutePath()), inputURL.fsName, files[i].isDirectory(), Uri.fromFile(files[i]).toString()));
+                    entries.put(makeEntryForFile(files[i]));
                 }
             }
         }
@@ -278,7 +312,7 @@ public class LocalFilesystem extends Filesystem {
         	metadata.put("size", file.isDirectory() ? 0 : file.length());
         	metadata.put("type", resourceApi.getMimeType(Uri.fromFile(file)));
         	metadata.put("name", file.getName());
-        	metadata.put("fullPath", inputURL.pathAndQuery);
+        	metadata.put("fullPath", inputURL.path);
         	metadata.put("lastModifiedDate", file.lastModified());
         } catch (JSONException e) {
         	return null;
@@ -514,30 +548,6 @@ public class LocalFilesystem extends Filesystem {
             return super.copyFileToURL(destURL, newName, srcFs, srcURL, move);
     	}
 	}
-
-	@Override
-    public void readFileAtURL(LocalFilesystemURL inputURL, long start, long end,
-			ReadFileCallback readFileCallback) throws IOException {
-
-		File file = new File(this.filesystemPathForURL(inputURL));
-        String contentType = resourceApi.getMimeType(Uri.fromFile(file));
-		
-        if (end < 0) {
-            end = file.length();
-        }
-        long numBytesToRead = end - start;
-
-        InputStream rawInputStream = new FileInputStream(file);
-		try {
-			if (start > 0) {
-                rawInputStream.skip(start);
-			}
-            LimitedInputStream inputStream = new LimitedInputStream(rawInputStream, numBytesToRead);
-            readFileCallback.handleData(inputStream, contentType);
-		} finally {
-            rawInputStream.close();
-		}
-	}
     
 	@Override
 	public long writeToFileAtURL(LocalFilesystemURL inputURL, String data,
@@ -624,13 +634,4 @@ public class LocalFilesystem extends Filesystem {
 		File file = new File(path);
 		return file.exists();
 	}
-
-	@Override
-	OutputStream getOutputStreamForURL(LocalFilesystemURL inputURL) throws FileNotFoundException {
-		String path = filesystemPathForURL(inputURL);
-		File file = new File(path);
-		FileOutputStream os = new FileOutputStream(file);
-		return os;
-	}
-
 }

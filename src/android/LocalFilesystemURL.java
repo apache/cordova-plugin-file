@@ -18,8 +18,6 @@
  */
 package org.apache.cordova.file;
 
-import java.util.List;
-
 import android.net.Uri;
 
 public class LocalFilesystemURL {
@@ -28,29 +26,32 @@ public class LocalFilesystemURL {
 
     public final Uri uri;
     public final String fsName;
-    public final String pathAndQuery;
+    public final String path;
+    public final boolean isDirectory;
 
-	private LocalFilesystemURL(Uri uri, String fsName, String fsPath) {
+	private LocalFilesystemURL(Uri uri, String fsName, String fsPath, boolean isDirectory) {
 		this.uri = uri;
         this.fsName = fsName;
-        this.pathAndQuery = fsPath;
+        this.path = fsPath;
+        this.isDirectory = isDirectory;
 	}
 
     public static LocalFilesystemURL parse(Uri uri) {
         if (!FILESYSTEM_PROTOCOL.equals(uri.getScheme())) {
             return null;
         }
-        List<String> pathComponents = uri.getPathSegments();
-        if (pathComponents == null || pathComponents.size() == 0) {
+        String path = uri.getPath();
+        if (path.length() < 1) {
             return null;
         }
-        String fsName = pathComponents.get(0);
-        String pathAndQuery = uri.getPath();
-        pathAndQuery = pathAndQuery.substring(pathAndQuery.indexOf('/', 1));
-        if (uri.getQuery() != null) {
-            pathAndQuery = pathAndQuery + "?" + uri.getQuery();
+        int firstSlashIdx = path.indexOf('/', 1);
+        if (firstSlashIdx < 0) {
+            return null;
         }
-        return new LocalFilesystemURL(uri, fsName, pathAndQuery);
+        String fsName = path.substring(1, firstSlashIdx);
+        path = path.substring(firstSlashIdx);
+        boolean isDirectory = path.charAt(path.length() - 1) == '/';
+        return new LocalFilesystemURL(uri, fsName, path, isDirectory);
     }
 
     public static LocalFilesystemURL parse(String uri) {

@@ -180,7 +180,7 @@ Entry.prototype.copyTo = function(parent, newName, successCallback, errorCallbac
  */
 Entry.prototype.toInternalURL = function() {
     if (this.filesystem && this.filesystem.__format__) {
-      return this.filesystem.__format__(this.fullPath);
+      return this.filesystem.__format__(this.fullPath, this.nativeURL);
     }
 };
 

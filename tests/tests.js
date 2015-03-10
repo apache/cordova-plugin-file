@@ -2090,8 +2090,7 @@ exports.defineAutoTests = function () {
                             expect(error).toBeFileError(FileError.NOT_FOUND_ERR);
                         }
                         // cleanup
-                        deleteEntry(file1);
-                        done();
+                        deleteEntry(file1, done);
                     });
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + file1));
             });
@@ -2904,8 +2903,7 @@ exports.defineAutoTests = function () {
                         expect(fileEntry.name).toBe(fileName);
                         expect(fileEntry.fullPath).toCanonicallyMatch(root.fullPath +'/' + fileName);
                         // cleanup
-                        deleteEntry(fileName);
-                        done();
+                        deleteEntry(fileName, done);
                     }, failed.bind(null, done, 'root.getFile - Error getting file: ../' + fileName));
                 }, failed.bind(null, done, 'createFile - Error creating file: ../' + fileName));
             });
@@ -3131,8 +3129,7 @@ exports.defineAutoTests = function () {
                         : expect(entry.filesystem.name).toEqual("persistent");
                     // cleanup
                     deleteEntry(entry.name);
-                    deleteEntry(sourceEntry.name);
-                    done();
+                    deleteEntry(sourceEntry.name, done);
                 },
                 createSourceAndTransfer = function () {
                     temp_root.getFile(file1, {
@@ -3166,8 +3163,7 @@ exports.defineAutoTests = function () {
                         : expect(entry.filesystem.name).toEqual("temporary");
                     // cleanup
                     deleteEntry(entry.name);
-                    deleteEntry(sourceEntry.name);
-                    done();
+                    deleteEntry(sourceEntry.name, done);
                 },
                 createSourceAndTransfer = function () {
                     persistent_root.getFile(file1, {
@@ -3204,8 +3200,7 @@ exports.defineAutoTests = function () {
                         : expect(entry.filesystem.name).toEqual("persistent");
                     // cleanup
                     deleteEntry(entry.name);
-                    deleteEntry(sourceEntry.name);
-                    done();
+                    deleteEntry(sourceEntry.name, done);
                 },
                 createSourceAndTransfer = function () {
                     temp_root.getFile(file1, {
@@ -3239,8 +3234,7 @@ exports.defineAutoTests = function () {
                         : expect(entry.filesystem.name).toEqual("temporary");
                     // cleanup
                     deleteEntry(entry.name);
-                    deleteEntry(sourceEntry.name);
-                    done();
+                    deleteEntry(sourceEntry.name, done);
                 },
                 createSourceAndTransfer = function () {
                     persistent_root.getFile(file1, {
@@ -3314,8 +3308,7 @@ exports.defineAutoTests = function () {
                     expect(directory.name).toCanonicallyMatch(nestedName);
                     expect(directory.fullPath).toCanonicallyMatch('/' + path + '/');
                     deleteEntry(directory.name);
-                    deleteEntry(parentName);
-                    done();
+                    deleteEntry(parentName, done);
                 };
 
                 createDirectory(parentName, function() {
@@ -3334,8 +3327,7 @@ exports.defineAutoTests = function () {
                     expect(fileEntry.isFile).toBe(true);
                     expect(fileEntry.isDirectory).toBe(false);
                     expect(fileEntry.name).toCanonicallyMatch(secondFileName);
-                    deleteEntry(fileEntry.name);
-                    done();
+                    deleteEntry(fileEntry.name, done);
                 };
 
                 createFile(deletedFileName, function (deletedFile) {
@@ -3359,8 +3351,7 @@ exports.defineAutoTests = function () {
                     expect(directory.isFile).toBe(false);
                     expect(directory.isDirectory).toBe(true);
                     expect(directory.name).toCanonicallyMatch(secondDirName);
-                    deleteEntry(directory.name);
-                    done();
+                    deleteEntry(directory.name, done);
                 };
 
                 createDirectory(deletedDirName, function (deletedDir) {
@@ -3383,8 +3374,7 @@ exports.defineAutoTests = function () {
                     expect(directory.isFile).toBe(false);
                     expect(directory.isDirectory).toBe(true);
                     expect(directory.name).toCanonicallyMatch(parentName);
-                    deleteEntry(directory.name);
-                    done();
+                    deleteEntry(directory.name, done);
                 };
 
                 createDirectory(parentName, function(parent){
@@ -3405,8 +3395,7 @@ exports.defineAutoTests = function () {
                     expect(directory.isFile).toBe(false);
                     expect(directory.isDirectory).toBe(true);
                     expect(directory.name).toCanonicallyMatch(dirName);
-                    deleteEntry(directory.name);
-                    done();
+                    deleteEntry(directory.name, done);
                 };
 
                 createDirectory(dirName, function(){
@@ -3415,9 +3404,47 @@ exports.defineAutoTests = function () {
                 }, failed.bind(this, done, 'root.getDirectory - Error creating directory : ' + dirName));
             });
         });
-        // IndexedDB-based impl
+        // Content and Asset URLs
+        if (cordova.platformId == 'android') {
+            describe('content: URLs', function() {
+                function testContentCopy(src, done) {
+                    var file2 = "entry.copy.file2b",
+                    fullPath = joinURL(temp_root.fullPath, file2),
+                    validateFile = function (entry) {
+                        expect(entry.isFile).toBe(true);
+                        expect(entry.isDirectory).toBe(false);
+                        expect(entry.name).toCanonicallyMatch(file2);
+                        expect(entry.fullPath).toCanonicallyMatch(fullPath);
+                        expect(entry.filesystem.name).toEqual("temporary");
+                        // cleanup
+                        deleteEntry(entry.name, done);
+                    },
+                    transfer = function () {
+                        resolveLocalFileSystemURL(src, function(entry) {
+                            expect(entry).toBeDefined();
+                            expect(entry.filesystem.name).toEqual("content");
+                            entry.copyTo(temp_root, file2, validateFile, failed.bind(null, done, 'entry.copyTo - Error copying file: ' + entry.toURL() + ' to TEMPORAL root as: ' + file2));
+                        }, failed.bind(null, done, 'resolveLocalFileSystemURL failed for content provider'));
+                    };
+                    // Delete any existing file to start things off
+                    temp_root.getFile(file2, {}, function (entry) {
+                        entry.remove(transfer, failed.bind(null, done, 'entry.remove - Error removing file: ' + file2));
+                    }, transfer);
+                }
+                it("file.spec.138 copyTo: content", function(done) {
+                    testContentCopy('content://org.apache.cordova.file.testprovider/www/index.html', done);
+                });
+                it("file.spec.139 copyTo: content /w space and query", function(done) {
+                    testContentCopy('content://org.apache.cordova.file.testprovider/?name=foo%20bar&realPath=%2Fwww%2Findex.html', done);
+                });
+                it("file.spec.140 delete: content should fail", function(done) {
+                    resolveLocalFileSystemURL('content://org.apache.cordova.file.testprovider/www/index.html', function(entry) {
+                        entry.remove(failed.bind(null, done, 'expected delete to fail'), done);
+                    }, failed.bind(null, done, 'resolveLocalFileSystemURL failed for content provider'));
+                });
+            });
+        }
     });
-    //File API describe
 
 };
 //******************************************************************************************
