@@ -194,6 +194,7 @@ public class FileUtils extends CordovaPlugin {
     		this.registerFilesystem(new LocalFilesystem("temporary", webView.getContext(), webView.getResourceApi(), tempRoot));
     		this.registerFilesystem(new LocalFilesystem("persistent", webView.getContext(), webView.getResourceApi(), persistentRoot));
     		this.registerFilesystem(new ContentFilesystem(webView.getContext(), webView.getResourceApi()));
+            this.registerFilesystem(new AssetFilesystem(webView.getContext().getAssets(), webView.getResourceApi()));
 
             registerExtraFileSystems(getExtraFileSystemsPreference(activity), getAvailableFileSystems(activity));
 
@@ -623,10 +624,13 @@ public class FileUtils extends CordovaPlugin {
         	if (fs == null) {
         		throw new MalformedURLException("No installed handlers for this URL");
         	}
-        	return fs.getEntryForLocalURL(inputURL);
+            if (fs.exists(inputURL)) {
+                return fs.getEntryForLocalURL(inputURL);
+            }
         } catch (IllegalArgumentException e) {
         	throw new MalformedURLException("Unrecognized filesystem URL");
         }
+        throw new FileNotFoundException();
     }   
     
     /**

@@ -66,18 +66,6 @@ public class LocalFilesystem extends Filesystem {
 		return null;
 	}
 
-    private Uri nativeUriForFullPath(String fullPath) {
-        Uri ret = null;
-        if (fullPath != null) {
-            String encodedPath = Uri.fromFile(new File(fullPath)).getEncodedPath();
-            if (encodedPath.startsWith("/")) {
-                encodedPath = encodedPath.substring(1);
-            }
-            ret = rootUri.buildUpon().appendEncodedPath(encodedPath).build();
-        }
-        return ret;
-    }
-
 	protected LocalFilesystemURL URLforFullPath(String fullPath) {
         Uri nativeUri = nativeUriForFullPath(fullPath);
 	    if (nativeUri != null) {
@@ -128,56 +116,6 @@ public class LocalFilesystem extends Filesystem {
 	    return this.URLforFullPath(this.fullPathForFilesystemPath(path));
 	}
 
-    /**
-     * Removes multiple repeated //s, and collapses processes ../s.
-     */
-	protected String normalizePath(String rawPath) {
-	    // If this is an absolute path, trim the leading "/" and replace it later
-	    boolean isAbsolutePath = rawPath.startsWith("/");
-	    if (isAbsolutePath) {
-	        rawPath = rawPath.replaceFirst("/+", "");
-	    }
-	    ArrayList<String> components = new ArrayList<String>(Arrays.asList(rawPath.split("/+")));
-	    for (int index = 0; index < components.size(); ++index) {
-	        if (components.get(index).equals("..")) {
-	            components.remove(index);
-	            if (index > 0) {
-	                components.remove(index-1);
-	                --index;
-	            }
-	        }
-	    }
-	    StringBuilder normalizedPath = new StringBuilder();
-	    for(String component: components) {
-	    	normalizedPath.append("/");
-	    	normalizedPath.append(component);
-	    }
-	    if (isAbsolutePath) {
-	    	return normalizedPath.toString();
-	    } else {
-	    	return normalizedPath.toString().substring(1);
-	    }
-	}
-
-	
-	@Override
-    public JSONObject makeEntryForFile(File file) {
-        return makeEntryForNativeUri(Uri.fromFile(file));
-    }
-
-	@Override
-	public JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException {
-      File fp = new File(filesystemPathForURL(inputURL));
-
-      if (!fp.exists()) {
-          throw new FileNotFoundException();
-      }
-      if (!fp.canRead()) {
-          throw new IOException();
-      }
-      return super.getEntryForLocalURL(inputURL);
-	}
-
 	@Override
 	public JSONObject getFileForLocalURL(LocalFilesystemURL inputURL,
 			String path, JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
@@ -203,7 +141,7 @@ public class LocalFilesystem extends Filesystem {
             path += "/";
         }
         if (path.startsWith("/")) {
-        	requestedURL = URLforFilesystemPath(normalizePath(path));
+        	requestedURL = URLforFullPath(normalizePath(path));
         } else {
         	requestedURL = URLforFullPath(normalizePath(inputURL.path + "/" + path));
         }
@@ -255,7 +193,13 @@ public class LocalFilesystem extends Filesystem {
         return fp.delete();
 	}
 
-	@Override
+    @Override
+    public boolean exists(LocalFilesystemURL inputURL) {
+        File fp = new File(filesystemPathForURL(inputURL));
+        return fp.exists();
+    }
+
+    @Override
 	public boolean recursiveRemoveFileAtLocalURL(LocalFilesystemURL inputURL) throws FileExistsException {
         File directory = new File(filesystemPathForURL(inputURL));
     	return removeDirRecursively(directory);

@@ -26,6 +26,8 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.cordova.CordovaResourceApi;
 import org.json.JSONArray;
@@ -37,13 +39,12 @@ public abstract class Filesystem {
     protected final Uri rootUri;
     protected final CordovaResourceApi resourceApi;
     public final String name;
-    private final JSONObject rootEntry;
+    private JSONObject rootEntry;
 
     public Filesystem(Uri rootUri, String name, CordovaResourceApi resourceApi) {
         this.rootUri = rootUri;
         this.name = name;
         this.resourceApi = resourceApi;
-        rootEntry = makeEntryForNativeUri(rootUri);
     }
 
     public interface ReadFileCallback {
@@ -94,6 +95,10 @@ public abstract class Filesystem {
         return makeEntryForURL(inputURL);
     }
 
+    public JSONObject makeEntryForFile(File file) {
+        return makeEntryForNativeUri(Uri.fromFile(file));
+    }
+
     abstract JSONObject getFileForLocalURL(LocalFilesystemURL inputURL, String path,
 			JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException;
 
@@ -109,10 +114,67 @@ public abstract class Filesystem {
         return rootUri;
     }
 
+    public boolean exists(LocalFilesystemURL inputURL) {
+        try {
+            getFileMetadataForLocalURL(inputURL);
+        } catch (FileNotFoundException e) {
+            return false;
+        }
+        return true;
+    }
+
+    public Uri nativeUriForFullPath(String fullPath) {
+        Uri ret = null;
+        if (fullPath != null) {
+            String encodedPath = Uri.fromFile(new File(fullPath)).getEncodedPath();
+            if (encodedPath.startsWith("/")) {
+                encodedPath = encodedPath.substring(1);
+            }
+            ret = rootUri.buildUpon().appendEncodedPath(encodedPath).build();
+        }
+        return ret;
+    }
+
+    /**
+     * Removes multiple repeated //s, and collapses processes ../s.
+     */
+    protected static String normalizePath(String rawPath) {
+        // If this is an absolute path, trim the leading "/" and replace it later
+        boolean isAbsolutePath = rawPath.startsWith("/");
+        if (isAbsolutePath) {
+            rawPath = rawPath.replaceFirst("/+", "");
+        }
+        ArrayList<String> components = new ArrayList<String>(Arrays.asList(rawPath.split("/+")));
+        for (int index = 0; index < components.size(); ++index) {
+            if (components.get(index).equals("..")) {
+                components.remove(index);
+                if (index > 0) {
+                    components.remove(index-1);
+                    --index;
+                }
+            }
+        }
+        StringBuilder normalizedPath = new StringBuilder();
+        for(String component: components) {
+            normalizedPath.append("/");
+            normalizedPath.append(component);
+        }
+        if (isAbsolutePath) {
+            return normalizedPath.toString();
+        } else {
+            return normalizedPath.toString().substring(1);
+        }
+    }
+
+
+
     public abstract Uri toNativeUri(LocalFilesystemURL inputURL);
     public abstract LocalFilesystemURL toLocalUri(Uri inputURL);
 
     public JSONObject getRootEntry() {
+        if (rootEntry == null) {
+            rootEntry = makeEntryForNativeUri(rootUri);
+        }
         return rootEntry;
     }
 
@@ -235,12 +297,4 @@ public abstract class Filesystem {
             return numBytesRead;
         }
     }
-
-    /* Create a FileEntry or DirectoryEntry given an actual file on device.
-     * Return null if the file does not exist within this filesystem.
-     */
-	public JSONObject makeEntryForFile(File file) throws JSONException {
-		return null;
-	}
-
 }

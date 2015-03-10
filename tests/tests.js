@@ -3443,6 +3443,43 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'resolveLocalFileSystemURL failed for content provider'));
                 });
             });
+            describe('asset: URLs', function() {
+                it("file.spec.141 filePaths.applicationStorage", function() {
+                    expect(cordova.file.applicationDirectory).toEqual('file:///android_asset/');
+                });
+                it("file.spec.142 assets should be enumerable", function(done) {
+                    resolveLocalFileSystemURL('file:///android_asset/www/', function(entry) {
+                        var reader = entry.createReader();
+                        reader.readEntries(function (entries) {
+                            expect(entries.length).not.toBe(0);
+                            done();
+                        }, failed.bind(null, done, 'reader.readEntries - Error during reading of entries from assets directory'));
+                    }, failed.bind(null, done, 'resolveLocalFileSystemURL failed for assets'));
+                });
+                it("file.spec.143 copyTo: asset -> temporary", function(done) {
+                    var file2 = "entry.copy.file2b",
+                    fullPath = joinURL(temp_root.fullPath, file2),
+                    validateFile = function (entry) {
+                        expect(entry.isFile).toBe(true);
+                        expect(entry.isDirectory).toBe(false);
+                        expect(entry.name).toCanonicallyMatch(file2);
+                        expect(entry.fullPath).toCanonicallyMatch(fullPath);
+                        expect(entry.filesystem.name).toEqual("temporary");
+                        // cleanup
+                        deleteEntry(entry.name, done);
+                    },
+                    transfer = function () {
+                        resolveLocalFileSystemURL('file:///android_asset/www/index.html', function(entry) {
+                            expect(entry.filesystem.name).toEqual('assets');
+                            entry.copyTo(temp_root, file2, validateFile, failed.bind(null, done, 'entry.copyTo - Error copying file: ' + entry.toURL() + ' to TEMPORAL root as: ' + file2));
+                        }, failed.bind(null, done, 'resolveLocalFileSystemURL failed for assets'));
+                    };
+                    // Delete any existing file to start things off
+                    temp_root.getFile(file2, {}, function (entry) {
+                        entry.remove(transfer, failed.bind(null, done, 'entry.remove - Error removing file: ' + file2));
+                    }, transfer);
+                });
+            });
         }
     });
 
