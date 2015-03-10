@@ -131,6 +131,7 @@ exports.defineAutoTests = function () {
             // deletes entry, if it exists
             // entry.remove success callback is required: http://www.w3.org/TR/2011/WD-file-system-api-20110419/#the-entry-interface
             success = success || function() {};
+            error = error || failed.bind(null, success, 'deleteEntry failed.');
 
             window.resolveLocalFileSystemURL(root.toURL() + '/' + name, function (entry) {
                 if (entry.isDirectory === true) {
