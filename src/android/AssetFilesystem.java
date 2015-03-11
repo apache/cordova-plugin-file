@@ -211,7 +211,7 @@ public class AssetFilesystem extends Filesystem {
     }
 
     @Override
-    boolean recursiveRemoveFileAtLocalURL(LocalFilesystemURL inputURL) throws FileExistsException, NoModificationAllowedException {
+    boolean recursiveRemoveFileAtLocalURL(LocalFilesystemURL inputURL) throws NoModificationAllowedException {
         throw new NoModificationAllowedException("Assets are read-only");
     }
 

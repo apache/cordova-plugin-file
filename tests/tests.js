@@ -3480,6 +3480,40 @@ exports.defineAutoTests = function () {
                     }, transfer);
                 });
             });
+            it("file.spec.144 copyTo: asset directory", function (done) {
+                var srcUrl = 'file:///android_asset/www/plugins/org.apache.cordova.file';
+                var dstDir = "entry.copy.dstDir";
+                var dstPath = joinURL(root.fullPath, dstDir);
+                // create a new directory entry to kick off it
+                deleteEntry(dstDir, function () {
+                    resolveLocalFileSystemURL(srcUrl, function(directory) {
+                        directory.copyTo(root, dstDir, function (directory) {
+                            expect(directory).toBeDefined();
+                            expect(directory.isFile).toBe(false);
+                            expect(directory.isDirectory).toBe(true);
+                            expect(directory.fullPath).toCanonicallyMatch(dstPath);
+                            expect(directory.name).toCanonicallyMatch(dstDir);
+                            root.getDirectory(dstDir, {
+                                create : false
+                            }, function (dirEntry) {
+                                expect(dirEntry).toBeDefined();
+                                expect(dirEntry.isFile).toBe(false);
+                                expect(dirEntry.isDirectory).toBe(true);
+                                expect(dirEntry.fullPath).toCanonicallyMatch(dstPath);
+                                expect(dirEntry.name).toCanonicallyMatch(dstDir);
+                                dirEntry.getFile('www/File.js', {
+                                    create : false
+                                }, function (fileEntry) {
+                                    expect(fileEntry).toBeDefined();
+                                    expect(fileEntry.isFile).toBe(true);
+                                    // cleanup
+                                    deleteEntry(dstDir, done);
+                                }, failed.bind(null, done, 'dirEntry.getFile - Error getting subfile'));
+                            }, failed.bind(null, done, 'root.getDirectory - Error getting copied directory'));
+                        }, failed.bind(null, done, 'directory.copyTo - Error copying directory'));
+                    }, failed.bind(null, done, 'resolving src dir'));
+                }, failed.bind(null, done, 'deleteEntry - Error removing directory : ' + dstDir));
+            });
         }
     });
 

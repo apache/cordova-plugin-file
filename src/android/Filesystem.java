@@ -198,7 +198,7 @@ public abstract class Filesystem {
 		return getEntryForLocalURL(LocalFilesystemURL.parse(parentUri));
 	}
 
-    protected LocalFilesystemURL makeDestinationURL(String newName, LocalFilesystemURL srcURL, LocalFilesystemURL destURL) {
+    protected LocalFilesystemURL makeDestinationURL(String newName, LocalFilesystemURL srcURL, LocalFilesystemURL destURL, boolean isDirectory) {
         // I know this looks weird but it is to work around a JSON bug.
         if ("null".equals(newName) || "".equals(newName)) {
             newName = srcURL.uri.getLastPathSegment();;
@@ -209,6 +209,9 @@ public abstract class Filesystem {
             newDest = newDest + newName;
         } else {
             newDest = newDest + "/" + newName;
+        }
+        if (isDirectory) {
+            newDest += '/';
         }
         return LocalFilesystemURL.parse(newDest);
     }
@@ -224,7 +227,7 @@ public abstract class Filesystem {
         if (move && !srcFs.canRemoveFileAtLocalURL(srcURL)) {
             throw new NoModificationAllowedException("Cannot move file at source URL");
         }
-        final LocalFilesystemURL destination = makeDestinationURL(newName, srcURL, destURL);
+        final LocalFilesystemURL destination = makeDestinationURL(newName, srcURL, destURL, srcURL.isDirectory);
 
         Uri srcNativeUri = srcFs.toNativeUri(srcURL);
 
