@@ -97,27 +97,23 @@ public class AssetFilesystem extends Filesystem {
 
 
     @Override
-	public JSONArray readEntriesAtLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException {
-        String[] files;
+    public LocalFilesystemURL[] listChildren(LocalFilesystemURL inputURL) throws FileNotFoundException {
         String pathNoSlashes = inputURL.path.substring(1);
         if (pathNoSlashes.endsWith("/")) {
             pathNoSlashes = pathNoSlashes.substring(0, pathNoSlashes.length() - 1);
         }
 
+        String[] files;
         try {
             files = assetManager.list(pathNoSlashes);
         } catch (IOException e) {
             throw new FileNotFoundException();
         }
 
-        JSONArray entries = new JSONArray();
-        if (files != null) {
-            for (String file : files) {
-                Uri newNativeUri = nativeUriForFullPath(new File(inputURL.path, file).getPath());
-                entries.put(makeEntryForNativeUri(newNativeUri));
-            }
+        LocalFilesystemURL[] entries = new LocalFilesystemURL[files.length];
+        for (int i = 0; i < files.length; ++i) {
+            entries[i] = URLforFullPath(new File(inputURL.path, files[i]).getPath());
         }
-
         return entries;
 	}
 

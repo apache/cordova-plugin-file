@@ -112,11 +112,10 @@ public class ContentFilesystem extends Filesystem {
 		throw new NoModificationAllowedException("Cannot remove content url");
 	}
 
-	@Override
-	public JSONArray readEntriesAtLocalURL(LocalFilesystemURL inputURL)
-			throws FileNotFoundException {
+    @Override
+    public LocalFilesystemURL[] listChildren(LocalFilesystemURL inputURL) throws FileNotFoundException {
         throw new UnsupportedOperationException("readEntriesAtLocalURL() not supported for content:. Use resolveLocalFileSystemURL instead.");
-	}
+    }
 
 	@Override
 	public JSONObject getFileMetadataForLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException {

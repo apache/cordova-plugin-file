@@ -106,7 +106,18 @@ public abstract class Filesystem {
 
 	abstract boolean recursiveRemoveFileAtLocalURL(LocalFilesystemURL inputURL) throws FileExistsException, NoModificationAllowedException;
 
-	abstract JSONArray readEntriesAtLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException;
+	abstract LocalFilesystemURL[] listChildren(LocalFilesystemURL inputURL) throws FileNotFoundException;
+
+    public final JSONArray readEntriesAtLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException {
+        LocalFilesystemURL[] children = listChildren(inputURL);
+        JSONArray entries = new JSONArray();
+        if (children != null) {
+            for (LocalFilesystemURL url : children) {
+                entries.put(makeEntryForURL(url));
+            }
+        }
+        return entries;
+    }
 
 	abstract JSONObject getFileMetadataForLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException;
 

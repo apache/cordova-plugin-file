@@ -219,8 +219,8 @@ public class LocalFilesystem extends Filesystem {
         }
 	}
 
-	@Override
-	public JSONArray readEntriesAtLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException {
+    @Override
+    public LocalFilesystemURL[] listChildren(LocalFilesystemURL inputURL) throws FileNotFoundException {
         File fp = new File(filesystemPathForURL(inputURL));
 
         if (!fp.exists()) {
@@ -228,15 +228,14 @@ public class LocalFilesystem extends Filesystem {
             throw new FileNotFoundException();
         }
 
-        JSONArray entries = new JSONArray();
-
-        if (fp.isDirectory()) {
-            File[] files = fp.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].canRead()) {
-                    entries.put(makeEntryForFile(files[i]));
-                }
-            }
+        File[] files = fp.listFiles();
+        if (files == null) {
+            // inputURL is a directory
+            return null;
+        }
+        LocalFilesystemURL[] entries = new LocalFilesystemURL[files.length];
+        for (int i = 0; i < files.length; i++) {
+            entries[i] = URLforFilesystemPath(files[i].getPath());
         }
 
         return entries;
