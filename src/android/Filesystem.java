@@ -263,7 +263,10 @@ public abstract class Filesystem {
             if (start > 0) {
                 ofrr.inputStream.skip(start);
             }
-            LimitedInputStream inputStream = new LimitedInputStream(ofrr.inputStream, numBytesToRead);
+            InputStream inputStream = ofrr.inputStream;
+            if (end < ofrr.length) {
+                inputStream = new LimitedInputStream(inputStream, numBytesToRead);
+            }
             readFileCallback.handleData(inputStream, ofrr.mimeType);
         } finally {
             ofrr.inputStream.close();
