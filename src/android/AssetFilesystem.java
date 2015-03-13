@@ -20,6 +20,7 @@ package org.apache.cordova.file;
 
 import android.content.res.AssetManager;
 import android.net.Uri;
+import android.util.Log;
 
 import org.apache.cordova.CordovaResourceApi;
 import org.json.JSONArray;
@@ -29,10 +30,54 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AssetFilesystem extends Filesystem {
 
     private final AssetManager assetManager;
+
+    // A custom gradle hook creates the cdvasset.manifest file, which speeds up asset listing a tonne.
+    // See: http://stackoverflow.com/questions/16911558/android-assetmanager-list-incredibly-slow
+    private static Object listCacheLock = new Object();
+    private static boolean listCacheFromFile;
+    private static Map<String, String[]> listCache;
+
+    private String[] listAssets(String assetPath) throws IOException {
+        synchronized (listCacheLock) {
+            if (listCache == null) {
+                ObjectInputStream ois = null;
+                try {
+                    ois = new ObjectInputStream(assetManager.open("cdvasset.manifest"));
+                    listCache = (Map<String, String[]>) ois.readObject();
+                    listCacheFromFile = true;
+                } catch (FileNotFoundException e) {
+                    // Asset manifest won't exist if the gradle hook isn't set up correctly.
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (ois != null) {
+                        ois.close();
+                    }
+                }
+                if (listCache == null) {
+                    Log.w("AssetFilesystem", "Asset manifest not found. Recursive copies and directory listing will be slow.");
+                    listCache = new HashMap<String, String[]>();
+                }
+            }
+        }
+        String[] ret = listCache.get(assetPath);
+        if (ret == null) {
+            if (listCacheFromFile) {
+                ret = new String[0];
+            } else {
+                ret = assetManager.list(assetPath);
+                listCache.put(assetPath, ret);
+            }
+        }
+        return ret;
+    }
 
     public AssetFilesystem(AssetManager assetManager, CordovaResourceApi resourceApi) {
         super(Uri.parse("file:///android_asset/"), "assets", resourceApi);
@@ -76,15 +121,15 @@ public class AssetFilesystem extends Filesystem {
         return LocalFilesystemURL.parse(b.build());
     }
 
-    private Boolean isDirectory(String assetPath) {
+    private boolean isDirectory(String assetPath) {
         if (assetPath.startsWith("/")) {
             assetPath = assetPath.substring(1);
         }
         try {
-            return assetManager.list(assetPath).length != 0;
+            return listAssets(assetPath).length != 0;
         } catch (IOException e) {
+            return false;
         }
-        return false;
     }
 
     private LocalFilesystemURL URLforFullPath(String fullPath) {
@@ -105,7 +150,7 @@ public class AssetFilesystem extends Filesystem {
 
         String[] files;
         try {
-            files = assetManager.list(pathNoSlashes);
+            files = listAssets(pathNoSlashes);
         } catch (IOException e) {
             throw new FileNotFoundException();
         }

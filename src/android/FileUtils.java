@@ -111,7 +111,7 @@ public class FileUtils extends CordovaPlugin {
                 if (fsRoot != null) {
                     File newRoot = new File(fsRoot);
                     if (newRoot.mkdirs() || newRoot.isDirectory()) {
-                        registerFilesystem(new LocalFilesystem(fsName, webView.getContext(), webView.getResourceApi(), Uri.fromFile(newRoot)));
+                        registerFilesystem(new LocalFilesystem(fsName, webView.getContext(), webView.getResourceApi(), newRoot));
                         installedFileSystems.add(fsName);
                     } else {
                        Log.d(LOG_TAG, "Unable to create root dir for filesystem \"" + fsName + "\", skipping");
@@ -184,15 +184,17 @@ public class FileUtils extends CordovaPlugin {
 
     	if (this.configured) {
 			// Create the directories if they don't exist.
-			new File(tempRoot).mkdirs();
-			new File(persistentRoot).mkdirs();
+			File tmpRootFile = new File(tempRoot);
+            File persistentRootFile = new File(persistentRoot);
+            tmpRootFile.mkdirs();
+            persistentRootFile.mkdirs();
 
     		// Register initial filesystems
     		// Note: The temporary and persistent filesystems need to be the first two
     		// registered, so that they will match window.TEMPORARY and window.PERSISTENT,
     		// per spec.
-    		this.registerFilesystem(new LocalFilesystem("temporary", webView.getContext(), webView.getResourceApi(), tempRoot));
-    		this.registerFilesystem(new LocalFilesystem("persistent", webView.getContext(), webView.getResourceApi(), persistentRoot));
+    		this.registerFilesystem(new LocalFilesystem("temporary", webView.getContext(), webView.getResourceApi(), tmpRootFile));
+    		this.registerFilesystem(new LocalFilesystem("persistent", webView.getContext(), webView.getResourceApi(), persistentRootFile));
     		this.registerFilesystem(new ContentFilesystem(webView.getContext(), webView.getResourceApi()));
             this.registerFilesystem(new AssetFilesystem(webView.getContext().getAssets(), webView.getResourceApi()));
 
