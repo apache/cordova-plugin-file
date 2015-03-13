@@ -285,6 +285,24 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
 - (void)pluginInitialize
 {
+    filePlugin = self;
+    [NSURLProtocol registerClass:[CDVFilesystemURLProtocol class]];
+
+    fileSystems_ = [[NSMutableArray alloc] initWithCapacity:3];
+
+    // Get the Library directory path
+    NSArray* paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+    self.appLibraryPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"files"];
+
+    // Get the Temporary directory path
+    self.appTempPath = [NSTemporaryDirectory()stringByStandardizingPath];   // remove trailing slash from NSTemporaryDirectory()
+
+    // Get the Documents directory path
+    paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    self.rootDocsPath = [paths objectAtIndex:0];
+    self.appDocsPath = [self.rootDocsPath stringByAppendingPathComponent:@"files"];
+
+
     NSString *location = nil;
     if([self.viewController isKindOfClass:[CDVViewController class]]) {
         CDVViewController *vc = (CDVViewController *)self.viewController;
@@ -333,33 +351,6 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     [self registerExtraFileSystems:[self getExtraFileSystemsPreference:self.viewController]
                   fromAvailableSet:[self getAvailableFileSystems]];
 
-}
-
-
-- (id)initWithWebView:(UIWebView*)theWebView
-{
-    self = (CDVFile*)[super initWithWebView:theWebView];
-    if (self) {
-        filePlugin = self;
-        [NSURLProtocol registerClass:[CDVFilesystemURLProtocol class]];
-
-        fileSystems_ = [[NSMutableArray alloc] initWithCapacity:3];
-
-        // Get the Library directory path
-        NSArray* paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
-        self.appLibraryPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"files"];
-
-        // Get the Temporary directory path
-        self.appTempPath = [NSTemporaryDirectory()stringByStandardizingPath];   // remove trailing slash from NSTemporaryDirectory()
-
-        // Get the Documents directory path
-        paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-        self.rootDocsPath = [paths objectAtIndex:0];
-        self.appDocsPath = [self.rootDocsPath stringByAppendingPathComponent:@"files"];
-
-    }
-
-    return self;
 }
 
 - (CDVFilesystemURL *)fileSystemURLforArg:(NSString *)urlArg
