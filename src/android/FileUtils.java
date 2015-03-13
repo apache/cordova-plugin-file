@@ -570,7 +570,6 @@ public class FileUtils extends CordovaPlugin {
                 try {
                     f.run();
                 } catch ( Exception e) {
-                    e.printStackTrace();
                     if( e instanceof EncodingException){
                         callbackContext.error(FileUtils.ENCODING_ERR);
                     } else if(e instanceof FileNotFoundException) {
@@ -590,6 +589,7 @@ public class FileUtils extends CordovaPlugin {
                     } else if(e instanceof TypeMismatchException ) {
                         callbackContext.error(FileUtils.TYPE_MISMATCH_ERR);
                     } else {
+                        e.printStackTrace();
                     	callbackContext.error(FileUtils.UNKNOWN_ERR);
                     }
                 }
