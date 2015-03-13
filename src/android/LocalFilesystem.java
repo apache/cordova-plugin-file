@@ -29,6 +29,8 @@ import org.apache.cordova.CordovaResourceApi;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.os.Build;
+import android.os.Environment;
 import android.util.Base64;
 import android.net.Uri;
 import android.content.Context;
@@ -391,7 +393,8 @@ public class LocalFilesystem extends Filesystem {
         try
         {
         	byte buff[] = new byte[rawData.length];
-            FileOutputStream out = new FileOutputStream(this.filesystemPathForURL(inputURL), append);
+            String absolutePath = filesystemPathForURL(inputURL);
+            FileOutputStream out = new FileOutputStream(absolutePath, append);
             try {
             	in.read(buff, 0, buff.length);
             	out.write(buff, 0, rawData.length);
@@ -400,7 +403,9 @@ public class LocalFilesystem extends Filesystem {
             	// Always close the output
             	out.close();
             }
-            broadcastNewFile(inputURL);
+            if (isPublicDirectory(absolutePath)) {
+                broadcastNewFile(Uri.fromFile(new File(absolutePath)));
+            }
         }
         catch (NullPointerException e)
         {
@@ -412,18 +417,26 @@ public class LocalFilesystem extends Filesystem {
         return rawData.length;
 	}
 
+    private boolean isPublicDirectory(String absolutePath) {
+        // TODO: should expose a way to scan app's private files (maybe via a flag).
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            for (File f : context.getExternalMediaDirs()) {
+                if (absolutePath.startsWith(f.getAbsolutePath())) {
+                    return true;
+                }
+            }
+        }
+
+        String extPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+        return absolutePath.startsWith(extPath);
+    }
+
      /**
      * Send broadcast of new file so files appear over MTP
-     *
-     * @param inputURL
      */
-    private void broadcastNewFile(LocalFilesystemURL inputURL) {
-        File file = new File(this.filesystemPathForURL(inputURL));
-        if (file.exists()) {
-            Uri uri = Uri.fromFile(file);
-            Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri);
-            context.sendBroadcast(intent);
-        }
+    private void broadcastNewFile(Uri nativeUri) {
+        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, nativeUri);
+        context.sendBroadcast(intent);
     }
 
 	@Override
