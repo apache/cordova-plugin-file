@@ -29,8 +29,8 @@
 - (id) initWithName:(NSString *)name root:(NSString *)fsRoot
 {
     if (self) {
-        _name = name;
-        _fsRoot = fsRoot;
+        self.name = name;
+        self.fsRoot = fsRoot;
     }
     return self;
 }
@@ -78,12 +78,12 @@
     [dirEntry setObject:fullPath forKey:@"fullPath"];
     [dirEntry setObject:lastPart forKey:@"name"];
     [dirEntry setObject:self.name forKey: @"filesystemName"];
-    
+
     NSURL* nativeURL = [NSURL fileURLWithPath:[self filesystemPathForFullPath:fullPath]];
     if (self.urlTransformer) {
         nativeURL = self.urlTransformer(nativeURL);
     }
-    
+
     dirEntry[@"nativeURL"] = [nativeURL absoluteString];
 
     return dirEntry;
@@ -206,7 +206,7 @@
         NSString *combinedPath = [baseURI.fullPath stringByAppendingPathComponent:requestedPath];
         combinedPath = [self normalizePath:combinedPath];
         CDVFilesystemURL* requestedURL = [self URLforFullPath:combinedPath];
-        
+
         NSFileManager* fileMgr = [[NSFileManager alloc] init];
         BOOL bIsDir;
         BOOL bExists = [fileMgr fileExistsAtPath:[self filesystemPathForURL:requestedURL] isDirectory:&bIsDir];
