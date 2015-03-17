@@ -17,34 +17,30 @@
        under the License.
  */
 ext.postBuildExtras = {
-    android.applicationVariants.all { variant ->
-        def variantName = variant.name.capitalize()
-        def processResourcesTask = tasks["process${variantName}Resources"]
-        def inAssetsDir = variant.mergeAssets.rawInputFolders.iterator().next()
-        def outAssetsDir = inAssetsDir
-        def outFile = new File(outAssetsDir, "cdvasset.manifest")
+    def inAssetsDir = file("assets")
+    def outAssetsDir = inAssetsDir
+    def outFile = new File(outAssetsDir, "cdvasset.manifest")
 
-        def newTask = task("cdvCreateAssetManifest$variantName") << {
-            println("Reading from ${inAssetsDir}")
-            println("Writing to ${outFile}")
+    def newTask = task("cdvCreateAssetManifest") << {
+        println("Reading from ${inAssetsDir}")
+        println("Writing to ${outFile}")
 
-            def contents = new HashMap()
-            contents[""] = inAssetsDir.list()
-            def tree = fileTree(dir: inAssetsDir)
-            tree.visit { fileDetails ->
-                if (fileDetails.isDirectory()) {
-                    contents[fileDetails.relativePath.toString()] = fileDetails.file.list()
-                }
-            }
-
-            outAssetsDir.mkdirs()
-            outFile.withObjectOutputStream { oos ->
-                oos.writeObject(contents)
+        def contents = new HashMap()
+        contents[""] = inAssetsDir.list()
+        def tree = fileTree(dir: inAssetsDir)
+        tree.visit { fileDetails ->
+            if (fileDetails.isDirectory()) {
+                contents[fileDetails.relativePath.toString()] = fileDetails.file.list()
             }
         }
-        newTask.dependsOn(tasks["prepare${variantName}Dependencies"])
-        newTask.inputs.dir inAssetsDir
-        newTask.outputs.file outFile
-        processResourcesTask.dependsOn(newTask)
+
+        outAssetsDir.mkdirs()
+        outFile.withObjectOutputStream { oos ->
+            oos.writeObject(contents)
+        }
     }
+    newTask.inputs.dir inAssetsDir
+    newTask.outputs.file outFile
+    def preBuildTask = tasks["preBuild"]
+    preBuildTask.dependsOn(newTask)
 }
