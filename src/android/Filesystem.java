@@ -83,12 +83,12 @@ public abstract class Filesystem {
 
     public JSONObject makeEntryForURL(LocalFilesystemURL inputURL) {
         Uri nativeUri = toNativeUri(inputURL);
-        return makeEntryForURL(inputURL, nativeUri);
+        return nativeUri == null ? null : makeEntryForURL(inputURL, nativeUri);
     }
 
     public JSONObject makeEntryForNativeUri(Uri nativeUri) {
         LocalFilesystemURL inputUrl = toLocalUri(nativeUri);
-        return makeEntryForURL(inputUrl, nativeUri);
+        return inputUrl == null ? null : makeEntryForURL(inputUrl, nativeUri);
     }
 
     public JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException {
