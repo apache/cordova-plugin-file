@@ -43,22 +43,27 @@ public class AssetFilesystem extends Filesystem {
     private static Object listCacheLock = new Object();
     private static boolean listCacheFromFile;
     private static Map<String, String[]> listCache;
+    private static Map<String, Long> lengthCache;
 
-    private String[] listAssets(String assetPath) throws IOException {
+    private void lazyInitCaches() {
         synchronized (listCacheLock) {
             if (listCache == null) {
                 ObjectInputStream ois = null;
                 try {
                     ois = new ObjectInputStream(assetManager.open("cdvasset.manifest"));
                     listCache = (Map<String, String[]>) ois.readObject();
+                    lengthCache = (Map<String, Long>) ois.readObject();
                     listCacheFromFile = true;
-                } catch (FileNotFoundException e) {
-                    // Asset manifest won't exist if the gradle hook isn't set up correctly.
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
+                } catch (IOException e) {
+                    // Asset manifest won't exist if the gradle hook isn't set up correctly.
                 } finally {
                     if (ois != null) {
-                        ois.close();
+                        try {
+                            ois.close();
+                        } catch (IOException e) {
+                        }
                     }
                 }
                 if (listCache == null) {
@@ -67,6 +72,13 @@ public class AssetFilesystem extends Filesystem {
                 }
             }
         }
+    }
+
+    private String[] listAssets(String assetPath) throws IOException {
+        if (assetPath.startsWith("/")) {
+            assetPath = assetPath.substring(1);
+        }
+        lazyInitCaches();
         String[] ret = listCache.get(assetPath);
         if (ret == null) {
             if (listCacheFromFile) {
@@ -77,6 +89,39 @@ public class AssetFilesystem extends Filesystem {
             }
         }
         return ret;
+    }
+
+    private long getAssetSize(String assetPath) throws FileNotFoundException {
+        if (assetPath.startsWith("/")) {
+            assetPath = assetPath.substring(1);
+        }
+        lazyInitCaches();
+        if (lengthCache != null) {
+            Long ret = lengthCache.get(assetPath);
+            if (ret == null) {
+                throw new FileNotFoundException("Asset not found: " + assetPath);
+            }
+            return ret;
+        }
+        CordovaResourceApi.OpenForReadResult offr = null;
+        try {
+            offr = resourceApi.openForRead(nativeUriForFullPath(assetPath));
+            long length = offr.length;
+            if (length < 0) {
+                // available() doesn't always yield the file size, but for assets it does.
+                length = offr.inputStream.available();
+            }
+            return length;
+        } catch (IOException e) {
+            throw new FileNotFoundException("File not found: " + assetPath);
+        } finally {
+            if (offr != null) {
+                try {
+                    offr.inputStream.close();
+                } catch (IOException e) {
+                }
+            }
+        }
     }
 
     public AssetFilesystem(AssetManager assetManager, CordovaResourceApi resourceApi) {
@@ -122,9 +167,6 @@ public class AssetFilesystem extends Filesystem {
     }
 
     private boolean isDirectory(String assetPath) {
-        if (assetPath.startsWith("/")) {
-            assetPath = assetPath.substring(1);
-        }
         try {
             return listAssets(assetPath).length != 0;
         } catch (IOException e) {
@@ -187,31 +229,18 @@ public class AssetFilesystem extends Filesystem {
         return makeEntryForURL(requestedURL);
     }
 
-
     @Override
 	public JSONObject getFileMetadataForLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException {
-        CordovaResourceApi.OpenForReadResult offr;
-        try {
-            offr = inputURL.isDirectory ? null : resourceApi.openForRead(toNativeUri(inputURL));
-        } catch (IOException e) {
-            throw new FileNotFoundException("File not found: " + inputURL);
-        }
         JSONObject metadata = new JSONObject();
+        long size = inputURL.isDirectory ? 0 : getAssetSize(inputURL.path);
         try {
-        	metadata.put("size", inputURL.isDirectory ? 0 : offr.length);
-        	metadata.put("type", inputURL.isDirectory ? "text/directory" : offr.mimeType);
+        	metadata.put("size", size);
+        	metadata.put("type", inputURL.isDirectory ? "text/directory" : resourceApi.getMimeType(toNativeUri(inputURL)));
         	metadata.put("name", new File(inputURL.path).getName());
         	metadata.put("fullPath", inputURL.path);
         	metadata.put("lastModifiedDate", 0);
         } catch (JSONException e) {
             return null;
-        } finally {
-            if (offr != null) {
-                try {
-                    offr.inputStream.close();
-                } catch (IOException e) {
-                }
-            }
         }
         return metadata;
 	}

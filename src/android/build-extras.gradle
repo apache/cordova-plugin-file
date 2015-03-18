@@ -22,21 +22,22 @@ ext.postBuildExtras = {
     def outFile = new File(outAssetsDir, "cdvasset.manifest")
 
     def newTask = task("cdvCreateAssetManifest") << {
-        println("Reading from ${inAssetsDir}")
-        println("Writing to ${outFile}")
-
         def contents = new HashMap()
+        def sizes = new HashMap()
         contents[""] = inAssetsDir.list()
         def tree = fileTree(dir: inAssetsDir)
         tree.visit { fileDetails ->
             if (fileDetails.isDirectory()) {
                 contents[fileDetails.relativePath.toString()] = fileDetails.file.list()
+            } else {
+                sizes[fileDetails.relativePath.toString()] = fileDetails.file.length()
             }
         }
 
         outAssetsDir.mkdirs()
         outFile.withObjectOutputStream { oos ->
             oos.writeObject(contents)
+            oos.writeObject(sizes)
         }
     }
     newTask.inputs.dir inAssetsDir
