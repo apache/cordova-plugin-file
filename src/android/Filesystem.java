@@ -146,6 +146,14 @@ public abstract class Filesystem {
         return ret;
     }
 
+    public LocalFilesystemURL localUrlforFullPath(String fullPath) {
+        Uri nativeUri = nativeUriForFullPath(fullPath);
+        if (nativeUri != null) {
+            return toLocalUri(nativeUri);
+        }
+        return null;
+    }
+
     /**
      * Removes multiple repeated //s, and collapses processes ../s.
      */

@@ -132,15 +132,6 @@ public class AssetFilesystem extends Filesystem {
         }
     }
 
-    private LocalFilesystemURL URLforFullPath(String fullPath) {
-        Uri nativeUri = nativeUriForFullPath(fullPath);
-        if (nativeUri != null) {
-            return toLocalUri(nativeUri);
-        }
-        return null;
-    }
-
-
     @Override
     public LocalFilesystemURL[] listChildren(LocalFilesystemURL inputURL) throws FileNotFoundException {
         String pathNoSlashes = inputURL.path.substring(1);
@@ -157,7 +148,7 @@ public class AssetFilesystem extends Filesystem {
 
         LocalFilesystemURL[] entries = new LocalFilesystemURL[files.length];
         for (int i = 0; i < files.length; ++i) {
-            entries[i] = URLforFullPath(new File(inputURL.path, files[i]).getPath());
+            entries[i] = localUrlforFullPath(new File(inputURL.path, files[i]).getPath());
         }
         return entries;
 	}
@@ -177,9 +168,9 @@ public class AssetFilesystem extends Filesystem {
 
         LocalFilesystemURL requestedURL;
         if (path.startsWith("/")) {
-            requestedURL = URLforFullPath(normalizePath(path));
+            requestedURL = localUrlforFullPath(normalizePath(path));
         } else {
-            requestedURL = URLforFullPath(normalizePath(inputURL.path + "/" + path));
+            requestedURL = localUrlforFullPath(normalizePath(inputURL.path + "/" + path));
         }
 
         // Throws a FileNotFoundException if it doesn't exist.

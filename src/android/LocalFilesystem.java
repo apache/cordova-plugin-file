@@ -60,14 +60,6 @@ public class LocalFilesystem extends Filesystem {
 		return null;
 	}
 
-	protected LocalFilesystemURL URLforFullPath(String fullPath) {
-        Uri nativeUri = nativeUriForFullPath(fullPath);
-	    if (nativeUri != null) {
-            return toLocalUri(nativeUri);
-	    }
-	    return null;
-	}
-
     @Override
     public Uri toNativeUri(LocalFilesystemURL inputURL) {
         return nativeUriForFullPath(inputURL.path);
@@ -107,7 +99,7 @@ public class LocalFilesystem extends Filesystem {
 	
 	@Override
 	public LocalFilesystemURL URLforFilesystemPath(String path) {
-	    return this.URLforFullPath(this.fullPathForFilesystemPath(path));
+	    return localUrlforFullPath(fullPathForFilesystemPath(path));
 	}
 
 	@Override
@@ -135,9 +127,9 @@ public class LocalFilesystem extends Filesystem {
             path += "/";
         }
         if (path.startsWith("/")) {
-        	requestedURL = URLforFullPath(normalizePath(path));
+        	requestedURL = localUrlforFullPath(normalizePath(path));
         } else {
-        	requestedURL = URLforFullPath(normalizePath(inputURL.path + "/" + path));
+        	requestedURL = localUrlforFullPath(normalizePath(inputURL.path + "/" + path));
         }
         
         File fp = new File(this.filesystemPathForURL(requestedURL));
