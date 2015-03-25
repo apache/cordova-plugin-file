@@ -114,10 +114,6 @@ xmlns:android="http://schemas.android.com/apk/res/android"
             </feature>
         </config-file>
 
-        <config-file target="AndroidManifest.xml" parent="/*">
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-        </config-file>
-
         <source-file src="src/android/EncodingException.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/FileExistsException.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/InvalidModificationException.java" target-dir="src/org/apache/cordova/file" />
@@ -169,7 +165,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <source-file src="src/android/Filesystem.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/LocalFilesystem.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/ContentFilesystem.java" target-dir="src/org/apache/cordova/file" />
-        
+
         <!-- android specific file apis -->
         <js-module src="www/android/FileSystem.js" name="androidFileSystem">
             <merges target="window.FileSystem" />
@@ -354,7 +350,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <js-module src="src/browser/FileProxy.js" name="browserFileProxy">
             <runs />
         </js-module>
-        
+
         <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
             <merges target="cordova" />
             <runs />
