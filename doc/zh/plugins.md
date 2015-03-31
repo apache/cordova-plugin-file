@@ -35,7 +35,7 @@
 
 #### Android 系統
 
-在 android 系統，最簡單的方法來轉換 `cdvfile://` 檔案系統路徑的 URL 是使用 `org.apache.cordova.CordovaResourceApi` 。 `CordovaResourceApi`有幾種方法，可處理 `cdvfile://` 的 Url：
+在 android 系統，最簡單的方法來轉換 `cdvfile://` 檔案系統路徑的 URL 是使用 `cordova-plugin-CordovaResourceApi` 。 `CordovaResourceApi`有幾種方法，可處理 `cdvfile://` 的 Url：
 
     // webView is a member of the Plugin class
     CordovaResourceApi resourceApi = webView.getResourceApi();
@@ -47,8 +47,8 @@
 
 它也是可以直接使用檔外掛程式：
 
-    import org.apache.cordova.file.FileUtils;
-    import org.apache.cordova.file.FileSystem;
+    import cordova-plugin-file.FileUtils;
+    import cordova-plugin-file.FileSystem;
     import java.net.MalformedURLException;
     
     // Get the File plugin from the plugin manager
@@ -64,7 +64,7 @@
 
 要轉換的路徑從 `cdvfile://` 的 URL：
 
-    import org.apache.cordova.file.LocalFilesystemURL;
+    import cordova-plugin-file.LocalFilesystemURL;
     
     // Get a LocalFilesystemURL object for a device path,
     // or null if it cannot be represented as a cdvfile URL.

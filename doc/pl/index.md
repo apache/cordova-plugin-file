@@ -17,7 +17,7 @@
     under the License.
 -->
 
-# org.apache.cordova.file
+# cordova-plugin-file
 
 Ten plugin implementuje API pliku, dzięki czemu dostęp do odczytu i zapisu do plików znajdujących się na urządzeniu.
 
@@ -47,7 +47,7 @@ Chociaż w globalnym zasięgu, to nie dostępne dopiero po `deviceready` imprezi
 
 ## Instalacja
 
-    cordova plugin add org.apache.cordova.file
+    cordova plugin add cordova-plugin-file
     
 
 ## Obsługiwane platformy

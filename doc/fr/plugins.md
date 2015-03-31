@@ -35,7 +35,7 @@ Il est important de rappeler que pas tous les `cdvfile://` URL sont cartographia
 
 #### Android
 
-Sur Android, la méthode la plus simple pour convertir un `cdvfile://` URL vers un chemin d'accès de système de fichiers est d'utiliser `org.apache.cordova.CordovaResourceApi` . `CordovaResourceApi`comporte plusieurs méthodes qui peuvent gérer `cdvfile://` URL :
+Sur Android, la méthode la plus simple pour convertir un `cdvfile://` URL vers un chemin d'accès de système de fichiers est d'utiliser `cordova-plugin-CordovaResourceApi` . `CordovaResourceApi`comporte plusieurs méthodes qui peuvent gérer `cdvfile://` URL :
 
     // webView is a member of the Plugin class
     CordovaResourceApi resourceApi = webView.getResourceApi();
@@ -47,8 +47,8 @@ Sur Android, la méthode la plus simple pour convertir un `cdvfile://` URL vers 
 
 Il est également possible d'utiliser le fichier plugin directement :
 
-    import org.apache.cordova.file.FileUtils;
-    import org.apache.cordova.file.FileSystem;
+    import cordova-plugin-file.FileUtils;
+    import cordova-plugin-file.FileSystem;
     import java.net.MalformedURLException;
     
     // Get the File plugin from the plugin manager
@@ -64,7 +64,7 @@ Il est également possible d'utiliser le fichier plugin directement :
 
 Pour convertir un chemin d'accès à un `cdvfile://` URL :
 
-    import org.apache.cordova.file.LocalFilesystemURL;
+    import cordova-plugin-file.LocalFilesystemURL;
     
     // Get a LocalFilesystemURL object for a device path,
     // or null if it cannot be represented as a cdvfile URL.

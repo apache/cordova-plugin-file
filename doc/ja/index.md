@@ -17,7 +17,7 @@
     under the License.
 -->
 
-# org.apache.cordova.file
+# cordova-plugin-file
 
 このプラグインは、デバイス上のファイルへの読み取り/書き込みアクセスを許可するファイル API を実装します。
 
@@ -47,7 +47,7 @@ FileWriter 仕様も実装しています: <http://dev.w3.org/2009/dap/file-syst
 
 ## インストール
 
-    cordova plugin add org.apache.cordova.file
+    cordova plugin add cordova-plugin-file
     
 
 ## サポートされているプラットフォーム

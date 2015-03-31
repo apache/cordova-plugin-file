@@ -35,7 +35,7 @@ JavaScript 側認証と DirectoryEntry オブジェクトの HTML ファイル �
 
 #### アンドロイド
 
-Android 上で変換する最も簡単な方法は `cdvfile://` を使用してファイルシステムのパスに URL が `org.apache.cordova.CordovaResourceApi` 。 `CordovaResourceApi`扱うことができるいくつかの方法があります `cdvfile://` Url:
+Android 上で変換する最も簡単な方法は `cdvfile://` を使用してファイルシステムのパスに URL が `cordova-plugin-CordovaResourceApi` 。 `CordovaResourceApi`扱うことができるいくつかの方法があります `cdvfile://` Url:
 
     // webView is a member of the Plugin class
     CordovaResourceApi resourceApi = webView.getResourceApi();
@@ -47,8 +47,8 @@ Android 上で変換する最も簡単な方法は `cdvfile://` を使用して�
 
 また、ファイル プラグインを直接使用することが可能です。
 
-    import org.apache.cordova.file.FileUtils;
-    import org.apache.cordova.file.FileSystem;
+    import cordova-plugin-file.FileUtils;
+    import cordova-plugin-file.FileSystem;
     import java.net.MalformedURLException;
     
     // Get the File plugin from the plugin manager
@@ -64,7 +64,7 @@ Android 上で変換する最も簡単な方法は `cdvfile://` を使用して�
 
 パスから変換する、 `cdvfile://` の URL:
 
-    import org.apache.cordova.file.LocalFilesystemURL;
+    import cordova-plugin-file.LocalFilesystemURL;
     
     // Get a LocalFilesystemURL object for a device path,
     // or null if it cannot be represented as a cdvfile URL.

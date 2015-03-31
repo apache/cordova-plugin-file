@@ -35,7 +35,7 @@
 
 #### 안 드 로이드
 
-안 드 로이드, 변환 하는 간단한 방법에는 `cdvfile://` URL을 파일 시스템 경로 사용 하는 `org.apache.cordova.CordovaResourceApi` . `CordovaResourceApi`처리할 수 있는 여러 가지 방법에는 `cdvfile://` Url:
+안 드 로이드, 변환 하는 간단한 방법에는 `cdvfile://` URL을 파일 시스템 경로 사용 하는 `cordova-plugin-CordovaResourceApi` . `CordovaResourceApi`처리할 수 있는 여러 가지 방법에는 `cdvfile://` Url:
 
     // webView is a member of the Plugin class
     CordovaResourceApi resourceApi = webView.getResourceApi();
@@ -47,8 +47,8 @@
 
 그것은 또한 파일 플러그인을 직접 사용할 수 있습니다:
 
-    import org.apache.cordova.file.FileUtils;
-    import org.apache.cordova.file.FileSystem;
+    import cordova-plugin-file.FileUtils;
+    import cordova-plugin-file.FileSystem;
     import java.net.MalformedURLException;
     
     // Get the File plugin from the plugin manager
@@ -64,7 +64,7 @@
 
 경로를 변환 하는 `cdvfile://` URL:
 
-    import org.apache.cordova.file.LocalFilesystemURL;
+    import cordova-plugin-file.LocalFilesystemURL;
     
     // Get a LocalFilesystemURL object for a device path,
     // or null if it cannot be represented as a cdvfile URL.

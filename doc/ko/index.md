@@ -17,7 +17,7 @@
     under the License.
 -->
 
-# org.apache.cordova.file
+# cordova-plugin-file
 
 이 플러그인은 장치에 있는 파일에 대 한 읽기/쓰기 액세스를 허용 하는 파일 API를 구현 합니다.
 
@@ -47,7 +47,7 @@
 
 ## 설치
 
-    cordova plugin add org.apache.cordova.file
+    cordova plugin add cordova-plugin-file
     
 
 ## 지원 되는 플랫폼

@@ -17,7 +17,7 @@
     under the License.
 -->
 
-# org.apache.cordova.file
+# cordova-plugin-file
 
 Ce plugin implémente une API de fichier permettant l'accès en lecture/écriture aux fichiers qui résident sur le périphérique.
 
@@ -45,7 +45,7 @@ Bien que dans la portée globale, il n'est pas disponible jusqu'après la `devic
 
 ## Installation
 
-    Cordova plugin ajouter org.apache.cordova.file
+    Cordova plugin ajouter cordova-plugin-file
     
 
 ## Plates-formes prises en charge

@@ -35,7 +35,7 @@ Ważne jest, aby pamiętać, że nie wszystkie `cdvfile://` adresy URL są możn
 
 #### Android
 
-Na Android, najprostsza metoda konwersji `cdvfile://` URL do ścieżki systemu plików jest użycie `org.apache.cordova.CordovaResourceApi` . `CordovaResourceApi`jest kilka metod, które mogą obsługiwać `cdvfile://` adresów URL:
+Na Android, najprostsza metoda konwersji `cdvfile://` URL do ścieżki systemu plików jest użycie `cordova-plugin-CordovaResourceApi` . `CordovaResourceApi`jest kilka metod, które mogą obsługiwać `cdvfile://` adresów URL:
 
     // webView is a member of the Plugin class
     CordovaResourceApi resourceApi = webView.getResourceApi();
@@ -47,8 +47,8 @@ Na Android, najprostsza metoda konwersji `cdvfile://` URL do ścieżki systemu p
 
 Jest również możliwe, aby korzystać z wtyczki pliku bezpośrednio:
 
-    import org.apache.cordova.file.FileUtils;
-    import org.apache.cordova.file.FileSystem;
+    import cordova-plugin-file.FileUtils;
+    import cordova-plugin-file.FileSystem;
     import java.net.MalformedURLException;
     
     // Get the File plugin from the plugin manager
@@ -64,7 +64,7 @@ Jest również możliwe, aby korzystać z wtyczki pliku bezpośrednio:
 
 Do przeliczenia ścieżki do `cdvfile://` adres URL:
 
-    import org.apache.cordova.file.LocalFilesystemURL;
+    import cordova-plugin-file.LocalFilesystemURL;
     
     // Get a LocalFilesystemURL object for a device path,
     // or null if it cannot be represented as a cdvfile URL.

@@ -17,7 +17,7 @@
     under the License.
 -->
 
-# org.apache.cordova.file
+# cordova-plugin-file
 
 這個外掛程式實現檔 API 允許對檔駐留在該設備上的讀/寫訪問。
 
@@ -54,7 +54,7 @@
 
 ## 安裝
 
-    cordova plugin add org.apache.cordova.file
+    cordova plugin add cordova-plugin-file
     
 
 ## 支援的平臺

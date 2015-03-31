@@ -35,7 +35,7 @@ Plugin che occorre scrivere al filesystem potrebbe voler convertire un URL del s
 
 #### Android
 
-Su Android, il metodo più semplice per convertire un `cdvfile://` URL a un percorso di file System è quello di utilizzare `org.apache.cordova.CordovaResourceApi` . `CordovaResourceApi`dispone di diversi metodi in grado di gestire `cdvfile://` URL:
+Su Android, il metodo più semplice per convertire un `cdvfile://` URL a un percorso di file System è quello di utilizzare `cordova-plugin-CordovaResourceApi` . `CordovaResourceApi`dispone di diversi metodi in grado di gestire `cdvfile://` URL:
 
     // webView is a member of the Plugin class
     CordovaResourceApi resourceApi = webView.getResourceApi();
@@ -47,8 +47,8 @@ Su Android, il metodo più semplice per convertire un `cdvfile://` URL a un perc
 
 È anche possibile utilizzare direttamente il File del plugin:
 
-    import org.apache.cordova.file.FileUtils;
-    import org.apache.cordova.file.FileSystem;
+    import cordova-plugin-file.FileUtils;
+    import cordova-plugin-file.FileSystem;
     import java.net.MalformedURLException;
     
     // Get the File plugin from the plugin manager
@@ -64,7 +64,7 @@ Su Android, il metodo più semplice per convertire un `cdvfile://` URL a un perc
 
 Per convertire da un percorso a un `cdvfile://` URL:
 
-    import org.apache.cordova.file.LocalFilesystemURL;
+    import cordova-plugin-file.LocalFilesystemURL;
     
     // Get a LocalFilesystemURL object for a device path,
     // or null if it cannot be represented as a cdvfile URL.
