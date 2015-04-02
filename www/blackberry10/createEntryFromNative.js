@@ -28,8 +28,8 @@
  *  returns Cordova entry
  */
 
-var info = require('cordova-plugin-file.bb10FileSystemInfo'),
-    fileSystems = require('cordova-plugin-file.fileSystems');
+var info = require('org.apache.cordova.file.bb10FileSystemInfo'),
+    fileSystems = require('org.apache.cordova.file.fileSystems');
 
 module.exports = function (native) {
     var entry = {

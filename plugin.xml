@@ -20,7 +20,7 @@
 
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
 xmlns:android="http://schemas.android.com/apk/res/android"
-           id="cordova-plugin-file"
+           id="org.apache.cordova.file"
       version="1.3.4-dev">
     <name>File</name>
     <description>Cordova File Plugin</description>
