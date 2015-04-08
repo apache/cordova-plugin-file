@@ -724,10 +724,10 @@ namespace WPCordovaClassLib.Cordova.Commands
                         readResourceAsText(options);
                         return;
                     }
-                    
+
                     byte[] buffer = readFileBytes(filePath, startPos, endPos, isoFile);
-                    result = System.Text.Encoding.UTF8.GetString(buffer, 0, buffer.Length);
-                    
+                    result = System.Text.Encoding.GetEncoding("iso-8859-1").GetString(buffer, 0, buffer.Length);
+
                 }
 
                 DispatchCommandResult(new PluginResult(PluginResult.Status.OK, result), callbackId);
