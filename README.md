@@ -52,7 +52,7 @@ Although in the global scope, it is not available until after the `deviceready` 
 
 ## Installation
 
-    cordova plugin add cordova-plugin-file
+    cordova plugin add org.apache.cordova.file
 
 ## Supported Platforms
 
