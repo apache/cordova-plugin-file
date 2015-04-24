@@ -22,6 +22,7 @@ using System.Security;
 using System.Text;
 using System.Windows;
 using System.Windows.Resources;
+using WPCordovaClassLib.Cordova.JSON;
 
 namespace WPCordovaClassLib.Cordova.Commands
 {
@@ -766,7 +767,12 @@ namespace WPCordovaClassLib.Cordova.Commands
                     byte[] buffer = this.readFileBytes(filePath, startPos, endPos, isoFile);
                     text = encoding.GetString(buffer, 0, buffer.Length);
                 }
-                DispatchCommandResult(new PluginResult(PluginResult.Status.OK, text), callbackId);
+
+                // JIRA: https://issues.apache.org/jira/browse/CB-8792
+                // Need to perform additional serialization here because NativeExecution is always trying
+                // to do JSON.parse() on command result. This leads to issue when trying to read JSON files
+                var resultText = JsonHelper.Serialize(text);
+                DispatchCommandResult(new PluginResult(PluginResult.Status.OK, resultText), callbackId);
             }
             catch (Exception ex)
             {

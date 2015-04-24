@@ -2191,11 +2191,14 @@ exports.defineAutoTests = function () {
                 reader.onloadend = verifier;
                 reader.readAsText(blob);
             });
-            function writeDummyFile(writeBinary, callback, done) {
+            function writeDummyFile(writeBinary, callback, done, fileContents) {
                 var fileName = "dummy.txt",
                 fileEntry = null,
-                fileData = '\u20AC\xEB - There is an exception to every rule. Except this one.',
-                fileDataAsBinaryString = '\xe2\x82\xac\xc3\xab - There is an exception to every rule. Except this one.',
+                // use default string if file data is not provided
+                fileData = fileContents !== undefined ? fileContents :
+                    '\u20AC\xEB - There is an exception to every rule. Except this one.',
+                fileDataAsBinaryString = fileContents !== undefined ? fileContents :
+                    '\xe2\x82\xac\xc3\xab - There is an exception to every rule. Except this one.',
                 createWriter = function (fe) {
                     fileEntry = fe;
                     fileEntry.createWriter(writeFile, failed.bind(null, done, 'fileEntry.createWriter - Error reading file: ' + fileName));
@@ -2213,7 +2216,7 @@ exports.defineAutoTests = function () {
                 // create a file, write to it, and read it in again
                 createFile(fileName, createWriter, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             }
-            function runReaderTest(funcName, writeBinary, done, verifierFunc, sliceStart, sliceEnd) {
+            function runReaderTest(funcName, writeBinary, done, verifierFunc, sliceStart, sliceEnd, fileContents) {
                 writeDummyFile(writeBinary, function (fileEntry, file, fileData, fileDataAsBinaryString) {
                     var verifier = function (evt) {
                         expect(evt).toBeDefined();
@@ -2230,7 +2233,7 @@ exports.defineAutoTests = function () {
                         file = file.slice(sliceStart, file.size, file.type);
                     }
                     reader[funcName](file);
-                }, done);
+                }, done, fileContents);
             }
             function arrayBufferEqualsString(ab, str) {
                 var buf = new Uint8Array(ab);
@@ -2245,6 +2248,13 @@ exports.defineAutoTests = function () {
                     expect(evt.target.result).toBe(fileData);
                     done();
                 });
+            });
+            it("file.spec.84.1 should read JSON file properly, readAsText", function (done) {
+                var testObject = {key1: "value1", key2: 2};
+                runReaderTest('readAsText', false, done, function (evt, fileData, fileDataAsBinaryString) {
+                    expect(evt.target.result).toEqual(JSON.stringify(testObject));
+                    done();
+                }, undefined, undefined, JSON.stringify(testObject));
             });
             it("file.spec.85 should read file properly, Data URI", function (done) {
                 runReaderTest('readAsDataURL', true, done, function (evt, fileData, fileDataAsBinaryString) {
