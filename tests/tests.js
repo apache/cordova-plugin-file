@@ -30,6 +30,9 @@ exports.defineAutoTests = function () {
     var isIndexedDBShim = isBrowser && !isChrome;   // Firefox and IE for example
 
     var isWindows = (cordova.platformId === "windows" || cordova.platformId === "windows8");
+    
+    var MEDIUM_TIMEOUT = 15000;
+    var LONG_TIMEOUT = 60000;
 
     describe('File API', function () {
         // Adding a Jasmine helper matcher, to report errors when comparing to FileError better.
@@ -3456,7 +3459,7 @@ exports.defineAutoTests = function () {
             describe('asset: URLs', function() {
                 it("file.spec.141 filePaths.applicationStorage", function() {
                     expect(cordova.file.applicationDirectory).toEqual('file:///android_asset/');
-                });
+                }, MEDIUM_TIMEOUT);
                 it("file.spec.142 assets should be enumerable", function(done) {
                     resolveLocalFileSystemURL('file:///android_asset/www/', function(entry) {
                         var reader = entry.createReader();
@@ -3465,7 +3468,7 @@ exports.defineAutoTests = function () {
                             done();
                         }, failed.bind(null, done, 'reader.readEntries - Error during reading of entries from assets directory'));
                     }, failed.bind(null, done, 'resolveLocalFileSystemURL failed for assets'));
-                });
+                }, LONG_TIMEOUT);
                 it("file.spec.143 copyTo: asset -> temporary", function(done) {
                     var file2 = "entry.copy.file2b",
                     fullPath = joinURL(temp_root.fullPath, file2),
@@ -3488,7 +3491,7 @@ exports.defineAutoTests = function () {
                     temp_root.getFile(file2, {}, function (entry) {
                         entry.remove(transfer, failed.bind(null, done, 'entry.remove - Error removing file: ' + file2));
                     }, transfer);
-                });
+                }, MEDIUM_TIMEOUT);
             });
             it("file.spec.144 copyTo: asset directory", function (done) {
                 var srcUrl = 'file:///android_asset/www/plugins/cordova-plugin-file';
@@ -3523,7 +3526,7 @@ exports.defineAutoTests = function () {
                         }, failed.bind(null, done, 'directory.copyTo - Error copying directory'));
                     }, failed.bind(null, done, 'resolving src dir'));
                 }, failed.bind(null, done, 'deleteEntry - Error removing directory : ' + dstDir));
-            });
+            }, LONG_TIMEOUT);
         }
     });
 
