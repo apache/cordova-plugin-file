@@ -20,14 +20,17 @@
 
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
 xmlns:android="http://schemas.android.com/apk/res/android"
-           id="org.apache.cordova.file"
-      version="1.3.4-dev">
+           id="cordova-plugin-file"
+      version="2.0.1-dev">
     <name>File</name>
     <description>Cordova File Plugin</description>
     <license>Apache 2.0</license>
     <keywords>cordova,file</keywords>
     <repo>https://git-wip-us.apache.org/repos/asf/cordova-plugin-file.git</repo>
     <issue>https://issues.apache.org/jira/browse/CB/component/12320651</issue>
+    <engines>
+        <engine name="cordova-android" version=">=3.1.0" /><!-- Uses CordovaResourceApi -->
+    </engines>
 
     <js-module src="www/DirectoryEntry.js" name="DirectoryEntry">
         <clobbers target="window.DirectoryEntry" />
@@ -121,12 +124,12 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <source-file src="src/android/NoModificationAllowedException.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/TypeMismatchException.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/FileUtils.java" target-dir="src/org/apache/cordova/file" />
-        <source-file src="src/android/FileHelper.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/DirectoryManager.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/LocalFilesystemURL.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/Filesystem.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/LocalFilesystem.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/ContentFilesystem.java" target-dir="src/org/apache/cordova/file" />
+        <source-file src="src/android/AssetFilesystem.java" target-dir="src/org/apache/cordova/file" />
 
         <!-- android specific file apis -->
         <js-module src="www/android/FileSystem.js" name="androidFileSystem">
@@ -348,6 +351,26 @@ xmlns:android="http://schemas.android.com/apk/res/android"
 
         <!-- Firefox OS specific file apis -->
         <js-module src="www/firefoxos/FileSystem.js" name="firefoxFileSystem">
+            <merges target="window.FileSystem" />
+        </js-module>
+    </platform>
+
+    <platform name="browser">
+        <!-- File for Chrome -->
+        <js-module src="www/browser/Preparing.js" name="Preparing">
+            <runs />
+        </js-module>
+
+        <js-module src="src/browser/FileProxy.js" name="browserFileProxy">
+            <runs />
+        </js-module>
+        
+        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
+            <merges target="cordova" />
+            <runs />
+        </js-module>
+
+        <js-module src="www/browser/FileSystem.js" name="firefoxFileSystem">
             <merges target="window.FileSystem" />
         </js-module>
     </platform>

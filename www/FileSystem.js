@@ -37,7 +37,7 @@ var FileSystem = function(name, root) {
     }
 };
 
-FileSystem.prototype.__format__ = function(fullPath) {
+FileSystem.prototype.__format__ = function(fullPath, nativeUrl) {
     return fullPath;
 };
 

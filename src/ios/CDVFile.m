@@ -21,6 +21,7 @@
 #import "CDVFile.h"
 #import "CDVLocalFilesystem.h"
 #import "CDVAssetLibraryFilesystem.h"
+#import <objc/message.h>
 
 CDVFile *filePlugin = nil;
 
@@ -173,6 +174,24 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 @synthesize rootDocsPath, appDocsPath, appLibraryPath, appTempPath, userHasAllowed, fileSystems=fileSystems_;
 
 - (void)registerFilesystem:(NSObject<CDVFileSystem> *)fs {
+    __weak CDVFile* weakSelf = self;
+    SEL sel = NSSelectorFromString(@"urlTransformer");
+    // for backwards compatibility - we check if this property is there
+    // we create a wrapper block because the urlTransformer property
+    // on the commandDelegate might be set dynamically at a future time
+    // (and not dependent on plugin loading order)
+    if ([self.commandDelegate respondsToSelector:sel]) {
+        fs.urlTransformer = ^NSURL*(NSURL* urlToTransform) {
+            // grab the block from the commandDelegate
+            NSURL* (^urlTransformer)(NSURL*) = ((id(*)(id, SEL))objc_msgSend)(weakSelf.commandDelegate, sel);
+            // if block is not null, we call it
+            if (urlTransformer) {
+                return urlTransformer(urlToTransform);
+            } else { // else we return the same url
+                return urlToTransform;
+            }
+        };
+    }
     [fileSystems_ addObject:fs];
 }
 
@@ -266,6 +285,24 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
 - (void)pluginInitialize
 {
+    filePlugin = self;
+    [NSURLProtocol registerClass:[CDVFilesystemURLProtocol class]];
+
+    fileSystems_ = [[NSMutableArray alloc] initWithCapacity:3];
+
+    // Get the Library directory path
+    NSArray* paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+    self.appLibraryPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"files"];
+
+    // Get the Temporary directory path
+    self.appTempPath = [NSTemporaryDirectory()stringByStandardizingPath];   // remove trailing slash from NSTemporaryDirectory()
+
+    // Get the Documents directory path
+    paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    self.rootDocsPath = [paths objectAtIndex:0];
+    self.appDocsPath = [self.rootDocsPath stringByAppendingPathComponent:@"files"];
+
+
     NSString *location = nil;
     if([self.viewController isKindOfClass:[CDVViewController class]]) {
         CDVViewController *vc = (CDVViewController *)self.viewController;
@@ -314,33 +351,6 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     [self registerExtraFileSystems:[self getExtraFileSystemsPreference:self.viewController]
                   fromAvailableSet:[self getAvailableFileSystems]];
 
-}
-
-
-- (id)initWithWebView:(UIWebView*)theWebView
-{
-    self = (CDVFile*)[super initWithWebView:theWebView];
-    if (self) {
-        filePlugin = self;
-        [NSURLProtocol registerClass:[CDVFilesystemURLProtocol class]];
-
-        fileSystems_ = [[NSMutableArray alloc] initWithCapacity:3];
-
-        // Get the Library directory path
-        NSArray* paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
-        self.appLibraryPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"files"];
-
-        // Get the Temporary directory path
-        self.appTempPath = [NSTemporaryDirectory()stringByStandardizingPath];   // remove trailing slash from NSTemporaryDirectory()
-
-        // Get the Documents directory path
-        paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-        self.rootDocsPath = [paths objectAtIndex:0];
-        self.appDocsPath = [self.rootDocsPath stringByAppendingPathComponent:@"files"];
-
-    }
-
-    return self;
 }
 
 - (CDVFilesystemURL *)fileSystemURLforArg:(NSString *)urlArg
@@ -868,8 +878,13 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         [fs readFileAtURL:localURI start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
             CDVPluginResult* result = nil;
             if (data != nil) {
-                NSString* b64str = [data base64EncodedStringWithOptions:0];
-                NSString* output = [NSString stringWithFormat:@"data:%@;base64,%@", mimeType, b64str];
+                SEL selector = NSSelectorFromString(@"cdv_base64EncodedString");
+                if (![data respondsToSelector:selector]) {
+                    selector = NSSelectorFromString(@"base64EncodedString");
+                }
+                id (*func)(id, SEL) = (void *)[data methodForSelector:selector];
+                NSString* b64Str = func(data, selector);
+                NSString* output = [NSString stringWithFormat:@"data:%@;base64,%@", mimeType, b64Str];
                 result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:output];
             } else {
                 result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:errorCode];

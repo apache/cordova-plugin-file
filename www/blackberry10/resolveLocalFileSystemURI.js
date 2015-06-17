@@ -38,9 +38,9 @@
  *  fail - FileError code
  */
 
-var info = require('org.apache.cordova.file.bb10FileSystemInfo'),
-    requestAnimationFrame = cordova.require('org.apache.cordova.file.bb10RequestAnimationFrame'),
-    createEntryFromNative = require('org.apache.cordova.file.bb10CreateEntryFromNative'),
+var info = require('cordova-plugin-file.bb10FileSystemInfo'),
+    requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame'),
+    createEntryFromNative = require('cordova-plugin-file.bb10CreateEntryFromNative'),
     SANDBOXED = true,
     UNSANDBOXED = false;
 

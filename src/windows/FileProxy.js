@@ -125,10 +125,24 @@ function validName(name) {
     return !invalidNameRE.test(name.replace(driveRE,''));
 }
 
-var slashesRE = new RegExp('/{2,}','g');
-var parentRE = new RegExp('/([^/]+/)\\.\\.(/|$)','g');
 function sanitize(path) {
-    return path.replace(slashesRE,'/').replace(parentRE,'$2');
+    var slashesRE = new RegExp('/{2,}','g');
+    var components = path.replace(slashesRE, '/').split(/\/+/);
+    // Remove double dots, use old school array iteration instead of RegExp
+    // since it is impossible to debug them
+    for (var index = 0; index < components.length; ++index) {
+        if (components[index] === "..") {
+            components.splice(index, 1);
+            if (index > 0) {
+                // if we're not in the start of array then remove preceeding path component,
+                // In case if relative path points above the root directory, just ignore double dots
+                // See file.spec.111 should not traverse above above the root directory for test case
+                components.splice(index-1, 1);
+                --index;
+            }
+        }
+    }
+    return components.join('/');
 }
 
 var WinFS = function(name, root) {

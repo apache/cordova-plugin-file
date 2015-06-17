@@ -19,6 +19,16 @@
  *
 */
 
+//For browser platform: not all browsers use overrided `resolveLocalFileSystemURL`.
+function checkBrowser() {
+    if (cordova.platformId === "browser" && navigator.userAgent.search(/Chrome/) > 0) {
+        var requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+        module.exports = requestFileSystem;
+        return;
+    }
+}
+checkBrowser();
+
 var argscheck = require('cordova/argscheck'),
     DirectoryEntry = require('./DirectoryEntry'),
     FileEntry = require('./FileEntry'),
@@ -70,6 +80,7 @@ module.exports.resolveLocalFileSystemURL = function(uri, successCallback, errorC
 
     exec(success, fail, "File", "resolveLocalFileSystemURI", [uri]);
 };
+
 module.exports.resolveLocalFileSystemURI = function() {
     console.log("resolveLocalFileSystemURI is deprecated. Please call resolveLocalFileSystemURL instead.");
     module.exports.resolveLocalFileSystemURL.apply(this, arguments);
