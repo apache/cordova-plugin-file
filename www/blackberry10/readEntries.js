@@ -30,10 +30,10 @@
  *  fail - FileError
  */
 
-var resolve = cordova.require('org.apache.cordova.file.resolveLocalFileSystemURIProxy'),
-    info = require('org.apache.cordova.file.bb10FileSystemInfo'),
-    requestAnimationFrame = cordova.require('org.apache.cordova.file.bb10RequestAnimationFrame'),
-    createEntryFromNative = cordova.require('org.apache.cordova.file.bb10CreateEntryFromNative');
+var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy'),
+    info = require('cordova-plugin-file.bb10FileSystemInfo'),
+    requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame'),
+    createEntryFromNative = cordova.require('cordova-plugin-file.bb10CreateEntryFromNative');
 
 module.exports = function (success, fail, args) {
     var uri = args[0],

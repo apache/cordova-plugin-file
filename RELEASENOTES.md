@@ -306,3 +306,50 @@
 * android: Simplify code a bit by making makeEntryForPath not throw JSONException
 * CB-6431 android: Fix plugin breaking content: URLs
 * CB-7375 Never create new FileSystem instances (except on windows since they don't implement requestAllFileSystems())
+
+### 2.0.0 (Apr 15, 2015)
+* CB-8849 Fixed ReadAsArrayBuffer to return ArrayBuffer and not Array on WP8
+* CB-8819 Fixed FileReader's readAsBinaryString on wp8
+* CB-8746 gave plugin major version bump
+* CB-8683 android: Fix broken unit tests from plugin rename
+* CB-8683 changed plugin-id to pacakge-name
+* CB-8653 properly updated translated docs to use new id
+* CB-8653 updated translated docs to use new id
+* Use TRAVIS_BUILD_DIR, install paramedic by npm
+* docs: added Windows to supported platforms
+* CB-8699 CB-6428 Fix uncompressed assets being copied as zero length files
+* CB-6428 android: Fix assets FileEntry having size of -1
+* android: Move URLforFullPath into base class (and rename to localUrlforFullPath)
+* CB-6428 Mention build-extras.gradle in README
+* CB-7109 android: Parse arguments off of the main thread (close #97)
+* CB-8695 ios: Fix `blob.slice()` for `asset-library` URLs (close #105)
+* Tweak build-extras.gradle to just read/write to main `assets/` instead of `build/`
+* CB-8689 Fix NPE in makeEntryForNativeUri (was affecting file-transfer)
+* CB-8675 Revert "CB-8351 ios: Use base64EncodedStringWithOptions instead of CordovaLib's class extension"
+* CB-8653 Updated Readme
+* CB-8659: ios: 4.0.x Compatibility: Remove use of initWebView method
+* Add a cache to speed up AssetFilesystem directory listings
+* CB-8663 android: Don't notify MediaScanner of private files
+* Don't log stacktrace for normal exceptions (e.g. file not found)
+* android: Don't use LimitedInputStream when reading entire file (optimization)
+* CB-6428 android: Add support for directory copies from assets -> filesystem
+* android: Add `listChildren()`: Java-consumable version of `readEntriesAtLocalURL()`
+* CB-6428 android: Add support for file:///android_asset URLs
+* CB-8642 android: Fix content URIs not working with resolve / copy
+* Tweak tests to fail if deleteEntry fails (rather than time out)
+* android: Ensure LocalFilesystemURL can only be created with "cdvfile" URLs
+* android: Move CordovaResourceApi into Filesystem base class
+* android: Use `CordovaResourceApi.mapUriToFile()` rather than own custom logic in ContentFilesystem
+* android: Use Uri.parse rather than manual parsing in resolveLocalFileSystemURI
+* Tweak test case that failed twice on error rather than just once
+* android: Delete invalid JavaDoc (lint errors)
+* android: Use CordovaResourceApi rather than FileHelper
+* CB-8032 - File Plugin - Add nativeURL external method support for CDVFileSystem->makeEntryForPath:isDirectory: (closes #96)
+* CB-8567 Integrate TravisCI
+* CB-8438 cordova-plugin-file documentation translation: cordova-plugin-file
+* CB-8538 Added package.json file
+* CB-7956 Add cordova-plugin-file support for browser platform
+* CB-8423 Corrected usage of done() in async tests
+* CB-8459 Fixes spec 111 failure due to incorrect relative paths handling
+* Code cleanup, whitespace
+* Added nativeURL property to FileEntry, implemented readAsArrayBuffer and readAsBinaryString

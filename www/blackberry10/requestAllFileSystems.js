@@ -31,7 +31,7 @@
  *   - nativeURL
  */
 
-var info = require('org.apache.cordova.file.bb10FileSystemInfo');
+var info = require('cordova-plugin-file.bb10FileSystemInfo');
 
 module.exports = function (success, fail, args) {
     success([

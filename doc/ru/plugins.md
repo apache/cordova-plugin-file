@@ -35,7 +35,7 @@
 
 #### Android
 
-На Android, самый простой способ для преобразования `cdvfile://` URL-адрес к пути файловой системы заключается в использовании `org.apache.cordova.CordovaResourceApi` . `CordovaResourceApi`Есть несколько методов, которые можно обработать `cdvfile://` URL-адреса:
+На Android, самый простой способ для преобразования `cdvfile://` URL-адрес к пути файловой системы заключается в использовании `cordova-plugin-CordovaResourceApi` . `CordovaResourceApi`Есть несколько методов, которые можно обработать `cdvfile://` URL-адреса:
 
     // webView is a member of the Plugin class
     CordovaResourceApi resourceApi = webView.getResourceApi();
@@ -47,8 +47,8 @@
 
 Это также можно использовать плагин файл непосредственно:
 
-    import org.apache.cordova.file.FileUtils;
-    import org.apache.cordova.file.FileSystem;
+    import cordova-plugin-file.FileUtils;
+    import cordova-plugin-file.FileSystem;
     import java.net.MalformedURLException;
     
     // Get the File plugin from the plugin manager
@@ -64,7 +64,7 @@
 
 Для преобразования пути к `cdvfile://` URL-адрес:
 
-    import org.apache.cordova.file.LocalFilesystemURL;
+    import cordova-plugin-file.LocalFilesystemURL;
     
     // Get a LocalFilesystemURL object for a device path,
     // or null if it cannot be represented as a cdvfile URL.

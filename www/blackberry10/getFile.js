@@ -32,7 +32,7 @@
  *  fail - FileError code
  */
 
-var resolve = cordova.require('org.apache.cordova.file.resolveLocalFileSystemURIProxy');
+var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy');
 
 module.exports = function (success, fail, args) {
     var uri = args[0] === "/" ? "" : args[0] + "/" + args[1],

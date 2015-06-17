@@ -32,7 +32,7 @@
  *  fail - FileError
  */
 
-var copy = cordova.require('org.apache.cordova.file.copyToProxy');
+var copy = cordova.require('cordova-plugin-file.copyToProxy');
 
 module.exports = function (success, fail, args) {
     copy(success, fail, args, true);

@@ -25,7 +25,7 @@
  * Translate temporary / persistent / root file paths
  */
 
-var info = require("org.apache.cordova.file.bb10FileSystemInfo");
+var info = require("cordova-plugin-file.bb10FileSystemInfo");
 
 module.exports = {
     __format__: function(fullPath) {

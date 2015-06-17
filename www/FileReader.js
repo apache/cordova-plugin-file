@@ -345,6 +345,9 @@ FileReader.prototype.readAsArrayBuffer = function(file) {
             // DONE state
             me._readyState = FileReader.DONE;
 
+            if (r instanceof Array) {
+                r = new Uint8Array(r).buffer;
+            }
             me._result = r;
 
             // If onload callback

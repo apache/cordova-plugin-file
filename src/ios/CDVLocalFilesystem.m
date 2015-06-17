@@ -24,7 +24,7 @@
 #import <sys/xattr.h>
 
 @implementation CDVLocalFilesystem
-@synthesize name=_name, fsRoot=_fsRoot;
+@synthesize name=_name, fsRoot=_fsRoot, urlTransformer;
 
 - (id) initWithName:(NSString *)name root:(NSString *)fsRoot
 {
@@ -78,7 +78,13 @@
     [dirEntry setObject:fullPath forKey:@"fullPath"];
     [dirEntry setObject:lastPart forKey:@"name"];
     [dirEntry setObject:self.name forKey: @"filesystemName"];
-    dirEntry[@"nativeURL"] = [[NSURL fileURLWithPath:[self filesystemPathForFullPath:fullPath]] absoluteString];
+    
+    NSURL* nativeURL = [NSURL fileURLWithPath:[self filesystemPathForFullPath:fullPath]];
+    if (self.urlTransformer) {
+        nativeURL = self.urlTransformer(nativeURL);
+    }
+    
+    dirEntry[@"nativeURL"] = [nativeURL absoluteString];
 
     return dirEntry;
 }
