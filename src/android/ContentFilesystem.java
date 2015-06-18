@@ -18,22 +18,19 @@
  */
 package org.apache.cordova.file;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
-
-import org.apache.cordova.CordovaResourceApi;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import org.apache.cordova.CordovaResourceApi;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class ContentFilesystem extends Filesystem {
 
@@ -193,7 +190,6 @@ public class ContentFilesystem extends Filesystem {
         }
         if (columnIndex != -1) {
             String dateStr = cursor.getString(columnIndex);
-            if (dateStr != null) {
             if (dateStr != null) {
                 return Long.parseLong(dateStr);
             }
