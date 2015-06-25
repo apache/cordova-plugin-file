@@ -19,6 +19,16 @@
  *
 */
 
+//For browser platform: not all browsers use this file.
+function checkBrowser() {
+    if (cordova.platformId === "browser" && navigator.userAgent.search(/Chrome/) > 0) {
+        var requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+        module.exports = requestFileSystem;
+        return;
+    }
+}
+checkBrowser();
+
 var argscheck = require('cordova/argscheck'),
     FileError = require('./FileError'),
     FileSystem = require('./FileSystem'),
@@ -46,6 +56,7 @@ var requestFileSystem = function(type, size, successCallback, errorCallback) {
             if (file_system) {
                 if (successCallback) {
                     fileSystems.getFs(file_system.name, function(fs) {
+                        // This should happen only on platforms that haven't implemented requestAllFileSystems (windows)
                         if (!fs) {
                             fs = new FileSystem(file_system.name, file_system.root);
                         }

@@ -65,9 +65,8 @@ typedef int CDVFileError;
 @protocol CDVFileSystem
 - (CDVPluginResult *)entryForLocalURI:(CDVFilesystemURL *)url;
 - (CDVPluginResult *)getFileForURL:(CDVFilesystemURL *)baseURI requestedPath:(NSString *)requestedPath options:(NSDictionary *)options;
-- (CDVPluginResult*)getParentForURL:(CDVFilesystemURL *)localURI;
-- (void)getMetadataForURL:(CDVFilesystemURL *)url callback:(void (^)(CDVPluginResult *))callback;
-- (CDVPluginResult*)setMetadataForURL:(CDVFilesystemURL *)localURI withObject:(NSDictionary *)options;
+- (CDVPluginResult *)getParentForURL:(CDVFilesystemURL *)localURI;
+- (CDVPluginResult *)setMetadataForURL:(CDVFilesystemURL *)localURI withObject:(NSDictionary *)options;
 - (CDVPluginResult *)removeFileAtURL:(CDVFilesystemURL *)localURI;
 - (CDVPluginResult *)recursiveRemoveFileAtURL:(CDVFilesystemURL *)localURI;
 - (CDVPluginResult *)readEntriesAtURL:(CDVFilesystemURL *)localURI;
@@ -81,6 +80,7 @@ typedef int CDVFileError;
 - (NSDictionary*)makeEntryForPath:(NSString*)fullPath isDirectory:(BOOL)isDir;
 
 @property (nonatomic,strong) NSString *name;
+@property (nonatomic, copy) NSURL*(^urlTransformer)(NSURL*);
 
 @optional
 - (NSString *)filesystemPathForURL:(CDVFilesystemURL *)localURI;
@@ -99,7 +99,7 @@ typedef int CDVFileError;
 }
 
 - (NSNumber*)checkFreeDiskSpace:(NSString*)appPath;
-- (NSDictionary*)makeEntryForPath:(NSString*)fullPath isDirectory:(BOOL)isDir;
+- (NSDictionary*)makeEntryForPath:(NSString*)fullPath fileSystemName:(NSString *)fsName isDirectory:(BOOL)isDir;
 - (NSDictionary *)makeEntryForURL:(NSURL *)URL;
 - (CDVFilesystemURL *)fileSystemURLforLocalPath:(NSString *)localPath;
 
@@ -115,7 +115,6 @@ typedef int CDVFileError;
 - (void)getDirectory:(CDVInvokedUrlCommand*)command;
 - (void)getFile:(CDVInvokedUrlCommand*)command;
 - (void)getParent:(CDVInvokedUrlCommand*)command;
-- (void)getMetadata:(CDVInvokedUrlCommand*)command;
 - (void)removeRecursively:(CDVInvokedUrlCommand*)command;
 - (void)remove:(CDVInvokedUrlCommand*)command;
 - (void)copyTo:(CDVInvokedUrlCommand*)command;

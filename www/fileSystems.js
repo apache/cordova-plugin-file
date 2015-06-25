@@ -19,7 +19,7 @@
  *
 */
 
-// Overridden by iOS & Android to populate fsMap.
+// Overridden by Android, BlackBerry 10 and iOS to populate fsMap.
 module.exports.getFs = function(name, callback) {
     callback(null);
 };

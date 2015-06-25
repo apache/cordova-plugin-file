@@ -22,12 +22,15 @@
 FILESYSTEM_PROTOCOL = "cdvfile";
 
 module.exports = {
-    __format__: function(fullPath) {
-        if (this.name === 'content') {
-            return 'content:/' + fullPath;
+    __format__: function(fullPath, nativeUrl) {
+        var path = '/' + this.name + '/' + encodeURI(fullPath);
+        path = path.replace('//','/');
+        var ret = FILESYSTEM_PROTOCOL + '://localhost' + path;
+        var m = /\?.*/.exec(nativeUrl);
+        if (m) {
+          ret += m[0];
         }
-        var path = ('/'+this.name+(fullPath[0]==='/'?'':'/')+encodeURI(fullPath)).replace('//','/');
-        return FILESYSTEM_PROTOCOL + '://localhost' + path;
+        return ret;
     }
 };
 

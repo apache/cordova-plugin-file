@@ -19,41 +19,35 @@
  *
 */
 
-var fileUtils = require('./BB10Utils'),
-    FileError = require('./FileError'),
-    FileSystem = require('./BB10FileSystem');
+/* 
+ * requestFileSystem
+ *
+ * IN:
+ *  args 
+ *   0 - type (TEMPORARY = 0, PERSISTENT = 1)
+ *   1 - size
+ * OUT:
+ *  success - FileSystem object
+ *   - name - the human readable directory name
+ *   - root - DirectoryEntry object
+ *      - isDirectory
+ *      - isFile
+ *      - name
+ *      - fullPath
+ *  fail - FileError code
+ */
 
-if (!window.requestAnimationFrame) {
-    window.requestAnimationFrame = function (callback) { callback(); };
-}
+var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy');
 
-module.exports = function (type, size, success, fail) {
-    var cordovaFs,
-        cordovaFsRoot;
-    if (size >= 1000000000000000) {
-        if (typeof fail === "function") {
-            fail(new FileError(FileError.QUOTA_EXCEEDED_ERR));
-        }
-    } else if (type !== 1 && type !== 0) {
-        if (typeof fail === "function") {
-            fail(new FileError(FileError.SYNTAX_ERR));
-        }
-    } else {
-        cordova.exec(function () {
-            window.requestAnimationFrame(function () {
-                window.webkitRequestFileSystem(type, size, function (fs) {
-                    cordovaFsRoot = fileUtils.createEntry(fs.root);
-                    cordovaFs = new FileSystem(fileUtils.getFileSystemName(fs), cordovaFsRoot);
-                    cordovaFsRoot.filesystem = cordovaFs;
-                    cordovaFs._size = size;
-                    success(cordovaFs);
-                }, function (error) {
-                    if (typeof fail === "function") {
-                        fail(new FileError(error));
-                    }
-                });
-            });
-        }, fail, "org.apache.cordova.file", "setSandbox", [true]);
-
-    }
+module.exports = function (success, fail, args) {
+    var fsType = args[0] === 0 ? 'temporary' : 'persistent',
+        size = args[1],
+        onSuccess = function (fs) {
+            var directory = {
+                name: fsType,
+                root: fs
+            };
+            success(directory);
+        };
+    resolve(onSuccess, fail, ['cdvfile://localhost/' + fsType + '/', undefined, size]);
 };

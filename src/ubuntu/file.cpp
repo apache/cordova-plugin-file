@@ -33,18 +33,11 @@ namespace {
         static const QString kPathExistsErr;
     };
 
-    QVariantMap file2map(const QFileInfo &fileInfo) {
-        QVariantMap res;
-
-        res.insert("name", fileInfo.fileName());
-        res.insert("fullPath", fileInfo.isDir() ? QDir::cleanPath(fileInfo.absoluteFilePath()) : fileInfo.absoluteFilePath());
-        res.insert("isDirectory", (int)fileInfo.isDir());
-        res.insert("isFile", (int)fileInfo.isFile());
-
-        return res;
-    }
-    QVariantMap dir2map(const QDir &dir) {
-        return file2map(QFileInfo(dir.absolutePath()));
+    bool checkFileName(const QString &name) {
+        if (name.contains(":")){
+            return false;
+        }
+        return true;
     }
 };
 
@@ -64,14 +57,51 @@ const QString FileError::kPathExistsErr("FileError.PATH_EXISTS_ERR");
 File::File(Cordova *cordova) :
     CPlugin(cordova),
     _persistentDir(QString("%1/.local/share/%2/persistent").arg(QDir::homePath()).arg(QCoreApplication::applicationName())) {
-    QDir::root().mkpath(QDir(_persistentDir).absolutePath());
+    QDir::root().mkpath(_persistentDir.absolutePath());
+}
+
+QVariantMap File::file2map(const QFileInfo &fileInfo) {
+    QVariantMap res;
+
+    res.insert("name", fileInfo.fileName());
+    QPair<QString, QString> r = GetRelativePath(fileInfo);
+    res.insert("fullPath", QString("/") + r.second);
+    res.insert("filesystemName", r.first);
+
+    res.insert("nativeURL", QString("file://localhost") + fileInfo.absoluteFilePath());
+    res.insert("isDirectory", (int)fileInfo.isDir());
+    res.insert("isFile", (int)fileInfo.isFile());
+
+    return res;
+}
+
+QVariantMap File::dir2map(const QDir &dir) {
+    return file2map(QFileInfo(dir.absolutePath()));
+}
+
+QPair<QString, QString> File::GetRelativePath(const QFileInfo &fileInfo) {
+    QString fullPath = fileInfo.isDir() ? QDir::cleanPath(fileInfo.absoluteFilePath()) : fileInfo.absoluteFilePath();
+
+    QString relativePath1 = _persistentDir.relativeFilePath(fullPath);
+    QString relativePath2 = QDir::temp().relativeFilePath(fullPath);
+
+    if (!(relativePath1[0] != '.' || relativePath2[0] != '.')) {
+        if (relativePath1.size() > relativePath2.size()) {
+            return QPair<QString, QString>("temporary", relativePath2);
+        } else {
+            return QPair<QString, QString>("persistent", relativePath1);
+        }
+    }
+
+    if (relativePath1[0] != '.')
+        return QPair<QString, QString>("persistent", relativePath1);
+    return QPair<QString, QString>("temporary", relativePath2);
 }
 
 void File::requestFileSystem(int scId, int ecId, unsigned short type, unsigned long long size) {
     QDir dir;
 
-    //FIXEME,what is quota value
-    if (size >= 10000){
+    if (size >= 1000485760){
         this->callback(ecId, FileError::kQuotaExceededErr);
         return;
     }
@@ -79,7 +109,7 @@ void File::requestFileSystem(int scId, int ecId, unsigned short type, unsigned l
     if (type == 0)
         dir = QDir::temp();
     else
-        dir = QDir(_persistentDir);
+        dir = _persistentDir;
 
     if (type > 1) {
         this->callback(ecId, FileError::kSyntaxErr);
@@ -96,21 +126,75 @@ void File::requestFileSystem(int scId, int ecId, unsigned short type, unsigned l
     }
 }
 
-void File::resolveLocalFileSystemURI(int scId, int ecId, QString uri) {
+QPair<bool, QFileInfo> File::resolveURI(int ecId, const QString &uri) {
+    QPair<bool, QFileInfo> result;
+
+    result.first = false;
+
     QUrl url = QUrl::fromUserInput(uri);
 
-    if (!url.isValid() || uri[0] == '/' || uri[0] == '.') {
+    if (url.scheme() == "file" && url.isValid()) {
+        result.first = true;
+        result.second = QFileInfo(url.path());
+        return result;
+    }
+
+    if (url.scheme() != "cdvfile") {
+        if (ecId)
+            this->callback(ecId, FileError::kTypeMismatchErr);
+        return result;
+    }
+
+    QString path = url.path().replace("//", "/");
+    //NOTE: colon is not safe in url, it is not a valid path in Win and Mac, simple disable it here.
+    if (path.contains(":") || !url.isValid()){
+        if (ecId)
+            this->callback(ecId, FileError::kEncodingErr);
+        return result;
+    }
+    if (!path.startsWith("/persistent/") && !path.startsWith("/temporary/")) {
+        if (ecId)
+            this->callback(ecId, FileError::kEncodingErr);
+        return result;
+    }
+
+    result.first = true;
+    if (path.startsWith("/persistent/")) {
+        QString relativePath = path.mid(QString("/persistent/").size());
+        result.second = QFileInfo(_persistentDir.filePath(relativePath));
+    } else {
+        QString relativePath = path.mid(QString("/temporary/").size());
+        result.second = QFileInfo(QDir::temp().filePath(relativePath));
+    }
+    return result;
+}
+
+QPair<bool, QFileInfo> File::resolveURI(const QString &uri) {
+    return resolveURI(0, uri);
+}
+
+
+void File::_getLocalFilesystemPath(int scId, int ecId, const QString& uri) {
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, uri);
+
+    if (!f1.first)
+        return;
+
+    this->cb(scId, f1.second.absoluteFilePath());
+}
+
+void File::resolveLocalFileSystemURI(int scId, int ecId, const QString &uri) {
+    if (uri[0] == '/' || uri[0] == '.') {
         this->callback(ecId, FileError::kEncodingErr);
         return;
     }
 
-    if (url.scheme() != "file") {
-        this->callback(ecId, FileError::kTypeMismatchErr);
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, uri);
+
+    if (!f1.first)
         return;
-    }
 
-    QFileInfo fileInfo(url.path());
-
+    QFileInfo fileInfo = f1.second;
     if (!fileInfo.exists()) {
         this->callback(ecId, FileError::kNotFoundErr);
         return;
@@ -120,38 +204,16 @@ void File::resolveLocalFileSystemURI(int scId, int ecId, QString uri) {
 }
 
 void File::getFile(int scId, int ecId, const QString &parentPath, const QString &rpath, const QVariantMap &options) {
-    QString path(rpath);
-
-    if (rpath[0] != '/') {
-        if (!parentPath.size() || !QFileInfo(parentPath).isDir())
-            path = _persistentDir + "/" + rpath;
-        else
-            path = parentPath + "/" + rpath;
-    }
-
-    //NOTE: colon is not safe in url, it is not a valid path in Win and Mac, simple disable it here.
-    if (path.contains(":")){
-        this->callback(ecId, FileError::kEncodingErr);
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, parentPath + "/" + rpath);
+    if (!f1.first)
         return;
-    }
-
-    QUrl url = QUrl::fromUserInput(path);
-    if (!url.isValid()) {
-        this->callback(ecId, FileError::kEncodingErr);
-        return;
-    }
-
-    if (url.scheme() != "file") {
-        this->callback(ecId, FileError::kTypeMismatchErr);
-        return;
-    }
 
     bool create = options.value("create").toBool();
     bool exclusive = options.value("exclusive").toBool();
-    QFile file(path);
+    QFile file(f1.second.absoluteFilePath());
 
     // if create is false and the path represents a directory, return error
-    QFileInfo fileInfo(url.path());
+    QFileInfo fileInfo = f1.second;
     if ((!create) && fileInfo.isDir()) {
         this->callback(ecId, FileError::kTypeMismatchErr);
         return;
@@ -184,41 +246,21 @@ void File::getFile(int scId, int ecId, const QString &parentPath, const QString 
     this->cb(scId, file2map(QFileInfo(file)));
 }
 
-void File::getDirectory(int scId, int ecId, QString parentPath, QString rpath, QVariantMap options) {
-    QString path(rpath);
-    if (rpath[0] != '/') {
-        path = parentPath + "/" + rpath;
-    }
-
-    //NOTE: colon is not safe in url, it is not a valid path in Win and Mac, simple disable it here.
-    if (path.contains(":")){
-        this->callback(ecId, FileError::kEncodingErr);
+void File::getDirectory(int scId, int ecId, const QString &parentPath, const QString &rpath, const QVariantMap &options) {
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, parentPath + "/" + rpath);
+    if (!f1.first)
         return;
-    }
-
-    QUrl url = QUrl::fromUserInput(path);
-    if (!url.isValid()) {
-        this->callback(ecId, FileError::kEncodingErr);
-        return;
-    }
-
-    if (url.scheme() != "file") {
-        this->callback(ecId, FileError::kTypeMismatchErr);
-        return;
-    }
 
     bool create = options.value("create").toBool();
     bool exclusive = options.value("exclusive").toBool();
-    QDir dir(path);
+    QDir dir(f1.second.absoluteFilePath());
 
-    //  if create is false and the path represents a file, return error
-    QFileInfo fileInfo(url.path());
+    QFileInfo &fileInfo = f1.second;
     if ((!create) && fileInfo.isFile()) {
         this->callback(ecId, FileError::kTypeMismatchErr);
         return;
     }
 
-    //  if directory does exist and create is true and exclusive is true, return error
     if (dir.exists()) {
         if (create && exclusive) {
             this->callback(ecId, FileError::kPathExistsErr);
@@ -226,13 +268,11 @@ void File::getDirectory(int scId, int ecId, QString parentPath, QString rpath, Q
         }
     }
     else {
-        //  if directory does not exist and create is false and directory does not exist, return error
         if (!create) {
             this->callback(ecId, FileError::kNotFoundErr);
             return;
         }
 
-        //  if directory does not exist and create is false and directory does not exist, return error
         QString folderName = dir.dirName();
         dir.cdUp();
         dir.mkdir(folderName);
@@ -244,22 +284,29 @@ void File::getDirectory(int scId, int ecId, QString parentPath, QString rpath, Q
         }
     }
 
-    QVariantMap res;
-    res.insert("name", dir.dirName());
-    res.insert("fullPath", dir.absolutePath());
-    this->cb(scId, res);
+    this->cb(scId, dir2map(dir));
 }
 
-void File::removeRecursively(int scId, int ecId, QString path) {
-    QDir dir(path);
+void File::removeRecursively(int scId, int ecId, const QString &uri) {
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, uri);
+
+    if (!f1.first)
+        return;
+
+    QDir dir(f1.second.absoluteFilePath());
     if (File::rmDir(dir))
         this->cb(scId);
     else
         this->callback(ecId, FileError::kNoModificationAllowedErr);
 }
 
-void File::write(int scId, int ecId, const QString &path, const QString &_data, unsigned long long position, bool binary) {
-    QFile file(path);
+void File::write(int scId, int ecId, const QString &uri, const QString &_data, unsigned long long position, bool binary) {
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, uri);
+
+    if (!f1.first)
+        return;
+
+    QFile file(f1.second.absoluteFilePath());
 
     file.open(QIODevice::WriteOnly);
     file.close();
@@ -310,8 +357,13 @@ void File::write(int scId, int ecId, const QString &path, const QString &_data, 
     this->cb(scId, fileInfo.size() - position);
 }
 
-void File::truncate(int scId, int ecId, const QString &path, unsigned long long size) {
-    QFile file(path);
+void File::truncate(int scId, int ecId, const QString &uri, unsigned long long size) {
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, uri);
+
+    if (!f1.first)
+        return;
+
+    QFile file(f1.second.absoluteFilePath());
 
     if (!file.exists()) {
         this->callback(ecId, FileError::kNotFoundErr);
@@ -326,12 +378,16 @@ void File::truncate(int scId, int ecId, const QString &path, unsigned long long 
     this->cb(scId, size);
 }
 
-void File::getParent(int scId, int ecId, QString path) {
-    QDir dir(path);
+void File::getParent(int scId, int ecId, const QString &uri) {
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, uri);
+
+    if (!f1.first)
+        return;
+    QDir dir(f1.second.absoluteFilePath());
 
     //can't cdup more than app's root
     // Try to change into upper directory
-    if (path != _persistentDir){
+    if (dir != _persistentDir && dir != QDir::temp()){
         if (!dir.cdUp()) {
             this->callback(ecId, FileError::kNotFoundErr);
             return;
@@ -341,21 +397,26 @@ void File::getParent(int scId, int ecId, QString path) {
     this->cb(scId, dir2map(dir));
 }
 
-void File::remove(int scId, int ecId, QString path) {
-    QFileInfo fileInfo(path);
-    if (!fileInfo.exists() || (path == _persistentDir)) {
+void File::remove(int scId, int ecId, const QString &uri) {
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, uri);
+    if (!f1.first)
+        return;
+
+    QFileInfo &fileInfo = f1.second;
+    //TODO: fix
+    if (!fileInfo.exists() || (fileInfo.absoluteFilePath() == _persistentDir.absolutePath()) || (QDir::temp() == fileInfo.absoluteFilePath())) {
         this->callback(ecId, FileError::kNoModificationAllowedErr);
         return;
     }
 
     if (fileInfo.isDir()) {
-        QDir dir(path);
+        QDir dir(fileInfo.absoluteFilePath());
         if (dir.rmdir(dir.absolutePath())) {
             this->cb(scId);
             return;
         }
     } else {
-        QFile file(path);
+        QFile file(fileInfo.absoluteFilePath());
         if (file.remove()) {
             this->cb(scId);
             return;
@@ -365,8 +426,12 @@ void File::remove(int scId, int ecId, QString path) {
     this->callback(ecId, FileError::kInvalidModificationErr);
 }
 
-void File::getFileMetadata(int scId, int ecId, const QString &path) {
-    QFileInfo fileInfo(path);
+void File::getFileMetadata(int scId, int ecId, const QString &uri) {
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, uri);
+
+    if (!f1.first)
+        return;
+    QFileInfo &fileInfo = f1.second;
 
     if (!fileInfo.exists()) {
         this->callback(ecId, FileError::kNotFoundErr);
@@ -382,17 +447,29 @@ void File::getFileMetadata(int scId, int ecId, const QString &path) {
     }
 }
 
-void File::getMetadata(int scId, int ecId, const QString &path) {
-    QFileInfo fileInfo(path);
+void File::getMetadata(int scId, int ecId, const QString &uri) {
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, uri);
+
+    if (!f1.first)
+        return;
+    QFileInfo &fileInfo = f1.second;
 
     if (!fileInfo.exists())
         this->callback(ecId, FileError::kNotFoundErr);
-    else
-        this->cb(scId, fileInfo.lastModified().toMSecsSinceEpoch());
+    else {
+        QVariantMap obj;
+        obj.insert("modificationTime", fileInfo.lastModified().toMSecsSinceEpoch());
+        obj.insert("size", fileInfo.isDir() ? 0 : fileInfo.size());
+        this->cb(scId, obj);
+    }
 }
 
-void File::readEntries(int scId, int ecId, QString path) {
-    QDir dir(path);
+void File::readEntries(int scId, int ecId, const QString &uri) {
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, uri);
+
+    if (!f1.first)
+        return;
+    QDir dir(f1.second.absoluteFilePath());
     QString entriesList;
 
     if (!dir.exists()) {
@@ -403,17 +480,22 @@ void File::readEntries(int scId, int ecId, QString path) {
     for (const QFileInfo &fileInfo: dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot)) {
         entriesList += CordovaInternal::format(file2map(fileInfo)) + ",";
     }
-
     // Remove trailing comma
     if (entriesList.size() > 0)
-        entriesList.remove(entriesList.size()-1, 1);
+        entriesList.remove(entriesList.size() - 1, 1);
+
     entriesList = "new Array(" + entriesList + ")";
 
     this->callback(scId, entriesList);
 }
 
-void File::readAsText(int scId, int ecId, const QString &path, const QString &encoding, int sliceStart, int sliceEnd) {
-    QFile file(path);
+void File::readAsText(int scId, int ecId, const QString &uri, const QString &/*encoding*/, int sliceStart, int sliceEnd) {
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, uri);
+
+    if (!f1.first)
+        return;
+
+    QFile file(f1.second.absoluteFilePath());
 
     if (!file.exists()) {
         this->callback(ecId, FileError::kNotFoundErr);
@@ -450,7 +532,7 @@ void File::readAsText(int scId, int ecId, const QString &path, const QString &en
     this->cb(scId, content);
 }
 
-void File::readAsArrayBuffer(int scId, int ecId, const QString &path, int sliceStart, int sliceEnd) {
+void File::readAsArrayBuffer(int scId, int ecId, const QString &uri, int sliceStart, int sliceEnd) {
     const QString str2array("\
     (function strToArray(str) {                 \
         var res = new Uint8Array(str.length);   \
@@ -459,7 +541,13 @@ void File::readAsArrayBuffer(int scId, int ecId, const QString &path, int sliceS
         }                                       \
         return res;                             \
     })(\"%1\")");
-    QFile file(path);
+
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, uri);
+
+    if (!f1.first)
+        return;
+
+    QFile file(f1.second.absoluteFilePath());
 
     if (!file.exists()) {
         this->callback(ecId, FileError::kNotFoundErr);
@@ -501,8 +589,13 @@ void File::readAsArrayBuffer(int scId, int ecId, const QString &path, int sliceS
     this->callback(scId, str2array.arg(res));
 }
 
-void File::readAsBinaryString(int scId, int ecId, const QString &path, int sliceStart, int sliceEnd) {
-    QFile file(path);
+void File::readAsBinaryString(int scId, int ecId, const QString &uri, int sliceStart, int sliceEnd) {
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, uri);
+
+    if (!f1.first)
+        return;
+
+    QFile file(f1.second.absoluteFilePath());
 
     if (!file.exists()) {
         this->callback(ecId, FileError::kNotFoundErr);
@@ -543,25 +636,25 @@ void File::readAsBinaryString(int scId, int ecId, const QString &path, int slice
     this->callback(scId, "\"" + res + "\"");
 }
 
-void File::readAsDataURL(int scId, int ecId, const QString &path, int sliceStart, int sliceEnd) {
-    QFile file(path);
-    QFileInfo fileInfo(path);
+void File::readAsDataURL(int scId, int ecId, const QString &uri, int sliceStart, int sliceEnd) {
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, uri);
 
-    if (path.startsWith("content:")){
-        this->callback(ecId, FileError::kNotReadableErr);
+    if (!f1.first)
         return;
-    }
+
+    QFile file(f1.second.absoluteFilePath());
+    QFileInfo &fileInfo = f1.second;
 
     if (!file.exists()) {
         this->callback(ecId, FileError::kNotReadableErr);
         return;
     }
-    // Try to open file for reading
+
     if (!file.open(QIODevice::ReadOnly)) {
         this->callback(ecId, FileError::kNotReadableErr);
         return;
     }
-    // Read the file content
+
     QByteArray content = file.readAll();
     QString contentType(_db.mimeTypeForFile(fileInfo.fileName()).name());
 
@@ -587,8 +680,8 @@ void File::readAsDataURL(int scId, int ecId, const QString &path, int sliceStart
     this->cb(scId, QString("data:%1;base64,").arg(contentType) + content.toBase64());
 }
 
-bool File::rmDir(QDir dir) {
-    if (dir == _persistentDir) {//can't remove root dir
+bool File::rmDir(const QDir &dir) {
+    if (dir == _persistentDir || dir == QDir::temp()) {//can't remove root dir
         return false;
     }
     bool result = true;
@@ -613,134 +706,180 @@ bool File::rmDir(QDir dir) {
     return result;
 }
 
-bool File::copyFile(int scId, int ecId,const QString& sourceFile, const QString& destinationParentDir, const QString& newName) {
-    if (!QDir(destinationParentDir).exists()){
-        this->callback(ecId, FileError::kNotFoundErr);
+bool File::copyFile(int scId, int ecId,const QString& sourceUri, const QString& destinationUri, const QString& newName) {
+    QPair<bool, QFileInfo> destDir = resolveURI(ecId, destinationUri);
+    QPair<bool, QFileInfo> sourceFile = resolveURI(ecId, sourceUri);
+
+    if (!destDir.first || !sourceFile.first)
         return false;
-    }
 
-    QFileInfo fileInfo(sourceFile);
-    QString fileName = ((newName.isEmpty()) ? fileInfo.fileName() : newName);
-    QString destinationFile(destinationParentDir + "/" + fileName);
-
-    //NOTE: colon is not safe in url, it is not a valid path in Win and Mac, simple disable it here.
-    if (!QUrl::fromUserInput(destinationFile).isValid() || destinationFile.contains(":")){
+    if (!checkFileName(newName)) {
         this->callback(ecId, FileError::kEncodingErr);
         return false;
     }
 
-    if (QFile::copy(sourceFile, destinationFile)){
-        this->cb(scId, file2map(QFileInfo(destinationFile)));
-        return true;
-    } else {
+    if (destDir.second.isFile()) {
         this->callback(ecId, FileError::kInvalidModificationErr);
         return false;
     }
+
+    if (!destDir.second.isDir()) {
+        this->callback(ecId, FileError::kNotFoundErr);
+        return false;
+    }
+
+    QFileInfo &fileInfo = sourceFile.second;
+    QString fileName((newName.isEmpty()) ? fileInfo.fileName() : newName);
+    QString destinationFile(QDir(destDir.second.absoluteFilePath()).filePath(fileName));
+    if (QFile::copy(fileInfo.absoluteFilePath(), destinationFile)){
+        this->cb(scId, file2map(QFileInfo(destinationFile)));
+        return true;
+    }
+    this->callback(ecId, FileError::kInvalidModificationErr);
+    return false;
 }
 
-void File::copyDir(int scId, int ecId,const QString& sourceFolder, const QString& destinationParentDir, const QString& newName) {
-    QDir sourceDir(sourceFolder);
-    QString dirName = ((newName.isEmpty()) ? sourceDir.dirName() : newName);
-    QString destFolder(destinationParentDir + "/" + dirName);
+void File::copyDir(int scId, int ecId,const QString& sourceUri, const QString& destinationUri, const QString& newName) {
+    QPair<bool, QFileInfo> destDir = resolveURI(ecId, destinationUri);
+    QPair<bool, QFileInfo> sourceDir = resolveURI(ecId, sourceUri);
 
-    if (QFileInfo(destFolder).isFile()){
-        this->callback(ecId, FileError::kInvalidModificationErr);
+    if (!destDir.first || !sourceDir.first)
         return;
-    }
-    QDir destDir(destFolder);
-
-    if ((sourceFolder == destFolder) || (sourceFolder == destinationParentDir)){
-        this->callback(ecId, FileError::kInvalidModificationErr);
+    if (!checkFileName(newName)) {
+        this->callback(ecId, FileError::kEncodingErr);
         return;
     }
 
-    if (!destDir.exists()){
-        destDir.mkdir(destFolder);;
+    QString targetName = ((newName.isEmpty()) ? sourceDir.second.fileName() : newName);
+    QString target(QDir(destDir.second.absoluteFilePath()).filePath(targetName));
+
+    if (QFileInfo(target).isFile()){
+        this->callback(ecId, FileError::kInvalidModificationErr);
+        return;
+    }
+
+    // check: copy directory into itself
+    if (QDir(sourceDir.second.absoluteFilePath()).relativeFilePath(target)[0] != '.'){
+        this->callback(ecId, FileError::kInvalidModificationErr);
+        return;
+    }
+
+    if (!QDir(target).exists()){
+        QDir(destDir.second.absoluteFilePath()).mkdir(target);;
     } else{
         this->callback(ecId, FileError::kInvalidModificationErr);
         return;
     }
 
-    if (copyFolder(sourceFolder, destFolder)){
-        this->cb(scId, dir2map(destDir));
-        return;
-    } else {
-        this->callback(ecId, FileError::kInvalidModificationErr);
+    if (copyFolder(sourceDir.second.absoluteFilePath(), target)){
+        this->cb(scId, dir2map(QDir(target)));
         return;
     }
+    this->callback(ecId, FileError::kInvalidModificationErr);
+    return;
 }
 
 void File::copyTo(int scId, int ecId, const QString& source, const QString& destinationDir, const QString& newName) {
-    if (QFileInfo(source).isDir())
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, source);
+
+    if (!f1.first)
+        return;
+
+    if (f1.second.isDir())
         copyDir(scId, ecId, source, destinationDir, newName);
     else
         copyFile(scId, ecId, source, destinationDir, newName);
 }
 
-void File::moveFile(int scId, int ecId,const QString& sourceFile, const QString& destinationParentDir, const QString& newName) {
-    QString fileName = ((newName.isEmpty()) ? QFileInfo(sourceFile).fileName() : newName);
-    QString destinationFile(destinationParentDir + "/" + fileName);
+void File::moveFile(int scId, int ecId,const QString& sourceUri, const QString& destinationUri, const QString& newName) {
+    QPair<bool, QFileInfo> sourceFile = resolveURI(ecId, sourceUri);
+    QPair<bool, QFileInfo> destDir = resolveURI(ecId, destinationUri);
 
-    if (QFileInfo(sourceFile) == QFileInfo(destinationFile)) {
+    if (!destDir.first || !sourceFile.first)
+        return;
+    if (!checkFileName(newName)) {
+        this->callback(ecId, FileError::kEncodingErr);
+        return;
+    }
+
+    QString fileName = ((newName.isEmpty()) ? sourceFile.second.fileName() : newName);
+    QString target = QDir(destDir.second.absoluteFilePath()).filePath(fileName);
+
+    if (sourceFile.second == QFileInfo(target)) {
         this->callback(ecId, FileError::kInvalidModificationErr);
         return;
     }
 
-    if (!QFileInfo(destinationParentDir).exists()) {
+    if (!destDir.second.exists()) {
         this->callback(ecId, FileError::kNotFoundErr);
         return;
     }
+    if (!destDir.second.isDir()){
+        this->callback(ecId, FileError::kInvalidModificationErr);
+        return;
+    }
 
-    if (QFileInfo(destinationFile).exists()) {
-        if (!QFile::remove(QFileInfo(destinationFile).absoluteFilePath())) {
+    if (QFileInfo(target).exists()) {
+        if (!QFile::remove(target)) {
             this->callback(ecId, FileError::kInvalidModificationErr);
             return;
         }
     }
 
-    QFile::rename(sourceFile, destinationFile);
-    this->cb(scId, file2map(QFileInfo(destinationFile)));
+    QFile::rename(sourceFile.second.absoluteFilePath(), target);
+    this->cb(scId, file2map(QFileInfo(target)));
 }
 
-void File::moveDir(int scId, int ecId,const QString& sourceDir, const QString& destinationParentDir, const QString& newName){
-    QString dirName = ((newName.isEmpty()) ? QDir(sourceDir).dirName() : newName);
-    QString destFolder(destinationParentDir + "/" + dirName);
-    QDir destDir(destFolder);
+void File::moveDir(int scId, int ecId,const QString& sourceUri, const QString& destinationUri, const QString& newName){
+    QPair<bool, QFileInfo> sourceDir = resolveURI(ecId, sourceUri);
+    QPair<bool, QFileInfo> destDir = resolveURI(ecId, destinationUri);
 
-    if (!QFileInfo(destinationParentDir).exists()){
+    if (!destDir.first || !sourceDir.first)
+        return;
+    if (!checkFileName(newName)) {
+        this->callback(ecId, FileError::kEncodingErr);
+        return;
+    }
+
+    QString fileName = ((newName.isEmpty()) ? sourceDir.second.fileName() : newName);
+    QString target = QDir(destDir.second.absoluteFilePath()).filePath(fileName);
+
+    if (!destDir.second.exists()){
         this->callback(ecId, FileError::kNotFoundErr);
         return;
     }
 
-    if (QFileInfo(destFolder).isFile()){
+    if (destDir.second.isFile()){
         this->callback(ecId, FileError::kInvalidModificationErr);
         return;
     }
 
-    if ((QFileInfo(sourceDir) == QFileInfo(destFolder)) || (QFileInfo(sourceDir) == QFileInfo(destinationParentDir))) {
+    // check: copy directory into itself
+    if (QDir(sourceDir.second.absoluteFilePath()).relativeFilePath(target)[0] != '.'){
         this->callback(ecId, FileError::kInvalidModificationErr);
         return;
     }
 
-    if (destDir.exists() && !QDir(destinationParentDir).rmdir(dirName)) {
+    if (QFileInfo(target).exists() && !QDir(destDir.second.absoluteFilePath()).rmdir(fileName)) {
         this->callback(ecId, FileError::kInvalidModificationErr);
         return;
     }
 
-    if (copyFolder(sourceDir, destFolder)) {
-        rmDir(sourceDir);
-        this->cb(scId, file2map(QFileInfo(destFolder)));
+    if (copyFolder(sourceDir.second.absoluteFilePath(), target)) {
+        rmDir(sourceDir.second.absoluteFilePath());
+        this->cb(scId, file2map(QFileInfo(target)));
     } else {
         this->callback(ecId, FileError::kNoModificationAllowedErr);
     }
 }
 
 void File::moveTo(int scId, int ecId, const QString& source, const QString& destinationDir, const QString& newName) {
-    if (newName.contains(":")) {
-        this->callback(ecId, FileError::kEncodingErr);
+    QPair<bool, QFileInfo> f1 = resolveURI(ecId, source);
+
+    if (!f1.first)
         return;
-    }
-    if (QFileInfo(source).isDir())
+
+    if (f1.second.isDir())
         moveDir(scId, ecId, source, destinationDir, newName);
     else
         moveFile(scId, ecId, source, destinationDir, newName);
