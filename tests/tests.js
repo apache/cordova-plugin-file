@@ -2389,6 +2389,7 @@ exports.defineAutoTests = function () {
             it("file.spec.96 should be able to write and append to file, createWriter", function (done) {
                 var fileName = "writer.append.createWriter", // file content
                 content = "There is an exception to every rule.", // for checkin file length
+                exception = " Except this one.",
                 length = content.length;
                 // create file, then write and append to it
                 createFile(fileName, function (fileEntry) {
@@ -2399,7 +2400,6 @@ exports.defineAutoTests = function () {
                             expect(writer.length).toBe(length);
                             expect(writer.position).toBe(length);
                             // Append some more data
-                            var exception = " Except this one.";
                             writer.onwriteend = secondVerifier;
                             length += exception.length;
                             writer.seek(writer.length);
@@ -2408,6 +2408,13 @@ exports.defineAutoTests = function () {
                         secondVerifier = function (evt) {
                             expect(writer.length).toBe(length);
                             expect(writer.position).toBe(length);
+                            var reader = new FileReader();
+                            reader.onloadend = thirdVerifier;
+                            reader.onerror = failed.bind(null, done, 'reader.onerror - Error reading file: ' + fileName);
+                            fileEntry.file(function(f){reader.readAsText(f);});
+                        },
+                        thirdVerifier = function (evt) {
+                            expect(evt.target.result).toBe(content+exception);
                             // cleanup
                             deleteFile(fileName, done);
                         };
@@ -2419,7 +2426,8 @@ exports.defineAutoTests = function () {
             });
             it("file.spec.97 should be able to write and append to file, File object", function (done) {
                 var fileName = "writer.append.File", // file content
-                content = "There is an exception to every rule.", // for checking file length
+                content = "There is an exception to every rule.", // for checkin file length
+                exception = " Except this one.",
                 length = content.length;
                 root.getFile(fileName, {
                     create : true
@@ -2430,7 +2438,6 @@ exports.defineAutoTests = function () {
                             expect(writer.length).toBe(length);
                             expect(writer.position).toBe(length);
                             // Append some more data
-                            var exception = " Except this one.";
                             writer.onwriteend = secondVerifier;
                             length += exception.length;
                             writer.seek(writer.length);
@@ -2439,6 +2446,13 @@ exports.defineAutoTests = function () {
                         secondVerifier = function () {
                             expect(writer.length).toBe(length);
                             expect(writer.position).toBe(length);
+                            var reader = new FileReader();
+                            reader.onloadend = thirdVerifier;
+                            reader.onerror = failed.bind(null, done, 'reader.onerror - Error reading file: ' + fileName);
+                            fileEntry.file(function(f){reader.readAsText(f);});
+                        },
+                        thirdVerifier = function (evt) {
+                            expect(evt.target.result).toBe(content+exception);
                             // cleanup
                             deleteFile(fileName, done);
                         };
@@ -2451,6 +2465,7 @@ exports.defineAutoTests = function () {
             it("file.spec.98 should be able to seek to the middle of the file and write more data than file.length", function (done) {
                 var fileName = "writer.seek.write", // file content
                 content = "This is our sentence.", // for checking file length
+                exception = "newer sentence.",
                 length = content.length;
                 // create file, then write and append to it
                 createFile(fileName, function (fileEntry) {
@@ -2460,7 +2475,6 @@ exports.defineAutoTests = function () {
                             expect(writer.length).toBe(length);
                             expect(writer.position).toBe(length);
                             // Append some more data
-                            var exception = "newer sentence.";
                             writer.onwriteend = secondVerifier;
                             length = 12 + exception.length;
                             writer.seek(12);
@@ -2469,6 +2483,13 @@ exports.defineAutoTests = function () {
                         secondVerifier = function (evt) {
                             expect(writer.length).toBe(length);
                             expect(writer.position).toBe(length);
+                            var reader = new FileReader();
+                            reader.onloadend = thirdVerifier;
+                            reader.onerror = failed.bind(null, done, 'reader.onerror - Error reading file: ' + fileName);
+                            fileEntry.file(function(f){reader.readAsText(f);});
+                        },
+                        thirdVerifier = function (evt) {
+                            expect(evt.target.result).toBe(content.substr(0,12)+exception);
                             // cleanup
                             deleteFile(fileName, done);
                         };
@@ -2487,6 +2508,7 @@ exports.defineAutoTests = function () {
 
                 var fileName = "writer.seek.write2", // file content
                 content = "This is our sentence.", // for checking file length
+                exception = "new.",
                 length = content.length;
                 // create file, then write and append to it
                 createFile(fileName, function (fileEntry) {
@@ -2496,7 +2518,6 @@ exports.defineAutoTests = function () {
                             expect(writer.length).toBe(length);
                             expect(writer.position).toBe(length);
                             // Append some more data
-                            var exception = "new.";
                             writer.onwriteend = secondVerifier;
                             length = 8 + exception.length;
                             writer.seek(8);
@@ -2505,6 +2526,13 @@ exports.defineAutoTests = function () {
                         secondVerifier = function (evt) {
                             expect(writer.length).toBe(length);
                             expect(writer.position).toBe(length);
+                            var reader = new FileReader();
+                            reader.onloadend = thirdVerifier;
+                            reader.onerror = failed.bind(null, done, 'reader.onerror - Error reading file: ' + fileName);
+                            fileEntry.file(function(f){reader.readAsText(f);});
+                        },
+                        thirdVerifier = function (evt) {
+                            expect(evt.target.result).toBe(content.substr(0,8)+exception);
                             // cleanup
                             deleteFile(fileName, done);
                         };
@@ -3599,7 +3627,8 @@ exports.defineManualTests = function (contentEl, createActionButton) {
     var fsRoots = {
         "ios" : "library,library-nosync,documents,documents-nosync,cache,bundle,root,private",
         "android" : "files,files-external,documents,sdcard,cache,cache-external,root",
-        "amazon-fireos" : "files,files-external,documents,sdcard,cache,cache-external,root"
+        "amazon-fireos" : "files,files-external,documents,sdcard,cache,cache-external,root",
+        "windows": "temporary,persistent"
     };
 
     //Add title and align to content
