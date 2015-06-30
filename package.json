@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-file",
-  "version": "2.0.1-dev",
+  "version": "2.1.1-dev",
   "description": "Cordova File Plugin",
   "cordova": {
     "id": "cordova-plugin-file",
@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://git-wip-us.apache.org/repos/asf/cordova-plugin-file.git"
+    "url": "https://github.com/apache/cordova-plugin-file"
   },
   "keywords": [
     "cordova",
