@@ -57,22 +57,23 @@ function getFileFromPathAsync(path) {
 }
 
 function getFolderFromPathAsync(path) {
-    if (path.indexOf(pathsPrefix.picturesLibrary) === 0) {
+    var cordovaPath = nativePathToCordova(path);
+    if (cordovaPath.indexOf(pathsPrefix.picturesLibrary) === 0 || path.indexOf(pathsPrefix.picturesLibrary) === 0) {
         return new WinJS.Promise(function (completeDispatch, errorDispatch, progressDispatch) {
             completeDispatch(Windows.Storage.KnownFolders.picturesLibrary);
         });
     }
-    if (path.indexOf(pathsPrefix.musicLibrary) === 0) {
+    if (cordovaPath.indexOf(pathsPrefix.musicLibrary) === 0 || path.indexOf(pathsPrefix.musicLibrary) === 0) {
         return new WinJS.Promise(function (completeDispatch, errorDispatch, progressDispatch) {
             completeDispatch(Windows.Storage.KnownFolders.musicLibrary);
         });
     }
-    if (path.indexOf(pathsPrefix.documentsLibrary) === 0) {
+    if (cordovaPath.indexOf(pathsPrefix.documentsLibrary) === 0 || path.indexOf(pathsPrefix.documentsLibrary) === 0) {
         return new WinJS.Promise(function (completeDispatch, errorDispatch, progressDispatch) {
             completeDispatch(Windows.Storage.KnownFolders.documentsLibrary);
         });
     }    
-    if (path.indexOf(pathsPrefix.videosLibrary) === 0) {
+    if (cordovaPath.indexOf(pathsPrefix.videosLibrary) === 0 || path.indexOf(pathsPrefix.videosLibrary) === 0) {
         return new WinJS.Promise(function (completeDispatch, errorDispatch, progressDispatch) {
             completeDispatch(Windows.Storage.KnownFolders.videosLibrary);
         });
@@ -180,20 +181,20 @@ var pathsPrefix = {
 
 //Pictures Library of the user shared by all apps. Needs to specify permissions to access folder
 try {
-    pathsPrefix.picturesLibrary = nativePathToCordova(Windows.Storage.KnownFolders.picturesLibrary.folderRelativeId + '\\');
+    pathsPrefix.picturesLibrary = '~/' + Windows.Storage.KnownFolders.picturesLibrary.name + '/';
 } catch (err) { }
 
 //Music Library of the user shared by all apps. Needs to specify permissions to access folder
 try {
-    pathsPrefix.musicLibrary = nativePathToCordova(Windows.Storage.KnownFolders.musicLibrary.folderRelativeId + '\\');
+    pathsPrefix.musicLibrary = '~/' + Windows.Storage.KnownFolders.musicLibrary.name + '/';
 } catch (err) { }
 //Documents Library of the user shared by all apps. Needs to specify permissions to access folder
 try {
-    pathsPrefix.documentsLibrary = nativePathToCordova(Windows.Storage.KnownFolders.documentsLibrary.folderRelativeId + '\\');
+    pathsPrefix.documentsLibrary = '~/' + Windows.Storage.KnownFolders.documentsLibrary.name + '/';
 } catch (err) { }
 //Videos Library of the user shared by all apps. Needs to specify permissions to access folder
 try {
-    pathsPrefix.videosLibrary = nativePathToCordova(Windows.Storage.KnownFolders.videosLibrary.folderRelativeId + '\\');
+    pathsPrefix.videosLibrary = '~/' + Windows.Storage.KnownFolders.videosLibrary.name + '/';
 } catch (err) { }
 
 var AllFileSystems; 
@@ -237,23 +238,30 @@ function getAllFS() {
 
         //Permission needed for these
         if (pathsPrefix.picturesLibrary) {
-            AllFileSystems.picturesLibrary = Object.freeze(new WinFS('picturesLibrary', { 
-                name: 'picturesLibrary', 
+            AllFileSystems.picturesLibrary = Object.freeze(new WinFS('picturesLibrary', {
+                name: 'picturesLibrary',
+                nativeURL: "~/Pictures",
                 winpath: pathsPrefix.picturesLibrary 
             }));
-        } else if (pathsPrefix.musicLibrary) {
-            AllFileSystems.musicLibrary = Object.freeze(new WinFS('musicLibrary', { 
-                name: 'musicLibrary', 
+        }
+        if (pathsPrefix.musicLibrary) {
+            AllFileSystems.musicLibrary = Object.freeze(new WinFS('musicLibrary', {
+                name: 'musicLibrary',
+                nativeURL: "~/Music",
                 winpath: pathsPrefix.musicLibrary 
             }));
-        } else if (pathsPrefix.documentsLibrary) {
-            AllFileSystems.documentsLibrary = Object.freeze(new WinFS('documentsLibrary', { 
-                name: 'documentsLibrary', 
+        }
+        if (pathsPrefix.documentsLibrary) {
+            AllFileSystems.documentsLibrary = Object.freeze(new WinFS('documentsLibrary', {
+                name: 'documentsLibrary',
+                nativeURL: "~/Documents",
                 winpath: pathsPrefix.documentsLibrary 
             }));
-        } else if (pathsPrefix.videosLibrary) {
-            AllFileSystems.videosLibrary = Object.freeze(new WinFS('videosLibrary', { 
-                name: 'videosLibrary', 
+        }
+        if (pathsPrefix.videosLibrary) {
+            AllFileSystems.videosLibrary = Object.freeze(new WinFS('videosLibrary', {
+                name: 'videosLibrary',
+                nativeURL: "~/Videos",
                 winpath: pathsPrefix.videosLibrary 
             }));
         }
@@ -337,9 +345,17 @@ function getFilesystemFromURL(url) {
 
 function getFsPathForWinPath(fs, wpath) {
     var path = nativePathToCordova(wpath);
+    if (fs.winpath.indexOf("~") === 0) {
+        var library = new RegExp(fs.winpath.replace("~", "^[/]*([A-Z]:)\/Users\/[^\/]*"), "g");
+        if (path.search(library) === -1) {
+            return null;
+        }
+        return path.replace(library, '');
+    }
+
     if (path.indexOf(fs.winpath) !== 0)
         return null;
-    return path.replace(fs.winpath,'/');
+    return path.replace(fs.winpath,'');
 }
 
 var WinError = {
