@@ -23,6 +23,25 @@
 #import "CDVAssetLibraryFilesystem.h"
 #import <objc/message.h>
 
+static NSString* toBase64(NSData* data) {
+    SEL s1 = NSSelectorFromString(@"cdv_base64EncodedString");
+    SEL s2 = NSSelectorFromString(@"base64EncodedString");
+    SEL s3 = NSSelectorFromString(@"base64EncodedStringWithOptions:");
+    
+    if ([data respondsToSelector:s1]) {
+        NSString* (*func)(id, SEL) = (void *)[data methodForSelector:s1];
+        return func(data, s1);
+    } else if ([data respondsToSelector:s2]) {
+        NSString* (*func)(id, SEL) = (void *)[data methodForSelector:s2];
+        return func(data, s2);
+    } else if ([data respondsToSelector:s3]) {
+        NSString* (*func)(id, SEL, NSUInteger) = (void *)[data methodForSelector:s3];
+        return func(data, s3, 0);
+    } else {
+        return nil;
+    }
+}
+
 CDVFile *filePlugin = nil;
 
 extern NSString * const NSURLIsExcludedFromBackupKey __attribute__((weak_import));
@@ -878,12 +897,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         [fs readFileAtURL:localURI start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
             CDVPluginResult* result = nil;
             if (data != nil) {
-                SEL selector = NSSelectorFromString(@"cdv_base64EncodedString");
-                if (![data respondsToSelector:selector]) {
-                    selector = NSSelectorFromString(@"base64EncodedString");
-                }
-                id (*func)(id, SEL) = (void *)[data methodForSelector:selector];
-                NSString* b64Str = func(data, selector);
+                NSString* b64Str = toBase64(data);
                 NSString* output = [NSString stringWithFormat:@"data:%@;base64,%@", mimeType, b64Str];
                 result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:output];
             } else {
