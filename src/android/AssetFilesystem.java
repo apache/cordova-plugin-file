@@ -78,6 +78,9 @@ public class AssetFilesystem extends Filesystem {
         if (assetPath.startsWith("/")) {
             assetPath = assetPath.substring(1);
         }
+        if (assetPath.endsWith("/")) {
+            assetPath = assetPath.substring(0, assetPath.length() - 1);
+        }
         lazyInitCaches();
         String[] ret = listCache.get(assetPath);
         if (ret == null) {
