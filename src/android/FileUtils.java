@@ -94,10 +94,7 @@ public class FileUtils extends CordovaPlugin {
     }
 
     protected String[] getExtraFileSystemsPreference(Activity activity) {
-        String fileSystemsStr = activity.getIntent().getStringExtra("androidextrafilesystems");
-        if (fileSystemsStr == null) {
-            fileSystemsStr = "files,files-external,documents,sdcard,cache,cache-external,root";
-        }
+        String fileSystemsStr = preferences.getString("androidextrafilesystems", "files,files-external,documents,sdcard,cache,cache-external,root");
         return fileSystemsStr.split(",");
     }
 
@@ -155,11 +152,9 @@ public class FileUtils extends CordovaPlugin {
 
     	Activity activity = cordova.getActivity();
     	String packageName = activity.getPackageName();
-    	
-    	String location = activity.getIntent().getStringExtra("androidpersistentfilelocation");
-    	if (location == null) {
-    		location = "compatibility";
-    	}
+
+        String location = preferences.getString("androidpersistentfilelocation", "compatibility");
+
     	tempRoot = activity.getCacheDir().getAbsolutePath();
     	if ("internal".equalsIgnoreCase(location)) {
     		persistentRoot = activity.getFilesDir().getAbsolutePath() + "/files/";
