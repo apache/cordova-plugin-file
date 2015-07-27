@@ -21,7 +21,7 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
 xmlns:android="http://schemas.android.com/apk/res/android"
            id="cordova-plugin-file"
-      version="2.1.1-dev">
+      version="3.0.0">
     <name>File</name>
     <description>Cordova File Plugin</description>
     <license>Apache 2.0</license>
@@ -104,6 +104,23 @@ xmlns:android="http://schemas.android.com/apk/res/android"
     <js-module src="www/resolveLocalFileSystemURI.js" name="resolveLocalFileSystemURI">
         <merges target="window" />
     </js-module>
+  
+    <config-file target="config.xml" parent="/*">
+        <preference name="AndroidPersistentFileLocation" value="Internal" />
+    </config-file>
+  
+    <info>
+The Android Persistent storage location now defaults to "Internal". Please check this plugins README to see if you application needs any changes in its config.xml.
+      
+If this is a new application no changes are required.
+      
+If this is an update to an existing application that did not specify an "AndroidPersistentFileLocation" you may need to add:
+      
+      "&lt;preference name="AndroidPersistentFileLocation" value="Compatibility" /&gt;"
+      
+to config.xml in order for the application to find previously stored files.
+      
+    </info>
 
     <!-- android -->
     <platform name="android">

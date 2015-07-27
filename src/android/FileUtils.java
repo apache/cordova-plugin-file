@@ -153,7 +153,7 @@ public class FileUtils extends CordovaPlugin {
     	Activity activity = cordova.getActivity();
     	String packageName = activity.getPackageName();
 
-        String location = preferences.getString("androidpersistentfilelocation", "compatibility");
+        String location = preferences.getString("androidpersistentfilelocation", "internal");
 
     	tempRoot = activity.getCacheDir().getAbsolutePath();
     	if ("internal".equalsIgnoreCase(location)) {

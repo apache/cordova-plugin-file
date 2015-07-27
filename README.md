@@ -214,13 +214,13 @@ application's `config.xml` file. To do this, add one of these two lines to
 
     <preference name="AndroidPersistentFileLocation" value="Compatibility" />
 
-Without this line, the File plugin will use `Compatibility` as the default. If
+Without this line, the File plugin will use `Internal` as the default. If
 a preference tag is present, and is not one of these values, the application
 will not start.
 
 If your application has previously been shipped to users, using an older (pre-
-1.0) version of this plugin, and has stored files in the persistent filesystem,
-then you should set the preference to `Compatibility`. Switching the location to
+3.0.0) version of this plugin, and has stored files in the persistent filesystem,
+then you should set the preference to `Compatibility` if your config.xml does not specify a location for the persistent filesystem. Switching the location to
 "Internal" would mean that existing users who upgrade their application may be
 unable to access their previously-stored files, depending on their device.
 
