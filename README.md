@@ -19,8 +19,6 @@
 
 # cordova-plugin-file
 
-[![Build Status](https://travis-ci.org/apache/cordova-plugin-file.svg)](https://travis-ci.org/apache/cordova-plugin-file)
-
 This plugin implements a File API allowing read/write access to files residing on the device.
 
 This plugin is based on several specs, including : 
