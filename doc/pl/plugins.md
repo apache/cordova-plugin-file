@@ -19,91 +19,73 @@
 
 # Uwagi dla programistów wtyczki
 
-Te notatki są przeznaczone przede wszystkim dla Androida i iOS programistów, którzy chcieli pisac pluginy które interfejs z systemu plików za pomocą wtyczki pliku.
+Te notatki są przeznaczone przede wszystkim dla Androida i iOS deweloperów, którzy chcieli pisac pluginy które interfejs z systemu plików za pomocą wtyczki pliku.
 
 ## Praca z Cordova pliku system adresów URL
 
-Od wersji 1.0.0, ten plugin jest używane adresy URL z `cdvfile` system do komunikacji przez most, a nie narażać urządzenia raw ścieżki systemu plików JavaScript.
+Od wersji 1.0.0, ten plugin ma używane adresy URL z `cdvfile` system dla wszystkich komunikacji przez most, a nie narażać urządzenia raw ścieżki systemu plików JavaScript.
 
-Na stronie JavaScript oznacza to, że FileEntry i DirectoryEntry obiekty mają fullPath atrybut, który jest głównym systemie plików HTML. Jeśli twój plugin JavaScript API akceptuje obiektu DirectoryEntry lub FileEntry, należy zadzwonić `.toURL()` na obiekt przed przekazaniem przez most do kodu macierzystego.
+Na stronie JavaScript oznacza to, że FileEntry i DirectoryEntry obiekty mają fullPath atrybut, który jest głównym systemie plików HTML. Jeśli twój plugin JavaScript API akceptuje obiektu FileEntry lub DirectoryEntry, należy zadzwonić `.toURL()` dla tego obiektu przed przekazaniem Altpradl do kodu macierzystego.
 
 ### Konwersja cdvfile: / / URL do ścieżki fileystem
 
-Wtyczek, które trzeba pisać do systemu plików może chcesz przekonwertować odebranych plików systemu adres URL lokalizacji rzeczywistych plików. Istnieje wiele sposobów działania, od macierzystego platformy.
+Wtyczek, które trzeba pisać do systemu plików może chcesz przekonwertować odebranych plików systemu adres URL lokalizacji rzeczywistych plików. Istnieje wiele sposobów robi to, w zależności od macierzystego platformy.
 
-Ważne jest, aby pamiętać, że nie wszystkie `cdvfile://` adresy URL są można zmapować na prawdziwe akta urządzeniu. Niektóre adresy URL może odnosić się do aktywów na urządzeniu, które nie są reprezentowane przez pliki, lub nawet może odnosić się do zasobów zdalnych. Z powodu tych możliwości wtyczki należy zawsze sprawdzić, czy się znaczących wyników wstecz, podczas próby konwersji adresów URL do ścieżki.
+Ważne jest, aby pamiętać, że nie wszystkie `cdvfile://` adresy URL są można zmapować na prawdziwe pliki w urządzeniu. Niektóre adresy URL może odnosić się do aktywów na urządzeniu, które nie są reprezentowane przez pliki, lub nawet może odnosić się do zasobów zdalnych. Ze względu na te możliwości wtyczki należy zawsze sprawdzić, czy się znaczącego wyniku powrót podczas próby konwersji adresów URL do ścieżki.
 
-#### Android
+#### Androida
 
 Na Android, najprostsza metoda konwersji `cdvfile://` URL do ścieżki systemu plików jest użycie `org.apache.cordova.CordovaResourceApi` . `CordovaResourceApi`jest kilka metod, które mogą obsługiwać `cdvfile://` adresów URL:
 
-    // webView is a member of the Plugin class
-    CordovaResourceApi resourceApi = webView.getResourceApi();
+    Widok sieci Web jest członkiem Plugin klasy CordovaResourceApi resourceApi = webView.getResourceApi();
     
-    // Obtain a file:/// URL representing this file on the device,
-    // or the same URL unchanged if it cannot be mapped to a file
-    Uri fileURL = resourceApi.remapUri(Uri.parse(cdvfileURL));
+    Uzyskać URL file:/// reprezentujących ten plik na urządzeniu / / lub ten sam adres URL niezmienione, jeśli nie mogą być mapowane do pliku fileURL Uri = resourceApi.remapUri(Uri.parse(cdvfileURL));
     
 
 Jest również możliwe, aby korzystać z wtyczki pliku bezpośrednio:
 
-    import org.apache.cordova.file.FileUtils;
-    import org.apache.cordova.file.FileSystem;
-    import java.net.MalformedURLException;
+    org.apache.cordova.file.FileUtils przywóz;
+    org.apache.cordova.file.FileSystem przywóz;
+    java.net.MalformedURLException przywóz;
     
-    // Get the File plugin from the plugin manager
-    FileUtils filePlugin = (FileUtils)webView.pluginManager.getPlugin("File");
+    Uzyskać pliku plugin manager wtyczki FileUtils filePlugin = (FileUtils)webView.pluginManager.getPlugin("File");
     
-    // Given a URL, get a path for it
-    try {
-        String path = filePlugin.filesystemPathForURL(cdvfileURL);
-    } catch (MalformedURLException e) {
-        // The filesystem url wasn't recognized
-    }
+    Biorąc pod uwagę adres URL, uzyskać ścieżkę dla to spróbuj {String ścieżka = filePlugin.filesystemPathForURL(cdvfileURL);} catch (MalformedURLException e) {/ / url plików nie było uznane}
     
 
-Do przeliczenia ścieżki do `cdvfile://` adres URL:
+Do przeliczenia ścieżki do `cdvfile://` URL:
 
-    import org.apache.cordova.file.LocalFilesystemURL;
+    org.apache.cordova.file.LocalFilesystemURL przywóz;
     
-    // Get a LocalFilesystemURL object for a device path,
-    // or null if it cannot be represented as a cdvfile URL.
+    Uzyskanie obiektu LocalFilesystemURL na ścieżkę urządzenia / / lub null, jeśli nie może być reprezentowana jako adres URL cdvfile.
     LocalFilesystemURL url = filePlugin.filesystemURLforLocalPath(path);
-    // Get the string representation of the URL object
-    String cdvfileURL = url.toString();
+    Dostać reprezentację ciąg adresu URL obiektu String cdvfileURL = url.toString();
     
 
 Jeśli twój plugin tworzy plik, i chcesz zwraca obiekt FileEntry dla niego, użyj pliku plugin:
 
-    // Return a JSON structure suitable for returning to JavaScript,
-    // or null if this file is not representable as a cdvfile URL.
-    JSONObject entry = filePlugin.getEntryForFile(file);
+    Zwraca JSON struktura nadaje się do powrotu do JavaScript, / / lub null, jeśli ten plik nie jest reprezentować jako adres URL cdvfile.
+    Wpis JSONObject = filePlugin.getEntryForFile(file);
     
 
 #### iOS
 
 Cordova na iOS nie korzystać z tego samego `CordovaResourceApi` koncepcji jak Android. Na iOS należy użyć pliku plugin do konwersji między adresach URL i ścieżkach plików.
 
-    // Get a CDVFilesystem URL object from a URL string
-    CDVFilesystemURL* url = [CDVFilesystemURL fileSystemURLWithString:cdvfileURL];
-    // Get a path for the URL object, or nil if it cannot be mapped to a file
-    NSString* path = [filePlugin filesystemPathForURL:url];
+    Uzyskać obiekt CDVFilesystem URL URL url ciąg CDVFilesystemURL * = [CDVFilesystemURL fileSystemURLWithString:cdvfileURL];
+    Uzyskać ścieżkę dla URL obiektu, stawka zerowa, jeśli nie mogą być mapowane do ścieżki pliku NSString * = [filePlugin filesystemPathForURL:url];
     
     
-    // Get a CDVFilesystem URL object for a device path, or
-    // nil if it cannot be represented as a cdvfile URL.
-    CDVFilesystemURL* url = [filePlugin fileSystemURLforLocalPath:path];
-    // Get the string representation of the URL object
-    NSString* cdvfileURL = [url absoluteString];
+    Dostać CDVFilesystem URL obiektu na ścieżkę urządzenia lub / / zerowe, jeśli nie może być reprezentowana jako adres URL cdvfile.
+    CDVFilesystemURL * url = [filePlugin fileSystemURLforLocalPath:path];
+    Dostać reprezentację ciąg adresu URL obiektu NSString * cdvfileURL = [url absoluteString];
     
 
 Jeśli twój plugin tworzy plik, i chcesz zwraca obiekt FileEntry dla niego, użyj pliku plugin:
 
-    // Get a CDVFilesystem URL object for a device path, or
-    // nil if it cannot be represented as a cdvfile URL.
-    CDVFilesystemURL* url = [filePlugin fileSystemURLforLocalPath:path];
-    // Get a structure to return to JavaScript
-    NSDictionary* entry = [filePlugin makeEntryForLocalURL:url]
+    Dostać CDVFilesystem URL obiektu na ścieżkę urządzenia lub / / zerowe, jeśli nie może być reprezentowana jako adres URL cdvfile.
+    CDVFilesystemURL * url = [filePlugin fileSystemURLforLocalPath:path];
+    Struktura wrócić do JavaScript NSDictionary * wpis = [filePlugin makeEntryForLocalURL:url]
     
 
 #### JavaScript
@@ -113,12 +95,7 @@ W JavaScript, aby uzyskać `cdvfile://` adres URL z obiektu FileEntry lub Direct
     var cdvfileURL = entry.toURL();
     
 
-W plugin obsługi odpowiedzi do przeliczenia strukturę FileEntry wrócił do rzeczywistego obiektu wejścia, kod obsługi należy importować pliku plugin i utworzyć nowy obiekt:
+W plugin reakcji obsługi przerobić od zwróconych struktury FileEntry do rzeczywistego obiektu wejścia, kod obsługi należy zaimportować pliku plugin i utworzyć nowy obiekt:
 
-    // create appropriate Entry object
-    var entry;
-    if (entryStruct.isDirectory) {
-        entry = new DirectoryEntry(entryStruct.name, entryStruct.fullPath, new FileSystem(entryStruct.filesystemName));
-    } else {
-        entry = new FileEntry(entryStruct.name, entryStruct.fullPath, new FileSystem(entryStruct.filesystemName));
-    }
+    utworzyć odpowiedni wpis obiektu var wpis;
+    Jeśli (entryStruct.isDirectory) {wpis = nowy DirectoryEntry (entryStruct.name, entryStruct.fullPath, nowe FileSystem(entryStruct.filesystemName));} jeszcze {wpis = nowy FileEntry (entryStruct.name, entryStruct.fullPath, nowe FileSystem(entryStruct.filesystemName));}

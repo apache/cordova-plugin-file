@@ -19,91 +19,73 @@
 
 # Note per gli sviluppatori di plugin
 
-Queste note sono principalmente destinate agli sviluppatori di Android e iOS che vogliono scrivere plugin quale interfaccia con il sistema di file utilizzando il File del plugin.
+Queste note sono destinate principalmente per gli sviluppatori di Android e iOS che vogliono scrivere plugin quale interfaccia con il sistema di file utilizzando il File plugin.
 
-## Lavorare con file di Cordova sistema gli URL
+## Lavorando con URL di sistema file di Cordova
 
-Dalla versione 1.0.0, questo plugin ha utilizzato gli URL con un `cdvfile` regime per tutte le comunicazioni oltre il ponte, piuttosto che esporre i percorsi del dispositivo raw file system a JavaScript.
+Dalla versione 1.0.0, questo plugin ha utilizzato gli URL con un `cdvfile` schema per tutte le comunicazioni oltre il ponte, piuttosto che esporre i percorsi del file system di dispositivo raw a JavaScript.
 
-Sul lato JavaScript, questo significa che gli oggetti FileEntry e DirectoryEntry hanno un attributo fullPath che è relativo alla directory principale del sistema di file HTML. Se JavaScript API del vostro plugin accetta un oggetto FileEntry o DirectoryEntry, dovrebbe chiamare `.toURL()` su quell'oggetto prima di passarlo attraverso il ponte in codice nativo.
+Sul lato JavaScript, questo significa che gli oggetti FileEntry e DirectoryEntry dispongano di un attributo fullPath che è relativo alla directory principale del sistema di file HTML. Se API JavaScript del vostro plugin accetta un oggetto FileEntry o DirectoryEntry, è necessario chiamare `.toURL()` su quell'oggetto prima di passarlo attraverso il ponte in codice nativo.
 
-### Conversione cdvfile: / / URL per percorsi fileystem
+### Conversione cdvfile: / / URL ai percorsi fileystem
 
-Plugin che occorre scrivere al filesystem potrebbe voler convertire un URL del sistema file ricevuto in una filesystem effettiva posizione. Ci sono diversi modi di fare questo, a seconda della piattaforma nativa.
+Plugin che hanno bisogno di scrivere il filesystem può essere necessario convertire un URL di sistema del file ricevuto in un percorso effettivo filesystem. Ci sono diversi modi di fare questo, a seconda della piattaforma nativa.
 
-È importante ricordare che non tutti i `cdvfile://` gli URL sono mappabili ai veri file sul dispositivo. Alcuni URL può riferirsi a beni sul dispositivo che non sono rappresentati da file, o possono anche riferirsi a risorse remote. A causa di queste possibilità, plugin dovrebbe sempre verificare se ottengono un risultato espressivo indietro quando si tenta di convertire gli URL in tracciati.
+È importante ricordare che non tutti i `cdvfile://` URL sono mappabili ai veri file sul dispositivo. Alcuni URL può riferirsi a beni sul dispositivo che non sono rappresentate da file, o possono anche fare riferimento a risorse remote. A causa di queste possibilità, plugin dovrebbe sempre verificare se ottengono un risultato significativo indietro quando si tenta di convertire gli URL in percorsi.
 
 #### Android
 
-Su Android, il metodo più semplice per convertire un `cdvfile://` URL a un percorso di file System è quello di utilizzare `org.apache.cordova.CordovaResourceApi` . `CordovaResourceApi`dispone di diversi metodi in grado di gestire `cdvfile://` URL:
+Su Android, il metodo più semplice per convertire un `cdvfile://` URL a un percorso di file System è quello di utilizzare `org.apache.cordova.CordovaResourceApi` . `CordovaResourceApi`dispone di diversi metodi che è possono gestire `cdvfile://` URL:
 
-    // webView is a member of the Plugin class
-    CordovaResourceApi resourceApi = webView.getResourceApi();
+    webView è un membro del Plugin classe CordovaResourceApi resourceApi = webView.getResourceApi();
     
-    // Obtain a file:/// URL representing this file on the device,
-    // or the same URL unchanged if it cannot be mapped to a file
-    Uri fileURL = resourceApi.remapUri(Uri.parse(cdvfileURL));
+    Ottenere un URL file:/// che rappresenta questo file sul dispositivo, / / o lo stesso URL invariata se non può essere mappato a un file Uri fileURL = resourceApi.remapUri(Uri.parse(cdvfileURL));
     
 
-È anche possibile utilizzare direttamente il File del plugin:
+È anche possibile utilizzare direttamente il File plugin:
 
-    import org.apache.cordova.file.FileUtils;
-    import org.apache.cordova.file.FileSystem;
-    import java.net.MalformedURLException;
+    importazione org.apache.cordova.file.FileUtils;
+    importazione org.apache.cordova.file.FileSystem;
+    importazione java.net.MalformedURLException;
     
-    // Get the File plugin from the plugin manager
-    FileUtils filePlugin = (FileUtils)webView.pluginManager.getPlugin("File");
+    Ottenere il File plugin dal gestore plugin FileUtils filePlugin = (FileUtils)webView.pluginManager.getPlugin("File");
     
-    // Given a URL, get a path for it
-    try {
-        String path = filePlugin.filesystemPathForURL(cdvfileURL);
-    } catch (MalformedURLException e) {
-        // The filesystem url wasn't recognized
-    }
+    Dato un URL, ottenere un percorso per esso prova {String path = filePlugin.filesystemPathForURL(cdvfileURL);}} catch (MalformedURLException e) {/ / l'url del file System non è stato riconosciuto}
     
 
-Per convertire da un percorso a un `cdvfile://` URL:
+Convertire da un percorso a un `cdvfile://` URL:
 
-    import org.apache.cordova.file.LocalFilesystemURL;
+    importazione org.apache.cordova.file.LocalFilesystemURL;
     
-    // Get a LocalFilesystemURL object for a device path,
-    // or null if it cannot be represented as a cdvfile URL.
+    Ottenere un oggetto LocalFilesystemURL per un percorso di dispositivo, / / oppure null se non può essere rappresentata come un URL di cdvfile.
     LocalFilesystemURL url = filePlugin.filesystemURLforLocalPath(path);
-    // Get the string representation of the URL object
-    String cdvfileURL = url.toString();
+    Ottenere la rappresentazione di stringa dell'URL oggetto String cdvfileURL = url.toString();
     
 
-Se il tuo plugin crea un file e si desidera restituire un oggetto FileEntry per esso, utilizzare il File del plugin:
+Se il vostro plugin crea un file e si desidera restituire un oggetto FileEntry per esso, utilizzare il File plugin:
 
-    // Return a JSON structure suitable for returning to JavaScript,
-    // or null if this file is not representable as a cdvfile URL.
-    JSONObject entry = filePlugin.getEntryForFile(file);
+    Restituire una struttura JSON appropriato per restituire a JavaScript, / / o null se questo file non è rappresentabile come un URL di cdvfile.
+    Voce di JSONObject = filePlugin.getEntryForFile(file);
     
 
 #### iOS
 
-Cordova su iOS non utilizza lo stesso `CordovaResourceApi` concetto come Android. Su iOS, è necessario utilizzare il File del plugin per la conversione tra URL e percorsi del file System.
+Cordova su iOS non utilizza lo stesso `CordovaResourceApi` concetto come Android. Su iOS, si dovrebbe utilizzare il plugin File per convertire tra URL e percorsi di file System.
 
-    // Get a CDVFilesystem URL object from a URL string
-    CDVFilesystemURL* url = [CDVFilesystemURL fileSystemURLWithString:cdvfileURL];
-    // Get a path for the URL object, or nil if it cannot be mapped to a file
-    NSString* path = [filePlugin filesystemPathForURL:url];
+    Ottenere un oggetto CDVFilesystem URL da una stringa CDVFilesystemURL * url = [CDVFilesystemURL fileSystemURLWithString:cdvfileURL];
+    Ottenere un percorso per l'oggetto URL, o zero se non può essere mappato a un percorso di file NSString * = [filePlugin filesystemPathForURL:url];
     
     
-    // Get a CDVFilesystem URL object for a device path, or
-    // nil if it cannot be represented as a cdvfile URL.
-    CDVFilesystemURL* url = [filePlugin fileSystemURLforLocalPath:path];
-    // Get the string representation of the URL object
-    NSString* cdvfileURL = [url absoluteString];
+    Ottenere un oggetto CDVFilesystem URL per un percorso di dispositivo, o / / nullo se non può essere rappresentata come un URL di cdvfile.
+    CDVFilesystemURL * url = [filePlugin fileSystemURLforLocalPath:path];
+    Ottenere la rappresentazione di stringa dell'URL oggetto NSString * cdvfileURL = [absoluteString url];
     
 
-Se il tuo plugin crea un file e si desidera restituire un oggetto FileEntry per esso, utilizzare il File del plugin:
+Se il vostro plugin crea un file e si desidera restituire un oggetto FileEntry per esso, utilizzare il File plugin:
 
-    // Get a CDVFilesystem URL object for a device path, or
-    // nil if it cannot be represented as a cdvfile URL.
-    CDVFilesystemURL* url = [filePlugin fileSystemURLforLocalPath:path];
-    // Get a structure to return to JavaScript
-    NSDictionary* entry = [filePlugin makeEntryForLocalURL:url]
+    Ottenere un oggetto CDVFilesystem URL per un percorso di dispositivo, o / / nullo se non può essere rappresentata come un URL di cdvfile.
+    CDVFilesystemURL * url = [filePlugin fileSystemURLforLocalPath:path];
+    Ottenere una struttura per tornare alla voce JavaScript NSDictionary * = [filePlugin makeEntryForLocalURL:url]
     
 
 #### JavaScript
@@ -113,12 +95,7 @@ In JavaScript, per ottenere un `cdvfile://` URL da un oggetto FileEntry o Direct
     var cdvfileURL = entry.toURL();
     
 
-Nei gestori di risposta plugin, per convertire da una struttura FileEntry restituita in un oggetto effettivo della voce, il codice del gestore dovrebbe importare il File del plugin e creare un nuovo oggetto:
+Nei gestori di risposta del plugin, per convertire da una struttura FileEntry restituita in un oggetto reale di voce, il codice del gestore dovrebbe importare il File plugin e creare un nuovo oggetto:
 
-    // create appropriate Entry object
-    var entry;
-    if (entryStruct.isDirectory) {
-        entry = new DirectoryEntry(entryStruct.name, entryStruct.fullPath, new FileSystem(entryStruct.filesystemName));
-    } else {
-        entry = new FileEntry(entryStruct.name, entryStruct.fullPath, new FileSystem(entryStruct.filesystemName));
-    }
+    creare la voce appropriata a voce oggetto var;
+    Se (entryStruct.isDirectory) {voce = new DirectoryEntry (entryStruct.name, entryStruct.fullPath, nuovo FileSystem(entryStruct.filesystemName));} altro {voce = FileEntry nuovo (entryStruct.name, entryStruct.fullPath, nuovo FileSystem(entryStruct.filesystemName));}

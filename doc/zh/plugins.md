@@ -17,108 +17,85 @@
     under the License.
 -->
 
-# 外掛程式開發人員須知
+# 外掛程式開發人員注意事項
 
-這些筆記主要針對 Android 和 iOS 開發者想要使用的檔案系統使用的檔外掛程式編寫外掛程式哪個介面。
+這些筆記主要用於 Android 和 iOS 開發者想要編寫外掛程式的介面與使用檔外掛程式的檔案系統。
 
 ## 工作與科爾多瓦檔案系統 Url
 
-1.0.0 版以來，這個外掛程式用了 Url 與 `cdvfile` 在橋樑，為所有的通信計畫，而不是暴露 JavaScript 原始設備的檔案系統路徑。
+自從版本 1.0.0，這個外掛程式一直使用 Url 與 `cdvfile` 大橋，計畫為所有通信，而不是揭露 JavaScript 的原始設備檔案系統路徑。
 
-在 JavaScript 方面，這意味著 FileEntry 和 DirectoryEntry 的物件具有一個完整路徑屬性是相對於 HTML 檔案系統的根目錄。 如果你的外掛程式的 JavaScript API 接受 FileEntry 或 DirectoryEntry 的物件，則應調用 `.toURL()` 對該物件之前將它在橋上傳遞給本機代碼。
+在 JavaScript 方面，這意味著 FileEntry 和 DirectoryEntry 的物件有一個完整路徑屬性是相對於 HTML 檔案系統的根目錄。 如果你的外掛程式的 JavaScript API 接受一個 FileEntry 或 DirectoryEntry 的物件，你應該打電話給 `.toURL()` 對該物件之前將它從橋上傳遞給本機代碼。
 
-### 轉換 cdvfile: / / fileystem 的路徑的 Url
+### 轉換 cdvfile: / / fileystem 路徑的 Url
 
-需要寫入到檔案系統的外掛程式可能會想要將收到的檔案系統的 URL 轉換為實際的檔案系統位置。有多種方法做這個，根據本機平臺。
+需要寫入到檔案系統的外掛程式可能想要將接收的檔案系統 URL 轉換為實際的檔案系統位置。有做這，根據本機平臺的多種方式。
 
-它是重要的是要記住，不是所有 `cdvfile://` 的 Url 均可映射到設備上的實際檔。 某些 Url 可以引用在設備上不是由檔，或甚至可以引用遠端資源的資產。 由於這些可能性，外掛程式應始終測試是否回試圖將 Url 轉換成路徑時，他們得到有意義的結果。
+很重要的是要記住，並不是所有 `cdvfile://` Url 是可映射到設備上的實際檔。 某些 Url 可以指在設備上沒有代表的檔，或甚至可以引用遠端資源的資產。 由於這些可能性，外掛程式應始終測試是否回來時試圖將 Url 轉換成路徑得到有意義的結果。
 
-#### Android 系統
+#### 安卓系統
 
-在 android 系統，最簡單的方法來轉換 `cdvfile://` 檔案系統路徑的 URL 是使用 `org.apache.cordova.CordovaResourceApi` 。 `CordovaResourceApi`有幾種方法，可處理 `cdvfile://` 的 Url：
+在 android 系統，最簡單的方法來轉換 `cdvfile://` 檔案系統路徑的 URL 是使用 `org.apache.cordova.CordovaResourceApi` 。 `CordovaResourceApi`有幾種方法，可處理 `cdvfile://` 網址:
 
-    // webView is a member of the Plugin class
-    CordovaResourceApi resourceApi = webView.getResourceApi();
+    web 視圖是成員的外掛程式類 CordovaResourceApi resourceApi = webView.getResourceApi();
     
-    // Obtain a file:/// URL representing this file on the device,
-    // or the same URL unchanged if it cannot be mapped to a file
-    Uri fileURL = resourceApi.remapUri(Uri.parse(cdvfileURL));
+    獲取表示此檔在設備上，file:/// URL / / 或 URL 相同變的如果它不能映射到檔 Uri fileURL = resourceApi.remapUri(Uri.parse(cdvfileURL));
     
 
-它也是可以直接使用檔外掛程式：
+它也是可以直接使用檔外掛程式:
 
-    import org.apache.cordova.file.FileUtils;
-    import org.apache.cordova.file.FileSystem;
-    import java.net.MalformedURLException;
+    導入 org.apache.cordova.file.FileUtils;
+    導入 org.apache.cordova.file.FileSystem;
+    導入 java.net.MalformedURLException;
     
-    // Get the File plugin from the plugin manager
-    FileUtils filePlugin = (FileUtils)webView.pluginManager.getPlugin("File");
+    得到檔外掛程式外掛程式管理器從 FileUtils filePlugin = (FileUtils)webView.pluginManager.getPlugin("File");
     
-    // Given a URL, get a path for it
-    try {
-        String path = filePlugin.filesystemPathForURL(cdvfileURL);
-    } catch (MalformedURLException e) {
-        // The filesystem url wasn't recognized
-    }
+    給定 URL，得到的路徑，因為它嘗試 {字串路徑 = filePlugin.filesystemPathForURL(cdvfileURL);} 趕上 (MalformedURLException e) {/ / 檔案系統 url 不承認}
     
 
-要轉換的路徑從 `cdvfile://` 的 URL：
+要轉換到的路徑從 `cdvfile://` URL:
 
-    import org.apache.cordova.file.LocalFilesystemURL;
+    導入 org.apache.cordova.file.LocalFilesystemURL;
     
-    // Get a LocalFilesystemURL object for a device path,
-    // or null if it cannot be represented as a cdvfile URL.
+    獲取設備的路徑，一個 LocalFilesystemURL 物件 / / 或如果它不能表示為 cdvfile 的 URL，則為 null。
     LocalFilesystemURL url = filePlugin.filesystemURLforLocalPath(path);
-    // Get the string representation of the URL object
-    String cdvfileURL = url.toString();
+    得到的字串表示形式的 URL 物件字串 cdvfileURL = url.toString();
     
 
-如果你的外掛程式創建一個檔，並且您想要為它返回一個 FileEntry 物件，使用該檔外掛程式：
+如果你的外掛程式創建一個檔，並且您想要為它返回一個 FileEntry 物件，使用該檔的外掛程式:
 
-    // Return a JSON structure suitable for returning to JavaScript,
-    // or null if this file is not representable as a cdvfile URL.
-    JSONObject entry = filePlugin.getEntryForFile(file);
+    返回一個 JSON 結構適合於回到 JavaScript，/ / 或如果此檔不是可表示為 cdvfile 的 URL，則為 null。
+    JSONObject 條目 = filePlugin.getEntryForFile(file);
     
 
 #### iOS
 
-科爾多瓦在 iOS 上的不使用相同 `CordovaResourceApi` 作為 android 系統的概念。在 iOS，應使用檔外掛程式的 Url 和檔案系統路徑之間進行轉換。
+科爾多瓦在 iOS 上的不使用相同 `CordovaResourceApi` 作為 android 系統的概念。在 iOS，應使用檔外掛程式 Url 和檔案系統路徑之間進行轉換。
 
-    // Get a CDVFilesystem URL object from a URL string
-    CDVFilesystemURL* url = [CDVFilesystemURL fileSystemURLWithString:cdvfileURL];
-    // Get a path for the URL object, or nil if it cannot be mapped to a file
-    NSString* path = [filePlugin filesystemPathForURL:url];
+    獲取一個物件，CDVFilesystem URL 從 url 字串 CDVFilesystemURL * = [CDVFilesystemURL fileSystemURLWithString:cdvfileURL];
+    獲取路徑 URL 物件，或為零，如果它不能映射到檔 NSString * 路徑 = [filePlugin filesystemPathForURL:url];
     
     
-    // Get a CDVFilesystem URL object for a device path, or
-    // nil if it cannot be represented as a cdvfile URL.
-    CDVFilesystemURL* url = [filePlugin fileSystemURLforLocalPath:path];
-    // Get the string representation of the URL object
-    NSString* cdvfileURL = [url absoluteString];
+    CDVFilesystem URL 物件獲取設備的路徑，或 / / 為零，如果它不能表示為 cdvfile 的 URL。
+    CDVFilesystemURL * url = [filePlugin fileSystemURLforLocalPath:path];
+    得到的字串表示形式的 URL 物件 NSString * cdvfileURL = [url absoluteString];
     
 
-如果你的外掛程式創建一個檔，並且您想要為它返回一個 FileEntry 物件，使用該檔外掛程式：
+如果你的外掛程式創建一個檔，並且您想要為它返回一個 FileEntry 物件，使用該檔的外掛程式:
 
-    // Get a CDVFilesystem URL object for a device path, or
-    // nil if it cannot be represented as a cdvfile URL.
-    CDVFilesystemURL* url = [filePlugin fileSystemURLforLocalPath:path];
-    // Get a structure to return to JavaScript
-    NSDictionary* entry = [filePlugin makeEntryForLocalURL:url]
+    CDVFilesystem URL 物件獲取設備的路徑，或 / / 為零，如果它不能表示為 cdvfile 的 URL。
+    CDVFilesystemURL * url = [filePlugin fileSystemURLforLocalPath:path];
+    得到一個結構來返回進入 JavaScript NSDictionary * = [filePlugin makeEntryForLocalURL:url]
     
 
 #### JavaScript
 
-在 JavaScript 中，得到 `cdvfile://` URL 從 FileEntry 或 DirectoryEntry 的物件，只需調用 `.toURL()` 對它：
+在 JavaScript 中，得到 `cdvfile://` URL 從 FileEntry 或 DirectoryEntry 的物件，只需調用 `.toURL()` 對它:
 
     var cdvfileURL = entry.toURL();
     
 
-在外掛程式回應處理常式，將從返回的 FileEntry 結構轉換為實際的輸入物件，您的處理常式代碼應該導入的檔外掛程式並創建一個新的物件：
+在外掛程式回應處理常式，將從返回的 FileEntry 結構轉換為實際的條目物件，處理常式代碼應該導入檔外掛程式和創建新的物件:
 
-    // create appropriate Entry object
-    var entry;
-    if (entryStruct.isDirectory) {
-        entry = new DirectoryEntry(entryStruct.name, entryStruct.fullPath, new FileSystem(entryStruct.filesystemName));
-    } else {
-        entry = new FileEntry(entryStruct.name, entryStruct.fullPath, new FileSystem(entryStruct.filesystemName));
-    }
+    創建適當的條目物件 var 條目;
+    如果 (entryStruct.isDirectory) {條目 = 新目錄 (entryStruct.name，entryStruct.fullPath，新 FileSystem(entryStruct.filesystemName));} 其他 {條目 = 新的 FileEntry (entryStruct.name，entryStruct.fullPath，新 FileSystem(entryStruct.filesystemName));}

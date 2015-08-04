@@ -17,108 +17,85 @@
     under the License.
 -->
 
-# プラグイン開発者のためのノート
+# プラグイン開発者のためのメモ
 
-これらのノートは、主に人造人間と iOS 開発者向けファイルのプラグインを使用して、ファイル システムでプラグインのインターフェイスを記述するもの。
+これらのノートは主に Android と iOS 開発者インタ フェース ファイルのプラグインを使用してファイル システムでプラグインを書きたい人向け。
 
-## コルドバのファイル システムの Url の操作
+## コルドバのファイル システムの Url での作業
 
-バージョン 1.0.0 以降このプラグインが使用した Url とは `cdvfile` raw デバイス ファイル システム パスを JavaScript に公開するのではなく、ブリッジ上のすべての通信方式します。
+バージョン 1.0.0 では、以来、このプラグインを含む Url を使用する `cdvfile` JavaScript に raw デバイス ファイル システムのパスを公開するのではなく、橋の上のすべての通信方式します。
 
-JavaScript 側認証と DirectoryEntry オブジェクトの HTML ファイル システムのルートからの相対である fullPath 属性があることを意味します。 呼び出す必要がありますプラグインの JavaScript API は、認証または DirectoryEntry オブジェクトを受け入れる場合 `.toURL()` 、橋を渡ってネイティブ コードに渡す前に、そのオブジェクト。
+JavaScript 側では、これはファイルと DirectoryEntry オブジェクトに HTML ファイル システムのルートを基準として、fullPath 属性があることを意味します。 あなたのプラグインの JavaScript API がファイルまたは DirectoryEntry オブジェクトを受け入れる場合を呼び出す必要があります `.toURL()` 橋を渡ってそれをネイティブ コードに渡す前にそのオブジェクトの。
 
-### Cdvfile を変換する：//fileystem のパスに Url
+### Cdvfile に変換する://fileystem のパスに Url
 
-ファイルシステムへの書き込みする必要があるプラグインは実際のファイルシステムの場所に受信ファイル用の URL を変換したい可能性があります。ネイティブのプラットフォームによって、これを行うための複数の方法があります。
+ファイルシステムへの書き込みする必要があるプラグインは、実際のファイルシステムの場所に受信したファイル システム URL に変換する必要があります。ネイティブ プラットフォームによって、これを行うための複数の方法があります。
 
-覚えておくことが重要ですすべてではない `cdvfile://` の Url はデバイス上の実際のファイルをマッピング可能な。 いくつかの Url は、ファイルでは表されないまたはリモートのリソースを参照することができますもをデバイス上の資産を参照できます。 プラグインはこれらの可能性のために彼らの Url パスに変換するしようとしているときに戻って、有意義な結果を得るかどうか常にテスト必要があります。
+それを覚えていることが重要ですすべて `cdvfile://` の Url がデバイス上の実際のファイルをマッピング可能な。 いくつかの Url は、ファイルでは表されないまたはリモート リソースを参照することができますもデバイス上の資産を参照できます。 これらの可能性のためのプラグインは、戻るときにパスに Url を変換しようとして、彼らは意味のある結果を得るかどうか常にテスト必要があります。
 
 #### アンドロイド
 
-Android 上で変換する最も簡単な方法は `cdvfile://` を使用してファイルシステムのパスに URL が `org.apache.cordova.CordovaResourceApi` 。 `CordovaResourceApi`扱うことができるいくつかの方法があります `cdvfile://` Url:
+アンドロイド, に変換する最も簡単な方法で、 `cdvfile://` を使用するファイルシステムのパスに URL は `org.apache.cordova.CordovaResourceApi` 。 `CordovaResourceApi`扱うことができるいくつかの方法は、 `cdvfile://` の Url:
 
-    // webView is a member of the Plugin class
-    CordovaResourceApi resourceApi = webView.getResourceApi();
+    webView プラグイン クラス CordovaResourceApi resourceApi のメンバーである = webView.getResourceApi()。
     
-    // Obtain a file:/// URL representing this file on the device,
-    // or the same URL unchanged if it cannot be mapped to a file
-    Uri fileURL = resourceApi.remapUri(Uri.parse(cdvfileURL));
+    デバイスでこのファイルを表す file:///URL を取得//ファイル Uri fileURL にマップできない場合、同じ URL は変更されません = resourceApi.remapUri(Uri.parse(cdvfileURL));
     
 
-また、ファイル プラグインを直接使用することが可能です。
+また、ファイルのプラグインを直接使用することが可能です。
 
-    import org.apache.cordova.file.FileUtils;
-    import org.apache.cordova.file.FileSystem;
-    import java.net.MalformedURLException;
+    インポート org.apache.cordova.file.FileUtils;
+    インポート org.apache.cordova.file.FileSystem;
+    インポート java.net.MalformedURLException;
     
-    // Get the File plugin from the plugin manager
-    FileUtils filePlugin = (FileUtils)webView.pluginManager.getPlugin("File");
+    プラグイン マネージャーからファイルのプラグインを入手してコマンド filePlugin = (FileUtils)webView.pluginManager.getPlugin("File");
     
-    // Given a URL, get a path for it
-    try {
-        String path = filePlugin.filesystemPathForURL(cdvfileURL);
-    } catch (MalformedURLException e) {
-        // The filesystem url wasn't recognized
-    }
+    それを試みるためにパスを取得 URL を指定すると、{文字列パス = filePlugin.filesystemPathForURL(cdvfileURL);} キャッチ (MalformedURLException e) {/ファイルシステムの url が認識されませんでした/}
     
 
-パスから変換する、 `cdvfile://` の URL:
+パスから変換する、 `cdvfile://` URL:
 
-    import org.apache.cordova.file.LocalFilesystemURL;
+    インポート org.apache.cordova.file.LocalFilesystemURL;
     
-    // Get a LocalFilesystemURL object for a device path,
-    // or null if it cannot be represented as a cdvfile URL.
+    デバイス ・ パスの LocalFilesystemURL オブジェクトを取得//cdvfile URL として表現できない場合は null。
     LocalFilesystemURL url = filePlugin.filesystemURLforLocalPath(path);
-    // Get the string representation of the URL object
-    String cdvfileURL = url.toString();
+    URL オブジェクトの文字列 cdvfileURL の文字列表現を取得する = url.toString();
     
 
-あなたのプラグインは、ファイルを作成し、認証オブジェクトを返す場合ファイルのプラグインを使用：
+あなたのプラグインは、ファイルを作成しをファイル オブジェクトを返す場合、ファイルのプラグインを使用します。
 
-    // Return a JSON structure suitable for returning to JavaScript,
-    // or null if this file is not representable as a cdvfile URL.
-    JSONObject entry = filePlugin.getEntryForFile(file);
+    JavaScript を返すときに適した JSON 構造を返す//このファイルは cdvfile URL として表現できない場合は null。
+    JSONObject エントリ = filePlugin.getEntryForFile(file);
     
 
 #### iOS
 
-IOS にコルドバと同じ使用しない `CordovaResourceApi` アンドロイドとして概念。IOS、上ファイル プラグインを使用して Url をファイルシステムのパスに変換する必要があります。
+IOS のコルドバは同じを使用しない `CordovaResourceApi` アンドロイドとしての概念。IOS では、Url とファイルシステムのパスの間を変換するファイル プラグインを使用する必要があります。
 
-    // Get a CDVFilesystem URL object from a URL string
-    CDVFilesystemURL* url = [CDVFilesystemURL fileSystemURLWithString:cdvfileURL];
-    // Get a path for the URL object, or nil if it cannot be mapped to a file
-    NSString* path = [filePlugin filesystemPathForURL:url];
+    URL の文字列 CDVFilesystemURL * url から CDVFilesystem URL オブジェクトを取得 [CDVFilesystemURL fileSystemURLWithString:cdvfileURL];
+    ファイル NSString * パスにマップできない場合は nil または URL オブジェクトのパスを取得 [filePlugin filesystemPathForURL:url];
     
     
-    // Get a CDVFilesystem URL object for a device path, or
-    // nil if it cannot be represented as a cdvfile URL.
-    CDVFilesystemURL* url = [filePlugin fileSystemURLforLocalPath:path];
-    // Get the string representation of the URL object
-    NSString* cdvfileURL = [url absoluteString];
+    デバイス ・ パスの CDVFilesystem の URL オブジェクトを取得または//cdvfile URL として表現できない場合は nil です。
+    CDVFilesystemURL の url = [filePlugin fileSystemURLforLocalPath:path];
+    URL オブジェクト NSString * cdvfileURL の文字列表現を取得する = [url absoluteString];
     
 
-あなたのプラグインは、ファイルを作成し、認証オブジェクトを返す場合ファイルのプラグインを使用：
+あなたのプラグインは、ファイルを作成しをファイル オブジェクトを返す場合、ファイルのプラグインを使用します。
 
-    // Get a CDVFilesystem URL object for a device path, or
-    // nil if it cannot be represented as a cdvfile URL.
-    CDVFilesystemURL* url = [filePlugin fileSystemURLforLocalPath:path];
-    // Get a structure to return to JavaScript
-    NSDictionary* entry = [filePlugin makeEntryForLocalURL:url]
+    デバイス ・ パスの CDVFilesystem の URL オブジェクトを取得または//cdvfile URL として表現できない場合は nil です。
+    CDVFilesystemURL の url = [filePlugin fileSystemURLforLocalPath:path];
+    JavaScript NSDictionary * エントリに戻る構造を得る = [filePlugin makeEntryForLocalURL:url]
     
 
 #### Java スクリプトの設定
 
-Java スクリプトの設定を取得するには `cdvfile://` 認証または DirectoryEntry オブジェクトから URL を単に呼び出す `.toURL()` に：
+Java スクリプトの設定を取得するに、 `cdvfile://` ファイルまたは DirectoryEntry オブジェクトからの URL を呼び出して、 `.toURL()` それを。
 
     var cdvfileURL = entry.toURL();
     
 
-プラグインハンドラーの応答で返された FileEntry 構造体の実際のエントリ オブジェクトを変換するハンドラーのコードする必要がありますファイル プラグインをインポートし、新しいオブジェクトを作成します。
+プラグイン応答ハンドラーに返された FileEntry 構造体の実際のエントリ オブジェクトを変換する、ハンドラーのコード ファイルのプラグインをインポート、新しいオブジェクトを作成します。
 
-    // create appropriate Entry object
-    var entry;
-    if (entryStruct.isDirectory) {
-        entry = new DirectoryEntry(entryStruct.name, entryStruct.fullPath, new FileSystem(entryStruct.filesystemName));
-    } else {
-        entry = new FileEntry(entryStruct.name, entryStruct.fullPath, new FileSystem(entryStruct.filesystemName));
-    }
+    適切なエントリ オブジェクト var エントリを作成します。
+    場合 (entryStruct.isDirectory) {エントリ = 新しい DirectoryEntry (entryStruct.name、entryStruct.fullPath、新しい FileSystem(entryStruct.filesystemName));} 他 {エントリ = 新しいファイル (entryStruct.name、entryStruct.fullPath、新しい FileSystem(entryStruct.filesystemName));}
