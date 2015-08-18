@@ -362,3 +362,9 @@
 * Updated resolveFileSystem.js so it can be parsed by uglifyJS
 * CB-8860 cordova-plugin-file documentation translation: cordova-plugin-file
 * CB-8792 Fixes reading of json files using readAsText
+
+### 3.0.0 (Aug 18, 2015)
+* Make Android default persistent file location internal
+* Fixed issue with file paths not existing when using browserify
+* CB-9251: Changed from Intents to Preferences object as per the issue
+* CB-9215 Add cordova-plugin-file manual test for windows platform
