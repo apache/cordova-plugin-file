@@ -38,5 +38,6 @@
                 android:authorities="org.apache.cordova.file.testprovider"
                 android:exported="false" />
         </config-file>
+        <asset src="www/fixtures/asset-test" target="fixtures/asset-test" />
     </platform>
 </plugin>
