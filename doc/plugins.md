@@ -78,7 +78,7 @@ If your plugin creates a file, and you want to return a FileEntry object for it,
     // or null if this file is not representable as a cdvfile URL.
     JSONObject entry = filePlugin.getEntryForFile(file);
 
-#### iOS
+#### iOS (and OS X)
 
 Cordova on iOS does not use the same `CordovaResourceApi` concept as Android. On iOS, you should use the File plugin to convert between URLs and filesystem paths.
 
