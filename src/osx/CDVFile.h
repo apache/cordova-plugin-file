@@ -20,8 +20,21 @@
 #import <Foundation/Foundation.h>
 #import <Cordova/CDVPlugin.h>
 
-NSString* const kCDVAssetsLibraryPrefix;
 NSString* const kCDVFilesystemURLPrefix;
+
+/**
+* The default filesystems if non are specified.
+*/
+#define CDV_FILESYSTEMS_DEFAULT @"documents,cache,bundle,root"
+
+/**
+* Preference name of the extra filesystems to be "mounted". the following are supported:
+* 'bundle'    - mounts the application directory
+* 'documents' - mounts the users Documents directory (~/Documents)
+* 'root'      - mounts the root file system
+* 'cache'     - mounts the caches directory (~/Library/Caches/<bundle-id/)
+*/
+#define CDV_PREF_EXTRA_FILESYSTEM @"osxextrafilesystems"
 
 enum CDVFileError {
     NO_ERROR = 0,
@@ -141,17 +154,36 @@ typedef int CDVFileError;
 /* Internal methods for testing */
 - (void)_getLocalFilesystemPath:(CDVInvokedUrlCommand*)command;
 
-@property (nonatomic, strong) NSString* rootDocsPath;
+/**
+ * local path of the 'documents' file system (~/Documents)
+ */
 @property (nonatomic, strong) NSString* appDocsPath;
-@property (nonatomic, strong) NSString* appLibraryPath;
+
+/**
+* local path of the 'applicationStorageDirectory' file system (~/Library/Application Support/<bundle-id>)
+*/
+@property (nonatomic, strong) NSString* appSupportPath;
+
+/**
+* local path of the 'persistent' file system (~/Library/Application Support/<bundle-id>/files)
+*/
+@property (nonatomic, strong) NSString* appDataPath;
+
+/**
+* local path of the 'documents' file system (~/Documents)
+*/
 @property (nonatomic, strong) NSString* appTempPath;
-@property (nonatomic, strong) NSString* persistentPath;
-@property (nonatomic, strong) NSString* temporaryPath;
+
+/**
+* local path of the 'cache' file system (~/Library/Caches/<bundle-id>)
+*/
+@property (nonatomic, strong) NSString* appCachePath;
+
+/**
+ * registered file systems
+ */
 @property (nonatomic, strong) NSMutableArray* fileSystems;
 
 @property BOOL userHasAllowed;
 
 @end
-
-#define kW3FileTemporary @"temporary"
-#define kW3FilePersistent @"persistent"

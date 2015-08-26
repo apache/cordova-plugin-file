@@ -3302,6 +3302,8 @@ exports.defineAutoTests = function () {
                     expectedPaths.push('externalRootDirectory', 'sharedDirectory');
                 } else if (cordova.platformId == 'ios') {
                     expectedPaths.push('syncedDataDirectory', 'documentsDirectory', 'tempDirectory');
+                } else if (cordova.platformId == 'osx') {
+                    expectedPaths.push('documentsDirectory', 'tempDirectory', 'rootDirectory');
                 } else {
                     console.log('Skipping test due on unsupported platform.');
                     return;
