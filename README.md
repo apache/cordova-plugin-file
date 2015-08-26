@@ -63,6 +63,7 @@ Although in the global scope, it is not available until after the `deviceready` 
 - Windows 8*
 - Windows*
 - Browser
+- OS X
 
 \* _These platforms do not support `FileReader.readAsArrayBuffer` nor `FileWriter.write(blob)`._
 
