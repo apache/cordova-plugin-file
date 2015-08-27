@@ -452,7 +452,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 - (void)requestAllPaths:(CDVInvokedUrlCommand*)command
 {
     NSDictionary* ret = @{
-        @"applicationDirectory": [[NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]] absoluteString],
+        @"applicationDirectory": [[NSURL fileURLWithPath:[[NSBundle mainBundle] resourcePath]] absoluteString],
         @"applicationStorageDirectory": [[NSURL fileURLWithPath:self.appSupportPath] absoluteString],
         @"dataDirectory": [[NSURL fileURLWithPath:self.appDataPath] absoluteString],
         @"documentsDirectory": [[NSURL fileURLWithPath:self.appDocsPath] absoluteString],

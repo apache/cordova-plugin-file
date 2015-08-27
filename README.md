@@ -190,7 +190,8 @@ properties are `null`.
 
 | Device Path                                      | `cordova.file.*`            | `iosExtraFileSystems` | r/w? |  OS clears | private |
 |:-------------------------------------------------|:----------------------------|:----------------------|:----:|:---------:|:-------:|
-| `/Applications/<appname>.app`                    | applicationDirectory        | bundle                | r    |     N/A   |   Yes   |
+| `/Applications/<appname>.app/`                   | -                           | bundle                | r    |     N/A   |   Yes   |
+| &nbsp;&nbsp;&nbsp;&nbsp;`Content/Resources/`    | applicationDirectory        | -                     | r    |     N/A   |   Yes   |
 | `~/Library/Application Support/<bundle-id>/`     | applicationStorageDirectory | -                     | r/w  |     No    |   Yes   |
 | &nbsp;&nbsp;&nbsp;&nbsp;`files/`                 | dataDirectory               | -                     | r/w  |     No    |   Yes   |
 | `~/Documents/`                                   | documentsDirectory          | documents             | r/w  |     No    |    No   |
