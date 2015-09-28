@@ -18,9 +18,12 @@
  */
 package org.apache.cordova.file;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
@@ -41,6 +44,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.security.Permission;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,9 +69,27 @@ public class FileUtils extends CordovaPlugin {
     public static int TYPE_MISMATCH_ERR = 11;
     public static int PATH_EXISTS_ERR = 12;
 
+    /*
+     * Permission callback codes
+     */
+
+    public static final int READ_PERM = 0;
+    public static final int WRITE_PERM = 1;
+
     public static int UNKNOWN_ERR = 1000;
     
     private boolean configured = false;
+    private String lastRawArgs;
+
+    private CallbackContext callback;
+
+    /*
+     * We need both read and write when accessing the storage, I think.
+     */
+
+    private String [] permissions = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE };
 
     // This field exists only to support getEntry, below, which has been deprecated
     private static FileUtils filePlugin;
@@ -237,6 +259,8 @@ public class FileUtils extends CordovaPlugin {
     }
 
     public boolean execute(String action, final String rawArgs, final CallbackContext callbackContext) {
+        this.callback = callbackContext;
+        lastRawArgs = rawArgs;
         if (!configured) {
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "File plugin is not configured. Please see the README.md file for details on how to update config.xml"));
             return true;
@@ -412,9 +436,18 @@ public class FileUtils extends CordovaPlugin {
             threadhelper( new FileOp( ){
                 public void run(JSONArray args) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
                     String dirname=args.getString(0);
-                    String path=args.getString(1);
-                    JSONObject obj = getFile(dirname, path, args.optJSONObject(2), false);
-                    callbackContext.success(obj);
+                    /*
+                     * If we don't have the package name in the path, we're reading and writing to places we need permission for
+                     */
+                    if(dirname.contains(cordova.getActivity().getPackageName()) ||
+                            hasReadPermission()) {
+                        String path = args.getString(1);
+                        JSONObject obj = getFile(dirname, path, args.optJSONObject(2), false);
+                        callbackContext.success(obj);
+                    }
+                    else {
+                        getReadPermission();
+                    }
                 }
             }, rawArgs, callbackContext);
         }
@@ -491,6 +524,30 @@ public class FileUtils extends CordovaPlugin {
         }
         return true;
     }
+
+    private void getReadPermission() {
+        cordova.requestPermission(this, READ_PERM, Manifest.permission.READ_EXTERNAL_STORAGE);
+    }
+
+    private void getWritePermission() {
+        cordova.requestPermission(this, WRITE_PERM, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+    }
+
+
+    private boolean hasReadPermission() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            return PackageManager.PERMISSION_GRANTED == cordova.getActivity().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE);
+        else
+            return true;
+    }
+
+    private boolean hasWritePermission() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            return PackageManager.PERMISSION_GRANTED == cordova.getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        else
+            return true;
+    }
+
 
     public LocalFilesystemURL resolveNativeUri(Uri nativeUri) {
         LocalFilesystemURL localURL = null;
@@ -1018,5 +1075,39 @@ public class FileUtils extends CordovaPlugin {
         } catch (IllegalArgumentException e) {
         	throw new MalformedURLException("Unrecognized filesystem URL");
         }
+    }
+
+
+    /*
+     * Handle the response
+     */
+
+    public void onRequestPermissionResult(int requestCode, String[] permissions,
+                                          int[] grantResults) throws JSONException {
+        for(int r:grantResults)
+        {
+            if(r == PackageManager.PERMISSION_DENIED)
+            {
+                callback.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, SECURITY_ERR));
+            }
+        }
+        switch(requestCode)
+        {
+            case READ_PERM:
+                threadhelper( new FileOp( ){
+                    public void run(JSONArray args) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
+                        String dirname=args.getString(0);
+
+                        String path = args.getString(1);
+                        JSONObject obj = getFile(dirname, path, args.optJSONObject(2), false);
+                        callback.success(obj);
+                    }
+                }, lastRawArgs, callback);
+                break;
+            case WRITE_PERM:
+
+                break;
+        }
+
     }
 }
