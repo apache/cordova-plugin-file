@@ -29,7 +29,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
     <repo>https://git-wip-us.apache.org/repos/asf/cordova-plugin-file.git</repo>
     <issue>https://issues.apache.org/jira/browse/CB/component/12320651</issue>
     <engines>
-        <engine name="cordova-android" version=">=3.1.0" /><!-- Uses CordovaResourceApi -->
+        <engine name="cordova-android" version=">=5.0.0-dev" /><!-- Uses Marshmallow Permissions -->
     </engines>
 
     <js-module src="www/DirectoryEntry.js" name="DirectoryEntry">
