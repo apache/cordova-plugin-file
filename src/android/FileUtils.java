@@ -175,7 +175,7 @@ public class FileUtils extends CordovaPlugin {
     	Activity activity = cordova.getActivity();
     	String packageName = activity.getPackageName();
 
-        String location = preferences.getString("androidpersistentfilelocation", "internal");
+        String location = preferences.getString("androidpersistentfilelocation", "compatibility");
 
     	tempRoot = activity.getCacheDir().getAbsolutePath();
     	if ("internal".equalsIgnoreCase(location)) {
@@ -347,8 +347,18 @@ public class FileUtils extends CordovaPlugin {
                     String data=args.getString(1);
                     int offset=args.getInt(2);
                     Boolean isBinary=args.getBoolean(3);
-                    long fileSize = write(fname, data, offset, isBinary);
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, fileSize));
+                    /*
+                     * If we don't have the package name in the path, we're reading and writing to places we need permission for
+                     */
+                    if(fname.contains(cordova.getActivity().getPackageName()) ||
+                            hasReadPermission()) {
+                        long fileSize = write(fname, data, offset, isBinary);
+                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, fileSize));
+                    }
+                    else {
+                        getWritePermission();
+                    }
+
                 }
             }, rawArgs, callbackContext);
         }
@@ -1105,7 +1115,16 @@ public class FileUtils extends CordovaPlugin {
                 }, lastRawArgs, callback);
                 break;
             case WRITE_PERM:
-
+                threadhelper( new FileOp( ){
+                    public void run(JSONArray args) throws JSONException, FileNotFoundException, IOException, NoModificationAllowedException {
+                        String fname=args.getString(0);
+                        String data=args.getString(1);
+                        int offset=args.getInt(2);
+                        Boolean isBinary=args.getBoolean(3);
+                        long fileSize = write(fname, data, offset, isBinary);
+                        callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, fileSize));
+                    }
+                }, lastRawArgs, callback);
                 break;
         }
 
