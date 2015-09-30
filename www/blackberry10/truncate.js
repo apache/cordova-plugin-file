@@ -25,9 +25,9 @@
  * IN:
  *  args
  *   0 - URL of file to truncate
- *   1 - start position
+ *   1 - length to truncate to
  * OUT:
- *  success - new length of file
+ *  success - ProgressEvent
  *  fail - FileError
  */
 
@@ -54,20 +54,13 @@ module.exports = function (success, fail, args) {
     resolve(function (fs) {
         requestAnimationFrame(function () {
             fs.nativeEntry.file(function (file) {
-                var reader = new FileReader()._realReader;
-                reader.onloadend = function () {
-                    var contents = new Uint8Array(this.result).subarray(0, length);
-                        blob = new Blob([contents]);
-                    window.requestAnimationFrame(function () {
-                        fs.nativeEntry.createWriter(function (fileWriter) {
-                            fileWriter.onwriteend = onSuccess;
-                            fileWriter.onerror = onFail;
-                            fileWriter.write(blob);
-                        }, onFail);
-                    });
-                };
-                reader.onerror = onFail;
-                reader.readAsArrayBuffer(file);
+                window.requestAnimationFrame(function () {
+        			fs.nativeEntry.createWriter(function (fileWriter) {
+        			    fileWriter.onwriteend = onSuccess;
+        			    fileWriter.onerror = onFail;
+        			    fileWriter.truncate(length);
+        			}, onFail);
+        		});
             }, onFail);
         });
     }, onFail, [uri]);
