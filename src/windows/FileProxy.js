@@ -561,7 +561,12 @@ module.exports = {
 
                 return stream.readAsync(buffer, readSize, Windows.Storage.Streams.InputStreamOptions.none);
             }).done(function(buffer) {
-                win(Windows.Security.Cryptography.CryptographicBuffer.convertBinaryToString(encoding, buffer));
+            	try {
+            		win(Windows.Security.Cryptography.CryptographicBuffer.convertBinaryToString(encoding, buffer));
+                }
+                catch (e) {
+                	fail(FileError.ENCODING_ERR);
+                }
             },function() {
                 fail(FileError.NOT_FOUND_ERR);
             });
