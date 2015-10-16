@@ -37,7 +37,7 @@ It also implements the FileWriter spec :
 For usage, please refer to HTML5 Rocks' excellent [FileSystem article.](http://www.html5rocks.com/en/tutorials/file/filesystem/)
 
 For an overview of other storage options, refer to Cordova's
-[storage guide](http://cordova.apache.org/docs/en/edge/cordova_storage_storage.md.html).
+[storage guide](http://cordova.apache.org/docs/en/edge/cordova/storage/storage.html).
 
 This plugin defines global `cordova.file` object.
 
