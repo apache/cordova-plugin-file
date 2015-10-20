@@ -180,12 +180,13 @@ to config.xml in order for the application to find previously stored files.
         <source-file src="src/android/NoModificationAllowedException.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/TypeMismatchException.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/FileUtils.java" target-dir="src/org/apache/cordova/file" />
-        <source-file src="src/android/FileHelper.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/DirectoryManager.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/LocalFilesystemURL.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/Filesystem.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/LocalFilesystem.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/ContentFilesystem.java" target-dir="src/org/apache/cordova/file" />
+        <source-file src="src/android/AssetFilesystem.java" target-dir="src/org/apache/cordova/file" />
+
         
         <!-- android specific file apis -->
         <js-module src="www/android/FileSystem.js" name="androidFileSystem">
