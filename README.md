@@ -21,12 +21,12 @@
 
 This plugin implements a File API allowing read/write access to files residing on the device.
 
-This plugin is based on several specs, including : 
+This plugin is based on several specs, including :
 The HTML5 File API
 [http://www.w3.org/TR/FileAPI/](http://www.w3.org/TR/FileAPI/)
 
 The (now-defunct) Directories and System extensions
-Latest: 
+Latest:
 [http://www.w3.org/TR/2012/WD-file-system-api-20120417/](http://www.w3.org/TR/2012/WD-file-system-api-20120417/)
 Although most of the plugin code was written when an earlier spec was current:
 [http://www.w3.org/TR/2011/WD-file-system-api-20110419/](http://www.w3.org/TR/2011/WD-file-system-api-20110419/)
@@ -47,6 +47,8 @@ Although in the global scope, it is not available until after the `deviceready` 
     function onDeviceReady() {
         console.log(cordova.file);
     }
+
+:warning: Report issues on the [Apache Cordova issue tracker](https://issues.apache.org/jira/issues/?jql=project%20%3D%20CB%20AND%20status%20in%20%28Open%2C%20%22In%20Progress%22%2C%20Reopened%29%20AND%20resolution%20%3D%20Unresolved%20AND%20component%20%3D%20%22Plugin%20File%22%20ORDER%20BY%20priority%20DESC%2C%20summary%20ASC%2C%20updatedDate%20DESC)
 
 ## Installation
 
@@ -73,50 +75,50 @@ As of v1.2.0, URLs to important file-system directories are provided.
 Each URL is in the form _file:///path/to/spot/_, and can be converted to a
 `DirectoryEntry` using `window.resolveLocalFileSystemURL()`.
 
-* `cordova.file.applicationDirectory` - Read-only directory where the application 
+* `cordova.file.applicationDirectory` - Read-only directory where the application
   is installed. (_iOS_, _Android_, _BlackBerry 10_, _OSX_)
 
-* `cordova.file.applicationStorageDirectory` - Root directory of the application's 
-  sandbox; on iOS this location is read-only (but specific subdirectories [like 
+* `cordova.file.applicationStorageDirectory` - Root directory of the application's
+  sandbox; on iOS this location is read-only (but specific subdirectories [like
   `/Documents`] are read-write). All data contained within is private to the app. (
   _iOS_, _Android_, _BlackBerry 10_, _OSX_)
 
-* `cordova.file.dataDirectory` - Persistent and private data storage within the 
-  application's sandbox using internal memory (on Android, if you need to use 
-  external memory, use `.externalDataDirectory`). On iOS, this directory is not 
+* `cordova.file.dataDirectory` - Persistent and private data storage within the
+  application's sandbox using internal memory (on Android, if you need to use
+  external memory, use `.externalDataDirectory`). On iOS, this directory is not
   synced with iCloud (use `.syncedDataDirectory`). (_iOS_, _Android_, _BlackBerry 10_)
 
-* `cordova.file.cacheDirectory` -  Directory for cached data files or any files 
-  that your app can re-create easily. The OS may delete these files when the device 
-  runs low on storage, nevertheless, apps should not rely on the OS to delete files 
+* `cordova.file.cacheDirectory` -  Directory for cached data files or any files
+  that your app can re-create easily. The OS may delete these files when the device
+  runs low on storage, nevertheless, apps should not rely on the OS to delete files
   in here. (_iOS_, _Android_, _BlackBerry 10_, _OSX_)
 
-* `cordova.file.externalApplicationStorageDirectory` - Application space on 
+* `cordova.file.externalApplicationStorageDirectory` - Application space on
   external storage. (_Android_)
 
-* `cordova.file.externalDataDirectory` - Where to put app-specific data files on 
+* `cordova.file.externalDataDirectory` - Where to put app-specific data files on
   external storage. (_Android_)
 
-* `cordova.file.externalCacheDirectory` - Application cache on external storage. 
+* `cordova.file.externalCacheDirectory` - Application cache on external storage.
   (_Android_)
 
 * `cordova.file.externalRootDirectory` - External storage (SD card) root. (_Android_, _BlackBerry 10_)
 
-* `cordova.file.tempDirectory` - Temp directory that the OS can clear at will. Do not 
-  rely on the OS to clear this directory; your app should always remove files as 
+* `cordova.file.tempDirectory` - Temp directory that the OS can clear at will. Do not
+  rely on the OS to clear this directory; your app should always remove files as
   applicable. (_iOS_, _OSX_)
 
-* `cordova.file.syncedDataDirectory` - Holds app-specific files that should be synced 
+* `cordova.file.syncedDataDirectory` - Holds app-specific files that should be synced
   (e.g. to iCloud). (_iOS_)
 
-* `cordova.file.documentsDirectory` - Files private to the app, but that are meaningful 
+* `cordova.file.documentsDirectory` - Files private to the app, but that are meaningful
   to other application (e.g. Office files). Note that for _OSX_ this is the user's `~/Documents` directory. (_iOS_, _OSX_)
 
 * `cordova.file.sharedDirectory` - Files globally available to all applications (_BlackBerry 10_)
 
 ## File System Layouts
 
-Although technically an implementation detail, it can be very useful to know how 
+Although technically an implementation detail, it can be very useful to know how
 the `cordova.file.*` properties map to physical paths on a real device.
 
 ### iOS File System Layout
@@ -135,17 +137,17 @@ the `cordova.file.*` properties map to physical paths on a real device.
 | &nbsp;&nbsp;&nbsp;`tmp/`                       | tempDirectory               | -                     | r/w  |     No\*\*  |  Yes\*\*\*| No   |   Yes   |
 
 
-  \* Files persist across app restarts and upgrades, but this directory can 
-     be cleared whenever the OS desires. Your app should be able to recreate any 
+  \* Files persist across app restarts and upgrades, but this directory can
+     be cleared whenever the OS desires. Your app should be able to recreate any
      content that might be deleted.
 
-\*\* Files may persist across app restarts, but do not rely on this behavior. Files 
-     are not guaranteed to persist across updates. Your app should remove files from 
-     this directory when it is applicable, as the OS does not guarantee when (or even 
+\*\* Files may persist across app restarts, but do not rely on this behavior. Files
+     are not guaranteed to persist across updates. Your app should remove files from
+     this directory when it is applicable, as the OS does not guarantee when (or even
      if) these files are removed.
 
-\*\*\* The OS may clear the contents of this directory whenever it feels it is 
-     necessary, but do not rely on this. You should clear this directory as 
+\*\*\* The OS may clear the contents of this directory whenever it feels it is
+     necessary, but do not rely on this. You should clear this directory as
      appropriate for your application.
 
 ### Android File System Layout
@@ -162,15 +164,15 @@ the `cordova.file.*` properties map to physical paths on a real device.
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`cache`     | externalCacheDirectry       | cache-external            | r/w  |     Yes     |     No\*\*|   No    |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`files`     | externalDataDirectory       | files-external            | r/w  |     Yes     |     No    |   No    |
 
-\* The OS may periodically clear this directory, but do not rely on this behavior. Clear 
-   the contents of this directory as appropriate for your application. Should a user 
+\* The OS may periodically clear this directory, but do not rely on this behavior. Clear
+   the contents of this directory as appropriate for your application. Should a user
    purge the cache manually, the contents of this directory are removed.
 
-\*\* The OS does not clear this directory automatically; you are responsible for managing 
-     the contents yourself. Should the user purge the cache manually, the contents of the 
+\*\* The OS does not clear this directory automatically; you are responsible for managing
+     the contents yourself. Should the user purge the cache manually, the contents of the
      directory are removed.
 
-**Note**: If external storage can't be mounted, the `cordova.file.external*` 
+**Note**: If external storage can't be mounted, the `cordova.file.external*`
 properties are `null`.
 
 ### BlackBerry 10 File System Layout
@@ -201,9 +203,9 @@ properties are `null`.
 
 **Note**: This is the layout for non sandboxed applications. I you enable sandboxing, the `applicationStorageDirectory` will be below ` ~/Library/Containers/<bundle-id>/Data/Library/Application Support`.
 
-\* Files persist across app restarts and upgrades, but this directory can 
-     be cleared whenever the OS desires. Your app should be able to recreate any 
-     content that might be deleted. You should clear this directory as 
+\* Files persist across app restarts and upgrades, but this directory can
+     be cleared whenever the OS desires. Your app should be able to recreate any
+     content that might be deleted. You should clear this directory as
      appropriate for your application.
 
 \*\* Allows access to the entire file system. This is only available for non sandboxed apps.
@@ -259,7 +261,7 @@ requires cordova-android@4.0.0 or greater).
 
 ## iOS Quirks
 
-- `cordova.file.applicationStorageDirectory` is read-only; attempting to store 
+- `cordova.file.applicationStorageDirectory` is read-only; attempting to store
   files within the root directory will fail. Use one of the other `cordova.file.*`
   properties defined for iOS (only `applicationDirectory` and `applicationStorageDirectory` are
   read-only).
@@ -300,8 +302,8 @@ persistent filesystem, then the `Library` setting is generally recommended.
 ## Firefox OS Quirks
 
 The File System API is not natively supported by Firefox OS and is implemented
-as a shim on top of indexedDB. 
- 
+as a shim on top of indexedDB.
+
 * Does not fail when removing non-empty directories
 * Does not support metadata for directories
 * Methods `copyTo` and `moveTo` do not support directories
@@ -317,10 +319,10 @@ on the OS to delete files in here).
 ### Common quirks and remarks
 - Each browser uses its own sandboxed filesystem. IE and Firefox use IndexedDB as a base.
 All browsers use forward slash as directory separator in a path.
-- Directory entries have to be created successively. 
-For example, the call `fs.root.getDirectory('dir1/dir2', {create:true}, successCallback, errorCallback)` 
+- Directory entries have to be created successively.
+For example, the call `fs.root.getDirectory('dir1/dir2', {create:true}, successCallback, errorCallback)`
 will fail if dir1 did not exist.
-- The plugin requests user permission to use persistent storage at the application first start. 
+- The plugin requests user permission to use persistent storage at the application first start.
 - Plugin supports `cdvfile://localhost` (local resources) only. I.e. external resources are not supported via `cdvfile`.
 - The plugin does not follow ["File System API 8.3 Naming restrictions"](http://www.w3.org/TR/2011/WD-file-system-api-20110419/#naming-restrictions).
 - Blob and File' `close` function is not supported.
@@ -329,17 +331,17 @@ will fail if dir1 did not exist.
 - Entries in directory will not be removed if you use `create: true` flag for existing directory.
 - Files created via constructor are not supported. You should use entry.file method instead.
 - Each browser uses its own form for blob URL references.
-- `readAsDataURL` function is supported, but the mediatype in Chrome depends on entry name extension, 
-mediatype in IE is always empty (which is the same as `text-plain` according the specification), 
-the mediatype in Firefox is always `application/octet-stream`. 
+- `readAsDataURL` function is supported, but the mediatype in Chrome depends on entry name extension,
+mediatype in IE is always empty (which is the same as `text-plain` according the specification),
+the mediatype in Firefox is always `application/octet-stream`.
 For example, if the content is `abcdefg` then Firefox returns `data:application/octet-stream;base64,YWJjZGVmZw==`,
 IE returns `data:;base64,YWJjZGVmZw==`, Chrome returns `data:<mediatype depending on extension of entry name>;base64,YWJjZGVmZw==`.
-- `toInternalURL` returns the path in the form `file:///persistent/path/to/entry` (Firefox, IE). 
+- `toInternalURL` returns the path in the form `file:///persistent/path/to/entry` (Firefox, IE).
 Chrome returns the path in the form `cdvfile://localhost/persistent/file`.
 
 ### Chrome quirks
 - Chrome filesystem is not immediately ready after device ready event. As a workaround you can subscribe to `filePluginIsReady` event.
-Example: 
+Example:
 ```javascript
 window.addEventListener('filePluginIsReady', function(){ console.log('File plugin is ready');}, false);
 ```
@@ -349,9 +351,9 @@ You can use `window.isFilePluginReadyRaised` function to check whether event was
 - Chrome requires `--allow-file-access-from-files` run argument to support API via `file:///` protocol.
 - `File` object will be not changed if you use flag `{create:true}` when getting an existing `Entry`.
 - events `cancelable` property is set to true in Chrome. This is contrary to the [specification](http://dev.w3.org/2009/dap/file-system/file-writer.html).
-- `toURL` function in Chrome returns `filesystem:`-prefixed path depending on application host. 
+- `toURL` function in Chrome returns `filesystem:`-prefixed path depending on application host.
 For example, `filesystem:file:///persistent/somefile.txt`, `filesystem:http://localhost:8080/persistent/somefile.txt`.
-- `toURL` function result does not contain trailing slash in case of directory entry. 
+- `toURL` function result does not contain trailing slash in case of directory entry.
 Chrome resolves directories with slash-trailed urls correctly though.
 - `resolveLocalFileSystemURL` method requires the inbound `url` to have `filesystem` prefix. For example, `url` parameter for `resolveLocalFileSystemURL`
 should be in the form `filesystem:file:///persistent/somefile.txt` as opposed to the form `file:///persistent/somefile.txt` in Android.
@@ -366,18 +368,18 @@ should be in the form `filesystem:file:///persistent/somefile.txt` as opposed to
 - `.` and `..` are not supported.
 - IE does not support `file:///`-mode; only hosted mode is supported (http://localhost:xxxx).
 - Firefox filesystem size is not limited but each 50MB extension will request a user permission.
-IE10 allows up to 10mb of combined AppCache and IndexedDB used in implementation of filesystem without prompting, 
+IE10 allows up to 10mb of combined AppCache and IndexedDB used in implementation of filesystem without prompting,
 once you hit that level you will be asked if you want to allow it to be increased up to a max of 250mb per site.
 So `size` parameter for `requestFileSystem` function does not affect filesystem in Firefox and IE.
 - `readAsBinaryString` function is not stated in the Specs and not supported in IE and does not have a stub.
 - `file.type` is always null.
-- You should not create entry using DirectoryEntry instance callback result which was deleted. 
+- You should not create entry using DirectoryEntry instance callback result which was deleted.
 Otherwise, you will get a 'hanging entry'.
 - Before you can read a file, which was just written you need to get a new instance of this file.
-- `setMetadata` function, which is not stated in the Specs supports `modificationTime` field change only. 
+- `setMetadata` function, which is not stated in the Specs supports `modificationTime` field change only.
 - `copyTo` and `moveTo` functions do not support directories.
 - Directories metadata is not supported.
-- Both Entry.remove and directoryEntry.removeRecursively don't fail when removing 
+- Both Entry.remove and directoryEntry.removeRecursively don't fail when removing
 non-empty directories - directories being removed are cleaned along with contents instead.
 - `abort` and `truncate` functions are not supported.
 - progress events are not fired. For example, this handler will be not executed:
@@ -428,7 +430,7 @@ which can be used to identify the file uniquely.
 ## cdvfile protocol
 **Purpose**
 
-`cdvfile://localhost/persistent|temporary|another-fs-root*/path/to/file` can be used for platform-independent file paths. 
+`cdvfile://localhost/persistent|temporary|another-fs-root*/path/to/file` can be used for platform-independent file paths.
 cdvfile paths are supported by core plugins - for example you can download an mp3 file to cdvfile-path via `cordova-plugin-file-transfer` and play it via `cordova-plugin-media`.
 
 __*Note__: See [Where to Store Files](#where-to-store-files), [File System Layouts](#file-system-layouts) and [Configuring the Plugin](#configuring-the-plugin-optional) for more details about available fs roots.
@@ -464,7 +466,7 @@ resolveLocalFileSystemURL(nativePath, function(entry) {
 **Using cdvfile in core plugins**
 
 ```javascript
-fileTransfer.download(uri, 'cdvfile://localhost/temporary/path/to/file.mp3', function (entry) { ... 
+fileTransfer.download(uri, 'cdvfile://localhost/temporary/path/to/file.mp3', function (entry) { ...
 ```
 ```javascript
 var my_media = new Media('cdvfile://localhost/temporary/path/to/file.mp3', ...);
@@ -472,7 +474,7 @@ my_media.play();
 ```
 
 ## List of Error Codes and Meanings
-When an error is thrown, one of the following codes will be used. 
+When an error is thrown, one of the following codes will be used.
 
 | Code | Constant                      |
 |-----:|:------------------------------|
