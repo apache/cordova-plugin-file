@@ -69,9 +69,9 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 -(id) initWithURL:(NSURL *)URL
 {
     if ( self = [super init] ) {
-        _url = URL;
-        _fileSystemName = [self filesystemNameForLocalURI:URL];
-        _fullPath = [self fullPathForLocalURI:URL];
+        self.url = URL;
+        self.fileSystemName = [self filesystemNameForLocalURI:URL];
+        self.fullPath = [self fullPathForLocalURI:URL];
     }
     return self;
 }
@@ -565,10 +565,10 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     // arguments
     NSString* localURIstr = [command argumentAtIndex:0];
     CDVPluginResult* result;
-    
+
     localURIstr = [self encodePath:localURIstr]; //encode path before resolving
     CDVFilesystemURL* inputURI = [self fileSystemURLforArg:localURIstr];
-    
+
     if (inputURI == nil || inputURI.fileSystemName == nil) {
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:ENCODING_ERR];
     } else {
@@ -838,7 +838,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     NSInteger end = [[command argumentAtIndex:3] integerValue];
 
     NSObject<CDVFileSystem> *fs = [self filesystemForURL:localURI];
-    
+
     if (fs == nil) {
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:NOT_FOUND_ERR];
         [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
