@@ -682,6 +682,8 @@ public class FileUtils extends CordovaPlugin {
                         callbackContext.error(FileUtils.TYPE_MISMATCH_ERR);
                     } else if(e instanceof JSONException ) {
                         callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+                    } else if (e instanceof SecurityException) {
+                        callbackContext.error(FileUtils.SECURITY_ERR);
                     } else {
                         e.printStackTrace();
                     	callbackContext.error(FileUtils.UNKNOWN_ERR);
