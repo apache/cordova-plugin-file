@@ -497,7 +497,7 @@ module.exports = {
     },
     requestAllPaths: function(success){
         success(windowsPaths);
-    }
+    },
     getFileMetadata: function (success, fail, args) {
         module.exports.getMetadata(success, fail, args);
     },
