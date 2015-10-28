@@ -216,8 +216,8 @@ properties are `null`.
 |:------------------------------------------------------|:----------------------------|:----:|:-----------:|:---------:|:-------:|
 | `ms-appdata:///`                                      | applicationDirectory        | r    |     N/A     |     N/A   |   Yes   |
 | &nbsp;&nbsp;&nbsp;`local/`                            | dataDirectory               | r/w  |     Yes     |     No    |   Yes   |
-| &nbsp;&nbsp;&nbsp;`temp/`                             | cacheDirectory              | r/w  |     Yes     |     Yes\* |   Yes   |
-| &nbsp;&nbsp;&nbsp;`temp/`                             | tempDirectory               | r/w  |     Yes     |     Yes\* |   Yes   |
+| &nbsp;&nbsp;&nbsp;`temp/`                             | cacheDirectory              | r/w  |     No      |     Yes\* |   Yes   |
+| &nbsp;&nbsp;&nbsp;`temp/`                             | tempDirectory               | r/w  |     No      |     Yes\* |   Yes   |
 | &nbsp;&nbsp;&nbsp;`roaming/`                          | syncedDataDirectory         | r/w  |     Yes     |     No    |   Yes   |
 
 \* The OS may periodically clear this directory
