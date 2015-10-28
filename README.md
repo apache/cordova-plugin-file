@@ -76,7 +76,7 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
 `DirectoryEntry` using `window.resolveLocalFileSystemURL()`.
 
 * `cordova.file.applicationDirectory` - Read-only directory where the application
-  is installed. (_iOS_, _Android_, _BlackBerry 10_, _OSX_)
+  is installed. (_iOS_, _Android_, _BlackBerry 10_, _OSX_, _windows_)
 
 * `cordova.file.applicationStorageDirectory` - Root directory of the application's
   sandbox; on iOS this location is read-only (but specific subdirectories [like
@@ -86,12 +86,12 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
 * `cordova.file.dataDirectory` - Persistent and private data storage within the
   application's sandbox using internal memory (on Android, if you need to use
   external memory, use `.externalDataDirectory`). On iOS, this directory is not
-  synced with iCloud (use `.syncedDataDirectory`). (_iOS_, _Android_, _BlackBerry 10_)
+  synced with iCloud (use `.syncedDataDirectory`). (_iOS_, _Android_, _BlackBerry 10_, _windows_)
 
 * `cordova.file.cacheDirectory` -  Directory for cached data files or any files
   that your app can re-create easily. The OS may delete these files when the device
   runs low on storage, nevertheless, apps should not rely on the OS to delete files
-  in here. (_iOS_, _Android_, _BlackBerry 10_, _OSX_)
+  in here. (_iOS_, _Android_, _BlackBerry 10_, _OSX_, _windows_)
 
 * `cordova.file.externalApplicationStorageDirectory` - Application space on
   external storage. (_Android_)
@@ -106,10 +106,10 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
 
 * `cordova.file.tempDirectory` - Temp directory that the OS can clear at will. Do not
   rely on the OS to clear this directory; your app should always remove files as
-  applicable. (_iOS_, _OSX_)
+  applicable. (_iOS_, _OSX_, _windows_)
 
 * `cordova.file.syncedDataDirectory` - Holds app-specific files that should be synced
-  (e.g. to iCloud). (_iOS_)
+  (e.g. to iCloud). (_iOS_, _windows_)
 
 * `cordova.file.documentsDirectory` - Files private to the app, but that are meaningful
   to other application (e.g. Office files). Note that for _OSX_ this is the user's `~/Documents` directory. (_iOS_, _OSX_)
@@ -193,7 +193,7 @@ properties are `null`.
 | Device Path                                      | `cordova.file.*`            | `iosExtraFileSystems` | r/w? |  OS clears | private |
 |:-------------------------------------------------|:----------------------------|:----------------------|:----:|:---------:|:-------:|
 | `/Applications/<appname>.app/`                   | -                           | bundle                | r    |     N/A   |   Yes   |
-| &nbsp;&nbsp;&nbsp;&nbsp;`Content/Resources/`    | applicationDirectory        | -                     | r    |     N/A   |   Yes   |
+| &nbsp;&nbsp;&nbsp;&nbsp;`Content/Resources/`     | applicationDirectory        | -                     | r    |     N/A   |   Yes   |
 | `~/Library/Application Support/<bundle-id>/`     | applicationStorageDirectory | -                     | r/w  |     No    |   Yes   |
 | &nbsp;&nbsp;&nbsp;&nbsp;`files/`                 | dataDirectory               | -                     | r/w  |     No    |   Yes   |
 | `~/Documents/`                                   | documentsDirectory          | documents             | r/w  |     No    |    No   |
@@ -209,6 +209,18 @@ properties are `null`.
      appropriate for your application.
 
 \*\* Allows access to the entire file system. This is only available for non sandboxed apps.
+
+### Windows File System Layout
+
+| Device Path                                     | `cordova.file.*`            | r/w? | persistent? | OS clears | private |
+|:------------------------------------------------|:----------------------------|:----:|:-----------:|:---------:|:-------:|
+| `ms-appdata:///`                                | applicationDirectory        | r    |     N/A     |     N/A   |   Yes   |
+| &nbsp;&nbsp;`local/`                            | dataDirectory               | r/w  |     Yes     |     No    |   Yes   |
+| &nbsp;&nbsp;'temp/'                             | cacheDirectory              | r/w  |     Yes     |     Yes\* |   Yes   |
+| &nbsp;&nbsp;`temp/`                             | tempDirectory               | r/w  |     Yes     |     Yes\* |   Yes   |
+| &nbsp;&nbsp;`roaming/`                          | syncedDataDirectory         | r/w  |     Yes     |     No    |   Yes   |
+
+\* The OS may periodically clear this directory
 
 
 ## Android Quirks
