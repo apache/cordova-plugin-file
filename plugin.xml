@@ -364,6 +364,11 @@ to config.xml in order for the application to find previously stored files.
     <platform name="windows8">
         <js-module src="src/windows/FileProxy.js" name="FileProxy">
             <merges target="" />
+        </js-module>        
+
+        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
+            <merges target="cordova" />
+            <runs/>
         </js-module>
     </platform>
 
@@ -371,6 +376,11 @@ to config.xml in order for the application to find previously stored files.
     <platform name="windows">
         <js-module src="src/windows/FileProxy.js" name="FileProxy">
             <merges target="" />
+        </js-module>        
+
+        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
+            <merges target="cordova" />
+            <runs/>
         </js-module>
     </platform>
 
