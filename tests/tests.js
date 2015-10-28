@@ -30,7 +30,7 @@ exports.defineAutoTests = function () {
     var isIndexedDBShim = isBrowser && !isChrome;   // Firefox and IE for example
 
     var isWindows = (cordova.platformId === "windows" || cordova.platformId === "windows8");
-    
+
     var MEDIUM_TIMEOUT = 15000;
 
     describe('File API', function () {
@@ -3500,6 +3500,33 @@ exports.defineAutoTests = function () {
                             expect(entries.length).not.toBe(0);
                             done();
                         }, failed.bind(null, done, 'reader.readEntries - Error during reading of entries from assets directory'));
+                    }, failed.bind(null, done, 'resolveLocalFileSystemURL failed for assets'));
+                }, MEDIUM_TIMEOUT);
+                it("file.spec.145 asset subdirectories should be obtainable", function(done) {
+                    resolveLocalFileSystemURL('file:///android_asset/www/fixtures', function(entry) {
+                        entry.getDirectory('asset-test', { create: false }, function (subDir) {
+                            expect(subDir).toBeDefined();
+                            expect(subDir.isFile).toBe(false);
+                            expect(subDir.isDirectory).toBe(true);
+                            expect(subDir.name).toCanonicallyMatch('asset-test');
+                            done();
+                        }, failed.bind(null, done, 'entry.getDirectory - Error getting asset subdirectory'));
+                    }, failed.bind(null, done, 'resolveLocalFileSystemURL failed for assets'));
+                }, MEDIUM_TIMEOUT);
+                it("file.spec.146 asset files should be readable", function(done) {
+                    resolveLocalFileSystemURL('file:///android_asset/www/fixtures/asset-test/asset-test.txt', function(entry) {
+                        expect(entry.isFile).toBe(true);
+                        entry.file(function (file) {
+                            expect(file).toBeDefined();
+                            var reader = new FileReader();
+                            reader.onerror = failed.bind(null, done, 'reader.readAsText - Error reading asset text file');
+                            reader.onloadend = function () {
+                                expect(this.result).toBeDefined();
+                                expect(this.result.length).not.toBe(0);
+                                done();
+                            };
+                            reader.readAsText(file);
+                        }, failed.bind(null, done, 'entry.file - Error reading asset file'));
                     }, failed.bind(null, done, 'resolveLocalFileSystemURL failed for assets'));
                 }, MEDIUM_TIMEOUT);
                 it("file.spec.143 copyTo: asset -> temporary", function(done) {
