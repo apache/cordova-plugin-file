@@ -212,13 +212,13 @@ properties are `null`.
 
 ### Windows File System Layout
 
-| Device Path                                     | `cordova.file.*`            | r/w? | persistent? | OS clears | private |
-|:------------------------------------------------|:----------------------------|:----:|:-----------:|:---------:|:-------:|
-| `ms-appdata:///`                                | applicationDirectory        | r    |     N/A     |     N/A   |   Yes   |
-| &nbsp;&nbsp;`local/`                            | dataDirectory               | r/w  |     Yes     |     No    |   Yes   |
-| &nbsp;&nbsp;'temp/'                             | cacheDirectory              | r/w  |     Yes     |     Yes\* |   Yes   |
-| &nbsp;&nbsp;`temp/`                             | tempDirectory               | r/w  |     Yes     |     Yes\* |   Yes   |
-| &nbsp;&nbsp;`roaming/`                          | syncedDataDirectory         | r/w  |     Yes     |     No    |   Yes   |
+| Device Path                                           | `cordova.file.*`            | r/w? | persistent? | OS clears | private |
+|:------------------------------------------------------|:----------------------------|:----:|:-----------:|:---------:|:-------:|
+| `ms-appdata:///`                                      | applicationDirectory        | r    |     N/A     |     N/A   |   Yes   |
+| &nbsp;&nbsp;&nbsp;`local/`                            | dataDirectory               | r/w  |     Yes     |     No    |   Yes   |
+| &nbsp;&nbsp;&nbsp;`temp/`                             | cacheDirectory              | r/w  |     Yes     |     Yes\* |   Yes   |
+| &nbsp;&nbsp;&nbsp;`temp/`                             | tempDirectory               | r/w  |     Yes     |     Yes\* |   Yes   |
+| &nbsp;&nbsp;&nbsp;`roaming/`                          | syncedDataDirectory         | r/w  |     Yes     |     No    |   Yes   |
 
 \* The OS may periodically clear this directory
 
