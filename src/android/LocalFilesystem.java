@@ -50,7 +50,7 @@ public class LocalFilesystem extends Filesystem {
     public String filesystemPathForFullPath(String fullPath) {
 	    return new File(rootUri.getPath(), fullPath).toString();
 	}
-	
+
 	@Override
 	public String filesystemPathForURL(LocalFilesystemURL url) {
 		return filesystemPathForFullPath(url.path);
@@ -99,7 +99,7 @@ public class LocalFilesystem extends Filesystem {
         }
         return LocalFilesystemURL.parse(b.build());
     }
-	
+
 	@Override
 	public LocalFilesystemURL URLforFilesystemPath(String path) {
 	    return localUrlforFullPath(fullPathForFilesystemPath(path));
@@ -124,7 +124,7 @@ public class LocalFilesystem extends Filesystem {
         }
 
         LocalFilesystemURL requestedURL;
-        
+
         // Check whether the supplied path is absolute or relative
         if (directory && !path.endsWith("/")) {
             path += "/";
@@ -134,7 +134,7 @@ public class LocalFilesystem extends Filesystem {
         } else {
         	requestedURL = localUrlforFullPath(normalizePath(inputURL.path + "/" + path));
         }
-        
+
         File fp = new File(this.filesystemPathForURL(requestedURL));
 
         if (create) {
@@ -189,11 +189,16 @@ public class LocalFilesystem extends Filesystem {
     }
 
     @Override
+    public long getFreeSpaceInBytes() {
+        return DirectoryManager.getFreeSpaceInBytes(rootUri.getPath());
+    }
+
+    @Override
 	public boolean recursiveRemoveFileAtLocalURL(LocalFilesystemURL inputURL) throws FileExistsException {
         File directory = new File(filesystemPathForURL(inputURL));
     	return removeDirRecursively(directory);
 	}
-	
+
 	protected boolean removeDirRecursively(File directory) throws FileExistsException {
         if (directory.isDirectory()) {
             for (File file : directory.listFiles()) {
@@ -329,7 +334,7 @@ public class LocalFilesystem extends Filesystem {
             // The destination does not exist so we should fail.
             throw new FileNotFoundException("The source does not exist");
         }
-        
+
         // Figure out where we should be copying to
         final LocalFilesystemURL destinationURL = makeDestinationURL(newName, srcURL, destURL, srcURL.isDirectory);
 
@@ -364,7 +369,7 @@ public class LocalFilesystem extends Filesystem {
         }
         return makeEntryForURL(destinationURL);
 	}
-    
+
 	@Override
 	public long writeToFileAtURL(LocalFilesystemURL inputURL, String data,
 			int offset, boolean isBinary) throws IOException, NoModificationAllowedException {
@@ -439,7 +444,7 @@ public class LocalFilesystem extends Filesystem {
         if (!file.exists()) {
             throw new FileNotFoundException("File at " + inputURL.uri + " does not exist.");
         }
-        
+
         RandomAccessFile raf = new RandomAccessFile(filesystemPathForURL(inputURL), "rw");
         try {
             if (raf.length() >= size) {

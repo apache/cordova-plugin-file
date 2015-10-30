@@ -30,7 +30,7 @@ exports.defineAutoTests = function () {
     var isIndexedDBShim = isBrowser && !isChrome;   // Firefox and IE for example
 
     var isWindows = (cordova.platformId === "windows" || cordova.platformId === "windows8");
-    
+
     var MEDIUM_TIMEOUT = 15000;
 
     describe('File API', function () {
@@ -231,8 +231,12 @@ exports.defineAutoTests = function () {
                         expect(fileSystem.root.toURL()).toMatch(/\/$/);
                         done();
                     };
+
+                    // Request a little bit of space on the filesystem, unless we're running in a browser where that could cause a prompt.
+                    var spaceRequired = isBrowser ? 0 : 1024;
+
                     // retrieve PERSISTENT file system
-                    window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, win, failed.bind(null, done, 'window.requestFileSystem - Error retrieving PERSISTENT file system'));
+                    window.requestFileSystem(LocalFileSystem.PERSISTENT, spaceRequired, win, failed.bind(null, done, 'window.requestFileSystem - Error retrieving PERSISTENT file system'));
                 });
                 it("file.spec.5 should be able to retrieve a TEMPORARY file system", function (done) {
                     var win = function (fileSystem) {

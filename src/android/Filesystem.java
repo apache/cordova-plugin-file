@@ -185,7 +185,13 @@ public abstract class Filesystem {
         }
     }
 
-
+    /**
+     * Gets the free space in bytes available on this filesystem.
+     * Subclasses may override this method to return nonzero free space.
+     */
+    public long getFreeSpaceInBytes() {
+        return 0;
+    }
 
     public abstract Uri toNativeUri(LocalFilesystemURL inputURL);
     public abstract LocalFilesystemURL toLocalUri(Uri inputURL);

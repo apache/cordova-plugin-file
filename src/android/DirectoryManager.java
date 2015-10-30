@@ -56,45 +56,46 @@ public class DirectoryManager {
     }
 
     /**
-     * Get the free disk space
-     * 
+     * Get the free space in external storage
+     *
      * @return 		Size in KB or -1 if not available
      */
-    public static long getFreeDiskSpace(boolean checkInternal) {
+    public static long getFreeExternalStorageSpace() {
         String status = Environment.getExternalStorageState();
-        long freeSpace = 0;
+        long freeSpaceInBytes = 0;
 
-        // If SD card exists
+        // Check if external storage exists
         if (status.equals(Environment.MEDIA_MOUNTED)) {
-            freeSpace = freeSpaceCalculation(Environment.getExternalStorageDirectory().getPath());
-        }
-        else if (checkInternal) {
-            freeSpace = freeSpaceCalculation("/");
-        }
-        // If no SD card and we haven't been asked to check the internal directory then return -1
-        else {
+            freeSpaceInBytes = getFreeSpaceInBytes(Environment.getExternalStorageDirectory().getPath());
+        } else {
+            // If no external storage then return -1
             return -1;
         }
 
-        return freeSpace;
+        return freeSpaceInBytes / 1024;
     }
 
     /**
-     * Given a path return the number of free KB
-     * 
+     * Given a path return the number of free bytes in the filesystem containing the path.
+     *
      * @param path to the file system
-     * @return free space in KB
+     * @return free space in bytes
      */
-    private static long freeSpaceCalculation(String path) {
-        StatFs stat = new StatFs(path);
-        long blockSize = stat.getBlockSize();
-        long availableBlocks = stat.getAvailableBlocks();
-        return availableBlocks * blockSize / 1024;
+    public static long getFreeSpaceInBytes(String path) {
+        try {
+            StatFs stat = new StatFs(path);
+            long blockSize = stat.getBlockSize();
+            long availableBlocks = stat.getAvailableBlocks();
+            return availableBlocks * blockSize;
+        } catch (IllegalArgumentException e) {
+            // The path was invalid. Just return 0 free bytes.
+            return 0;
+        }
     }
 
     /**
      * Determine if SD card exists.
-     * 
+     *
      * @return				T=exists, F=not found
      */
     public static boolean testSaveLocationExists() {
