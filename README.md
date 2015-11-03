@@ -79,9 +79,9 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
   is installed. (_iOS_, _Android_, _BlackBerry 10_, _OSX_, _windows_)
 
 * `cordova.file.applicationStorageDirectory` - Root directory of the application's
-  sandbox; on iOS this location is read-only (but specific subdirectories [like
-  `/Documents`] are read-write). All data contained within is private to the app. (
-  _iOS_, _Android_, _BlackBerry 10_, _OSX_)
+  sandbox; on iOS & windows this location is read-only (but specific subdirectories [like
+  `/Documents` on iOS or `/localState` on windows] are read-write). All data contained within
+  is private to the app. (_iOS_, _Android_, _BlackBerry 10_, _OSX_)
 
 * `cordova.file.dataDirectory` - Persistent and private data storage within the
   application's sandbox using internal memory (on Android, if you need to use
