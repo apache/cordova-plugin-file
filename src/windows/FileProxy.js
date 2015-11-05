@@ -168,6 +168,15 @@ WinFS.prototype.__format__ = function(fullPath) {
     return 'cdvfile://localhost' + path;
 };
 
+var windowsPaths = {
+    dataDirectory: "ms-appdata:///local/",
+    cacheDirectory: "ms-appdata:///temp/",
+    tempDirectory: "ms-appdata:///temp/",
+    syncedDataDirectory: "ms-appdata:///roaming/",
+    applicationDirectory: "ms-appx:///",
+    applicationStorageDirectory: "ms-appx:///"
+};
+
 var AllFileSystems; 
 
 function getAllFS() {
@@ -486,6 +495,9 @@ function transport(success, fail, args, ops) { // ["fullPath","parent", "newName
 module.exports = {
     requestAllFileSystems: function() {
         return getAllFS();
+    },
+    requestAllPaths: function(success){
+        success(windowsPaths);
     },
     getFileMetadata: function (success, fail, args) {
         module.exports.getMetadata(success, fail, args);
