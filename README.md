@@ -442,7 +442,7 @@ You can also use `cdvfile://` paths directly in the DOM, for example:
 <img src="cdvfile://localhost/persistent/img/logo.png" />
 ```
 
-__*Note__: This method requires following Content Security rules updates:
+__Note__: This method requires following Content Security rules updates:
 * Add `cdvfile:` scheme to `Content-Security-Policy` meta tag of the index page, e.g.:
   - `<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: `**cdvfile:**` https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">`
 * Add `<access origin="cdvfile://*" />` to `config.xml`.
@@ -472,6 +472,10 @@ fileTransfer.download(uri, 'cdvfile://localhost/temporary/path/to/file.mp3', fun
 var my_media = new Media('cdvfile://localhost/temporary/path/to/file.mp3', ...);
 my_media.play();
 ```
+
+#### cdvfile quirks
+- Using `cdvfile://` paths in the DOM is not supported on Windows platform (a path can be converted to native instead).
+
 
 ## List of Error Codes and Meanings
 When an error is thrown, one of the following codes will be used.
