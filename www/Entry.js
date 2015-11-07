@@ -67,7 +67,8 @@ Entry.prototype.getMetadata = function(successCallback, errorCallback) {
     var success = successCallback && function(entryMetadata) {
         var metadata = new Metadata({
             size: entryMetadata.size,
-            modificationTime: entryMetadata.lastModifiedDate
+            modificationTime: entryMetadata.lastModifiedDate,
+            type: entryMetadata.type
         });
         successCallback(metadata);
     };

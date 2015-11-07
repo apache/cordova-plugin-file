@@ -184,7 +184,7 @@ public class ContentFilesystem extends Filesystem {
         return null;
 	}
 	
-	protected Long lastModifiedDateForCursor(Cursor cursor) {
+	protected long lastModifiedDateForCursor(Cursor cursor) {
         final String[] LOCAL_FILE_PROJECTION = { MediaStore.MediaColumns.DATE_MODIFIED };
         int columnIndex = cursor.getColumnIndex(LOCAL_FILE_PROJECTION[0]);
         if (columnIndex != -1) {
@@ -193,7 +193,7 @@ public class ContentFilesystem extends Filesystem {
             	return Long.parseLong(dateStr);
             }
         }
-        return null;
+        return 0;
 	}
 
     @Override
