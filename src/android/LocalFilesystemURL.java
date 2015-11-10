@@ -41,6 +41,16 @@ public class LocalFilesystemURL {
             return null;
         }
         String path = uri.getPath();
+
+        String query = uri.getQuery();
+        if (query != null) {
+            path = path + "?" + query;
+        }        
+        String fragment = uri.getFragment();
+        if (fragment != null) {
+            path = path + "#" + fragment;
+        }
+        
         if (path.length() < 1) {
             return null;
         }
