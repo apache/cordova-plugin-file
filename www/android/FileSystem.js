@@ -23,14 +23,27 @@ FILESYSTEM_PROTOCOL = "cdvfile";
 
 module.exports = {
     __format__: function(fullPath, nativeUrl) {
-        var path = '/' + this.name + '/' + encodeURI(fullPath);
-        path = path.replace('//','/');
-        var ret = FILESYSTEM_PROTOCOL + '://localhost' + path;
-        var m = /\?.*/.exec(nativeUrl);
-        if (m) {
-          ret += m[0];
+        var path;
+        var contentUrlMatch = /^content:\/\//.exec(nativeUrl);
+        if (contentUrlMatch) {
+            // When available, use the path from a native content URL, which was already encoded by Android.
+            // This is necessary because JavaScript's encodeURI() does not encode as many characters as
+            // Android, which can result in permission exceptions when the encoding of a content URI
+            // doesn't match the string for which permission was originally granted.
+            path = nativeUrl.substring(contentUrlMatch[0].length - 1);
+        } else {
+            path = encodeURI(fullPath);
+            if (!/^\//.test(path)) {
+                path = '/' + path;
+            }
+            
+            var m = /\?.*/.exec(nativeUrl);
+            if (m) {
+                path += m[0];
+            }
         }
-        return ret;
+
+        return FILESYSTEM_PROTOCOL + '://localhost/' + this.name + path;
     }
 };
 
