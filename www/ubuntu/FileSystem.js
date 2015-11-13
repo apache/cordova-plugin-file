@@ -26,7 +26,7 @@ module.exports = {
         if (this.name === 'content') {
             return 'content:/' + fullPath;
         }
-        var path = ('/' + this.name + (fullPath[0] === '/' ? '' : '/') + encodeURI(fullPath)).replace('//','/');
+        var path = ('/' + this.name + (fullPath[0] === '/' ? '' : '/') + FileSystem.encodeURIPath(fullPath)).replace('//','/');
 
         return FILESYSTEM_PROTOCOL + '://localhost' + path;
     }

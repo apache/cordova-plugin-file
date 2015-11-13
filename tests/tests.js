@@ -1156,6 +1156,21 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'entry.remove - Error removing entry : ' + fileName));
                 }, failed.bind(null, done, 'createFile - Error creating file : ' + fileName));
             });
+            it("file.spec.53.1 Entry.remove on filename with #s", function (done) {
+                var fileName = "entry.#rm#.file";
+                // create a new file entry
+                createFile(fileName, function (entry) {
+                    expect(entry).toBeDefined();
+                    entry.remove(function () {
+                        root.getFile(fileName, null, succeed.bind(null, done, 'root.getFile - Unexpected success callback, it should not get deleted file : ' + fileName), function (error) {
+                            expect(error).toBeDefined();
+                            expect(error).toBeFileError(FileError.NOT_FOUND_ERR);
+                            // cleanup
+                            deleteEntry(fileName, done);
+                        });
+                    }, failed.bind(null, done, 'entry.remove - Error removing entry : ' + fileName));
+                }, failed.bind(null, done, 'createFile - Error creating file : ' + fileName));
+            });
             it("file.spec.54 remove on empty directory", function (done) {
                 var dirName = "entry.rm.dir";
                 // create a new directory entry
