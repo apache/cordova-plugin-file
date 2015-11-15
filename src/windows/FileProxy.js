@@ -154,7 +154,13 @@ var WinFS = function(name, root) {
         this.winpath += "/";
     }
     this.makeNativeURL = function(path) {
-        return encodeURI(this.root.nativeURL + sanitize(path.replace(':','%3A')));};
+        if (/\/$/.test(this.root.nativeURL)  && /^\//.test(path))
+        {
+            return encodeURI(this.root.nativeURL + sanitize(path.slice(1).replace(':', '%3A')));
+        } else {
+            return encodeURI(this.root.nativeURL + sanitize(path.replace(':', '%3A')));
+        }
+    };
     root.fullPath = '/';
     if (!root.nativeURL)
             root.nativeURL = 'file://'+sanitize(this.winpath + root.fullPath).replace(':','%3A');
