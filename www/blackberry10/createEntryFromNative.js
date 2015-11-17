@@ -45,11 +45,11 @@ module.exports = function (native) {
         temporaryPath = info.temporaryPath.substring(7);
     //fix bb10 webkit incorrect nativeURL
     if (native.filesystem.name === 'root') {
-        entry.nativeURL = 'file:///' + native.fullPath;
+        entry.nativeURL = 'file:///' + FileSystem.encodeURIPath(native.fullPath);
     } else if (entry.nativeURL.indexOf('filesystem:local:///persistent/') === 0) {
-        entry.nativeURL = info.persistentPath + native.fullPath;
+        entry.nativeURL = info.persistentPath + FileSystem.encodeURIPath(native.fullPath);
     } else if (entry.nativeURL.indexOf('filesystem:local:///temporary') === 0) {
-        entry.nativeURL = info.temporaryPath + native.fullPath;
+        entry.nativeURL = info.temporaryPath + FileSystem.encodeURIPath(native.fullPath);
     }
     //translate file system name from bb10 webkit
     if (entry.filesystemName === 'local__0:Persistent' || entry.fullPath.indexOf(persistentPath) !== -1) {
@@ -71,7 +71,5 @@ module.exports = function (native) {
     if (entry.isDirectory && entry.nativeURL.substring(entry.nativeURL.length - 1) !== '/') {
         entry.nativeURL += '/';
     }
-    //encode URL
-    entry.nativeURL = window.encodeURI(entry.nativeURL);
     return entry;
 };

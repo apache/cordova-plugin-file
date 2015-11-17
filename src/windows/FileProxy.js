@@ -154,7 +154,7 @@ var WinFS = function(name, root) {
         this.winpath += "/";
     }
     this.makeNativeURL = function(path) {
-        return encodeURI(this.root.nativeURL + sanitize(path.replace(':','%3A')));};
+        return FileSystem.encodeURIPath(this.root.nativeURL + sanitize(path.replace(':','%3A')));};
     root.fullPath = '/';
     if (!root.nativeURL)
             root.nativeURL = 'file://'+sanitize(this.winpath + root.fullPath).replace(':','%3A');
@@ -164,7 +164,7 @@ var WinFS = function(name, root) {
 utils.extend(WinFS, FileSystem);
 
 WinFS.prototype.__format__ = function(fullPath) {
-    var path = sanitize('/'+this.name+(fullPath[0]==='/'?'':'/')+encodeURI(fullPath));
+    var path = sanitize('/'+this.name+(fullPath[0]==='/'?'':'/')+FileSystem.encodeURIPath(fullPath));
     return 'cdvfile://localhost' + path;
 };
 
@@ -234,7 +234,7 @@ function getFilesystemFromPath(path) {
 var msapplhRE = new RegExp('^ms-appdata://localhost/');
 function pathFromURL(url) {
     url=url.replace(msapplhRE,'ms-appdata:///');
-    var path = decodeURI(url);
+    var path = decodeURIComponent(url);
     // support for file name with parameters
     if (/\?/g.test(path)) {
         path = String(path).split("?")[0];
@@ -256,7 +256,7 @@ function pathFromURL(url) {
         }
     });
     
-    return path.replace('%3A',':').replace(driveRE,'$1');
+    return path.replace(driveRE,'$1');
 }
 
 function getFilesystemFromURL(url) {
