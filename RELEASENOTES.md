@@ -20,6 +20,29 @@
 -->
 # Release Notes
 
+### 4.0.0 (Nov 18, 2015)
+* CB-10035 Updated `RELEASENOTES` to be newest to oldest
+* CB-8497 Fix handling of file paths with `#` character
+* Do not inject default `AndroidPersistentFileLocation` into `config.xml`
+* CB-9891: Fix permission errors due to `URI encoding` inconsistency on **Android**
+* Fixed `NullPointer Exception` in **Android 5** and above due to invalid column name on cursor
+* Fix default persistent file location
+* fix `applicationDirectory` to use `ms-appx:///`
+* Add **Windows** paths to `cordova.file` object
+* CB-9851 Document `cdvfile` protocol quirk - using `cdvfile://` in the `DOM` is not supported on **Windows**
+* CB-9752 `getDirectory` fails on valid directory with assets filesystem
+* CB-7253 `requestFileSystem` fails when no external storage is present
+* Adding permissions for **Marshmallow**. Now supports **Anrdoid 6.0**
+* Fixing contribute link.
+* always use setters to fix memory issues without `ARC` for **iOS**
+* CB-9331 `getFreeDiskSpace` **iOS**.
+* override `resolveLocalFileSystemURL` by `webkitResolveLocalFileSystemURL` for **browser** platform add `.project` into git ignore list
+* Fail with `FileError.ENCODING_ERR` on encoding exception.
+* CB-9544 Add file plugin for **OSX**
+* CB-9539 Fixed test failure on **Android** emulator
+* Added docs on `CSP` rules needed for using `cdvfile` in DOM src. This closes #120
+* Added `cdvfile` protocol purpose description and examples
+
 ### 3.0.0 (Aug 18, 2015)
 * Make Android default persistent file location internal
 * Fixed issue with file paths not existing when using browserify
