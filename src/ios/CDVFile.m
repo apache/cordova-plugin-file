@@ -159,6 +159,8 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 {
     CDVFilesystemURL* url = [CDVFilesystemURL fileSystemURLWithURL:[[self request] URL]];
     NSObject<CDVFileSystem> *fs = [filePlugin filesystemForURL:url];
+    __weak CDVFilesystemURLProtocol* weakSelf = self;
+    
     [fs readFileAtURL:url start:0 end:-1 callback:^void(NSData *data, NSString *mimetype, CDVFileError error) {
         NSMutableDictionary* responseHeaders = [[NSMutableDictionary alloc] init];
         responseHeaders[@"Cache-Control"] = @"no-cache";
@@ -166,13 +168,13 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         if (!error) {
             responseHeaders[@"Content-Type"] = mimetype;
             NSURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url.url statusCode:200 HTTPVersion:@"HTTP/1.1"headerFields:responseHeaders];
-            [[self client] URLProtocol:self didReceiveResponse:response cacheStoragePolicy:NSURLCacheStorageNotAllowed];
-            [[self client] URLProtocol:self didLoadData:data];
-            [[self client] URLProtocolDidFinishLoading:self];
+            [[weakSelf client] URLProtocol:weakSelf didReceiveResponse:response cacheStoragePolicy:NSURLCacheStorageNotAllowed];
+            [[weakSelf client] URLProtocol:weakSelf didLoadData:data];
+            [[weakSelf client] URLProtocolDidFinishLoading:weakSelf];
         } else {
             NSURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url.url statusCode:404 HTTPVersion:@"HTTP/1.1"headerFields:responseHeaders];
-            [[self client] URLProtocol:self didReceiveResponse:response cacheStoragePolicy:NSURLCacheStorageNotAllowed];
-            [[self client] URLProtocolDidFinishLoading:self];
+            [[weakSelf client] URLProtocol:weakSelf didReceiveResponse:response cacheStoragePolicy:NSURLCacheStorageNotAllowed];
+            [[weakSelf client] URLProtocolDidFinishLoading:weakSelf];
         }
     }];
 }
@@ -224,7 +226,6 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         }
     }
     return nil;
-
 }
 
 - (NSObject<CDVFileSystem> *)filesystemForURL:(CDVFilesystemURL *)localURL {
@@ -795,8 +796,9 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         return;
     }
 
+    __weak CDVFile* weakSelf = self;
     [destFs copyFileToURL:destURL withName:newName fromFileSystem:srcFs atURL:srcURL copy:bCopy callback:^(CDVPluginResult* result) {
-        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+        [weakSelf.commandDelegate sendPluginResult:result callbackId:command.callbackId];
     }];
 
 }
@@ -806,9 +808,9 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     // arguments
     CDVFilesystemURL* localURI = [self fileSystemURLforArg:command.arguments[0]];
     NSObject<CDVFileSystem> *fs = [self filesystemForURL:localURI];
-
+    __weak CDVFile* weakSelf = self;
     [fs getFileMetadataForURL:localURI callback:^(CDVPluginResult* result) {
-        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+        [weakSelf.commandDelegate sendPluginResult:result callbackId:command.callbackId];
     }];
 }
 
@@ -853,6 +855,8 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         return;
     }
 
+    __weak CDVFile* weakSelf = self;
+
     [self.commandDelegate runInBackground:^ {
         [fs readFileAtURL:localURI start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
             CDVPluginResult* result = nil;
@@ -870,7 +874,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
                 result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:errorCode];
             }
 
-            [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+            [weakSelf.commandDelegate sendPluginResult:result callbackId:command.callbackId];
         }];
     }];
 }
@@ -893,6 +897,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
     NSObject<CDVFileSystem> *fs = [self filesystemForURL:localURI];
 
+    __weak CDVFile* weakSelf = self;
     [self.commandDelegate runInBackground:^ {
         [fs readFileAtURL:localURI start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
             CDVPluginResult* result = nil;
@@ -904,7 +909,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
                 result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:errorCode];
             }
 
-            [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+            [weakSelf.commandDelegate sendPluginResult:result callbackId:command.callbackId];
         }];
     }];
 }
@@ -925,6 +930,8 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
     NSObject<CDVFileSystem> *fs = [self filesystemForURL:localURI];
 
+    __weak CDVFile* weakSelf = self;
+
     [self.commandDelegate runInBackground:^ {
         [fs readFileAtURL:localURI start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
             CDVPluginResult* result = nil;
@@ -934,7 +941,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
                 result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:errorCode];
             }
 
-            [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+            [weakSelf.commandDelegate sendPluginResult:result callbackId:command.callbackId];
         }];
     }];
 }
@@ -947,6 +954,8 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
     NSObject<CDVFileSystem> *fs = [self filesystemForURL:localURI];
 
+    __weak CDVFile* weakSelf = self;
+
     [self.commandDelegate runInBackground:^ {
         [fs readFileAtURL:localURI start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
             CDVPluginResult* result = nil;
@@ -958,7 +967,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
                 result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:errorCode];
             }
 
-            [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+            [weakSelf.commandDelegate sendPluginResult:result callbackId:command.callbackId];
         }];
     }];
 }
@@ -985,6 +994,8 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
  */
 - (void)write:(CDVInvokedUrlCommand*)command
 {
+    __weak CDVFile* weakSelf = self;
+
     [self.commandDelegate runInBackground:^ {
         NSString* callbackId = command.callbackId;
 
@@ -1006,7 +1017,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         } else {
             result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid parameter type"];
         }
-        [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+        [weakSelf.commandDelegate sendPluginResult:result callbackId:callbackId];
     }];
 }
 
