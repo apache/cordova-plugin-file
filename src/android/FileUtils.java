@@ -1099,20 +1099,16 @@ public class FileUtils extends CordovaPlugin {
     /*
      * Handle the response
      */
-
     public void onRequestPermissionResult(int requestCode, String[] permissions,
                                           int[] grantResults) throws JSONException {
-        for(int r:grantResults)
-        {
-            if(r == PackageManager.PERMISSION_DENIED)
-            {
+        for(int r:grantResults) {
+            if(r == PackageManager.PERMISSION_DENIED) {
                 callback.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, SECURITY_ERR));
             }
         }
-        switch(requestCode)
-        {
+        switch(requestCode) {
             case READ_PERM:
-                threadhelper( new FileOp( ){
+                threadhelper( new FileOp( ) {
                     public void run(JSONArray args) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
                         String dirname=args.getString(0);
 
@@ -1123,7 +1119,7 @@ public class FileUtils extends CordovaPlugin {
                 }, lastRawArgs, callback);
                 break;
             case WRITE_PERM:
-                threadhelper( new FileOp( ){
+                threadhelper( new FileOp( ) {
                     public void run(JSONArray args) throws JSONException, FileNotFoundException, IOException, NoModificationAllowedException {
                         String fname=args.getString(0);
                         String data=args.getString(1);
@@ -1135,6 +1131,5 @@ public class FileUtils extends CordovaPlugin {
                 }, lastRawArgs, callback);
                 break;
         }
-
     }
 }
