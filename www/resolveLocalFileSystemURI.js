@@ -21,13 +21,15 @@
 
 //For browser platform: not all browsers use overrided `resolveLocalFileSystemURL`.
 function checkBrowser() {
-    if (cordova.platformId === "browser" && navigator.userAgent.search(/Chrome/) > 0) {
-        var resolveLocalFileSystemURL  = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
-        module.exports.resolveLocalFileSystemURL = resolveLocalFileSystemURL;
-        return;
+    if (cordova.platformId === "browser" && require('./isChrome')()) {
+        module.exports.resolveLocalFileSystemURL = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
+        return true;
     }
+    return false;
 }
-checkBrowser();
+if (checkBrowser()) {
+    return;
+}
 
 var argscheck = require('cordova/argscheck'),
     DirectoryEntry = require('./DirectoryEntry'),

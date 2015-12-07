@@ -25,14 +25,9 @@
 
 /* Heavily based on https://github.com/ebidel/idb.filesystem.js */
 
-// window.webkitRequestFileSystem and window.webkitResolveLocalFileSystemURL
-// are available only in Chrome and possible a good flag to indicate
-// that we're running in Chrome
-var isChrome = window.webkitRequestFileSystem && window.webkitResolveLocalFileSystemURL;
-
 // For chrome we don't need to implement proxy methods
 // All functionality can be accessed natively.
-if (isChrome) {
+if (require('./isChrome')()) {
     var pathsPrefix = {
         // Read-only directory where the application is installed.
         applicationDirectory: location.origin + "/",

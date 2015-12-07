@@ -398,6 +398,10 @@ to config.xml in order for the application to find previously stored files.
     </platform>
 
     <platform name="browser">
+        <js-module src="www/browser/isChrome.js" name="isChrome">
+            <runs />
+        </js-module>
+
         <!-- File for Chrome -->
         <js-module src="www/browser/Preparing.js" name="Preparing">
             <runs />

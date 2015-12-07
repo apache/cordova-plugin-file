@@ -21,13 +21,15 @@
 
 //For browser platform: not all browsers use this file.
 function checkBrowser() {
-    if (cordova.platformId === "browser" && navigator.userAgent.search(/Chrome/) > 0) {
-        var requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
-        module.exports = requestFileSystem;
-        return;
+    if (cordova.platformId === "browser" && require('./isChrome')()) {
+        module.exports = window.requestFileSystem || window.webkitRequestFileSystem;
+        return true;
     }
+    return false;
 }
-checkBrowser();
+if (checkBrowser()) {
+    return;
+}
 
 var argscheck = require('cordova/argscheck'),
     FileError = require('./FileError'),
