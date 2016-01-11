@@ -534,26 +534,20 @@ public class FileUtils extends CordovaPlugin {
     }
 
     private void getReadPermission() {
-        cordova.requestPermission(this, READ_PERM, Manifest.permission.READ_EXTERNAL_STORAGE);
+        PermissionHelper.requestPermission(this, READ_PERM, Manifest.permission.READ_EXTERNAL_STORAGE);
     }
 
     private void getWritePermission() {
-        cordova.requestPermission(this, WRITE_PERM, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        PermissionHelper.requestPermission(this, WRITE_PERM, Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
 
 
     private boolean hasReadPermission() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-            return PackageManager.PERMISSION_GRANTED == cordova.getActivity().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE);
-        else
-            return true;
+        return PermissionHelper.hasPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
     }
 
     private boolean hasWritePermission() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-            return PackageManager.PERMISSION_GRANTED == cordova.getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        else
-            return true;
+        return PermissionHelper.hasPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
 
 
