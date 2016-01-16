@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-file",
-  "version": "4.0.1-dev",
+  "version": "4.1.0",
   "description": "Cordova File Plugin",
   "cordova": {
     "id": "cordova-plugin-file",

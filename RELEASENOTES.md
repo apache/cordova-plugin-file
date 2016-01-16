@@ -20,6 +20,12 @@
 -->
 # Release Notes
 
+### 4.1.0 (Jan 15, 2016)
+* added `.ratignore` file
+* CB-10319 **android** Adding reflective helper methods for permission requests
+* CB-10023 Fix `proxy not found error` on Chrome.
+* CB-8863 **ios** Fix block usage of self
+
 ### 4.0.0 (Nov 18, 2015)
 * [CB-10035](https://issues.apache.org/jira/browse/CB-10035) Updated `RELEASENOTES` to be newest to oldest
 * [CB-8497](https://issues.apache.org/jira/browse/CB-8497) Fix handling of file paths with `#` character
