@@ -102,6 +102,12 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <merges target="window" />
     </js-module>
 
+    <!-- Required for browserify: we always link module below as there is conditional reference
+    to this module from requestFileSystem and resolveLocalFileSystemURI modules. -->
+    <js-module src="www/browser/isChrome.js" name="isChrome">
+        <runs />
+    </js-module>
+
     <info>
 The Android Persistent storage location now defaults to "Internal". Please check this plugins README to see if you application needs any changes in its config.xml.
 
@@ -396,10 +402,6 @@ to config.xml in order for the application to find previously stored files.
     </platform>
 
     <platform name="browser">
-        <js-module src="www/browser/isChrome.js" name="isChrome">
-            <runs />
-        </js-module>
-
         <!-- File for Chrome -->
         <js-module src="www/browser/Preparing.js" name="Preparing">
             <runs />
