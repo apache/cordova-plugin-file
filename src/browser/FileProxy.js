@@ -32,10 +32,10 @@ if (require('./isChrome')()) {
         // Read-only directory where the application is installed.
         applicationDirectory: location.origin + "/",
         // Where to put app-specific data files.
-        dataDirectory: 'filesystem:file:///persistent/',
+        dataDirectory: 'filesystem:' + location.origin + '/persistent/',
         // Cached files that should survive app restarts.
         // Apps should not rely on the OS to delete files in here.
-        cacheDirectory: 'filesystem:file:///temporary/',
+        cacheDirectory: 'filesystem:' + location.origin + '/temporary/',
     };
 
     exports.requestAllPaths = function(successCallback) {
