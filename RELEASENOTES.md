@@ -20,6 +20,10 @@
 -->
 # Release Notes
 
+### 4.1.1 (Feb 09, 2016)
+* Edit package.json license to match SPDX id
+* [CB-10419](https://issues.apache.org/jira/browse/CB-10419) cordova-plugin-file 4.0.0 error with browserify workflow
+
 ### 4.1.0 (Jan 15, 2016)
 * added `.ratignore` file
 * CB-10319 **android** Adding reflective helper methods for permission requests
