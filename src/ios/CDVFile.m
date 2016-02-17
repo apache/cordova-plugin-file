@@ -448,7 +448,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     int type = [strType intValue];
     CDVPluginResult* result = nil;
 
-    if (type > self.fileSystems.count) {
+    if (type >= self.fileSystems.count) {
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NOT_FOUND_ERR];
         NSLog(@"No filesystem of type requested");
     } else {
