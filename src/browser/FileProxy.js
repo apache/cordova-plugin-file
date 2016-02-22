@@ -88,7 +88,9 @@
             var size = args[1]; // jshint ignore: line
 
             if (type !== LocalFileSystem.TEMPORARY && type !== LocalFileSystem.PERSISTENT) {
-                errorCallback && errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                if (errorCallback) {
+                    errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                }
                 return;
             }
 
@@ -236,7 +238,9 @@
                 isBinary = args[3]; // jshint ignore: line
 
             if (!data) {
-                errorCallback && errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                if (errorCallback) {
+                    errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                }
                 return;
             }
 
@@ -520,14 +524,18 @@
             }
 
             if (path.trim()[0] === '/') {
-                errorCallback && errorCallback(FileError.ENCODING_ERR);
+                if (errorCallback) {
+                    errorCallback(FileError.ENCODING_ERR);
+                }
                 return;
             }
 
             //support for cdvfile
             if (path.trim().substr(0,7) === "cdvfile") {
                 if (path.indexOf("cdvfile://localhost") === -1) {
-                    errorCallback && errorCallback(FileError.ENCODING_ERR);
+                    if (errorCallback) {
+                        errorCallback(FileError.ENCODING_ERR);
+                    }
                     return;
                 }
 
@@ -540,7 +548,9 @@
                 } else if (indexTemporary !== -1) {
                     path = "file:///temporary" + path.substr(indexTemporary + 9);
                 } else {
-                    errorCallback && errorCallback(FileError.ENCODING_ERR);
+                    if (errorCallback) {
+                        errorCallback(FileError.ENCODING_ERR);
+                    }
                     return;
                 }
             }
@@ -600,12 +610,16 @@
                 };
 
                 xhr.onerror = function () {
-                    errorCallback && errorCallback(FileError.NOT_READABLE_ERR);
+                    if(errorCallback) {
+                        errorCallback(FileError.NOT_READABLE_ERR);
+                    }
                 };
 
                 xhr.send();
             } else {
-                errorCallback && errorCallback(FileError.NOT_FOUND_ERR);
+                if(errorCallback) {
+                    errorCallback(FileError.NOT_FOUND_ERR);
+                }
             }
 
             function writeFile(entry) {
@@ -617,7 +631,9 @@
                         }
                     };
                     fileWriter.onerror = function () {
-                        errorCallback && errorCallback(FileError.NOT_READABLE_ERR);
+                        if (errorCallback) {
+                            errorCallback(FileError.NOT_READABLE_ERR);
+                        }
                     };
                     fileWriter.write(new Blob([xhr.response]));
                 }, errorCallback);
@@ -819,7 +835,9 @@
 
         idb_.get = function(fullPath, successCallback, errorCallback) {
             if (!this.db) {
-                errorCallback && errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                if (errorCallback) {
+                    errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                }
                 return;
             }
 
@@ -835,7 +853,9 @@
 
         idb_.getAllEntries = function(fullPath, storagePath, successCallback, errorCallback) {
             if (!this.db) {
-                errorCallback && errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                if (errorCallback) {
+                    errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                }
                 return;
             }
 
@@ -896,7 +916,9 @@
 
         idb_['delete'] = function(fullPath, successCallback, errorCallback, isDirectory) {
             if (!idb_.db) {
-                errorCallback && errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                if (errorCallback) {
+                    errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                }
                 return;
             }
 
@@ -926,7 +948,9 @@
 
         idb_.put = function(entry, storagePath, successCallback, errorCallback) {
             if (!this.db) {
-                errorCallback && errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                if (errorCallback) {
+                    errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                }
                 return;
             }
 

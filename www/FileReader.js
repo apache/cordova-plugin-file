@@ -22,7 +22,6 @@
 var exec = require('cordova/exec'),
     modulemapper = require('cordova/modulemapper'),
     utils = require('cordova/utils'),
-    File = require('./File'),
     FileError = require('./FileError'),
     ProgressEvent = require('./ProgressEvent'),
     origFileReader = modulemapper.getOriginalSymbol(window, 'FileReader');
@@ -91,7 +90,9 @@ function initRead(reader, file) {
         return true;
     }
 
-    reader.onloadstart && reader.onloadstart(new ProgressEvent("loadstart", {target:reader}));
+    if (reader.onloadstart) {
+        reader.onloadstart(new ProgressEvent("loadstart", {target:reader}));
+    }
 }
 
 /**

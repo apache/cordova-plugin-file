@@ -63,10 +63,10 @@ function write(data) {
 
     if (data instanceof ArrayBuffer || data.buffer instanceof ArrayBuffer) {
         data = new Uint8Array(data);
-	var binary = "";
-	for (var i = 0; i < data.byteLength; i++) {
+    var binary = "";
+    for (var i = 0; i < data.byteLength; i++) {
             binary += String.fromCharCode(data[i]);
-	}
+    }
         data = binary;
     }
 
@@ -126,7 +126,7 @@ function write(data) {
                 me.onwriteend(new ProgressEvent("writeend", {"target":me}));
             }
         }, "File", "write", [path, data, this.position, isBinary]);
-};
+}
 
 module.exports = {
     write: write

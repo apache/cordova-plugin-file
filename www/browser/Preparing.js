@@ -98,7 +98,9 @@
             }
 
             // cdvfile other than local file resource is not supported
-            fail && fail(new FileError(FileError.ENCODING_ERR));
+            if (fail) {
+                fail(new FileError(FileError.ENCODING_ERR));
+            }
         } else {
             nativeResolveLocalFileSystemURL(url, win, fail);
         }
@@ -135,7 +137,9 @@
             };
 
             entryType.setMetadata = function(win, fail /*, metadata*/) {
-                fail && fail("Not supported");
+                if (fail) {
+                    fail("Not supported");
+                }
             };
 
             fileEntry.createWriter(function(writer) {

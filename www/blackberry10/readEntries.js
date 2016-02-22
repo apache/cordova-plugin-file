@@ -31,7 +31,6 @@
  */
 
 var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy'),
-    info = require('cordova-plugin-file.bb10FileSystemInfo'),
     requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame'),
     createEntryFromNative = cordova.require('cordova-plugin-file.bb10CreateEntryFromNative');
 
