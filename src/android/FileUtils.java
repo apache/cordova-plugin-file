@@ -659,27 +659,35 @@ public class FileUtils extends CordovaPlugin {
      * @throws JSONException
      */
     private JSONObject resolveLocalFileSystemURI(String uriString) throws IOException, JSONException {
-    	if (uriString == null) {
-    		throw new MalformedURLException("Unrecognized filesystem URL");
-    	}
-    	Uri uri = Uri.parse(uriString);
+        if (uriString == null) {
+            throw new MalformedURLException("Unrecognized filesystem URL");
+        }
+        Uri uri = Uri.parse(uriString);
+        boolean isNativeUri = false;
 
         LocalFilesystemURL inputURL = LocalFilesystemURL.parse(uri);
         if (inputURL == null) {
-    		/* Check for file://, content:// urls */
-    		inputURL = resolveNativeUri(uri);
-    	}
+            /* Check for file://, content:// urls */
+            inputURL = resolveNativeUri(uri);
+            isNativeUri = true;
+        }
 
         try {
-        	Filesystem fs = this.filesystemForURL(inputURL);
-        	if (fs == null) {
-        		throw new MalformedURLException("No installed handlers for this URL");
-        	}
+            Filesystem fs = this.filesystemForURL(inputURL);
+            if (fs == null) {
+                throw new MalformedURLException("No installed handlers for this URL");
+            }
             if (fs.exists(inputURL)) {
+                if (!isNativeUri) {
+                    // If not already resolved as native URI, resolve to a native URI and back to
+                    // fix the terminating slash based on whether the entry is a directory or file.
+                    inputURL = fs.toLocalUri(fs.toNativeUri(inputURL));
+                }
+
                 return fs.getEntryForLocalURL(inputURL);
             }
         } catch (IllegalArgumentException e) {
-        	throw new MalformedURLException("Unrecognized filesystem URL");
+            throw new MalformedURLException("Unrecognized filesystem URL");
         }
         throw new FileNotFoundException();
     }
