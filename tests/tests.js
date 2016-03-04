@@ -301,6 +301,8 @@ exports.defineAutoTests = function () {
                     var fileName = 'file.spec.9';
                     var win = function (fileEntry) {
                         expect(fileEntry).toBeDefined();
+                        expect(fileEntry.isFile).toBe(true);
+                        expect(fileEntry.isDirectory).toBe(false);
                         expect(fileEntry.name).toCanonicallyMatch(fileName);
                         expect(fileEntry.toURL()).not.toMatch(/^cdvfile:/, 'should not use cdvfile URL');
                         expect(fileEntry.toURL()).not.toMatch(/\/$/, 'URL should not end with a slash');
@@ -311,10 +313,29 @@ exports.defineAutoTests = function () {
                         window.resolveLocalFileSystemURL(entry.toURL(), win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving file URL: ' + entry.toURL()));
                     }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName), failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
                 });
+                it("file.spec.9.1 should resolve a file even with a terminating slash", function (done) {
+                    var fileName = 'file.spec.9.1';
+                    var win = function (fileEntry) {
+                        expect(fileEntry).toBeDefined();
+                        expect(fileEntry.isFile).toBe(true);
+                        expect(fileEntry.isDirectory).toBe(false);
+                        expect(fileEntry.name).toCanonicallyMatch(fileName);
+                        expect(fileEntry.toURL()).not.toMatch(/^cdvfile:/, 'should not use cdvfile URL');
+                        expect(fileEntry.toURL()).not.toMatch(/\/$/, 'URL should not end with a slash');
+                        // Clean-up
+                        deleteEntry(fileName, done);
+                    };
+                    createFile(fileName, function (entry) {
+                        var entryURL = entry.toURL() + '/';
+                        window.resolveLocalFileSystemURL(entryURL, win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving file URL: ' + entryURL));
+                    }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName), failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
+                });
                 it("file.spec.9.5 should resolve a directory", function (done) {
                     var fileName = 'file.spec.9.5';
                     var win = function (fileEntry) {
                         expect(fileEntry).toBeDefined();
+                        expect(fileEntry.isFile).toBe(false);
+                        expect(fileEntry.isDirectory).toBe(true);
                         expect(fileEntry.name).toCanonicallyMatch(fileName);
                         expect(fileEntry.toURL()).not.toMatch(/^cdvfile:/, 'should not use cdvfile URL');
                         expect(fileEntry.toURL()).toMatch(/\/$/, 'URL end with a slash');
@@ -324,6 +345,26 @@ exports.defineAutoTests = function () {
                     function gotDirectory(entry) {
                         // lookup file system entry
                         window.resolveLocalFileSystemURL(entry.toURL(), win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving directory URL: ' + entry.toURL()));
+                    }
+                    createDirectory(fileName, gotDirectory, failed.bind(null, done, 'createDirectory - Error creating directory: ' + fileName), failed.bind(null, done, 'createDirectory - Error creating directory: ' + fileName));
+                });
+                it("file.spec.9.6 should resolve a directory even without a terminating slash", function (done) {
+                    var fileName = 'file.spec.9.6';
+                    var win = function (fileEntry) {
+                        expect(fileEntry).toBeDefined();
+                        expect(fileEntry.isFile).toBe(false);
+                        expect(fileEntry.isDirectory).toBe(true);
+                        expect(fileEntry.name).toCanonicallyMatch(fileName);
+                        expect(fileEntry.toURL()).not.toMatch(/^cdvfile:/, 'should not use cdvfile URL');
+                        expect(fileEntry.toURL()).toMatch(/\/$/, 'URL end with a slash');
+                        // cleanup
+                        deleteEntry(fileName, done);
+                    };
+                    function gotDirectory(entry) {
+                        // lookup file system entry
+                        var entryURL = entry.toURL();
+                        entryURL = entryURL.substring(0, entryURL.length - 1);
+                        window.resolveLocalFileSystemURL(entryURL, win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving directory URL: ' + entryURL));
                     }
                     createDirectory(fileName, gotDirectory, failed.bind(null, done, 'createDirectory - Error creating directory: ' + fileName), failed.bind(null, done, 'createDirectory - Error creating directory: ' + fileName));
                 });
@@ -545,7 +586,6 @@ exports.defineAutoTests = function () {
 
                 var fileName = "de:invalid:path",
                 fail = function (error) {
-                    console.error(error);
                     expect(error).toBeDefined();
                     expect(error).toBeFileError(FileError.ENCODING_ERR);
                     done();
