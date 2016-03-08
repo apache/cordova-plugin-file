@@ -243,7 +243,7 @@ exports.defineAutoTests = function () {
                 it("file.spec.5 should be able to retrieve a TEMPORARY file system", function (done) {
                     var win = function (fileSystem) {
                         expect(fileSystem).toBeDefined();
-                        if (isChrome) { 
+                        if (isChrome) {
                             expect(fileSystem.name).toContain("Temporary");
                         } else {
                             expect(fileSystem.name).toBe("temporary");
@@ -2281,13 +2281,14 @@ exports.defineAutoTests = function () {
                 // create a file, write to it, and read it in again
                 createFile(fileName, createWriter, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             }
-            function runReaderTest(funcName, writeBinary, done, verifierFunc, sliceStart, sliceEnd, fileContents) {
+            function runReaderTest(funcName, writeBinary, done, progressFunc, verifierFunc, sliceStart, sliceEnd, fileContents) {
                 writeDummyFile(writeBinary, function (fileEntry, file, fileData, fileDataAsBinaryString) {
                     var verifier = function (evt) {
                         expect(evt).toBeDefined();
                         verifierFunc(evt, fileData, fileDataAsBinaryString);
                     };
                     var reader = new FileReader();
+                    reader.onprogress = progressFunc;
                     reader.onload = verifier;
                     reader.onerror = failed.bind(null, done, 'reader.onerror - Error reading file: ' + file + ' using function: ' + funcName);
                     if (sliceEnd !== undefined) {
@@ -2309,20 +2310,20 @@ exports.defineAutoTests = function () {
                 return match;
             }
             it("file.spec.84 should read file properly, readAsText", function (done) {
-                runReaderTest('readAsText', false, done, function (evt, fileData, fileDataAsBinaryString) {
+                runReaderTest('readAsText', false, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     expect(evt.target.result).toBe(fileData);
                     done();
                 });
             });
             it("file.spec.84.1 should read JSON file properly, readAsText", function (done) {
                 var testObject = {key1: "value1", key2: 2};
-                runReaderTest('readAsText', false, done, function (evt, fileData, fileDataAsBinaryString) {
+                runReaderTest('readAsText', false, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     expect(evt.target.result).toEqual(JSON.stringify(testObject));
                     done();
                 }, undefined, undefined, JSON.stringify(testObject));
             });
             it("file.spec.85 should read file properly, Data URI", function (done) {
-                runReaderTest('readAsDataURL', true, done, function (evt, fileData, fileDataAsBinaryString) {
+                runReaderTest('readAsDataURL', true, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     /* `readAsDataURL` function is supported, but the mediatype in Chrome depends on entry name extension,
                         mediatype in IE is always empty (which is the same as `text-plain` according the specification),
                         the mediatype in Firefox is always `application/octet-stream`.
@@ -2346,7 +2347,7 @@ exports.defineAutoTests = function () {
                     pending();
                 }
 
-                runReaderTest('readAsBinaryString', true, done, function (evt, fileData, fileDataAsBinaryString) {
+                runReaderTest('readAsBinaryString', true, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     expect(evt.target.result).toBe(fileDataAsBinaryString);
                     done();
                 });
@@ -2357,37 +2358,37 @@ exports.defineAutoTests = function () {
                     expect(true).toFailWithMessage('Platform does not supported this feature');
                     done();
                 }
-                runReaderTest('readAsArrayBuffer', true, done, function (evt, fileData, fileDataAsBinaryString) {
+                runReaderTest('readAsArrayBuffer', true, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     expect(arrayBufferEqualsString(evt.target.result, fileDataAsBinaryString)).toBe(true);
                     done();
                 });
             });
             it("file.spec.88 should read sliced file: readAsText", function (done) {
-                runReaderTest('readAsText', false, done, function (evt, fileData, fileDataAsBinaryString) {
+                runReaderTest('readAsText', false, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     expect(evt.target.result).toBe(fileDataAsBinaryString.slice(10, 40));
                     done();
                 }, 10, 40);
             });
             it("file.spec.89 should read sliced file: slice past eof", function (done) {
-                runReaderTest('readAsText', false, done, function (evt, fileData, fileDataAsBinaryString) {
+                runReaderTest('readAsText', false, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     expect(evt.target.result).toBe(fileData.slice(-5, 9999));
                     done();
                 }, -5, 9999);
             });
             it("file.spec.90 should read sliced file: slice to eof", function (done) {
-                runReaderTest('readAsText', false, done, function (evt, fileData, fileDataAsBinaryString) {
+                runReaderTest('readAsText', false, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     expect(evt.target.result).toBe(fileData.slice(-5));
                     done();
                 }, -5);
             });
             it("file.spec.91 should read empty slice", function (done) {
-                runReaderTest('readAsText', false, done, function (evt, fileData, fileDataAsBinaryString) {
+                runReaderTest('readAsText', false, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     expect(evt.target.result).toBe('');
                     done();
                 }, 0, 0);
             });
             it("file.spec.92 should read sliced file properly, readAsDataURL", function (done) {
-                runReaderTest('readAsDataURL', true, done, function (evt, fileData, fileDataAsBinaryString) {
+                runReaderTest('readAsDataURL', true, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     /* `readAsDataURL` function is supported, but the mediatype in Chrome depends on entry name extension,
                         mediatype in IE is always empty (which is the same as `text-plain` according the specification),
                         the mediatype in Firefox is always `application/octet-stream`.
@@ -2411,7 +2412,7 @@ exports.defineAutoTests = function () {
                     pending();
                 }
 
-                runReaderTest('readAsBinaryString', true, done, function (evt, fileData, fileDataAsBinaryString) {
+                runReaderTest('readAsBinaryString', true, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     expect(evt.target.result).toBe(fileDataAsBinaryString.slice(-10, -5));
                     done();
                 }, -10, -5);
@@ -2422,12 +2423,53 @@ exports.defineAutoTests = function () {
                     expect(true).toFailWithMessage('Platform does not supported this feature');
                     done();
                 }
-                runReaderTest('readAsArrayBuffer', true, done, function (evt, fileData, fileDataAsBinaryString) {
+                runReaderTest('readAsArrayBuffer', true, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     expect(arrayBufferEqualsString(evt.target.result, fileDataAsBinaryString.slice(0, -1))).toBe(true);
                     done();
                 }, 0, -1);
             });
-        });
+            it("file.spec.94.5 should read large file in multiple chunks, readAsArrayBuffer", function (done) {
+                // Skip test if ArrayBuffers are not supported (e.g.: Android 2.3).
+                if (typeof window.ArrayBuffer == 'undefined') {
+                    expect(true).toFailWithMessage('Platform does not supported this feature');
+                    done();
+                }
+
+                var largeText = "";
+                for (var i = 0; i < 1000; i++) {
+                    largeText += "Test " + i + "\n";
+                }
+
+                // Set the chunk size so that the read will take 5 chunks
+                FileReader.READ_CHUNK_SIZE = largeText.length / 4 + 1;
+
+                var chunkCount = 0;
+                var lastProgressValue = -1;
+                var progressFunc = function (evt) {
+                    expect(evt.loaded).toBeDefined();
+                    expect(evt.total).toBeDefined();
+
+                    expect(evt.total >= largeText.length).toBe(true);
+                    expect(evt.total <= largeText.length + 5).toBe(true);
+                    expect(evt.loaded > lastProgressValue).toBe(true);
+                    expect(evt.loaded <= evt.total).toBe(true);
+
+                    lastProgressValue = evt.loaded;
+                    chunkCount++;
+                };
+
+                runReaderTest(
+                    'readAsArrayBuffer', true, done, progressFunc,
+                    function (evt, fileData, fileDataAsBinaryString) {
+                        expect(arrayBufferEqualsString(evt.target.result, fileDataAsBinaryString.slice(0, -1))).toBe(true);
+                        expect(lastProgressValue >= largeText.length).toBe(true);
+                        expect(lastProgressValue <= largeText.length + 5).toBe(true);
+                        expect(chunkCount).toBe(5);
+                        done();
+                    },
+                    0, -1, largeText);
+            });
+       });
         //Read method
         describe('FileWriter', function () {
             it("file.spec.95 should have correct methods", function (done) {
