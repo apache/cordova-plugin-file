@@ -676,6 +676,18 @@ public class FileUtils extends CordovaPlugin {
         		throw new MalformedURLException("No installed handlers for this URL");
         	}
             if (fs.exists(inputURL)) {
+                Boolean isDirectory = (new File(fs.toNativeUri(inputURL).getPath())).isDirectory();
+                Boolean lastSlash = uriString.charAt(uriString.length() - 1) == '/';
+                if (isDirectory != lastSlash) {
+                    if (isDirectory && !lastSlash)
+                        uriString += '/';
+                    if (lastSlash && !isDirectory)
+                        uriString = uriString.substring(0,uriString.length() - 1);
+                    inputURL = LocalFilesystemURL.parse(uriString);
+                    if (inputURL == null)
+                        inputURL = resolveNativeUri(uri);
+                }
+                    
                 return fs.getEntryForLocalURL(inputURL);
             }
         } catch (IllegalArgumentException e) {
