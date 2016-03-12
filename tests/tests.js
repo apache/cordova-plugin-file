@@ -2441,7 +2441,7 @@ exports.defineAutoTests = function () {
                 }
 
                 // Set the chunk size so that the read will take 5 chunks
-                FileReader.READ_CHUNK_SIZE = largeText.length / 4 + 1;
+                FileReader.READ_CHUNK_SIZE = Math.floor(largeText.length / 4) + 1;
 
                 var chunkCount = 0;
                 var lastProgressValue = -1;
