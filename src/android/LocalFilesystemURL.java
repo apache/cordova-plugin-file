@@ -54,8 +54,9 @@ public class LocalFilesystemURL {
         return new LocalFilesystemURL(uri, fsName, path, isDirectory);
     }
 
+    // Encode '#' before parse uri since URI class not handle '#'
     public static LocalFilesystemURL parse(String uri) {
-        return parse(Uri.parse(uri));
+        return parse(Uri.parse(FileUtils.encodeHashUri(uri)));
     }
 
     public String toString() {

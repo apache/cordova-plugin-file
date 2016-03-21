@@ -86,6 +86,9 @@ public class FileUtils extends CordovaPlugin {
 
     private CallbackContext callback;
 
+    public  static final String HASH="#";
+    public static final  String HASH_ENCODE="%23";
+
     /*
      * We need both read and write when accessing the storage, I think.
      */
@@ -407,7 +410,7 @@ public class FileUtils extends CordovaPlugin {
         else if (action.equals("resolveLocalFileSystemURI")) {
             threadhelper( new FileOp( ){
                 public void run(JSONArray args) throws IOException, JSONException {
-                    String fname=args.getString(0);
+                    String fname = encodeHashUri(args.getString(0));
                     JSONObject obj = resolveLocalFileSystemURI(fname);
                     callbackContext.success(obj);
                 }
@@ -1197,5 +1200,17 @@ public class FileUtils extends CordovaPlugin {
 
         }
 
+    }
+
+    /**
+     *
+     * @param uri Uri to encode '#'
+     * @return @return Encoded uri to '#' , since URI class not parse this char.
+     */
+    public static String encodeHashUri(String uri){
+        if (uri!=null){
+            uri = uri.replaceAll(FileUtils.HASH,FileUtils.HASH_ENCODE);
+        }
+        return uri;
     }
 }
