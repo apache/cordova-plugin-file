@@ -76,8 +76,9 @@ public class FileUtils extends CordovaPlugin {
     public static final int GET_FILE_CALLBACK_CODE = 0;
     public static final int WRITE_CALLBACK_CODE = 1;
     public static final int GET_DIRECTORY_CALLBACK_CODE = 2;
-    public static final int WRITE = 3;
-    public static final int READ = 4;
+    public static final int GET_ENTRIES_CALLBACK_CODE = 3;
+    public static final int WRITE = 4;
+    public static final int READ = 5;
 
     public static int UNKNOWN_ERR = 1000;
 
@@ -525,8 +526,19 @@ public class FileUtils extends CordovaPlugin {
             threadhelper( new FileOp( ){
                 public void run(JSONArray args) throws FileNotFoundException, JSONException, MalformedURLException {
                     String fname=args.getString(0);
-                    JSONArray entries = readEntries(fname);
-                    callbackContext.success(entries);
+                    try {
+                        String nativeUrl = resolveLocalFileSystemURI(fname).getString("nativeURL");
+                        if(needPermission(nativeUrl, READ)) {
+                            getPermissionEntries(READ);
+                        }
+                        else
+                        {
+                            JSONArray entries = readEntries(fname);
+                            callbackContext.success(entries);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }, rawArgs, callbackContext);
         }
@@ -545,6 +557,15 @@ public class FileUtils extends CordovaPlugin {
             return false;
         }
         return true;
+    }
+
+    private void getPermissionEntries(int permissionType) {
+        if(permissionType == READ) {
+            PermissionHelper.requestPermission(this, GET_ENTRIES_CALLBACK_CODE, Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
+        else {
+            PermissionHelper.requestPermission(this, GET_ENTRIES_CALLBACK_CODE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
     }
 
     private void getPermissionFile(int permissionType) {
@@ -1181,7 +1202,16 @@ public class FileUtils extends CordovaPlugin {
                         callback.success(obj);
                     }
                 }, lastRawArgs, callback);
-                break;    
+                break;
+            case GET_ENTRIES_CALLBACK_CODE:
+                threadhelper( new FileOp( ){
+                    public void run(JSONArray args) throws FileNotFoundException, JSONException, MalformedURLException {
+                        String fname=args.getString(0);
+                        JSONArray entries = readEntries(fname);
+                        callback.success(entries);
+                    }
+                }, lastRawArgs, callback);
+                break;
             case WRITE_CALLBACK_CODE:
                 threadhelper( new FileOp( ){
                     public void run(JSONArray args) throws JSONException, FileNotFoundException, IOException, NoModificationAllowedException {
