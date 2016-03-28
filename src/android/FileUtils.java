@@ -73,18 +73,20 @@ public class FileUtils extends CordovaPlugin {
      * Permission callback codes
      */
 
-    public static final int GET_FILE_CALLBACK_CODE = 0;
-    public static final int WRITE_CALLBACK_CODE = 1;
-    public static final int GET_DIRECTORY_CALLBACK_CODE = 2;
+    public static final int ACTION_GET_FILE = 0;
+    public static final int ACTION_WRITE = 1;
+    public static final int ACTION_GET_DIRECTORY = 2;
+
     public static final int WRITE = 3;
     public static final int READ = 4;
 
     public static int UNKNOWN_ERR = 1000;
 
     private boolean configured = false;
-    private String lastRawArgs;
 
-    private CallbackContext callback;
+    private PendingRequests pendingRequests;
+
+
 
     /*
      * We need both read and write when accessing the storage, I think.
@@ -171,6 +173,7 @@ public class FileUtils extends CordovaPlugin {
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     	super.initialize(cordova, webView);
     	this.filesystems = new ArrayList<Filesystem>();
+        this.pendingRequests = new PendingRequests();
 
     	String tempRoot = null;
     	String persistentRoot = null;
@@ -262,14 +265,12 @@ public class FileUtils extends CordovaPlugin {
     }
 
     public boolean execute(String action, final String rawArgs, final CallbackContext callbackContext) {
-        this.callback = callbackContext;
-        lastRawArgs = rawArgs;
         if (!configured) {
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "File plugin is not configured. Please see the README.md file for details on how to update config.xml"));
             return true;
         }
         if (action.equals("testSaveLocationExists")) {
-            threadhelper( new FileOp( ){
+            threadhelper(new FileOp() {
                 public void run(JSONArray args) {
                     boolean b = DirectoryManager.testSaveLocationExists();
                     callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, b));
@@ -356,7 +357,7 @@ public class FileUtils extends CordovaPlugin {
                     Boolean isBinary=args.getBoolean(3);
 
                     if(needPermission(nativeURL, WRITE)) {
-                        getWritePermission();
+                        getWritePermission(rawArgs, ACTION_WRITE, callbackContext);
                     }
                     else {
                         long fileSize = write(fname, data, offset, isBinary);
@@ -440,10 +441,10 @@ public class FileUtils extends CordovaPlugin {
                     boolean containsCreate = (args.isNull(2)) ? false : args.getJSONObject(2).optBoolean("create", false);
 
                     if(containsCreate && needPermission(nativeURL, WRITE)) {
-                        getPermissionDir(WRITE);
+                        getWritePermission(rawArgs, ACTION_GET_DIRECTORY, callbackContext);
                     }
                     else if(!containsCreate && needPermission(nativeURL, READ)) {
-                        getPermissionDir(READ);
+                        getReadPermission(rawArgs, ACTION_GET_DIRECTORY, callbackContext);
                     }
                     else {
                         JSONObject obj = getFile(dirname, path, args.optJSONObject(2), true);
@@ -461,10 +462,10 @@ public class FileUtils extends CordovaPlugin {
                     boolean containsCreate = (args.isNull(2)) ? false : args.getJSONObject(2).optBoolean("create", false);
 
                     if(containsCreate && needPermission(nativeURL, WRITE)) {
-                        getPermissionFile(WRITE);
+                        getWritePermission(rawArgs, ACTION_GET_FILE, callbackContext);
                     }
                     else if(!containsCreate && needPermission(nativeURL, READ)) {
-                        getPermissionFile(READ);
+                        getReadPermission(rawArgs, ACTION_GET_FILE, callbackContext);
                     }
                     else {
                         JSONObject obj = getFile(dirname, path, args.optJSONObject(2), false);
@@ -547,26 +548,14 @@ public class FileUtils extends CordovaPlugin {
         return true;
     }
 
-    private void getPermissionFile(int permissionType) {
-        if(permissionType == READ) {
-            PermissionHelper.requestPermission(this, GET_FILE_CALLBACK_CODE, Manifest.permission.READ_EXTERNAL_STORAGE);
-        }
-        else {
-            PermissionHelper.requestPermission(this, GET_FILE_CALLBACK_CODE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        }
+    private void getReadPermission(String rawArgs, int action, CallbackContext callbackContext) {
+        int requestCode = pendingRequests.createRequest(rawArgs, action, callbackContext);
+        PermissionHelper.requestPermission(this, requestCode, Manifest.permission.READ_EXTERNAL_STORAGE);
     }
 
-    private void getPermissionDir(int permissionType) {
-        if(permissionType == READ) {
-            PermissionHelper.requestPermission(this, GET_DIRECTORY_CALLBACK_CODE, Manifest.permission.READ_EXTERNAL_STORAGE);
-        }
-        else {
-            PermissionHelper.requestPermission(this, GET_DIRECTORY_CALLBACK_CODE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        }
-    }
-
-    private void getWritePermission() {
-        PermissionHelper.requestPermission(this, WRITE_CALLBACK_CODE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+    private void getWritePermission(String rawArgs, int action, CallbackContext callbackContext) {
+        int requestCode = pendingRequests.createRequest(rawArgs, action, callbackContext);
+        PermissionHelper.requestPermission(this, requestCode, Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
 
     private boolean hasReadPermission() {
@@ -1151,51 +1140,55 @@ public class FileUtils extends CordovaPlugin {
 
     public void onRequestPermissionResult(int requestCode, String[] permissions,
                                           int[] grantResults) throws JSONException {
-        for(int r:grantResults)
-        {
-            if(r == PackageManager.PERMISSION_DENIED)
+
+        final PendingRequests.Request req = pendingRequests.getAndRemove(requestCode);
+        if (req != null) {
+            for(int r:grantResults)
             {
-                callback.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, SECURITY_ERR));
+                if(r == PackageManager.PERMISSION_DENIED)
+                {
+                    req.getCallbackContext().sendPluginResult(new PluginResult(PluginResult.Status.ERROR, SECURITY_ERR));
+                }
             }
+            switch(req.getAction())
+            {
+                case ACTION_GET_FILE:
+                    threadhelper( new FileOp( ){
+                        public void run(JSONArray args) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
+                            String dirname = args.getString(0);
+
+                            String path = args.getString(1);
+                            JSONObject obj = getFile(dirname, path, args.optJSONObject(2), false);
+                            req.getCallbackContext().success(obj);
+                        }
+                    }, req.getRawArgs(), req.getCallbackContext());
+                    break;
+                case ACTION_GET_DIRECTORY:
+                    threadhelper( new FileOp( ){
+                        public void run(JSONArray args) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
+                            String dirname = args.getString(0);
+
+                            String path = args.getString(1);
+                            JSONObject obj = getFile(dirname, path, args.optJSONObject(2), true);
+                            req.getCallbackContext().success(obj);
+                        }
+                    }, req.getRawArgs(), req.getCallbackContext());
+                    break;
+                case ACTION_WRITE:
+                    threadhelper( new FileOp( ){
+                        public void run(JSONArray args) throws JSONException, FileNotFoundException, IOException, NoModificationAllowedException {
+                            String fname=args.getString(0);
+                            String data=args.getString(1);
+                            int offset=args.getInt(2);
+                            Boolean isBinary=args.getBoolean(3);
+                            long fileSize = write(fname, data, offset, isBinary);
+                            req.getCallbackContext().sendPluginResult(new PluginResult(PluginResult.Status.OK, fileSize));
+                        }
+                    }, req.getRawArgs(), req.getCallbackContext());
+                    break;
+            }
+        } else {
+           Log.d(LOG_TAG, "Received permission callback for unknown request code");
         }
-        switch(requestCode)
-        {
-            case GET_FILE_CALLBACK_CODE:
-                threadhelper( new FileOp( ){
-                    public void run(JSONArray args) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
-                        String dirname = args.getString(0);
-
-                        String path = args.getString(1);
-                        JSONObject obj = getFile(dirname, path, args.optJSONObject(2), false);
-                        callback.success(obj);
-                    }
-                }, lastRawArgs, callback);
-                break;
-            case GET_DIRECTORY_CALLBACK_CODE:
-                threadhelper( new FileOp( ){
-                    public void run(JSONArray args) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
-                        String dirname = args.getString(0);
-
-                        String path = args.getString(1);
-                        JSONObject obj = getFile(dirname, path, args.optJSONObject(2), true);
-                        callback.success(obj);
-                    }
-                }, lastRawArgs, callback);
-                break;    
-            case WRITE_CALLBACK_CODE:
-                threadhelper( new FileOp( ){
-                    public void run(JSONArray args) throws JSONException, FileNotFoundException, IOException, NoModificationAllowedException {
-                        String fname=args.getString(0);
-                        String data=args.getString(1);
-                        int offset=args.getInt(2);
-                        Boolean isBinary=args.getBoolean(3);
-                        long fileSize = write(fname, data, offset, isBinary);
-                        callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, fileSize));
-                    }
-                }, lastRawArgs, callback);
-                break;
-
-        }
-
     }
 }
