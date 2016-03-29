@@ -544,12 +544,14 @@ By default, the library and documents directories can be synced to iCloud. You c
 ## Sample: Create Files and Directories, Write, Read, and Append files ##
 
 The File plugin allows you to do things like store files in a temporary or persistent storage location for your app (sandboxed storage). In the File plugin sample, we demonstrate different tasks including:
-* Accessing the file system.
-* Using cross-platform Cordova file URLs to store your files (see _Where to Store Files_ for more info).
+* Accessing the file system
+* Using cross-platform Cordova file URLs to store your files (see _Where to Store Files_ for more info)
 * Creating files and directories
 * Writing to files
 * Reading files
 * Appending files
+
+You can find the [complete File plugin sample here](https://github.com/Microsoft/cordova-samples/tree/master/cordova-plugin-file).
 
 ## Create a persistent file
 
