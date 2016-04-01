@@ -36,9 +36,9 @@ Although most of the plugin code was written when an earlier spec was current:
 It also implements the FileWriter spec :
 [http://dev.w3.org/2009/dap/file-system/file-writer.html](http://dev.w3.org/2009/dap/file-system/file-writer.html)
 
->*Note* For browser targets, the file system APIs are deprecated, but many of the APIs are supported and implemented in Cordova for non-browser platforms listed in the _Supported Platforms_ list (see below).
+>*Note* For browser targets, some of the file system APIs are deprecated, but many of the APIs are supported in Cordova for the non-browser platforms listed in the _Supported Platforms_ list (see below).
 
-For usage, please refer to the sample section at the end of this article and the HTML5 Rocks' excellent [FileSystem article.](http://www.html5rocks.com/en/tutorials/file/filesystem/)
+For usage, please refer to the sample section at the end of this article. For additional examples (browser focused), see the HTML5 Rocks' [FileSystem article.](http://www.html5rocks.com/en/tutorials/file/filesystem/)
 
 For an overview of other storage options, refer to Cordova's
 [storage guide](http://cordova.apache.org/docs/en/edge/cordova_storage_storage.md.html).
@@ -543,15 +543,13 @@ By default, the library and documents directories can be synced to iCloud. You c
 
 ## Sample: Create Files and Directories, Write, Read, and Append files ##
 
-The File plugin allows you to do things like store files in a temporary or persistent storage location for your app (sandboxed storage). In the File plugin sample, we demonstrate different tasks including:
+The File plugin allows you to do things like store files in a temporary or persistent storage location for your app (sandboxed storage). The code snippets in this section demonstrate different tasks including:
 * Accessing the file system
 * Using cross-platform Cordova file URLs to store your files (see _Where to Store Files_ for more info)
 * Creating files and directories
 * Writing to files
 * Reading files
 * Appending files
-
-You can find the [complete File plugin sample here](https://github.com/Microsoft/cordova-samples/tree/master/cordova-plugin-file).
 
 ## Create a persistent file
 
@@ -561,7 +559,7 @@ When you get file system access, access is granted for the sandboxed file system
 
 Here is a request for persistent storage.
 
->*Note* When targeting devices (instead of a browser), you don't need to use `requestQuota` before using persistent storage.
+>*Note* When targeting devices (instead of a browser), you dont need to use `requestQuota` before using persistent storage.
 
 ```
 window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
@@ -572,7 +570,7 @@ window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
 }, onErrorLoadFs);
 ```
 
-Once you have access, you generally want to use the Cordova file URLs, like `cordova.file.dataDirectory`, where possible (see Where to Store Files). This will hide implementation details related to the file locations. To use a Cordova file URL, call `window.resolveLocalFileSystemURL`. The success callback receives a DirectoryEntry object as input. You can use this object to create or get a file (by calling `getFile`).
+Once you have access, you generally want to use the Cordova file URLs, like `cordova.file.dataDirectory`, where possible (see _Where to Store Files_). This will hide implementation details related to the file locations. To use a Cordova file URL, call `window.resolveLocalFileSystemURL`. The success callback receives a DirectoryEntry object as input. You can use this object to create or get a file (by calling `getFile`).
 
 The success callback for `getFile` receives a FileEntry object. You can use this to perform file write and file read operations.
 
@@ -673,7 +671,7 @@ function readFile(fileEntry) {
 
 We already showed how to write to a file that you just created in the sandboxed file system. What if you need to get access to an existing file and convert that to someting you can store on your device? In this example, you obtain a file using an xhr request, and then save it to the cache in the sandboxed file system.
 
-Before you get the file, get a DirectoryEntry reference using cordova.file.cacheDirectory and resolveLocalFileSystemURL. Later, when you copy the file content to the file system, it will be stored in the app's cache location. You can, of course, store the content in other storage locations as well.
+Before you get the file, get a DirectoryEntry reference using cordova.file.cacheDirectory and resolveLocalFileSystemURL. Later, when you copy the file content to the file system, it will be stored in the apps cache location. You can, of course, store the content in other storage locations as well.
 
 ```
 window.resolveLocalFileSystemURL(cordova.file.cacheDirectory, function (dirEntry) {
@@ -745,11 +743,11 @@ function writeFile(fileEntry, dataObj) {
 }
 ```
 
-In the full sample app, after writing to the file, we also read it and display it. These operations re-use the code that we showed you already in previous tasks, so there's nothing new there (see the previous sections).
+After writing to the file, read it and display it. These operations re-use the code that we showed you already in previous tasks, so theres nothing new there (see the previous sections).
 
 ## Create Directories
 
-In the code here, you create directories in the root of the app storage location. You could use this code with any writable storage location (that is, any DirectoryEntry). In the complete sample app, we write to the application root directory (fs.root), which is passed into this function.
+In the code here, you create directories in the root of the app storage location. You could use this code with any writable storage location (that is, any DirectoryEntry). Here, you write to the application root directory (fs.root), which is passed into this function.
 
 This code creates the /NewDirInRoot/images folder in the root of the app storage location. For platform-specific values, look at _File System Layouts_.
 
@@ -773,7 +771,7 @@ For many more examples of working with directories, please refer to the HTML5 Ro
 
 Of course, you will often want to append existing files instead of creating new ones. Here is an example of that. In this version of the writeFile function, you check whether an append operation is requested.
 
-Once you have a FileWriter object, call the `seek` method, and pass in the index value for the position where you want to write. In this example, you also test whether the file exists. Afer calling seek, then call the write method of FileWriter.
+Once you have a FileWriter object, call the `seek` method, and pass in the index value for the position where you want to write. In this example, you also test whether the file exists. After calling seek, then call the write method of FileWriter.
 
 ```
 function writeFile(fileEntry, dataObj, isAppend) {
