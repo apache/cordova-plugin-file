@@ -555,7 +555,7 @@ The File plugin allows you to do things like store files in a temporary or persi
 
 Before you can use the File plugin APIs, you must get access to the file system using `requestFileSystem`. When you do this, you can request either persistent or temporary storage. Persistent storage will not be removed unless permission is granted by the user.
 
-When you get file system access, access is granted for the sandboxed file system only (the sandbox limits access to the app itself), not for general access to any file system location on the device. For more information about location-specific URLs, see _Where to Store Files_.
+When you get file system access, access is granted for the sandboxed file system only (the sandbox limits access to the app itself), not for general access to any file system location on the device.
 
 Here is a request for persistent storage.
 
@@ -565,32 +565,21 @@ Here is a request for persistent storage.
 window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
 
     console.log('file system open: ' + fs.name);
-    createPersistentFile("newPersistentFile.txt");
+    fs.root.getFile("newPersistentFile.txt", { create: true, exclusive: false }, function (fileEntry) {
+
+        console.log("fileEntry is file?" + fileEntry.isFile.toString());
+        // fileEntry.name == 'someFile.txt'
+        // fileEntry.fullPath == '/someFile.txt'
+        writeFile(fileEntry, null);
+
+    }, onErrorCreateFile);
 
 }, onErrorLoadFs);
 ```
 
-Once you have access, you generally want to use the Cordova file URLs, like `cordova.file.dataDirectory`, where possible (see _Where to Store Files_). This will hide implementation details related to the file locations. To use a Cordova file URL, call `window.resolveLocalFileSystemURL`. The success callback receives a DirectoryEntry object as input. You can use this object to create or get a file (by calling `getFile`).
+The success callback receives FileSystem object (fs). Use `fs.root` to return a DirectoryEntry object, which you can use to create or get a file (by calling `getFile`). In this example, `fs.root` is a DirectoryEntry object that represents the persistent storage in the sandboxed file system.
 
 The success callback for `getFile` receives a FileEntry object. You can use this to perform file write and file read operations.
-
-```
-function createPersistentFile(fileName) {
-
-    // Return a DirectoryEntry using Cordova file URLs.
-    window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (dirEntry) {
-
-        // Create a new file or return the file if it already exists.
-        dirEntry.getFile(fileName, { create: true, exclusive: false }, function (fileEntry) {
-
-            writeFile(fileEntry);
-
-        }, onErrorCreateFile);
-
-    }, onErrorResolveUrl );
-
-}
-```
 
 ## Create a temporary file
 
@@ -667,43 +656,47 @@ function readFile(fileEntry) {
 }
 ```
 
-## Store an existing file in your Cache
+## Store an existing file
 
-We already showed how to write to a file that you just created in the sandboxed file system. What if you need to get access to an existing file and convert that to someting you can store on your device? In this example, you obtain a file using an xhr request, and then save it to the cache in the sandboxed file system.
+We already showed how to write to a file that you just created in the sandboxed file system. What if you need to get access to an existing file and convert that to something you can store on your device? In this example, you obtain a file using an xhr request, and then save it to the cache in the sandboxed file system.
 
-Before you get the file, get a DirectoryEntry reference using cordova.file.cacheDirectory and resolveLocalFileSystemURL. Later, when you copy the file content to the file system, it will be stored in the apps cache location. You can, of course, store the content in other storage locations as well.
+Before you get the file, get a FileSystem reference using `requestFileSystem`. By passing window.TEMPORARY in the method call (same as before), the returned FileSystem object (fs) represents the cache in the sandboxed file system. Call `fs.root` to get the DirectoryEntry object.
 
 ```
-window.resolveLocalFileSystemURL(cordova.file.cacheDirectory, function (dirEntry) {
+window.requestFileSystem(window.TEMPORARY, 5 * 1024 * 1024, function (fs) {
 
-    getSampleFile(dirEntry);
+    console.log('file system open: ' + fs.name);
+    getSampleFile(fs.root);
 
-}, onErrorResolveUrl);
+}, onErrorLoadFs);
 ```
 
 For completeness, here is the xhr request to get a Blob image. There is nothing Cordova-specific in this code, except that you forward the DirectoryEntry reference that you already obtained as an argument to the saveFile function. You will save the image as a DOM string URL and display it later after reading the file (to validate the operation).
 
 ```
-var xhr = new XMLHttpRequest();
-xhr.open('GET', 'http://cordova.apache.org/static/img/cordova_bot.png', true);
-xhr.responseType = 'blob';
+function getSampleFile(dirEntry) {
 
-xhr.onload = function (e) {
-    if (this.status == 200) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'http://cordova.apache.org/static/img/cordova_bot.png', true);
+    xhr.responseType = 'blob';
 
-        var blob = new Blob([this.response], { type: 'image/png' });
-        var img = new Image();
-        // Note: Use window.URL.revokeObjectURL when finished with image.
-        img.src = window.URL.createObjectURL(blob);
+    xhr.onload = function (e) {
+        if (this.status == 200) {
 
-        saveFile(dirEntry, img.src, "downloadedImage.png");
-    }
-};
-xhr.send();
+            var blob = new Blob([this.response], { type: 'image/png' });
+            var img = new Image();
+            // Note: Use window.URL.revokeObjectURL when finished with image.
+            img.src = window.URL.createObjectURL(blob);
+
+            saveFile(dirEntry, img.src, "downloadedImage.png");
+        }
+    };
+    xhr.send();
+}
 ```
 >*Note* For Cordova 5 security, the preceding code requires that you add the domain name, http://cordova.apache.org, to the Content-Security-Policy <meta> element in index.html.
 
-After getting the file, copy the contents to a new file. The current DirectoryEntry object is already associated with cordova.file.cacheDirectory.
+After getting the file, copy the contents to a new file. The current DirectoryEntry object is already associated the app cache.
 
 ```
 function saveFile(dirEntry, srcImage, fileName) {
@@ -743,7 +736,16 @@ function writeFile(fileEntry, dataObj) {
 }
 ```
 
-After writing to the file, read it and display it. These operations re-use the code that we showed you already in previous tasks, so theres nothing new there (see the previous sections).
+After writing to the file, read it and display it. These operations re-use the code that we showed you already in previous tasks, so theres nothing new there (see the previous sections). After reading the data, you can display the image using code like this.
+
+```
+function displayImageData(fileData) {
+
+    // Displays image if result is a valid DOM string for an image.
+    var elem = document.getElementById('imageFile');
+    elem.src = fileData;
+}
+```
 
 ## Create Directories
 
@@ -764,8 +766,6 @@ function createDirectory(rootDirEntry) {
 ```
 
 When creating subfolders, you need to create each folder separately as shown in the preceding code.
-
-For many more examples of working with directories, please refer to the HTML5 Rocks [FileSystem article.](http://www.html5rocks.com/en/tutorials/file/filesystem/)
 
 ## Append a file
 
