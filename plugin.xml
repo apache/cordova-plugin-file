@@ -28,6 +28,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
     <keywords>cordova,file</keywords>
     <repo>https://git-wip-us.apache.org/repos/asf/cordova-plugin-file.git</repo>
     <issue>https://issues.apache.org/jira/browse/CB/component/12320651</issue>
+    <dependency id="cordova-plugin-compat" version="^1.0.0" />
 
     <js-module src="www/DirectoryEntry.js" name="DirectoryEntry">
         <clobbers target="window.DirectoryEntry" />
@@ -147,7 +148,6 @@ to config.xml in order for the application to find previously stored files.
         <source-file src="src/android/ContentFilesystem.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/AssetFilesystem.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/PendingRequests.java" target-dir="src/org/apache/cordova/file" />
-        <source-file src="src/android/PermissionHelper.java" target-dir="src/org/apache/cordova/file" />
 
         <!-- android specific file apis -->
         <js-module src="www/android/FileSystem.js" name="androidFileSystem">
