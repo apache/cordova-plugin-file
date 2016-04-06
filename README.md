@@ -36,9 +36,9 @@ Although most of the plugin code was written when an earlier spec was current:
 It also implements the FileWriter spec :
 [http://dev.w3.org/2009/dap/file-system/file-writer.html](http://dev.w3.org/2009/dap/file-system/file-writer.html)
 
->*Note* For browser targets, some of the file system APIs are deprecated, but many of the APIs are supported in Cordova for the non-browser platforms listed in the _Supported Platforms_ list (see below).
+>*Note* For Cordova clients that run in native WebViews (for example, iOS and Android) or as native apps (Windows), many of the W3C APIs FileSystem are supported. This is true for the platforms listed in the _Supported Platforms_ list except the Browser platform. On the Browser platform, many of these APIs are deprecated.
 
-For usage, please refer to the sample section at the end of this article. For additional examples (browser focused), see the HTML5 Rocks' [FileSystem article.](http://www.html5rocks.com/en/tutorials/file/filesystem/)
+For usage, please refer to the [sample section](#sample) at the end of this article. For additional examples (browser focused), see the HTML5 Rocks' [FileSystem article.](http://www.html5rocks.com/en/tutorials/file/filesystem/)
 
 For an overview of other storage options, refer to Cordova's
 [storage guide](http://cordova.apache.org/docs/en/edge/cordova_storage_storage.md.html).
@@ -541,9 +541,9 @@ Android also supports a special filesystem named "documents", which represents a
 
 By default, the library and documents directories can be synced to iCloud. You can also request two additional filesystems, `library-nosync` and `documents-nosync`, which represent a special non-synced directory within the `/Library` or `/Documents` filesystem.
 
-## Sample: Create Files and Directories, Write, Read, and Append files ##
+## Sample: Create Files and Directories, Write, Read, and Append files <a name="sample"></a>
 
-The File plugin allows you to do things like store files in a temporary or persistent storage location for your app (sandboxed storage). The code snippets in this section demonstrate different tasks including:
+The File plugin allows you to do things like store files in a temporary or persistent storage location for your app (sandboxed storage) and to store files in other platform-dependent locations. The code snippets in this section demonstrate different tasks including:
 * Accessing the file system
 * Using cross-platform Cordova file URLs to store your files (see _Where to Store Files_ for more info)
 * Creating files and directories
@@ -553,15 +553,15 @@ The File plugin allows you to do things like store files in a temporary or persi
 
 ## Create a persistent file
 
-Before you can use the File plugin APIs, you must get access to the file system using `requestFileSystem`. When you do this, you can request either persistent or temporary storage. Persistent storage will not be removed unless permission is granted by the user.
+Before you use the File plugin APIs, you can get access to the file system using `requestFileSystem`. When you do this, you can request either persistent or temporary storage. Persistent storage will not be removed unless permission is granted by the user.
 
-When you get file system access, access is granted for the sandboxed file system only (the sandbox limits access to the app itself), not for general access to any file system location on the device.
+When you get file system access using `requestFileSystem`, access is granted for the sandboxed file system only (the sandbox limits access to the app itself), not for general access to any file system location on the device. (To access file system locations outside the sandboxed storage, use other methods such as window.requestLocalFileSystemURL, which support platform-specific locations. For one example of this, see _Append a File_.)
 
 Here is a request for persistent storage.
 
->*Note* When targeting devices (instead of a browser), you dont need to use `requestQuota` before using persistent storage.
+>*Note* When targeting WebView clients (instead of a browser) or native apps (Windows), you dont need to use `requestQuota` before using persistent storage.
 
-```
+```js
 window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
 
     console.log('file system open: ' + fs.name);
@@ -585,30 +585,33 @@ The success callback for `getFile` receives a FileEntry object. You can use this
 
 Here is an example of a request for temporary storage. Temporary storage may be deleted by the operating system if the device runs low on memory.
 
-```
+```js
 window.requestFileSystem(window.TEMPORARY, 5 * 1024 * 1024, function (fs) {
 
     console.log('file system open: ' + fs.name);
-    createFile(fs.root, "newTempFile.txt");
+    createFile(fs.root, "newTempFile.txt", false);
 
 }, onErrorLoadFs);
 ```
 When you are using temporary storage, you can create or get the file by calling `getFile`. As in the persistent storage example, this will give you a FileEntry object that you can use for read or write operations.
 
-```
-// Creates a new file or returns the file if it already exists.
-dirEntry.getFile(fileName, {create: true, exclusive: false}, function(fileEntry) {
+```js
+function createFile(dirEntry, fileName, isAppend) {
+    // Creates a new file or returns the file if it already exists.
+    dirEntry.getFile(fileName, {create: true, exclusive: false}, function(fileEntry) {
 
-    writeFile(fileEntry);
+        writeFile(fileEntry, null, isAppend);
 
-}, onErrorCreateFile);
+    }, onErrorCreateFile);
+
+}
 ```
 
 ## Write to a file
 
 Once you have a FileEntry object, you can write to the file by calling `createWriter`, which returns a FileWriter object in the success callback. Call the `write` method of FileWriter to write to the file.
 
-```
+```js
 function writeFile(fileEntry, dataObj) {
     // Create a FileWriter object for our FileEntry (log.txt).
     fileEntry.createWriter(function (fileWriter) {
@@ -637,17 +640,15 @@ function writeFile(fileEntry, dataObj) {
 
 You also need a FileEntry object to read an existing file. Use the file property of FileEntry to get the file reference, and then create a new FileReader object. You can use methods like `readAsText` to start the read operation. When the read operation is complete, `this.result` stores the result of the read operation.
 
-```
+```js
 function readFile(fileEntry) {
+
     fileEntry.file(function (file) {
         var reader = new FileReader();
 
-        reader.onloadend = function (e) {
+        reader.onloadend = function() {
             console.log("Successful file read: " + this.result);
             displayFileData(fileEntry.fullPath + ": " + this.result);
-            if (this.result.toString().substring(0, 4) == "blob") {
-                displayImageData(this.result);
-            }
         };
 
         reader.readAsText(file);
@@ -656,124 +657,25 @@ function readFile(fileEntry) {
 }
 ```
 
-## Store an existing file
+## Append a file using alternative methods
 
-We already showed how to write to a file that you just created in the sandboxed file system. What if you need to get access to an existing file and convert that to something you can store on your device? In this example, you obtain a file using an xhr request, and then save it to the cache in the sandboxed file system.
+Of course, you will often want to append existing files instead of creating new ones. Here is an example of that. This example shows another way that you can access the file system using window.resolveLocalFileSystemURL. In this example, pass the cross-platform Cordova file URL, cordova.file.dataDirectory, to the function. The success callback receives a DirectoryEntry object, which you can use to do things like create a file.
 
-Before you get the file, get a FileSystem reference using `requestFileSystem`. By passing window.TEMPORARY in the method call (same as before), the returned FileSystem object (fs) represents the cache in the sandboxed file system. Call `fs.root` to get the DirectoryEntry object.
-
-```
-window.requestFileSystem(window.TEMPORARY, 5 * 1024 * 1024, function (fs) {
-
-    console.log('file system open: ' + fs.name);
-    getSampleFile(fs.root);
-
+```js
+window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (dirEntry) {
+    console.log('file system open: ' + dirEntry.name);
+    var isAppend = true;
+    createFile(dirEntry, "fileToAppend.txt", isAppend);
 }, onErrorLoadFs);
 ```
 
-For completeness, here is the xhr request to get a Blob image. There is nothing Cordova-specific in this code, except that you forward the DirectoryEntry reference that you already obtained as an argument to the saveFile function. You will save the image as a DOM string URL and display it later after reading the file (to validate the operation).
+In addition to this usage, you can use `resolveLocalFileSystemURL` to get access to some file system locations that are not part of the sandboxed storage system. See _Where to store Files_ for more information; many of these storage locations are platform-specific. You can also pass cross-platform file system locations to `resolveLocalFileSystemURL` using the _cdvfile protocol_.
 
-```
-function getSampleFile(dirEntry) {
-
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'http://cordova.apache.org/static/img/cordova_bot.png', true);
-    xhr.responseType = 'blob';
-
-    xhr.onload = function (e) {
-        if (this.status == 200) {
-
-            var blob = new Blob([this.response], { type: 'image/png' });
-            var img = new Image();
-            // Note: Use window.URL.revokeObjectURL when finished with image.
-            img.src = window.URL.createObjectURL(blob);
-
-            saveFile(dirEntry, img.src, "downloadedImage.png");
-        }
-    };
-    xhr.send();
-}
-```
->*Note* For Cordova 5 security, the preceding code requires that you add the domain name, http://cordova.apache.org, to the Content-Security-Policy <meta> element in index.html.
-
-After getting the file, copy the contents to a new file. The current DirectoryEntry object is already associated the app cache.
-
-```
-function saveFile(dirEntry, srcImage, fileName) {
-
-    dirEntry.getFile(fileName, { create: true, exclusive: false }, function (fileEntry) {
-
-        writeFile(fileEntry, srcImage);
-
-    }, onErrorCreateFile);
-}
-```
-
-In writeFile, you pass in the DOM string URL as the dataObj and you will save that in the new file.
-
-```
-function writeFile(fileEntry, dataObj) {
-    // Create a FileWriter object for our FileEntry (log.txt).
-    fileEntry.createWriter(function (fileWriter) {
-
-        fileWriter.onwriteend = function (e) {
-            console.log("Successful file write...");
-            readFile(fileEntry);
-        };
-
-        fileWriter.onerror = function (e) {
-            console.log("Failed file write: " + e.toString());
-        };
-
-        // If data object is not passed in,
-        // create a new Blob instead.
-        if (!dataObj) {
-            dataObj = new Blob(['some file data'], { type: 'text/plain' });
-        }
-
-        fileWriter.write(dataObj);
-    });
-}
-```
-
-After writing to the file, read it and display it. These operations re-use the code that we showed you already in previous tasks, so theres nothing new there (see the previous sections). After reading the data, you can display the image using code like this.
-
-```
-function displayImageData(fileData) {
-
-    // Displays image if result is a valid DOM string for an image.
-    var elem = document.getElementById('imageFile');
-    elem.src = fileData;
-}
-```
-
-## Create Directories
-
-In the code here, you create directories in the root of the app storage location. You could use this code with any writable storage location (that is, any DirectoryEntry). Here, you write to the application root directory (fs.root), which is passed into this function.
-
-This code creates the /NewDirInRoot/images folder in the root of the app storage location. For platform-specific values, look at _File System Layouts_.
-
-```
-function createDirectory(rootDirEntry) {
-    rootDirEntry.getDirectory('NewDirInRoot', { create: true }, function (dirEntry) {
-        dirEntry.getDirectory('images', { create: true }, function (subDirEntry) {
-
-            createFile(subDirEntry, "fileInNewSubDir.txt");
-
-        }, onErrorGetDir);
-    }, onErrorGetDir);
-}
-```
-
-When creating subfolders, you need to create each folder separately as shown in the preceding code.
-
-## Append a file
-
-Of course, you will often want to append existing files instead of creating new ones. Here is an example of that. In this version of the writeFile function, you check whether an append operation is requested.
+For the append operation, there is nothing new in the `createFile` function that is called in the preceding code (see the preceding examples for the actual code). `createFile` calls `writeFile`. In `writeFile`, you check whether an append operation is requested.
 
 Once you have a FileWriter object, call the `seek` method, and pass in the index value for the position where you want to write. In this example, you also test whether the file exists. After calling seek, then call the write method of FileWriter.
 
-```
+```js
 function writeFile(fileEntry, dataObj, isAppend) {
     // Create a FileWriter object for our FileEntry (log.txt).
     fileEntry.createWriter(function (fileWriter) {
@@ -800,3 +702,136 @@ function writeFile(fileEntry, dataObj, isAppend) {
     });
 }
 ```
+
+## Store an existing binary file
+
+We already showed how to write to a file that you just created in the sandboxed file system. What if you need to get access to an existing file and convert that to something you can store on your device? In this example, you obtain a file using an xhr request, and then save it to the cache in the sandboxed file system.
+
+Before you get the file, get a FileSystem reference using `requestFileSystem`. By passing window.TEMPORARY in the method call (same as before), the returned FileSystem object (fs) represents the cache in the sandboxed file system. Use `fs.root` to get the DirectoryEntry object that you need.
+
+```js
+window.requestFileSystem(window.TEMPORARY, 5 * 1024 * 1024, function (fs) {
+
+    console.log('file system open: ' + fs.name);
+    getSampleFile(fs.root);
+
+}, onErrorLoadFs);
+```
+
+For completeness, here is the xhr request to get a Blob image. There is nothing Cordova-specific in this code, except that you forward the DirectoryEntry reference that you already obtained as an argument to the saveFile function. You will save the blob image and display it later after reading the file (to validate the operation).
+
+```js
+function getSampleFile(dirEntry) {
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'http://cordova.apache.org/static/img/cordova_bot.png', true);
+    xhr.responseType = 'blob';
+
+    xhr.onload = function() {
+        if (this.status == 200) {
+
+            var blob = new Blob([this.response], { type: 'image/png' });
+            saveFile(dirEntry, blob, "downloadedImage.png");
+        }
+    };
+    xhr.send();
+}
+```
+>*Note* For Cordova 5 security, the preceding code requires that you add the domain name, http://cordova.apache.org, to the Content-Security-Policy <meta> element in index.html.
+
+After getting the file, copy the contents to a new file. The current DirectoryEntry object is already associated with the app cache.
+
+```js
+function saveFile(dirEntry, fileData, fileName) {
+
+    dirEntry.getFile(fileName, { create: true, exclusive: false }, function (fileEntry) {
+
+        writeFile(fileEntry, fileData);
+
+    }, onErrorCreateFile);
+}
+```
+
+In writeFile, you pass in the Blob object as the dataObj and you will save that in the new file.
+
+```js
+function writeFile(fileEntry, dataObj, isAppend) {
+
+    // Create a FileWriter object for our FileEntry (log.txt).
+    fileEntry.createWriter(function (fileWriter) {
+
+        fileWriter.onwriteend = function() {
+            console.log("Successful file write...");
+            if (dataObj.type == "image/png") {
+                readBinaryFile(fileEntry);
+            }
+            else {
+                readFile(fileEntry);
+            }
+        };
+
+        fileWriter.onerror = function() {
+            console.log("Failed file write: " + e.toString());
+        };
+
+        fileWriter.write(dataObj);
+    });
+}
+```
+
+After writing to the file, read it and display it. You saved the image as binary data, so you can read it using FileReader.readAsArrayBuffer.
+
+```js
+function readBinaryFile(fileEntry) {
+
+    fileEntry.file(function (file) {
+        var reader = new FileReader();
+
+        reader.onloadend = function() {
+
+            console.log("Successful file write: " + this.result);
+            displayFileData(fileEntry.fullPath + ": " + this.result);
+
+            var blob = new Blob([new Uint8Array(this.result)], { type: "image/png" });
+            displayImage(blob);
+        };
+
+        reader.readAsArrayBuffer(file);
+
+    }, onErrorReadFile);
+}
+```
+
+After reading the data, you can display the image using code like this. Use window.URL.createObjectURL to get a DOM string for the Blob image.
+
+```js
+function displayImage(blob) {
+
+    var img = new Image();
+    // Note: Use window.URL.revokeObjectURL when finished with image.
+    img.src = window.URL.createObjectURL(blob);
+    // Displays image if result is a valid DOM string for an image.
+    var elem = document.getElementById('imageFile');
+    elem.src = img.src;
+}
+```
+
+## Create Directories
+
+In the code here, you create directories in the root of the app storage location. You could use this code with any writable storage location (that is, any DirectoryEntry). Here, you write to the application cache (assuming that you used window.TEMPORARY to get your FileSystem object) by passing fs.root into this function.
+
+This code creates the /NewDirInRoot/images folder in the application cache. For platform-specific values, look at _File System Layouts_.
+
+```js
+function createDirectory(rootDirEntry) {
+    rootDirEntry.getDirectory('NewDirInRoot', { create: true }, function (dirEntry) {
+        dirEntry.getDirectory('images', { create: true }, function (subDirEntry) {
+
+            createFile(subDirEntry, "fileInNewSubDir.txt");
+
+        }, onErrorGetDir);
+    }, onErrorGetDir);
+}
+```
+
+When creating subfolders, you need to create each folder separately as shown in the preceding code.
