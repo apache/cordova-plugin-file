@@ -36,7 +36,7 @@ Although most of the plugin code was written when an earlier spec was current:
 It also implements the FileWriter spec :
 [http://dev.w3.org/2009/dap/file-system/file-writer.html](http://dev.w3.org/2009/dap/file-system/file-writer.html)
 
->*Note* For Cordova clients that run in native WebViews (for example, iOS and Android) or as native apps (Windows), many of the W3C APIs FileSystem are supported. This is true for the platforms listed in the _Supported Platforms_ list except the Browser platform. On the Browser platform, many of these APIs are deprecated.
+>*Note* While the W3C FileSystem spec is deprecated for web browsers, the FileSystem APIs are supported in Cordova applications with this plugin for the platforms listed in the _Supported Platforms_ list, with the exception of the Browser platform.
 
 For usage, please refer to the [sample section](#sample) at the end of this article. For additional examples (browser focused), see the HTML5 Rocks' [FileSystem article.](http://www.html5rocks.com/en/tutorials/file/filesystem/)
 
@@ -616,7 +616,7 @@ function writeFile(fileEntry, dataObj) {
     // Create a FileWriter object for our FileEntry (log.txt).
     fileEntry.createWriter(function (fileWriter) {
 
-        fileWriter.onwriteend = function (e) {
+        fileWriter.onwriteend = function() {
             console.log("Successful file read...");
             readFile(fileEntry);
         };
@@ -680,7 +680,7 @@ function writeFile(fileEntry, dataObj, isAppend) {
     // Create a FileWriter object for our FileEntry (log.txt).
     fileEntry.createWriter(function (fileWriter) {
 
-        fileWriter.onwriteend = function (e) {
+        fileWriter.onwriteend = function() {
             console.log("Successful file read...");
             readFile(fileEntry);
         };
@@ -770,7 +770,7 @@ function writeFile(fileEntry, dataObj, isAppend) {
             }
         };
 
-        fileWriter.onerror = function() {
+        fileWriter.onerror = function(e) {
             console.log("Failed file write: " + e.toString());
         };
 
@@ -807,12 +807,10 @@ After reading the data, you can display the image using code like this. Use wind
 ```js
 function displayImage(blob) {
 
-    var img = new Image();
-    // Note: Use window.URL.revokeObjectURL when finished with image.
-    img.src = window.URL.createObjectURL(blob);
     // Displays image if result is a valid DOM string for an image.
     var elem = document.getElementById('imageFile');
-    elem.src = img.src;
+    // Note: Use window.URL.revokeObjectURL when finished with image.
+    elem.src = window.URL.createObjectURL(blob);
 }
 ```
 
