@@ -94,8 +94,9 @@ FileWriter.prototype.abort = function() {
  * Writes data to the file
  *
  * @param data text or blob to be written
+ * @param isPendingBlobReadResult {Boolean} true if the data is the pending blob read operation result
  */
-FileWriter.prototype.write = function(data) {
+FileWriter.prototype.write = function(data, isPendingBlobReadResult) {
 
     var that=this;
     var supportsBinary = (typeof window.Blob !== 'undefined' && typeof window.ArrayBuffer !== 'undefined');
@@ -107,8 +108,29 @@ FileWriter.prototype.write = function(data) {
         var fileReader = new FileReader();
         fileReader.onload = function() {
             // Call this method again, with the arraybuffer as argument
-            FileWriter.prototype.write.call(that, this.result);
+            FileWriter.prototype.write.call(that, this.result, true /* isPendingBlobReadResult */);
         };
+        fileReader.onerror = function () {
+            // DONE state
+            that.readyState = FileWriter.DONE;
+
+            // Save error
+            that.error = this.error;
+
+            // If onerror callback
+            if (typeof that.onerror === "function") {
+                that.onerror(new ProgressEvent("error", {"target":that}));
+            }
+
+            // If onwriteend callback
+            if (typeof that.onwriteend === "function") {
+                that.onwriteend(new ProgressEvent("writeend", {"target":that}));
+            }
+        };
+
+        // WRITING state
+        this.readyState = FileWriter.WRITING;
+
         if (supportsBinary) {
             fileReader.readAsArrayBuffer(data);
         } else {
@@ -125,7 +147,7 @@ FileWriter.prototype.write = function(data) {
     }
     
     // Throw an exception if we are already writing a file
-    if (this.readyState === FileWriter.WRITING) {
+    if (this.readyState === FileWriter.WRITING && !isPendingBlobReadResult) {
         throw new FileError(FileError.INVALID_STATE_ERR);
     }
 
