@@ -41,7 +41,7 @@ It also implements the FileWriter spec :
 For usage, please refer to the [sample section](#sample) at the end of this article. For additional examples (browser focused), see the HTML5 Rocks' [FileSystem article.](http://www.html5rocks.com/en/tutorials/file/filesystem/)
 
 For an overview of other storage options, refer to Cordova's
-[storage guide](http://cordova.apache.org/docs/en/edge/cordova_storage_storage.md.html).
+[storage guide](http://cordova.apache.org/docs/en/latest/cordova/storage/storage.html).
 
 This plugin defines global `cordova.file` object.
 
@@ -544,14 +544,14 @@ By default, the library and documents directories can be synced to iCloud. You c
 ## Sample: Create Files and Directories, Write, Read, and Append files <a name="sample"></a>
 
 The File plugin allows you to do things like store files in a temporary or persistent storage location for your app (sandboxed storage) and to store files in other platform-dependent locations. The code snippets in this section demonstrate different tasks including:
-* Accessing the file system
-* Using cross-platform Cordova file URLs to store your files (see _Where to Store Files_ for more info)
-* Creating files and directories
-* Writing to files
-* Reading files
-* Appending files
+* [Accessing the file system](#persistent)
+* Using cross-platform Cordova file URLs to [store your files](#appendFile) (see _Where to Store Files_ for more info)
+* Creating [files](#persistent) and [directories](#createDir)
+* [Writing to files](#writeFile)
+* [Reading files](#readFile)
+* [Appending files](#appendFile)
 
-## Create a persistent file
+## Create a persistent file <a name="persistent"></a>
 
 Before you use the File plugin APIs, you can get access to the file system using `requestFileSystem`. When you do this, you can request either persistent or temporary storage. Persistent storage will not be removed unless permission is granted by the user.
 
@@ -607,7 +607,7 @@ function createFile(dirEntry, fileName, isAppend) {
 }
 ```
 
-## Write to a file
+## Write to a file <a name="writeFile"></a>
 
 Once you have a FileEntry object, you can write to the file by calling `createWriter`, which returns a FileWriter object in the success callback. Call the `write` method of FileWriter to write to the file.
 
@@ -636,7 +636,7 @@ function writeFile(fileEntry, dataObj) {
 }
 ```
 
-## Read a file
+## Read a file <a name="readFile"></a>
 
 You also need a FileEntry object to read an existing file. Use the file property of FileEntry to get the file reference, and then create a new FileReader object. You can use methods like `readAsText` to start the read operation. When the read operation is complete, `this.result` stores the result of the read operation.
 
@@ -657,7 +657,7 @@ function readFile(fileEntry) {
 }
 ```
 
-## Append a file using alternative methods
+## Append a file using alternative methods <a name="appendFile"></a>
 
 Of course, you will often want to append existing files instead of creating new ones. Here is an example of that. This example shows another way that you can access the file system using window.resolveLocalFileSystemURL. In this example, pass the cross-platform Cordova file URL, cordova.file.dataDirectory, to the function. The success callback receives a DirectoryEntry object, which you can use to do things like create a file.
 
@@ -703,7 +703,7 @@ function writeFile(fileEntry, dataObj, isAppend) {
 }
 ```
 
-## Store an existing binary file
+## Store an existing binary file <a name="binaryFile"></a>
 
 We already showed how to write to a file that you just created in the sandboxed file system. What if you need to get access to an existing file and convert that to something you can store on your device? In this example, you obtain a file using an xhr request, and then save it to the cache in the sandboxed file system.
 
@@ -814,7 +814,7 @@ function displayImage(blob) {
 }
 ```
 
-## Create Directories
+## Create Directories <a name="createDir"></a>
 
 In the code here, you create directories in the root of the app storage location. You could use this code with any writable storage location (that is, any DirectoryEntry). Here, you write to the application cache (assuming that you used window.TEMPORARY to get your FileSystem object) by passing fs.root into this function.
 
