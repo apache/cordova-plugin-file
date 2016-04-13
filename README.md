@@ -550,6 +550,7 @@ The File plugin allows you to do things like store files in a temporary or persi
 * [Writing to files](#writeFile)
 * [Reading files](#readFile)
 * [Appending files](#appendFile)
+* [Display an image file](#displayImage)
 
 ## Create a persistent file <a name="persistent"></a>
 
@@ -812,6 +813,23 @@ function displayImage(blob) {
     // Note: Use window.URL.revokeObjectURL when finished with image.
     elem.src = window.URL.createObjectURL(blob);
 }
+```
+
+## Display an image file <a name="displayImage"></a>
+
+To display an image using a FileEntry, you can call the `toURL` method.
+
+```js
+function displayImageByFileURL(fileEntry) {
+    var elem = document.getElementById('imageFile');
+    elem.src = fileEntry.toURL();
+}
+```
+
+If you are using some platform-specific URIs instead of a FileEntry and you want to display an image, you may need to include the main part of the URI in the Content-Security-Policy <meta> element in index.html. For example, on Windows 10, you can include `ms-appdata:` in your <meta> element. Here is an example.
+
+```html
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: ms-appdata: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">
 ```
 
 ## Create Directories <a name="createDir"></a>
