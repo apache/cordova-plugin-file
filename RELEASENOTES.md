@@ -20,6 +20,20 @@
 -->
 # Release Notes
 
+### 4.2.0 (Apr 15, 2016)
+* CB-10960 Uncaught `#<FileError>` in `write()` when `readyState != WRITING ?`
+* Replace `PermissionHelper.java` with `cordova-plugin-compat`
+* CB-10977 **Android** Removing global state used for permission requests
+* CB-10798, CB-10384 Fixing permissions for **Marshmallow**.
+* Fix test failure on **WP 8.1**
+* CB-10577 **Windows** `resolveLocalFileSystemURL` should omit trailing slash for file
+* CB-7862 `FileReader` reads large files in chunks with progress.
+* CB-10577 **Android** `resolveLocalFileSystemURL` should detect directory vs file.
+* CB-9753 index out of bounds on `requestFileSystem`.
+* Remove `warning` emoji, as it doesn't correctly display in the docs website: cordova.apache.org/docs/en/dev/cordova-plugin-file/index.html. This closes #166
+* CB-10636 Add `JSHint` for plugins
+* CB-10411 Error in `file.spec.129` of `cordova-plugin-file`
+
 ### 4.1.1 (Feb 09, 2016)
 * Edit package.json license to match SPDX id
 * [CB-10419](https://issues.apache.org/jira/browse/CB-10419) cordova-plugin-file 4.0.0 error with browserify workflow
