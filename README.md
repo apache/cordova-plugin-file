@@ -279,6 +279,14 @@ Listing asset directories is really slow on Android. You can speed it up though,
 adding `src/android/build-extras.gradle` to the root of your android project (also
 requires cordova-android@4.0.0 or greater).
 
+### Permisson to write to external storage when it's not mounted on Marshmallow
+
+Marshmallow requires the apps to ask for permissions when reading/writing to external locations. By 
+[default](http://developer.android.com/guide/topics/data/data-storage.html#filesExternal), your app has permission to write to 
+`cordova.file.applicationStorageDirectory` and `cordova.file.externalApplicationStorageDirectory`, and the plugin doesn't request permission
+for these two directories unless external storage is not mounted. However due to a limitation, when external storage is not mounted, it would ask for 
+permission to write to `cordova.file.externalApplicationStorageDirectory`.
+
 ## iOS Quirks
 
 - `cordova.file.applicationStorageDirectory` is read-only; attempting to store
