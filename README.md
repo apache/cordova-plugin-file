@@ -42,7 +42,7 @@ It also implements the FileWriter spec :
 
 >*Note* While the W3C FileSystem spec is deprecated for web browsers, the FileSystem APIs are supported in Cordova applications with this plugin for the platforms listed in the _Supported Platforms_ list, with the exception of the Browser platform.
 
-For usage, please refer to the [sample section](#sample) at the end of this article. For additional examples (browser focused), see the HTML5 Rocks' [FileSystem article.](http://www.html5rocks.com/en/tutorials/file/filesystem/)
+To get a few ideas how to use the plugin, check out the [sample](#sample) at the bottom of this page. For additional examples (browser focused), see the HTML5 Rocks' [FileSystem article.](http://www.html5rocks.com/en/tutorials/file/filesystem/)
 
 For an overview of other storage options, refer to Cordova's
 [storage guide](http://cordova.apache.org/docs/en/latest/cordova/storage/storage.html).
@@ -281,10 +281,10 @@ requires cordova-android@4.0.0 or greater).
 
 ### Permisson to write to external storage when it's not mounted on Marshmallow
 
-Marshmallow requires the apps to ask for permissions when reading/writing to external locations. By 
-[default](http://developer.android.com/guide/topics/data/data-storage.html#filesExternal), your app has permission to write to 
+Marshmallow requires the apps to ask for permissions when reading/writing to external locations. By
+[default](http://developer.android.com/guide/topics/data/data-storage.html#filesExternal), your app has permission to write to
 `cordova.file.applicationStorageDirectory` and `cordova.file.externalApplicationStorageDirectory`, and the plugin doesn't request permission
-for these two directories unless external storage is not mounted. However due to a limitation, when external storage is not mounted, it would ask for 
+for these two directories unless external storage is not mounted. However due to a limitation, when external storage is not mounted, it would ask for
 permission to write to `cordova.file.externalApplicationStorageDirectory`.
 
 ## iOS Quirks
