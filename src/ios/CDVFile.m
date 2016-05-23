@@ -167,6 +167,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
         if (!error) {
             responseHeaders[@"Content-Type"] = mimetype;
+            responseHeaders[@"Content-Length"] = [NSString stringWithFormat: @"%ld", (long)data.length];
             NSURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:url.url statusCode:200 HTTPVersion:@"HTTP/1.1"headerFields:responseHeaders];
             [[weakSelf client] URLProtocol:weakSelf didReceiveResponse:response cacheStoragePolicy:NSURLCacheStorageNotAllowed];
             [[weakSelf client] URLProtocol:weakSelf didLoadData:data];
