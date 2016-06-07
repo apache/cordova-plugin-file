@@ -45,6 +45,8 @@ public class AssetFilesystem extends Filesystem {
     private static Map<String, String[]> listCache;
     private static Map<String, Long> lengthCache;
 
+    private static final String LOG_TAG = "AssetFilesystem";
+
     private void lazyInitCaches() {
         synchronized (listCacheLock) {
             if (listCache == null) {
@@ -63,6 +65,7 @@ public class AssetFilesystem extends Filesystem {
                         try {
                             ois.close();
                         } catch (IOException e) {
+                            Log.d(LOG_TAG, e.getLocalizedMessage());
                         }
                     }
                 }
@@ -116,12 +119,15 @@ public class AssetFilesystem extends Filesystem {
             }
             return length;
         } catch (IOException e) {
-            throw new FileNotFoundException("File not found: " + assetPath);
+            FileNotFoundException fnfe = new FileNotFoundException("File not found: " + assetPath);
+            fnfe.initCause(e);
+            throw fnfe;
         } finally {
             if (offr != null) {
                 try {
                     offr.inputStream.close();
                 } catch (IOException e) {
+                    Log.d(LOG_TAG, e.getLocalizedMessage());
                 }
             }
         }
@@ -188,7 +194,9 @@ public class AssetFilesystem extends Filesystem {
         try {
             files = listAssets(pathNoSlashes);
         } catch (IOException e) {
-            throw new FileNotFoundException();
+            FileNotFoundException fnfe = new FileNotFoundException();
+            fnfe.initCause(e);
+            throw fnfe;
         }
 
         LocalFilesystemURL[] entries = new LocalFilesystemURL[files.length];

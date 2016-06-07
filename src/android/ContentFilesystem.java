@@ -98,7 +98,9 @@ public class ContentFilesystem extends Filesystem {
 			// Was seeing this on the File mobile-spec tests on 4.0.3 x86 emulator.
 			// The ContentResolver applies only when the file was registered in the
 			// first case, which is generally only the case with images.
-            throw new NoModificationAllowedException("Deleting not supported for content uri: " + contentUri);
+            NoModificationAllowedException nmae = new NoModificationAllowedException("Deleting not supported for content uri: " + contentUri);
+            nmae.initCause(t);
+            throw nmae;
 		}
         return true;
 	}
@@ -133,7 +135,9 @@ public class ContentFilesystem extends Filesystem {
     			size = offr.length;
         	}
         } catch (IOException e) {
-            throw new FileNotFoundException();
+            FileNotFoundException fnfe = new FileNotFoundException();
+            fnfe.initCause(e);
+            throw fnfe;
         } finally {
         	if (cursor != null)
         		cursor.close();
