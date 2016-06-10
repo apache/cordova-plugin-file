@@ -39,6 +39,8 @@ import android.net.Uri;
 import android.content.Context;
 import android.content.Intent;
 
+import java.nio.charset.Charset;
+
 public class LocalFilesystem extends Filesystem {
     private final Context context;
 
