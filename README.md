@@ -164,7 +164,7 @@ the `cordova.file.*` properties map to physical paths on a real device.
 
 | Device Path                                     | `cordova.file.*`            | `AndroidExtraFileSystems` | r/w? | persistent? | OS clears | private |
 |:------------------------------------------------|:----------------------------|:--------------------------|:----:|:-----------:|:---------:|:-------:|
-| `file:///android_asset/`                        | applicationDirectory        |                           | r    |     N/A     |     N/A   |   Yes   |
+| `file:///android_asset/`                        | applicationDirectory        | assets                    | r    |     N/A     |     N/A   |   Yes   |
 | `/data/data/<app-id>/`                          | applicationStorageDirectory | -                         | r/w  |     N/A     |     N/A   |   Yes   |
 | &nbsp;&nbsp;&nbsp;`cache`                       | cacheDirectory              | cache                     | r/w  |     Yes     |     Yes\* |   Yes   |
 | &nbsp;&nbsp;&nbsp;`files`                       | dataDirectory               | files                     | r/w  |     Yes     |     No    |   Yes   |
@@ -532,7 +532,7 @@ Android recognize a <preference> tag in `config.xml` which names the
 filesystems to be installed. By default, all file-system roots are enabled.
 
     <preference name="iosExtraFilesystems" value="library,library-nosync,documents,documents-nosync,cache,bundle,root" />
-    <preference name="AndroidExtraFilesystems" value="files,files-external,documents,sdcard,cache,cache-external,root" />
+    <preference name="AndroidExtraFilesystems" value="files,files-external,documents,sdcard,cache,cache-external,assets,root" />
 
 ### Android
 
@@ -541,6 +541,7 @@ filesystems to be installed. By default, all file-system roots are enabled.
 * `sdcard`: The global external file storage directory (this is the root of the SD card, if one is installed). You must have the `android.permission.WRITE_EXTERNAL_STORAGE` permission to use this.
 * `cache`: The application's internal cache directory
 * `cache-external`: The application's external cache directory
+* `assets`: The application's bundle (read-only)
 * `root`: The entire device filesystem
 
 Android also supports a special filesystem named "documents", which represents a "/Documents/" subdirectory within the "files" filesystem.

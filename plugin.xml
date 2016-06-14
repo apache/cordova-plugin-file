@@ -129,6 +129,7 @@ to config.xml in order for the application to find previously stored files.
                 <param name="android-package" value="org.apache.cordova.file.FileUtils"/>
                 <param name="onload" value="true" />
             </feature>
+            <allow-navigation href="cdvfile:*" />
         </config-file>
 
         <config-file target="AndroidManifest.xml" parent="/*">

@@ -3441,6 +3441,45 @@ exports.defineAutoTests = function () {
                 }
             });
         });
+        describe('resolveLocalFileSystemURL on cdvfile://', function () {
+            it("file.spec.147 should be able to resolve cdvfile applicationDirectory fs root", function(done) {
+                var cdvfileApplicationDirectoryFsRootName;
+                if (cordova.platformId === 'android') {
+                    cdvfileApplicationDirectoryFsRootName = 'assets';
+                } else if (cordova.platformId === 'ios') {
+                    cdvfileApplicationDirectoryFsRootName = 'bundle';
+                } else {
+                    pending();
+                }
+
+                resolveLocalFileSystemURL('cdvfile://localhost/' + cdvfileApplicationDirectoryFsRootName + '/', function(applicationDirectoryRoot) {
+                    expect(applicationDirectoryRoot.isFile).toBe(false);
+                    expect(applicationDirectoryRoot.isDirectory).toBe(true);
+                    expect(applicationDirectoryRoot.name).toCanonicallyMatch('');
+                    expect(applicationDirectoryRoot.fullPath).toCanonicallyMatch('/');
+                    expect(applicationDirectoryRoot.filesystem.name).toEqual(cdvfileApplicationDirectoryFsRootName);
+
+                    // Requires HelloCordova www assets, cdvfile: in CSP and <access origin="cdvfile://*" /> in config.xml
+                    resolveLocalFileSystemURL('cdvfile://localhost/' + cdvfileApplicationDirectoryFsRootName + '/www/img/logo.png', function(entry) {
+                        expect(entry.isFile).toBe(true);
+                        expect(entry.isDirectory).toBe(false);
+                        expect(entry.name).toCanonicallyMatch('logo.png');
+                        expect(entry.fullPath).toCanonicallyMatch('/www/img/logo.png');
+                        expect(entry.filesystem.name).toEqual(cdvfileApplicationDirectoryFsRootName);
+
+                        var img = new Image();
+                        img.onerror = function(err) {
+                            expect(err).not.toBeDefined();
+                            done();
+                        };
+                        img.onload = function() {
+                            done();
+                        };
+                        img.src = entry.toInternalURL();
+                    }, failed.bind(null, done, 'resolveLocalFileSystemURL failed for cdvfile applicationDirectory'));
+                }, failed.bind(null, done, 'resolveLocalFileSystemURL failed for cdvfile applicationDirectory'));
+            });
+        });
         //cross-file-system copy and move
         describe('IndexedDB-based impl', function () {
             it("file.spec.131 Nested file or nested directory should be removed when removing a parent directory", function (done) {
@@ -3576,6 +3615,7 @@ exports.defineAutoTests = function () {
         // Content and Asset URLs
         if (cordova.platformId == 'android') {
             describe('content: URLs', function() {
+                // Warning: Default HelloWorld www directory structure is required for these tests (www/index.html at least)
                 function testContentCopy(src, done) {
                     var file2 = "entry.copy.file2b",
                     fullPath = joinURL(temp_root.fullPath, file2),
@@ -3786,7 +3826,7 @@ exports.defineManualTests = function (contentEl, createActionButton) {
     var fsRoots = {
         "ios" : "library,library-nosync,documents,documents-nosync,cache,bundle,root,private",
         "osx" : "library,library-nosync,documents,documents-nosync,cache,bundle,root,private",
-        "android" : "files,files-external,documents,sdcard,cache,cache-external,root",
+        "android" : "files,files-external,documents,sdcard,cache,cache-external,assets,root",
         "amazon-fireos" : "files,files-external,documents,sdcard,cache,cache-external,root",
         "windows": "temporary,persistent"
     };
