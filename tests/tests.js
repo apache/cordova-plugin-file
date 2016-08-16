@@ -2469,7 +2469,41 @@ exports.defineAutoTests = function () {
                     },
                     0, -1, largeText);
             });
-       });
+            it("file.spec.94.6 should read large file in multiple chunks, readAsDataURL", function (done) {
+                var largeText = "";
+                for (var i = 0; i < 10; i++) {
+                    largeText += "Test " + i + "\n";
+                }
+
+                // Set the chunk size so that the read will take 5 chunks
+                FileReader.READ_CHUNK_SIZE = Math.floor(largeText.length / 4) + 1;
+
+                var lastProgressValue = 0;
+                var progressFunc = function (evt) {
+                    expect(evt.total).toBeDefined();
+                    expect(evt.total).toEqual(largeText.length);
+
+                    expect(evt.loaded).toBeDefined();
+                    expect(evt.loaded).toBeGreaterThan(lastProgressValue);
+                    expect(evt.loaded).toBeLessThan(evt.total + 1);
+
+                    lastProgressValue = evt.loaded;
+                };
+
+                runReaderTest('readAsDataURL', false, done, progressFunc,
+                    function (evt, fileData, fileDataAsBinaryString) {
+                        expect(function () {
+                            // Cut off data uri prefix
+                            var base64Data = evt.target.result.substring(evt.target.result.indexOf(',') + 1);
+                            expect(window.atob(base64Data)).toEqual(fileData);
+                        }).not.toThrow();
+
+                        expect(lastProgressValue).toEqual(largeText.length);
+                        done();
+                    },
+                undefined, undefined, largeText);
+            });
+        });
         //Read method
         describe('FileWriter', function () {
             it("file.spec.95 should have correct methods", function (done) {
