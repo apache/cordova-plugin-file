@@ -797,8 +797,10 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     }
 
     __weak CDVFile* weakSelf = self;
-    [destFs copyFileToURL:destURL withName:newName fromFileSystem:srcFs atURL:srcURL copy:bCopy callback:^(CDVPluginResult* result) {
-        [weakSelf.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+    [self.commandDelegate runInBackground:^ {
+        [destFs copyFileToURL:destURL withName:newName fromFileSystem:srcFs atURL:srcURL copy:bCopy callback:^(CDVPluginResult* result) {
+            [weakSelf.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+        }];
     }];
 
 }
