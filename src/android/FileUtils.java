@@ -26,12 +26,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Base64;
-import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.LOG;
 import org.apache.cordova.PermissionHelper;
 import org.apache.cordova.PluginResult;
 
@@ -139,10 +139,10 @@ public class FileUtils extends CordovaPlugin {
                         registerFilesystem(new LocalFilesystem(fsName, webView.getContext(), webView.getResourceApi(), newRoot));
                         installedFileSystems.add(fsName);
                     } else {
-                       Log.d(LOG_TAG, "Unable to create root dir for filesystem \"" + fsName + "\", skipping");
+                       LOG.d(LOG_TAG, "Unable to create root dir for filesystem \"" + fsName + "\", skipping");
                     }
                 } else {
-                    Log.d(LOG_TAG, "Unrecognized extra filesystem identifier: " + fsName);
+                    LOG.d(LOG_TAG, "Unrecognized extra filesystem identifier: " + fsName);
                 }
             }
         }
@@ -163,7 +163,7 @@ public class FileUtils extends CordovaPlugin {
             availableFileSystems.put("cache-external", context.getExternalCacheDir().getAbsolutePath());
           }
           catch(NullPointerException e) {
-              Log.d(LOG_TAG, "External storage unavailable, check to see if USB Mass Storage Mode is on");
+              LOG.d(LOG_TAG, "External storage unavailable, check to see if USB Mass Storage Mode is on");
           }
         }
 
@@ -229,7 +229,7 @@ public class FileUtils extends CordovaPlugin {
     			FileUtils.filePlugin = this;
     		}
     	} else {
-    		Log.e(LOG_TAG, "File plugin configuration error: Please set AndroidPersistentFileLocation in config.xml to one of \"internal\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
+    		LOG.e(LOG_TAG, "File plugin configuration error: Please set AndroidPersistentFileLocation in config.xml to one of \"internal\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
     		activity.finish();
     	}
     }
@@ -998,7 +998,7 @@ public class FileUtils extends CordovaPlugin {
           }
           catch(NullPointerException e) {
             /* If external storage is unavailable, context.getExternal* returns null */
-              Log.d(LOG_TAG, "Unable to access these paths, most liklely due to USB storage");
+              LOG.d(LOG_TAG, "Unable to access these paths, most liklely due to USB storage");
           }
         }
         return ret;
@@ -1096,7 +1096,7 @@ public class FileUtils extends CordovaPlugin {
 
             			callbackContext.sendPluginResult(result);
             		} catch (IOException e) {
-            			Log.d(LOG_TAG, e.getLocalizedMessage());
+            			LOG.d(LOG_TAG, e.getLocalizedMessage());
             			callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, NOT_READABLE_ERR));
                     }
             	}
@@ -1110,7 +1110,7 @@ public class FileUtils extends CordovaPlugin {
         } catch (FileNotFoundException e) {
         	callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, NOT_FOUND_ERR));
         } catch (IOException e) {
-        	Log.d(LOG_TAG, e.getLocalizedMessage());
+        	LOG.d(LOG_TAG, e.getLocalizedMessage());
         	callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, NOT_READABLE_ERR));
         }
     }
@@ -1132,7 +1132,7 @@ public class FileUtils extends CordovaPlugin {
         		throw new MalformedURLException("No installed handlers for this URL");
         	}
 
-            long x = fs.writeToFileAtURL(inputURL, data, offset, isBinary); Log.d("TEST",srcURLstr + ": "+x); return x;
+            long x = fs.writeToFileAtURL(inputURL, data, offset, isBinary); LOG.d("TEST",srcURLstr + ": "+x); return x;
         } catch (IllegalArgumentException e) {
             MalformedURLException mue = new MalformedURLException("Unrecognized filesystem URL");
             mue.initCause(e);
@@ -1216,7 +1216,7 @@ public class FileUtils extends CordovaPlugin {
                     break;
             }
         } else {
-           Log.d(LOG_TAG, "Received permission callback for unknown request code");
+           LOG.d(LOG_TAG, "Received permission callback for unknown request code");
         }
     }
 }

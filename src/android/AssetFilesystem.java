@@ -20,9 +20,9 @@ package org.apache.cordova.file;
 
 import android.content.res.AssetManager;
 import android.net.Uri;
-import android.util.Log;
 
 import org.apache.cordova.CordovaResourceApi;
+import org.apache.cordova.LOG;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -65,12 +65,12 @@ public class AssetFilesystem extends Filesystem {
                         try {
                             ois.close();
                         } catch (IOException e) {
-                            Log.d(LOG_TAG, e.getLocalizedMessage());
+                            LOG.d(LOG_TAG, e.getLocalizedMessage());
                         }
                     }
                 }
                 if (listCache == null) {
-                    Log.w("AssetFilesystem", "Asset manifest not found. Recursive copies and directory listing will be slow.");
+                    LOG.w("AssetFilesystem", "Asset manifest not found. Recursive copies and directory listing will be slow.");
                     listCache = new HashMap<String, String[]>();
                 }
             }
@@ -127,7 +127,7 @@ public class AssetFilesystem extends Filesystem {
                 try {
                     offr.inputStream.close();
                 } catch (IOException e) {
-                    Log.d(LOG_TAG, e.getLocalizedMessage());
+                    LOG.d(LOG_TAG, e.getLocalizedMessage());
                 }
             }
         }
