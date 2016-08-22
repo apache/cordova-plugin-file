@@ -124,16 +124,19 @@ public class ContentFilesystem extends Filesystem {
         String mimeType = resourceApi.getMimeType(nativeUri);
         Cursor cursor = openCursorForURL(nativeUri);
         try {
-        	if (cursor != null && cursor.moveToFirst()) {
-        		size = resourceSizeForCursor(cursor);
+            if (cursor != null && cursor.moveToFirst()) {
+                Long sizeForCursor = resourceSizeForCursor(cursor);
+                if (sizeForCursor != null) {
+                    size = sizeForCursor.longValue();
+                }
                 Long modified = lastModifiedDateForCursor(cursor);
                 if (modified != null)
                     lastModified = modified.longValue();
-        	} else {
+            } else {
                 // Some content providers don't support cursors at all!
                 CordovaResourceApi.OpenForReadResult offr = resourceApi.openForRead(nativeUri);
-    			size = offr.length;
-        	}
+                size = offr.length;
+            }
         } catch (IOException e) {
             FileNotFoundException fnfe = new FileNotFoundException();
             fnfe.initCause(e);
