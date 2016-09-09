@@ -20,19 +20,38 @@
 -->
 # Release Notes
 
+### 4.3.0 (Sep 08, 2016)
+* [CB-11795](https://issues.apache.org/jira/browse/CB-11795) Add 'protective' entry to cordovaDependencies
+* Add handling for `SecurityException`
+* [CB-11368](https://issues.apache.org/jira/browse/CB-11368) **android**: Resolve content `URLs` produced by contacts plugin
+* Plugin uses `Android Log class` and not `Cordova LOG class`
+* [CB-11693](https://issues.apache.org/jira/browse/CB-11693) **ios**: Run copy and move operations in the background thread
+* [CB-11699](https://issues.apache.org/jira/browse/CB-11699) Read files as Data URLs properly
+* [CB-11305](https://issues.apache.org/jira/browse/CB-11305) Enable `cdvfile: assets fs root` for `DOM` requests
+* [CB-11385](https://issues.apache.org/jira/browse/CB-11385) android: Import java.nio.charset.Charset in LocalFileSystem class
+* Add badges for paramedic builds on Jenkins
+* [CB-11407](https://issues.apache.org/jira/browse/CB-11407) ios: added extern keyword to constants to fix phonegap-webview-ios template issue.
+* [CB-11385](https://issues.apache.org/jira/browse/CB-11385) **android**: Does not pass sonarqube scan
+* Add pull request template.
+* Minor edits to the `README.md`
+* [CB-11142](https://issues.apache.org/jira/browse/CB-11142) Fix the `NeedPermission` code for the case when external media is not mounted in Android
+* [CB-11003](https://issues.apache.org/jira/browse/CB-11003) Adding samples to Readme.
+* [CB-10996](https://issues.apache.org/jira/browse/CB-10996) Adding front matter to README.md
+* [CB-11115](https://issues.apache.org/jira/browse/CB-11115) **android**: Removing dependency on FileDescriptor toString in content provider tests
+
 ### 4.2.0 (Apr 15, 2016)
-* CB-10960 Uncaught `#<FileError>` in `write()` when `readyState != WRITING ?`
+* [CB-10960](https://issues.apache.org/jira/browse/CB-10960) Uncaught `#<FileError>` in `write()` when `readyState != WRITING ?`
 * Replace `PermissionHelper.java` with `cordova-plugin-compat`
-* CB-10977 **Android** Removing global state used for permission requests
-* CB-10798, CB-10384 Fixing permissions for **Marshmallow**.
+* [CB-10977](https://issues.apache.org/jira/browse/CB-10977) **Android** Removing global state used for permission requests
+* CB-10798, [CB-10384](https://issues.apache.org/jira/browse/CB-10384) Fixing permissions for **Marshmallow**.
 * Fix test failure on **WP 8.1**
-* CB-10577 **Windows** `resolveLocalFileSystemURL` should omit trailing slash for file
-* CB-7862 `FileReader` reads large files in chunks with progress.
-* CB-10577 **Android** `resolveLocalFileSystemURL` should detect directory vs file.
-* CB-9753 index out of bounds on `requestFileSystem`.
+* [CB-10577](https://issues.apache.org/jira/browse/CB-10577) **Windows** `resolveLocalFileSystemURL` should omit trailing slash for file
+* [CB-7862](https://issues.apache.org/jira/browse/CB-7862) `FileReader` reads large files in chunks with progress.
+* [CB-10577](https://issues.apache.org/jira/browse/CB-10577) **Android** `resolveLocalFileSystemURL` should detect directory vs file.
+* [CB-9753](https://issues.apache.org/jira/browse/CB-9753) index out of bounds on `requestFileSystem`.
 * Remove `warning` emoji, as it doesn't correctly display in the docs website: cordova.apache.org/docs/en/dev/cordova-plugin-file/index.html. This closes #166
-* CB-10636 Add `JSHint` for plugins
-* CB-10411 Error in `file.spec.129` of `cordova-plugin-file`
+* [CB-10636](https://issues.apache.org/jira/browse/CB-10636) Add `JSHint` for plugins
+* [CB-10411](https://issues.apache.org/jira/browse/CB-10411) Error in `file.spec.129` of `cordova-plugin-file`
 
 ### 4.1.1 (Feb 09, 2016)
 * Edit package.json license to match SPDX id
@@ -40,9 +59,9 @@
 
 ### 4.1.0 (Jan 15, 2016)
 * added `.ratignore` file
-* CB-10319 **android** Adding reflective helper methods for permission requests
-* CB-10023 Fix `proxy not found error` on Chrome.
-* CB-8863 **ios** Fix block usage of self
+* [CB-10319](https://issues.apache.org/jira/browse/CB-10319) **android** Adding reflective helper methods for permission requests
+* [CB-10023](https://issues.apache.org/jira/browse/CB-10023) Fix `proxy not found error` on Chrome.
+* [CB-8863](https://issues.apache.org/jira/browse/CB-8863) **ios** Fix block usage of self
 
 ### 4.0.0 (Nov 18, 2015)
 * [CB-10035](https://issues.apache.org/jira/browse/CB-10035) Updated `RELEASENOTES` to be newest to oldest
