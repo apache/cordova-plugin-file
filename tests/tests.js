@@ -368,6 +368,20 @@ exports.defineAutoTests = function () {
                     }
                     createDirectory(fileName, gotDirectory, failed.bind(null, done, 'createDirectory - Error creating directory: ' + fileName), failed.bind(null, done, 'createDirectory - Error creating directory: ' + fileName));
                 });
+
+                it("file.spec.9.7 should resolve a file with valid nativeURL", function (done) {
+                    var fileName = "de.create.file",
+                    win = function (entry) {
+                        var path = entry.nativeURL.split('///')[1];
+                        expect(/\/{2,}/.test(path)).toBeFalsy();
+                        // cleanup
+                        deleteEntry(entry.name, done);
+                    };
+                    root.getFile(fileName, {
+                        create: true
+                    }, win, succeed.bind(null, done, 'root.getFile - Error unexpected callback, file should not exists: ' + fileName));
+                });
+
                 it("file.spec.10 resolve valid file name with parameters", function (done) {
                     var fileName = "resolve.file.uri.params",
                     win = function (fileEntry) {

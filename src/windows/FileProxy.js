@@ -154,8 +154,13 @@ var WinFS = function(name, root) {
     if (this.winpath && !/\/$/.test(this.winpath)) {
         this.winpath += "/";
     }
-    this.makeNativeURL = function(path) {
-        return FileSystem.encodeURIPath(this.root.nativeURL + sanitize(path.replace(':','%3A')));};
+    this.makeNativeURL = function (path) {        
+        //CB-11848: This RE supposed to match all leading slashes in sanitized path. 
+        //Removing leading slash to avoid duplicating because this.root.nativeURL already has trailing slash
+        var regLeadingSlashes = /^\/*/;
+        var sanitizedPath = sanitize(path.replace(':', '%3A')).replace(regLeadingSlashes, '');
+        return FileSystem.encodeURIPath(this.root.nativeURL + sanitizedPath);
+    };
     root.fullPath = '/';
     if (!root.nativeURL)
             root.nativeURL = 'file://'+sanitize(this.winpath + root.fullPath).replace(':','%3A');
