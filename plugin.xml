@@ -109,8 +109,10 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <runs />
     </js-module>
 
-    <info>
-The Android Persistent storage location now defaults to "Internal". Please check this plugins README to see if you application needs any changes in its config.xml.
+    <!-- android -->
+    <platform name="android">
+        <info>
+The Android Persistent storage location now defaults to "Internal". Please check this plugin's README to see if your application needs any changes in its config.xml.
 
 If this is a new application no changes are required.
 
@@ -119,11 +121,7 @@ If this is an update to an existing application that did not specify an "Android
       "&lt;preference name="AndroidPersistentFileLocation" value="Compatibility" /&gt;"
 
 to config.xml in order for the application to find previously stored files.
-
-    </info>
-
-    <!-- android -->
-    <platform name="android">
+        </info>
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="File" >
                 <param name="android-package" value="org.apache.cordova.file.FileUtils"/>
