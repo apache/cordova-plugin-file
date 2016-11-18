@@ -1758,6 +1758,37 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
                 }, failed.bind(null, done, 'deleteEntry - Error removing directory : ' + dstDir));
             });
+
+            it("file.spec.131 moveTo: directories tree to new parent", function (done) {
+                if (isIndexedDBShim) {
+                    /* `copyTo` and `moveTo` functions do not support directories (Firefox, IE) */
+                    pending();
+                }
+
+                var srcDir = "entry.move.dnp.srcDir";
+                var srcDirNestedFirst = "entry.move.dnp.srcDir.Nested1";
+                var srcDirNestedSecond = "entry.move.dnp.srcDir.Nested2";
+                var dstDir = "entry.move.dnp.dstDir";
+
+                createDirectory(dstDir, function (dstDirectory) {
+                    createDirectory(srcDir, function (srcDirectory) {
+                        srcDirectory.getDirectory(srcDirNestedFirst, { create: true }, function () {
+                            srcDirectory.getDirectory(srcDirNestedSecond, { create: true }, function () {
+                                srcDirectory.moveTo(dstDirectory, srcDir, function successMove(transferredDirectory) {
+                                    var directoryReader = transferredDirectory.createReader();
+                                    directoryReader.readEntries(function successRead(entries) {
+                                        expect(entries.length).toBe(2);
+                                        expect(entries[0].name).toBe(srcDirNestedFirst);
+                                        expect(entries[1].name).toBe(srcDirNestedSecond);
+                                        deleteEntry(dstDir, done);
+                                    }, failed.bind(null, done, 'Error getting entries from: ' + transferredDirectory));
+                                }, failed.bind(null, done, 'directory.moveTo - Error moving directory : ' + srcDir + ' to root as: ' + dstDir));
+                            }, failed.bind(null, done, 'directory.getDirectory - Error creating directory : ' + srcDirNestedSecond));
+                        }, failed.bind(null, done, 'directory.getDirectory - Error creating directory : ' + srcDirNestedFirst));
+                    }, failed.bind(null, done, 'createDirectory - Error creating source directory : ' + srcDir));
+                }, failed.bind(null, done, 'createDirectory - Error creating dest directory : ' + dstDir));
+            });
+
             it("file.spec.70 moveTo: directory onto itself", function (done) {
                 if (isIndexedDBShim) {
                     /* `copyTo` and `moveTo` functions do not support directories (Firefox, IE) */

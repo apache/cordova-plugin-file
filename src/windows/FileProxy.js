@@ -404,8 +404,8 @@ function moveFolder(src,dst,name) {
                         src.deleteAsync().done(complete,failed);
                         return;
                     }
-                    moveFolder(the.folders[todo],dst)
-                    .done(movefolders,failed); 
+                    moveFolder(the.folders[todo], the.fld)
+                    .done(movefolders,failed);
                 };
                 var movefiles = function() {
                     if (!(todo--)) {
