@@ -20,6 +20,14 @@
 -->
 # Release Notes
 
+### 4.3.1 (Dec 07, 2016)
+* [CB-12112](https://issues.apache.org/jira/browse/CB-12112) windows: Make available to move folder trees
+* fix ENCODING_ERR for applicationDirectory
+* [CB-11848](https://issues.apache.org/jira/browse/CB-11848) windows: Remove duplicate slash after file system path
+* [CB-11917](https://issues.apache.org/jira/browse/CB-11917) - Remove pull request template checklist item: "iCLA has been submitted…"
+* [CB-11947](https://issues.apache.org/jira/browse/CB-11947) fixed typo that occurs when adding file-transfer plugin
+* [CB-11832](https://issues.apache.org/jira/browse/CB-11832) Incremented plugin version.
+
 ### 4.3.0 (Sep 08, 2016)
 * [CB-11795](https://issues.apache.org/jira/browse/CB-11795) Add 'protective' entry to cordovaDependencies
 * Add handling for `SecurityException`
