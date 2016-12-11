@@ -21,6 +21,7 @@
 # Release Notes
 
 ### 4.3.1 (Dec 07, 2016)
+* [CB-12224](https://issues.apache.org/jira/browse/CB-12224) Updated version and RELEASENOTES.md for release 4.3.1
 * [CB-12112](https://issues.apache.org/jira/browse/CB-12112) windows: Make available to move folder trees
 * fix ENCODING_ERR for applicationDirectory
 * [CB-11848](https://issues.apache.org/jira/browse/CB-11848) windows: Remove duplicate slash after file system path
