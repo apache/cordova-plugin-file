@@ -703,7 +703,7 @@
         NSMutableDictionary* fileInfo = [NSMutableDictionary dictionaryWithCapacity:5];
 
         [fileInfo setObject:localURL.fullPath forKey:@"fullPath"];
-        [fileInfo setObject:@"" forKey:@"type"];  // can't easily get the mimetype unless create URL, send request and read response so skipping
+        [fileInfo setObject:[self mimeTypeForFileAtPath: path] forKey:@"type"];
         [fileInfo setObject:[path lastPathComponent] forKey:@"name"];
 
         // Ensure that directories (and other non-regular files) report size of 0
@@ -729,6 +729,21 @@
     }
 
     callback(result);
+}
+
+- (NSString*) mimeTypeForFileAtPath: (NSString *) path {
+    if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
+        return nil;
+    }
+    
+    CFStringRef UTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)[path pathExtension], NULL);
+    CFStringRef mimeType = UTTypeCopyPreferredTagWithClass (UTI, kUTTagClassMIMEType);
+    CFRelease(UTI);
+    
+    if (!mimeType) {
+        return @"application/octet-stream";
+    }
+    return (__bridge NSString *)mimeType;
 }
 
 @end
