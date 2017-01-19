@@ -731,6 +731,7 @@
     callback(result);
 }
 
+// fix errors that base on Alexsander Akers from http://stackoverflow.com/a/5998683/2613194
 - (NSString*) mimeTypeForFileAtPath: (NSString *) path {
     if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
         return nil;
