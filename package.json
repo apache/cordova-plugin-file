@@ -2,6 +2,7 @@
   "name": "cordova-plugin-file",
   "version": "4.3.2-dev",
   "description": "Cordova File Plugin",
+  "types": "./types/index.d.ts",
   "cordova": {
     "id": "cordova-plugin-file",
     "platforms": [
