@@ -13,3 +13,4 @@ Thumbs.db
 *.user
 
 /.project
+node_modules

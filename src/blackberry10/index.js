@@ -18,6 +18,9 @@
  * under the License.
  *
 */
+
+/* global PluginResult */
+
 module.exports = {
     setSandbox : function (success, fail, args, env) {
         require("lib/webview").setSandbox(JSON.parse(decodeURIComponent(args[0])));

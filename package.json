@@ -1,7 +1,8 @@
 {
   "name": "cordova-plugin-file",
-  "version": "4.1.1",
+  "version": "4.3.4-dev",
   "description": "Cordova File Plugin",
+  "types": "./types/index.d.ts",
   "cordova": {
     "id": "cordova-plugin-file",
     "platforms": [
@@ -38,6 +39,20 @@
     "cordova-windows",
     "cordova-firefoxos"
   ],
+  "scripts": {
+    "test": "npm run jshint",
+    "jshint": "node node_modules/jshint/bin/jshint www && node node_modules/jshint/bin/jshint src && node node_modules/jshint/bin/jshint tests"
+  },
   "author": "Apache Software Foundation",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "engines": {
+    "cordovaDependencies": {
+      "5.0.0": {
+        "cordova": ">100"
+      }
+    }
+  },
+  "devDependencies": {
+    "jshint": "^2.6.0"
+  }
 }

@@ -40,7 +40,7 @@ module.exports = function (success, fail, args) {
     var uri = args[0],
         data = args[1],
         offset = args[2],
-        isBinary = args[3],
+        //isBinary = args[3],
         onSuccess = function (data) {
             if (typeof success === 'function') {
                 success(data.loaded);

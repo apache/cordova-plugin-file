@@ -20,15 +20,67 @@
 -->
 # Release Notes
 
+### 4.3.3 (Apr 27, 2017)
+* [CB-12622](https://issues.apache.org/jira/browse/CB-12622) Added **Android 6.0** build badge to `README`
+* [CB-12685](https://issues.apache.org/jira/browse/CB-12685) added `package.json` to tests folder
+
+### 4.3.2 (Feb 28, 2017)
+* [CB-12353](https://issues.apache.org/jira/browse/CB-12353) Corrected merges usage in `plugin.xml`
+* [CB-12369](https://issues.apache.org/jira/browse/CB-12369) Add plugin typings from `DefinitelyTyped`
+* [CB-12363](https://issues.apache.org/jira/browse/CB-12363) Added build badges for **iOS 9.3** and **iOS 10.0**
+* [CB-12230](https://issues.apache.org/jira/browse/CB-12230) Removed **Windows 8.1** build badges
+
+### 4.3.1 (Dec 07, 2016)
+* [CB-12224](https://issues.apache.org/jira/browse/CB-12224) Updated version and RELEASENOTES.md for release 4.3.1
+* [CB-12112](https://issues.apache.org/jira/browse/CB-12112) windows: Make available to move folder trees
+* fix ENCODING_ERR for applicationDirectory
+* [CB-11848](https://issues.apache.org/jira/browse/CB-11848) windows: Remove duplicate slash after file system path
+* [CB-11917](https://issues.apache.org/jira/browse/CB-11917) - Remove pull request template checklist item: "iCLA has been submitted…"
+* [CB-11947](https://issues.apache.org/jira/browse/CB-11947) fixed typo that occurs when adding file-transfer plugin
+* [CB-11832](https://issues.apache.org/jira/browse/CB-11832) Incremented plugin version.
+
+### 4.3.0 (Sep 08, 2016)
+* [CB-11795](https://issues.apache.org/jira/browse/CB-11795) Add 'protective' entry to cordovaDependencies
+* Add handling for `SecurityException`
+* [CB-11368](https://issues.apache.org/jira/browse/CB-11368) **android**: Resolve content `URLs` produced by contacts plugin
+* Plugin uses `Android Log class` and not `Cordova LOG class`
+* [CB-11693](https://issues.apache.org/jira/browse/CB-11693) **ios**: Run copy and move operations in the background thread
+* [CB-11699](https://issues.apache.org/jira/browse/CB-11699) Read files as Data URLs properly
+* [CB-11305](https://issues.apache.org/jira/browse/CB-11305) Enable `cdvfile: assets fs root` for `DOM` requests
+* [CB-11385](https://issues.apache.org/jira/browse/CB-11385) android: Import java.nio.charset.Charset in LocalFileSystem class
+* Add badges for paramedic builds on Jenkins
+* [CB-11407](https://issues.apache.org/jira/browse/CB-11407) ios: added extern keyword to constants to fix phonegap-webview-ios template issue.
+* [CB-11385](https://issues.apache.org/jira/browse/CB-11385) **android**: Does not pass sonarqube scan
+* Add pull request template.
+* Minor edits to the `README.md`
+* [CB-11142](https://issues.apache.org/jira/browse/CB-11142) Fix the `NeedPermission` code for the case when external media is not mounted in Android
+* [CB-11003](https://issues.apache.org/jira/browse/CB-11003) Adding samples to Readme.
+* [CB-10996](https://issues.apache.org/jira/browse/CB-10996) Adding front matter to README.md
+* [CB-11115](https://issues.apache.org/jira/browse/CB-11115) **android**: Removing dependency on FileDescriptor toString in content provider tests
+
+### 4.2.0 (Apr 15, 2016)
+* [CB-10960](https://issues.apache.org/jira/browse/CB-10960) Uncaught `#<FileError>` in `write()` when `readyState != WRITING ?`
+* Replace `PermissionHelper.java` with `cordova-plugin-compat`
+* [CB-10977](https://issues.apache.org/jira/browse/CB-10977) **Android** Removing global state used for permission requests
+* CB-10798, [CB-10384](https://issues.apache.org/jira/browse/CB-10384) Fixing permissions for **Marshmallow**.
+* Fix test failure on **WP 8.1**
+* [CB-10577](https://issues.apache.org/jira/browse/CB-10577) **Windows** `resolveLocalFileSystemURL` should omit trailing slash for file
+* [CB-7862](https://issues.apache.org/jira/browse/CB-7862) `FileReader` reads large files in chunks with progress.
+* [CB-10577](https://issues.apache.org/jira/browse/CB-10577) **Android** `resolveLocalFileSystemURL` should detect directory vs file.
+* [CB-9753](https://issues.apache.org/jira/browse/CB-9753) index out of bounds on `requestFileSystem`.
+* Remove `warning` emoji, as it doesn't correctly display in the docs website: cordova.apache.org/docs/en/dev/cordova-plugin-file/index.html. This closes #166
+* [CB-10636](https://issues.apache.org/jira/browse/CB-10636) Add `JSHint` for plugins
+* [CB-10411](https://issues.apache.org/jira/browse/CB-10411) Error in `file.spec.129` of `cordova-plugin-file`
+
 ### 4.1.1 (Feb 09, 2016)
 * Edit package.json license to match SPDX id
 * [CB-10419](https://issues.apache.org/jira/browse/CB-10419) cordova-plugin-file 4.0.0 error with browserify workflow
 
 ### 4.1.0 (Jan 15, 2016)
 * added `.ratignore` file
-* CB-10319 **android** Adding reflective helper methods for permission requests
-* CB-10023 Fix `proxy not found error` on Chrome.
-* CB-8863 **ios** Fix block usage of self
+* [CB-10319](https://issues.apache.org/jira/browse/CB-10319) **android** Adding reflective helper methods for permission requests
+* [CB-10023](https://issues.apache.org/jira/browse/CB-10023) Fix `proxy not found error` on Chrome.
+* [CB-8863](https://issues.apache.org/jira/browse/CB-8863) **ios** Fix block usage of self
 
 ### 4.0.0 (Nov 18, 2015)
 * [CB-10035](https://issues.apache.org/jira/browse/CB-10035) Updated `RELEASENOTES` to be newest to oldest

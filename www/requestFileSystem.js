@@ -18,6 +18,7 @@
  * under the License.
  *
 */
+
 (function() {
     //For browser platform: not all browsers use this file.
     function checkBrowser() {
@@ -47,7 +48,9 @@
     var requestFileSystem = function(type, size, successCallback, errorCallback) {
         argscheck.checkArgs('nnFF', 'requestFileSystem', arguments);
         var fail = function(code) {
-            errorCallback && errorCallback(new FileError(code));
+            if (errorCallback) {
+                errorCallback(new FileError(code));
+            }
         };
 
         if (type < 0) {
