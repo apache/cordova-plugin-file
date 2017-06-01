@@ -22,6 +22,7 @@ using System.Security;
 using System.Text;
 using System.Windows;
 using System.Windows.Resources;
+using System.Linq;
 using WPCordovaClassLib.Cordova.JSON;
 
 namespace WPCordovaClassLib.Cordova.Commands
@@ -695,7 +696,9 @@ namespace WPCordovaClassLib.Cordova.Commands
                     buffer = readFileBytes(filePath, startPos, endPos, isoFile);
                 }
 
-                DispatchCommandResult(new PluginResult(PluginResult.Status.OK, buffer), callbackId);
+                int[] bufferAsIntArray = (from b in buffer select (int)b).ToArray();
+
+                DispatchCommandResult(new PluginResult(PluginResult.Status.OK, bufferAsIntArray), callbackId);
             }
             catch (Exception ex)
             {
