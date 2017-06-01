@@ -211,6 +211,12 @@ function getAllFS() {
                 name: 'root', 
                 //nativeURL: 'file:///'
                 winpath: ''
+            })),
+            'shared':
+            Object.freeze(new WinFS('shared', {
+            	name: 'shared',
+                nativeURL: nativePathToCordova(Windows.Storage.ApplicationData.current.sharedLocalFolder.path),
+                winpath: nativePathToCordova(Windows.Storage.ApplicationData.current.sharedLocalFolder.path)
             }))
         };
     }
