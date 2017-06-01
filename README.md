@@ -62,7 +62,7 @@ Report issues on the [Apache Cordova issue tracker](https://issues.apache.org/ji
 
 ## Installation
 
-    cordova plugin add cordova-plugin-file
+    cordova plugin add org.apache.cordova.contacts
 
 ## Supported Platforms
 
