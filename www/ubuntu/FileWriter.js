@@ -19,19 +19,20 @@
  *
 */
 
-var exec = require('cordova/exec'),
-    FileError = require('./FileError'),
-    ProgressEvent = require('./ProgressEvent');
+var exec = require('cordova/exec');
+var FileError = require('./FileError');
+var ProgressEvent = require('./ProgressEvent');
 
-function write(data) {
-    var that=this;
+function write (data) {
+    var that = this;
     var supportsBinary = (typeof window.Blob !== 'undefined' && typeof window.ArrayBuffer !== 'undefined');
     var isBinary;
 
     // Check to see if the incoming data is a blob
+    /* eslint-disable no-undef */
     if (data instanceof File || (supportsBinary && data instanceof Blob)) {
         var fileReader = new FileReader();
-        fileReader.onload = function() {
+        fileReader.onload = function () {
             // Call this method again, with the arraybuffer as argument
             FileWriter.prototype.write.call(that, this.result);
         };
@@ -53,34 +54,34 @@ function write(data) {
 
     // WRITING state
     this.readyState = FileWriter.WRITING;
-
+    /* eslint-enable no-undef */
     var me = this;
 
     // If onwritestart callback
-    if (typeof me.onwritestart === "function") {
-        me.onwritestart(new ProgressEvent("writestart", {"target":me}));
+    if (typeof me.onwritestart === 'function') {
+        me.onwritestart(new ProgressEvent('writestart', {'target': me}));
     }
 
     if (data instanceof ArrayBuffer || data.buffer instanceof ArrayBuffer) {
         data = new Uint8Array(data);
-    var binary = "";
-    for (var i = 0; i < data.byteLength; i++) {
+        var binary = '';
+        for (var i = 0; i < data.byteLength; i++) {
             binary += String.fromCharCode(data[i]);
-    }
+        }
         data = binary;
     }
 
-    var prefix = "file://localhost";
+    var prefix = 'file://localhost';
     var path = this.localURL;
-    if (path.substr(0, prefix.length) == prefix) {
+    if (path.substr(0, prefix.length) === prefix) {
         path = path.substr(prefix.length);
     }
     // Write file
     exec(
         // Success callback
-        function(r) {
+        function (r) {
             // If DONE (cancelled), then don't do anything
-            if (me.readyState === FileWriter.DONE) {
+            if (me.readyState === FileWriter.DONE) { // eslint-disable-line no-undef
                 return;
             }
 
@@ -91,45 +92,45 @@ function write(data) {
             me.length = me.position;
 
             // DONE state
-            me.readyState = FileWriter.DONE;
+            me.readyState = FileWriter.DONE; // eslint-disable-line no-undef
 
             // If onwrite callback
-            if (typeof me.onwrite === "function") {
-                me.onwrite(new ProgressEvent("write", {"target":me}));
+            if (typeof me.onwrite === 'function') {
+                me.onwrite(new ProgressEvent('write', {'target': me}));
             }
 
             // If onwriteend callback
-            if (typeof me.onwriteend === "function") {
-                me.onwriteend(new ProgressEvent("writeend", {"target":me}));
+            if (typeof me.onwriteend === 'function') {
+                me.onwriteend(new ProgressEvent('writeend', {'target': me}));
             }
         },
         // Error callback
-        function(e) {
+        function (e) {
             // If DONE (cancelled), then don't do anything
-            if (me.readyState === FileWriter.DONE) {
+            if (me.readyState === FileWriter.DONE) { // eslint-disable-line no-undef
                 return;
             }
 
             // DONE state
-            me.readyState = FileWriter.DONE;
+            me.readyState = FileWriter.DONE; // eslint-disable-line no-undef
 
             // Save error
             me.error = new FileError(e);
 
             // If onerror callback
-            if (typeof me.onerror === "function") {
-                me.onerror(new ProgressEvent("error", {"target":me}));
+            if (typeof me.onerror === 'function') {
+                me.onerror(new ProgressEvent('error', {'target': me}));
             }
 
             // If onwriteend callback
-            if (typeof me.onwriteend === "function") {
-                me.onwriteend(new ProgressEvent("writeend", {"target":me}));
+            if (typeof me.onwriteend === 'function') {
+                me.onwriteend(new ProgressEvent('writeend', {'target': me}));
             }
-        }, "File", "write", [path, data, this.position, isBinary]);
+        }, 'File', 'write', [path, data, this.position, isBinary]);
 }
 
 module.exports = {
     write: write
 };
 
-require("cordova/exec/proxy").add("FileWriter", module.exports);
+require('cordova/exec/proxy').add('FileWriter', module.exports);

@@ -1,4 +1,4 @@
-﻿/*
+/*
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,12 +21,12 @@
 
 /* global IDBKeyRange */
 
-var LocalFileSystem = require('./LocalFileSystem'),
-    FileSystem = require('./FileSystem'),
-    FileEntry = require('./FileEntry'),
-    FileError = require('./FileError'),
-    DirectoryEntry = require('./DirectoryEntry'),
-    File = require('./File');
+var LocalFileSystem = require('./LocalFileSystem');
+var FileSystem = require('./FileSystem');
+var FileEntry = require('./FileEntry');
+var FileError = require('./FileError');
+var DirectoryEntry = require('./DirectoryEntry'); // eslint-disable-line no-undef
+var File = require('./File');
 
 /*
 QUIRKS:
@@ -39,11 +39,10 @@ QUIRKS:
     Heavily based on https://github.com/ebidel/idb.filesystem.js
  */
 
-
-(function(exports, global) {
+(function (exports, global) {
     var indexedDB = global.indexedDB || global.mozIndexedDB;
     if (!indexedDB) {
-        throw "Firefox OS File plugin: indexedDB not supported";
+        throw 'Firefox OS File plugin: indexedDB not supported';
     }
 
     var fs_ = null;
@@ -57,19 +56,19 @@ QUIRKS:
 
     var pathsPrefix = {
         // Read-only directory where the application is installed.
-        applicationDirectory: location.origin + "/",
+        applicationDirectory: location.origin + '/', // eslint-disable-line no-undef
         // Where to put app-specific data files.
         dataDirectory: 'file:///persistent/',
         // Cached files that should survive app restarts.
         // Apps should not rely on the OS to delete files in here.
-        cacheDirectory: 'file:///temporary/',
+        cacheDirectory: 'file:///temporary/'
     };
 
-/*** Exported functionality ***/
+/** * Exported functionality ***/
 
-    exports.requestFileSystem = function(successCallback, errorCallback, args) {
+    exports.requestFileSystem = function (successCallback, errorCallback, args) {
         var type = args[0];
-        //var size = args[1];
+        // var size = args[1];
 
         if (type !== LocalFileSystem.TEMPORARY && type !== LocalFileSystem.PERSISTENT) {
             if (errorCallback) {
@@ -79,22 +78,22 @@ QUIRKS:
         }
 
         var name = type === LocalFileSystem.TEMPORARY ? 'temporary' : 'persistent';
-        var storageName = (location.protocol + location.host).replace(/:/g, '_');
+        var storageName = (location.protocol + location.host).replace(/:/g, '_'); // eslint-disable-line no-undef
 
         var root = new DirectoryEntry('', DIR_SEPARATOR);
         fs_ = new FileSystem(name, root);
 
-        idb_.open(storageName, function() {
+        idb_.open(storageName, function () {
             successCallback(fs_);
         }, errorCallback);
     };
 
-    require('./fileSystems').getFs = function(name, callback) {
+    require('./fileSystems').getFs = function (name, callback) {
         callback(new FileSystem(name, fs_.root));
     };
 
     // list a directory's contents (files and folders).
-    exports.readEntries = function(successCallback, errorCallback, args) {
+    exports.readEntries = function (successCallback, errorCallback, args) {
         var fullPath = args[0];
 
         if (!successCallback) {
@@ -103,12 +102,12 @@ QUIRKS:
 
         var path = resolveToFullPath_(fullPath);
 
-        idb_.getAllEntries(path.fullPath, path.storagePath, function(entries) {
+        idb_.getAllEntries(path.fullPath, path.storagePath, function (entries) {
             successCallback(entries);
         }, errorCallback);
     };
 
-    exports.getFile = function(successCallback, errorCallback, args) {
+    exports.getFile = function (successCallback, errorCallback, args) {
         var fullPath = args[0];
         var path = args[1];
         var options = args[2] || {};
@@ -116,7 +115,7 @@ QUIRKS:
         // Create an absolute path if we were handed a relative one.
         path = resolveToFullPath_(fullPath, path);
 
-        idb_.get(path.storagePath, function(fileEntry) {
+        idb_.get(path.storagePath, function (fileEntry) {
             if (options.create === true && options.exclusive === true && fileEntry) {
                 // If create and exclusive are both true, and the path already exists,
                 // getFile must fail.
@@ -141,7 +140,7 @@ QUIRKS:
             } else if (options.create === true && fileEntry) {
                 if (fileEntry.isFile) {
                     // Overwrite file, delete then create new.
-                    idb_['delete'](path.storagePath, function() {
+                    idb_['delete'](path.storagePath, function () {
                         var newFileEntry = new FileEntry(path.fileName, path.fullPath, new FileSystem(path.fsName, fs_.root));
 
                         newFileEntry.file_ = new MyFile({
@@ -179,16 +178,16 @@ QUIRKS:
         }, errorCallback);
     };
 
-    exports.getFileMetadata = function(successCallback, errorCallback, args) {
+    exports.getFileMetadata = function (successCallback, errorCallback, args) {
         var fullPath = args[0];
 
-        exports.getFile(function(fileEntry) {
+        exports.getFile(function (fileEntry) {
             successCallback(new File(fileEntry.file_.name, fileEntry.fullPath, '', fileEntry.file_.lastModifiedDate,
                 fileEntry.file_.size));
         }, errorCallback, [fullPath, null]);
     };
 
-    exports.getMetadata = function(successCallback, errorCallback, args) {
+    exports.getMetadata = function (successCallback, errorCallback, args) {
         exports.getFile(function (fileEntry) {
             successCallback(
                 {
@@ -198,20 +197,20 @@ QUIRKS:
         }, errorCallback, args);
     };
 
-    exports.setMetadata = function(successCallback, errorCallback, args) {
+    exports.setMetadata = function (successCallback, errorCallback, args) {
         var fullPath = args[0];
         var metadataObject = args[1];
 
         exports.getFile(function (fileEntry) {
-              fileEntry.file_.lastModifiedDate = metadataObject.modificationTime;
+            fileEntry.file_.lastModifiedDate = metadataObject.modificationTime;
         }, errorCallback, [fullPath, null]);
     };
 
-    exports.write = function(successCallback, errorCallback, args) {
-        var fileName = args[0],
-            data = args[1],
-            position = args[2];
-            //isBinary = args[3];
+    exports.write = function (successCallback, errorCallback, args) {
+        var fileName = args[0];
+        var data = args[1];
+        var position = args[2];
+            // isBinary = args[3];
 
         if (!data) {
             if (errorCallback) {
@@ -220,11 +219,11 @@ QUIRKS:
             return;
         }
 
-        exports.getFile(function(fileEntry) {
+        exports.getFile(function (fileEntry) {
             var blob_ = fileEntry.file_.blob_;
 
             if (!blob_) {
-                blob_ = new Blob([data], {type: data.type});
+                blob_ = new Blob([data], {type: data.type}); // eslint-disable-line no-undef
             } else {
                 // Calc the head and tail fragments
                 var head = blob_.slice(0, position);
@@ -237,7 +236,7 @@ QUIRKS:
                 }
 
                 // Do the "write". In fact, a full overwrite of the Blob.
-                blob_ = new Blob([head, new Uint8Array(padding), data, tail],
+                blob_ = new Blob([head, new Uint8Array(padding), data, tail], // eslint-disable-line no-undef
                     {type: data.type});
             }
 
@@ -248,56 +247,56 @@ QUIRKS:
             fileEntry.file_.name = blob_.name;
             fileEntry.file_.type = blob_.type;
 
-            idb_.put(fileEntry, fileEntry.file_.storagePath, function() {
+            idb_.put(fileEntry, fileEntry.file_.storagePath, function () {
                 successCallback(data.byteLength);
             }, errorCallback);
         }, errorCallback, [fileName, null]);
     };
 
-    exports.readAsText = function(successCallback, errorCallback, args) {
-        var fileName = args[0],
-            enc = args[1],
-            startPos = args[2],
-            endPos = args[3];
+    exports.readAsText = function (successCallback, errorCallback, args) {
+        var fileName = args[0];
+        var enc = args[1];
+        var startPos = args[2];
+        var endPos = args[3];
 
         readAs('text', fileName, enc, startPos, endPos, successCallback, errorCallback);
     };
 
-    exports.readAsDataURL = function(successCallback, errorCallback, args) {
-        var fileName = args[0],
-            startPos = args[1],
-            endPos = args[2];
+    exports.readAsDataURL = function (successCallback, errorCallback, args) {
+        var fileName = args[0];
+        var startPos = args[1];
+        var endPos = args[2];
 
         readAs('dataURL', fileName, null, startPos, endPos, successCallback, errorCallback);
     };
 
-    exports.readAsBinaryString = function(successCallback, errorCallback, args) {
-        var fileName = args[0],
-            startPos = args[1],
-            endPos = args[2];
+    exports.readAsBinaryString = function (successCallback, errorCallback, args) {
+        var fileName = args[0];
+        var startPos = args[1];
+        var endPos = args[2];
 
         readAs('binaryString', fileName, null, startPos, endPos, successCallback, errorCallback);
     };
 
-    exports.readAsArrayBuffer = function(successCallback, errorCallback, args) {
-        var fileName = args[0],
-            startPos = args[1],
-            endPos = args[2];
+    exports.readAsArrayBuffer = function (successCallback, errorCallback, args) {
+        var fileName = args[0];
+        var startPos = args[1];
+        var endPos = args[2];
 
         readAs('arrayBuffer', fileName, null, startPos, endPos, successCallback, errorCallback);
     };
 
-    exports.removeRecursively = exports.remove = function(successCallback, errorCallback, args) {
+    exports.removeRecursively = exports.remove = function (successCallback, errorCallback, args) {
         var fullPath = args[0];
 
         // TODO: This doesn't protect against directories that have content in it.
         // Should throw an error instead if the dirEntry is not empty.
-        idb_['delete'](fullPath, function() {
+        idb_['delete'](fullPath, function () {
             successCallback();
         }, errorCallback);
     };
 
-    exports.getDirectory = function(successCallback, errorCallback, args) {
+    exports.getDirectory = function (successCallback, errorCallback, args) {
         var fullPath = args[0];
         var path = args[1];
         var options = args[2];
@@ -305,7 +304,7 @@ QUIRKS:
         // Create an absolute path if we were handed a relative one.
         path = resolveToFullPath_(fullPath, path);
 
-        idb_.get(path.storagePath, function(folderEntry) {
+        idb_.get(path.storagePath, function (folderEntry) {
             if (!options) {
                 options = {};
             }
@@ -361,7 +360,7 @@ QUIRKS:
         }, errorCallback);
     };
 
-    exports.getParent = function(successCallback, errorCallback, args) {
+    exports.getParent = function (successCallback, errorCallback, args) {
         var fullPath = args[0];
 
         if (fullPath === DIR_SEPARATOR) {
@@ -377,18 +376,18 @@ QUIRKS:
         exports.getDirectory(successCallback, errorCallback, [path, namesa, {create: false}]);
     };
 
-    exports.copyTo = function(successCallback, errorCallback, args) {
+    exports.copyTo = function (successCallback, errorCallback, args) {
         var srcPath = args[0];
         var parentFullPath = args[1];
         var name = args[2];
 
         // Read src file
-        exports.getFile(function(srcFileEntry) {
+        exports.getFile(function (srcFileEntry) {
 
             // Create dest file
-            exports.getFile(function(dstFileEntry) {
+            exports.getFile(function (dstFileEntry) {
 
-                exports.write(function() {
+                exports.write(function () {
                     successCallback(dstFileEntry);
                 }, errorCallback, [dstFileEntry.file_.storagePath, srcFileEntry.file_.blob_, 0]);
 
@@ -397,10 +396,10 @@ QUIRKS:
         }, errorCallback, [srcPath, null]);
     };
 
-    exports.moveTo = function(successCallback, errorCallback, args) {
+    exports.moveTo = function (successCallback, errorCallback, args) {
         var srcPath = args[0];
-        //var parentFullPath = args[1];
-        //var name = args[2];
+        // var parentFullPath = args[1];
+        // var name = args[2];
 
         exports.copyTo(function (fileEntry) {
 
@@ -411,44 +410,44 @@ QUIRKS:
         }, errorCallback, args);
     };
 
-    exports.resolveLocalFileSystemURI = function(successCallback, errorCallback, args) {
+    exports.resolveLocalFileSystemURI = function (successCallback, errorCallback, args) {
         var path = args[0];
 
         // Ignore parameters
         if (path.indexOf('?') !== -1) {
-            path = String(path).split("?")[0];
+            path = String(path).split('?')[0];
         }
 
         // support for encodeURI
-        if (/\%5/g.test(path)) {
+        if (/\%5/g.test(path)) { // eslint-disable-line no-useless-escape
             path = decodeURI(path);
         }
 
         if (path.indexOf(pathsPrefix.dataDirectory) === 0) {
             path = path.substring(pathsPrefix.dataDirectory.length - 1);
 
-            exports.requestFileSystem(function(fs) {
-                fs.root.getFile(path, {create: false}, successCallback, function() {
+            exports.requestFileSystem(function (fs) {
+                fs.root.getFile(path, {create: false}, successCallback, function () {
                     fs.root.getDirectory(path, {create: false}, successCallback, errorCallback);
                 });
             }, errorCallback, [LocalFileSystem.PERSISTENT]);
         } else if (path.indexOf(pathsPrefix.cacheDirectory) === 0) {
             path = path.substring(pathsPrefix.cacheDirectory.length - 1);
 
-            exports.requestFileSystem(function(fs) {
-                fs.root.getFile(path, {create: false}, successCallback, function() {
+            exports.requestFileSystem(function (fs) {
+                fs.root.getFile(path, {create: false}, successCallback, function () {
                     fs.root.getDirectory(path, {create: false}, successCallback, errorCallback);
                 });
             }, errorCallback, [LocalFileSystem.TEMPORARY]);
         } else if (path.indexOf(pathsPrefix.applicationDirectory) === 0) {
             path = path.substring(pathsPrefix.applicationDirectory.length);
 
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", path, true);
+            var xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
+            xhr.open('GET', path, true);
             xhr.onreadystatechange = function () {
                 if (xhr.status === 200 && xhr.readyState === 4) {
-                    exports.requestFileSystem(function(fs) {
-                        fs.name = location.hostname;
+                    exports.requestFileSystem(function (fs) {
+                        fs.name = location.hostname; // eslint-disable-line no-undef
                         fs.root.getFile(path, {create: true}, writeFile, errorCallback);
                     }, errorCallback, [LocalFileSystem.PERSISTENT]);
                 }
@@ -467,11 +466,11 @@ QUIRKS:
             }
         }
 
-        function writeFile(entry) {
+        function writeFile (entry) {
             entry.createWriter(function (fileWriter) {
                 fileWriter.onwriteend = function (evt) {
                     if (!evt.target.error) {
-                        entry.filesystemName = location.hostname;
+                        entry.filesystemName = location.hostname; // eslint-disable-line no-undef
                         successCallback(entry);
                     }
                 };
@@ -480,16 +479,16 @@ QUIRKS:
                         errorCallback(FileError.NOT_READABLE_ERR);
                     }
                 };
-                fileWriter.write(new Blob([xhr.response]));
+                fileWriter.write(new Blob([xhr.response])); // eslint-disable-line no-undef
             }, errorCallback);
         }
     };
 
-    exports.requestAllPaths = function(successCallback) {
+    exports.requestAllPaths = function (successCallback) {
         successCallback(pathsPrefix);
     };
 
-/*** Helpers ***/
+/** * Helpers ***/
 
     /**
      * Interface to wrap the native File interface.
@@ -502,8 +501,8 @@ QUIRKS:
      * @param {Object} opts Initial values.
      * @constructor
      */
-    function MyFile(opts) {
-        var blob_ = new Blob();
+    function MyFile (opts) {
+        var blob_ = new Blob(); // eslint-disable-line no-undef
 
         this.size = opts.size || 0;
         this.name = opts.name || '';
@@ -515,10 +514,10 @@ QUIRKS:
         // blob that is saved.
         Object.defineProperty(this, 'blob_', {
             enumerable: true,
-            get: function() {
+            get: function () {
                 return blob_;
             },
-            set: function(val) {
+            set: function (val) {
                 blob_ = val;
                 this.size = blob_.size;
                 this.name = blob_.name;
@@ -533,21 +532,22 @@ QUIRKS:
     // When saving an entry, the fullPath should always lead with a slash and never
     // end with one (e.g. a directory). Also, resolve '.' and '..' to an absolute
     // one. This method ensures path is legit!
-    function resolveToFullPath_(cwdFullPath, path) {
+    function resolveToFullPath_ (cwdFullPath, path) {
         path = path || '';
         var fullPath = path;
         var prefix = '';
 
         cwdFullPath = cwdFullPath || DIR_SEPARATOR;
+        /* eslint-disable no-undef */
         if (cwdFullPath.indexOf(FILESYSTEM_PREFIX) === 0) {
             prefix = cwdFullPath.substring(0, cwdFullPath.indexOf(DIR_SEPARATOR, FILESYSTEM_PREFIX.length));
             cwdFullPath = cwdFullPath.substring(cwdFullPath.indexOf(DIR_SEPARATOR, FILESYSTEM_PREFIX.length));
         }
-
+        /* eslint-enable no-undef */
         var relativePath = path[0] !== DIR_SEPARATOR;
         if (relativePath) {
             fullPath = cwdFullPath;
-            if (cwdFullPath != DIR_SEPARATOR) {
+            if (cwdFullPath !== DIR_SEPARATOR) {
                 fullPath += DIR_SEPARATOR + path;
             } else {
                 fullPath += path;
@@ -558,12 +558,12 @@ QUIRKS:
         var parts = fullPath.split(DIR_SEPARATOR);
         for (var i = 0; i < parts.length; ++i) {
             var part = parts[i];
-            if (part == '..') {
+            if (part === '..') {
                 parts[i - 1] = '';
                 parts[i] = '';
             }
         }
-        fullPath = parts.filter(function(el) {
+        fullPath = parts.filter(function (el) {
             return el;
         }).join(DIR_SEPARATOR);
 
@@ -582,8 +582,8 @@ QUIRKS:
         fullPath = fullPath.replace(/\/\./g, DIR_SEPARATOR);
 
         // Remove '/' if it appears on the end.
-        if (fullPath[fullPath.length - 1] == DIR_SEPARATOR &&
-            fullPath != DIR_SEPARATOR) {
+        if (fullPath[fullPath.length - 1] === DIR_SEPARATOR &&
+            fullPath !== DIR_SEPARATOR) {
             fullPath = fullPath.substring(0, fullPath.length - 1);
         }
 
@@ -595,7 +595,7 @@ QUIRKS:
         };
     }
 
-    function fileEntryFromIdbEntry(fileEntry) {
+    function fileEntryFromIdbEntry (fileEntry) {
         // IDB won't save methods, so we need re-create the FileEntry.
         var clonedFileEntry = new FileEntry(fileEntry.name, fileEntry.fullPath, fileEntry.fileSystem);
         clonedFileEntry.file_ = fileEntry.file_;
@@ -603,46 +603,46 @@ QUIRKS:
         return clonedFileEntry;
     }
 
-    function readAs(what, fullPath, encoding, startPos, endPos, successCallback, errorCallback) {
-        exports.getFile(function(fileEntry) {
-            var fileReader = new FileReader(),
-                blob = fileEntry.file_.blob_.slice(startPos, endPos);
+    function readAs (what, fullPath, encoding, startPos, endPos, successCallback, errorCallback) {
+        exports.getFile(function (fileEntry) {
+            var fileReader = new FileReader(); // eslint-disable-line no-undef
+            var blob = fileEntry.file_.blob_.slice(startPos, endPos);
 
-            fileReader.onload = function(e) {
+            fileReader.onload = function (e) {
                 successCallback(e.target.result);
             };
 
             fileReader.onerror = errorCallback;
 
             switch (what) {
-                case 'text':
-                    fileReader.readAsText(blob, encoding);
-                    break;
-                case 'dataURL':
-                    fileReader.readAsDataURL(blob);
-                    break;
-                case 'arrayBuffer':
-                    fileReader.readAsArrayBuffer(blob);
-                    break;
-                case 'binaryString':
-                    fileReader.readAsBinaryString(blob);
-                    break;
+            case 'text':
+                fileReader.readAsText(blob, encoding);
+                break;
+            case 'dataURL':
+                fileReader.readAsDataURL(blob);
+                break;
+            case 'arrayBuffer':
+                fileReader.readAsArrayBuffer(blob);
+                break;
+            case 'binaryString':
+                fileReader.readAsBinaryString(blob);
+                break;
             }
 
         }, errorCallback, [fullPath, null]);
     }
 
-/*** Core logic to handle IDB operations ***/
+/** * Core logic to handle IDB operations ***/
 
-    idb_.open = function(dbName, successCallback, errorCallback) {
+    idb_.open = function (dbName, successCallback, errorCallback) {
         var self = this;
 
         // TODO: FF 12.0a1 isn't liking a db name with : in it.
-        var request = indexedDB.open(dbName.replace(':', '_')/*, 1 /*version*/);
+        var request = indexedDB.open(dbName.replace(':', '_')/*, 1 /*version */);
 
         request.onerror = errorCallback || onError;
 
-        request.onupgradeneeded = function(e) {
+        request.onupgradeneeded = function (e) {
             // First open was called or higher db version was used.
 
             // console.log('onupgradeneeded: oldVersion:' + e.oldVersion,
@@ -652,11 +652,11 @@ QUIRKS:
             self.db.onerror = onError;
 
             if (!self.db.objectStoreNames.contains(FILE_STORE_)) {
-                self.db.createObjectStore(FILE_STORE_/*,{keyPath: 'id', autoIncrement: true}*/);
+                self.db.createObjectStore(FILE_STORE_/*, {keyPath: 'id', autoIncrement: true} */);
             }
         };
 
-        request.onsuccess = function(e) {
+        request.onsuccess = function (e) {
             self.db = e.target.result;
             self.db.onerror = onError;
             successCallback(e);
@@ -665,12 +665,12 @@ QUIRKS:
         request.onblocked = errorCallback || onError;
     };
 
-    idb_.close = function() {
+    idb_.close = function () {
         this.db.close();
         this.db = null;
     };
 
-    idb_.get = function(fullPath, successCallback, errorCallback) {
+    idb_.get = function (fullPath, successCallback, errorCallback) {
         if (!this.db) {
             if (errorCallback) {
                 errorCallback(FileError.INVALID_MODIFICATION_ERR);
@@ -680,18 +680,18 @@ QUIRKS:
 
         var tx = this.db.transaction([FILE_STORE_], 'readonly');
 
-        //var request = tx.objectStore(FILE_STORE_).get(fullPath);
+        // var request = tx.objectStore(FILE_STORE_).get(fullPath);
         var range = IDBKeyRange.bound(fullPath, fullPath + DIR_OPEN_BOUND,
             false, true);
         var request = tx.objectStore(FILE_STORE_).get(range);
 
         tx.onabort = errorCallback || onError;
-        tx.oncomplete = function(e) {
+        tx.oncomplete = function (e) {
             successCallback(request.result);
         };
     };
 
-    idb_.getAllEntries = function(fullPath, storagePath, successCallback, errorCallback) {
+    idb_.getAllEntries = function (fullPath, storagePath, successCallback, errorCallback) {
         if (!this.db) {
             if (errorCallback) {
                 errorCallback(FileError.INVALID_MODIFICATION_ERR);
@@ -710,8 +710,8 @@ QUIRKS:
 
         var tx = this.db.transaction([FILE_STORE_], 'readonly');
         tx.onabort = errorCallback || onError;
-        tx.oncomplete = function(e) {
-            results = results.filter(function(val) {
+        tx.oncomplete = function (e) {
+            results = results.filter(function (val) {
                 var valPartsLen = val.fullPath.split(DIR_SEPARATOR).length;
                 var fullPathPartsLen = fullPath.split(DIR_SEPARATOR).length;
 
@@ -733,7 +733,7 @@ QUIRKS:
 
         var request = tx.objectStore(FILE_STORE_).openCursor(range);
 
-        request.onsuccess = function(e) {
+        request.onsuccess = function (e) {
             var cursor = e.target.result;
             if (cursor) {
                 var val = cursor.value;
@@ -744,7 +744,7 @@ QUIRKS:
         };
     };
 
-    idb_['delete'] = function(fullPath, successCallback, errorCallback) {
+    idb_['delete'] = function (fullPath, successCallback, errorCallback) {
         if (!this.db) {
             if (errorCallback) {
                 errorCallback(FileError.INVALID_MODIFICATION_ERR);
@@ -756,13 +756,13 @@ QUIRKS:
         tx.oncomplete = successCallback;
         tx.onabort = errorCallback || onError;
 
-        //var request = tx.objectStore(FILE_STORE_).delete(fullPath);
+        // var request = tx.objectStore(FILE_STORE_).delete(fullPath);
         var range = IDBKeyRange.bound(
             fullPath, fullPath + DIR_OPEN_BOUND, false, true);
         tx.objectStore(FILE_STORE_)['delete'](range);
     };
 
-    idb_.put = function(entry, storagePath, successCallback, errorCallback) {
+    idb_.put = function (entry, storagePath, successCallback, errorCallback) {
         if (!this.db) {
             if (errorCallback) {
                 errorCallback(FileError.INVALID_MODIFICATION_ERR);
@@ -772,7 +772,7 @@ QUIRKS:
 
         var tx = this.db.transaction([FILE_STORE_], 'readwrite');
         tx.onabort = errorCallback || onError;
-        tx.oncomplete = function(e) {
+        tx.oncomplete = function (e) {
             // TODO: Error is thrown if we pass the request event back instead.
             successCallback(entry);
         };
@@ -781,14 +781,14 @@ QUIRKS:
     };
 
     // Global error handler. Errors bubble from request, to transaction, to db.
-    function onError(e) {
+    function onError (e) {
         switch (e.target.errorCode) {
-            case 12:
-                console.log('Error - Attempt to open db with a lower version than the ' +
+        case 12:
+            console.log('Error - Attempt to open db with a lower version than the ' +
                     'current one.');
-                break;
-            default:
-                console.log('errorCode: ' + e.target.errorCode);
+            break;
+        default:
+            console.log('errorCode: ' + e.target.errorCode);
         }
 
         console.log(e, e.code, e.message);
@@ -802,4 +802,4 @@ QUIRKS:
 
 })(module.exports, window);
 
-require("cordova/exec/proxy").add("File", module.exports);
+require('cordova/exec/proxy').add('File', module.exports);

@@ -19,9 +19,9 @@
  *
 */
 
-/* 
+/*
  * removeRecursively
- * 
+ *
  * IN:
  *  args
  *   0 - URL of DirectoryEntry to remove recursively
@@ -30,33 +30,35 @@
  *  fail - FileError
  */
 
-var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy'),
-    requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame');
+/* eslint-disable no-undef */
+var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy');
+var requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame');
+/* eslint-enable no-undef */
 
 module.exports = function (success, fail, args) {
-    var uri = args[0],
-        onSuccess = function (data) {
-            if (typeof success === 'function') {
-                success(data);
-            }
-        },
-        onFail = function (error) {
-            if (typeof fail === 'function') {
-                if (error.code) {
-                    if (error.code === FileError.INVALID_MODIFICATION_ERR) {
-                        //mobile-spec expects this error code
-                        fail(FileError.NO_MODIFICATION_ALLOWED_ERR);
-                    } else {
-                        fail(error.code);
-                    }
+    var uri = args[0];
+    var onSuccess = function (data) {
+        if (typeof success === 'function') {
+            success(data);
+        }
+    };
+    var onFail = function (error) {
+        if (typeof fail === 'function') {
+            if (error.code) {
+                if (error.code === FileError.INVALID_MODIFICATION_ERR) { // eslint-disable-line no-undef
+                    // mobile-spec expects this error code
+                    fail(FileError.NO_MODIFICATION_ALLOWED_ERR); // eslint-disable-line no-undef
                 } else {
-                    fail(error);
+                    fail(error.code);
                 }
+            } else {
+                fail(error);
             }
-        };
+        }
+    };
     resolve(function (fs) {
         requestAnimationFrame(function () {
             fs.nativeEntry.removeRecursively(onSuccess, onFail);
-        }); 
+        });
     }, fail, [uri]);
 };

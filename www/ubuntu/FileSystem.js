@@ -19,16 +19,15 @@
  *
 */
 
-FILESYSTEM_PROTOCOL = "cdvfile";
+FILESYSTEM_PROTOCOL = 'cdvfile'; // eslint-disable-line no-undef
 
 module.exports = {
-    __format__: function(fullPath) {
+    __format__: function (fullPath) {
         if (this.name === 'content') {
             return 'content:/' + fullPath;
         }
-        var path = ('/' + this.name + (fullPath[0] === '/' ? '' : '/') + FileSystem.encodeURIPath(fullPath)).replace('//','/');
+        var path = ('/' + this.name + (fullPath[0] === '/' ? '' : '/') + FileSystem.encodeURIPath(fullPath)).replace('//', '/'); // eslint-disable-line no-undef
 
-        return FILESYSTEM_PROTOCOL + '://localhost' + path;
+        return FILESYSTEM_PROTOCOL + '://localhost' + path; // eslint-disable-line no-undef
     }
 };
-

@@ -22,26 +22,26 @@
 /* global PluginResult */
 
 module.exports = {
-    setSandbox : function (success, fail, args, env) {
-        require("lib/webview").setSandbox(JSON.parse(decodeURIComponent(args[0])));
+    setSandbox: function (success, fail, args, env) {
+        require('lib/webview').setSandbox(JSON.parse(decodeURIComponent(args[0])));
         new PluginResult(args, env).ok();
     },
 
     getHomePath: function (success, fail, args, env) {
-        var homeDir = window.qnx.webplatform.getApplication().getEnv("HOME");
+        var homeDir = window.qnx.webplatform.getApplication().getEnv('HOME');
         new PluginResult(args, env).ok(homeDir);
     },
 
     requestAllPaths: function (success, fail, args, env) {
-        var homeDir = 'file://' + window.qnx.webplatform.getApplication().getEnv("HOME").replace('/data', ''),
-            paths = {
-                applicationDirectory: homeDir + '/app/native/',
-                applicationStorageDirectory: homeDir + '/',
-                dataDirectory: homeDir + '/data/webviews/webfs/persistent/local__0/',
-                cacheDirectory: homeDir + '/data/webviews/webfs/temporary/local__0/',
-                externalRootDirectory: 'file:///accounts/1000/removable/sdcard/',
-                sharedDirectory: homeDir + '/shared/'
-            };
+        var homeDir = 'file://' + window.qnx.webplatform.getApplication().getEnv('HOME').replace('/data', '');
+        var paths = {
+            applicationDirectory: homeDir + '/app/native/',
+            applicationStorageDirectory: homeDir + '/',
+            dataDirectory: homeDir + '/data/webviews/webfs/persistent/local__0/',
+            cacheDirectory: homeDir + '/data/webviews/webfs/temporary/local__0/',
+            externalRootDirectory: 'file:///accounts/1000/removable/sdcard/',
+            sharedDirectory: homeDir + '/shared/'
+        };
         success(paths);
     }
 };

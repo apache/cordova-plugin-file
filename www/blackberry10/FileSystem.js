@@ -21,27 +21,28 @@
 
 /*
  * FileSystem
- * 
+ *
  * Translate temporary / persistent / root file paths
  */
 
-var info = require("cordova-plugin-file.bb10FileSystemInfo");
+var info = require('cordova-plugin-file.bb10FileSystemInfo');
 
 module.exports = {
-    __format__: function(fullPath) {
+    __format__: function (fullPath) {
         var path;
         switch (this.name) {
-            case 'temporary':
-                path = info.temporaryPath + FileSystem.encodeURIPath(fullPath);
-                break;
-            case 'persistent':
-                path = info.persistentPath + FileSystem.encodeURIPath(fullPath);
-                break;
-            case 'root':
-                path = 'file://' + FileSystem.encodeURIPath(fullPath);
-                break;
+        case 'temporary':
+            /* eslint-disable no-undef */
+            path = info.temporaryPath + FileSystem.encodeURIPath(fullPath);
+            break;
+        case 'persistent':
+            path = info.persistentPath + FileSystem.encodeURIPath(fullPath);
+            break;
+        case 'root':
+            path = 'file://' + FileSystem.encodeURIPath(fullPath);
+            /* eslint-enable no-undef */
+            break;
         }
         return path;
     }
 };
-

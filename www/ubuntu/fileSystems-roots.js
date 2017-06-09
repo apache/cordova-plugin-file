@@ -24,8 +24,8 @@ var FileSystem = require('./FileSystem');
 var LocalFileSystem = require('./LocalFileSystem');
 var exec = require('cordova/exec');
 
-var requestFileSystem = function(type, size, successCallback) {
-    var success = function(file_system) {
+var requestFileSystem = function (type, size, successCallback) {
+    var success = function (file_system) {
         if (file_system) {
             if (successCallback) {
                 var fs = new FileSystem(file_system.name, file_system.root);
@@ -33,15 +33,15 @@ var requestFileSystem = function(type, size, successCallback) {
             }
         }
     };
-    exec(success, null, "File", "requestFileSystem", [type, size]);
+    exec(success, null, 'File', 'requestFileSystem', [type, size]);
 };
 
-require('./fileSystems').getFs = function(name, callback) {
+require('./fileSystems').getFs = function (name, callback) {
     if (fsMap) {
         callback(fsMap[name]);
     } else {
-        requestFileSystem(LocalFileSystem.PERSISTENT, 1, function(fs) {
-            requestFileSystem(LocalFileSystem.TEMPORARY, 1, function(tmp) {
+        requestFileSystem(LocalFileSystem.PERSISTENT, 1, function (fs) {
+            requestFileSystem(LocalFileSystem.TEMPORARY, 1, function (tmp) {
                 fsMap = {};
                 fsMap[tmp.name] = tmp;
                 fsMap[fs.name] = fs;
@@ -50,4 +50,3 @@ require('./fileSystems').getFs = function(name, callback) {
         });
     }
 };
-

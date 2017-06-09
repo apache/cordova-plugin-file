@@ -19,9 +19,9 @@
  *
 */
 
-/* 
+/*
  * readAsBinaryString
- * 
+ *
  * IN:
  *  args
  *   0 - URL of file to read
@@ -32,36 +32,38 @@
  *  fail - FileError
  */
 
-var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy'),
-    requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame');
+/* eslint-disable no-undef */
+var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy');
+var requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame');
+/* eslint-enable no-undef */
 
 module.exports = function (success, fail, args) {
-    var uri = args[0],
-        start = args[1],
-        end = args[2],
-        onSuccess = function (data) {
-            if (typeof success === 'function') {
-                success(data);
+    var uri = args[0];
+    var start = args[1];
+    var end = args[2];
+    var onSuccess = function (data) {
+        if (typeof success === 'function') {
+            success(data);
+        }
+    };
+    var onFail = function (error) {
+        if (typeof fail === 'function') {
+            if (error && error.code) {
+                fail(error.code);
+            } else {
+                fail(error);
             }
-        },
-        onFail = function (error) {
-            if (typeof fail === 'function') {
-                if (error && error.code) {
-                    fail(error.code);
-                } else {
-                    fail(error);
-                }
-            }
-        };
+        }
+    };
     resolve(function (fs) {
         requestAnimationFrame(function () {
             fs.nativeEntry.file(function (file) {
-                var reader = new FileReader()._realReader;
+                var reader = new FileReader()._realReader; // eslint-disable-line no-undef
                 reader.onloadend = function () {
                     onSuccess(this.result.substring(start, end));
                 };
                 reader.onerror = onFail;
-                reader.readAsBinaryString(file); 
+                reader.readAsBinaryString(file);
             }, onFail);
         });
     }, fail, [uri]);
