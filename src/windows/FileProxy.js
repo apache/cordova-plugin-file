@@ -751,7 +751,13 @@ module.exports = {
         if (!fs || !validName(path)){
             fail(FileError.ENCODING_ERR);
             return;
-        }           
+        }
+	    
+        //check trailing "/"
+        if (path.length > 1 && path[path.length - 1] === "/") {
+            path = path.substring(0, path.length - 1);
+        }
+	    
         var fspath = sanitize(dirpath +'/'+ path);
         var completePath = sanitize(fs.winpath + fspath);
 
