@@ -22,12 +22,7 @@
     /*global require, exports, module*/
     /*global FILESYSTEM_PREFIX*/
     /*global IDBKeyRange*/
-    /* 20170627 robert.fromont@canterbury.ac.nz: 
-       detect iOS browser, as its indexedDB implementation doesn't support Blobs 
-       nor objects with methods. */
-    /* This from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios/9039885#9039885 */
-    var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    
+
     /* Heavily based on https://github.com/ebidel/idb.filesystem.js */
 
     // For chrome we don't need to implement proxy methods
@@ -254,9 +249,7 @@
             }
 
             exports.getFile(function(fileEntry) {
-		/* 20170627 robert.fromont@canterbury.ac.nz: 
-		   use MyFile.getBlob instead of direct accessor because iOS browser behaviour is different */
-                var blob_ = MyFile.getBlob(fileEntry.file_);
+                var blob_ = fileEntry.file_.blob_;
 
                 if (!blob_) {
                     blob_ = new Blob([data], {type: data.type});
@@ -277,20 +270,15 @@
                 }
 
                 // Set the blob we're writing on this file entry so we can recall it later.
-		/* 20170627 robert.fromont@canterbury.ac.nz:  
-		   use MyFile.setBlob instead of direct accessor because iOS browser behaviour is different
                 fileEntry.file_.blob_ = blob_;
-		*/		
-                MyFile.setBlob(fileEntry.file_, blob_, function() {
-                    fileEntry.file_.lastModifiedDate = new Date() || null;
-                    fileEntry.file_.size = blob_.size;
-                    fileEntry.file_.name = blob_.name;
-                    fileEntry.file_.type = blob_.type;
-		    
-                    idb_.put(fileEntry, fileEntry.file_.storagePath, function() {
-			successCallback(data.size || data.byteLength);
-                    }, errorCallback);
-		});
+                fileEntry.file_.lastModifiedDate = new Date() || null;
+                fileEntry.file_.size = blob_.size;
+                fileEntry.file_.name = blob_.name;
+                fileEntry.file_.type = blob_.type;
+
+                idb_.put(fileEntry, fileEntry.file_.storagePath, function() {
+                    successCallback(data.size || data.byteLength);
+                }, errorCallback);
             }, errorCallback, [fileName, null]);
         };
 
@@ -496,7 +484,7 @@
 
                         exports.write(function() {
                             successCallback(dstFileEntry);
-                        }, errorCallback, [dstFileEntry.file_.storagePath, MyFile.getBlob(srcFileEntry.file_), 0]);
+                        }, errorCallback, [dstFileEntry.file_.storagePath, srcFileEntry.file_.blob_, 0]);
 
                     }, errorCallback, [parentFullPath, name, {create: true}]);
 
@@ -670,15 +658,7 @@
          * @constructor
          */
         function MyFile(opts) {
-	    /* 20170627 robert.fromont@canterbury.ac.nz:
-	       saving Blob doesn't work on iOS browser */
-	    this.blob_ = iOS?null:new Blob();
-
-	    if (iOS) {
-		/* 20170627 robert.fromont@canterbury.ac.nz: 
-		   save the blob as byteArray attribute */		
-		this.byteArray = new Uint8Array();
-	    }
+            var blob_ = new Blob();
 
             this.size = opts.size || 0;
             this.name = opts.name || '';
@@ -686,7 +666,6 @@
             this.lastModifiedDate = opts.lastModifiedDate || null;
             this.storagePath = opts.storagePath || '';
 
-	    /* 20170627 robert.fromont@canterbury.ac.nz: this doesn't work on iOS browser 
             // Need some black magic to correct the object's size/name/type based on the
             // blob that is saved.
             Object.defineProperty(this, 'blob_', {
@@ -702,38 +681,9 @@
                     this.lastModifiedDate = blob_.lastModifiedDate;
                 }.bind(this)
             });
-            */
         }
-	
+
         MyFile.prototype.constructor = MyFile;
-	/* 20170627 robert.fromont@canterbury.ac.nz: 
-	   use getBlob instead of get blob_, so that behaviour can be different for iOS browser */
-	MyFile.getBlob = function(myFile) {
-	    if (!iOS) {
-		return this.blob_;
-	    } else {	    
-		return new Blob([myFile.byteArray], {type: 'application/octet-binary'});
-	    }
-	}
-	/* 20170627 robert.fromont@canterbury.ac.nz: 
-	   use setBlob instead of set blob_, so that behaviour can be different for iOS browser */
-	MyFile.setBlob = function(myFile, val, callback) {
-	    myFile.size = val.size;
-	    myFile.name = val.name;
-	    myFile.type = val.type;
-	    myFile.lastModifiedDate = val.lastModifiedDate;
-	    if (!iOS) {
-		myFile.blob_ = val;
-		if (callback) callback(this);
-	    } else {
-		var reader = new FileReader();
-		reader.onload = function() {
-		    myFile.byteArray = reader.result;
-		    if (callback) callback(this);
-		};
-		reader.readAsArrayBuffer(val);
-	    }
-	}
 
         // When saving an entry, the fullPath should always lead with a slash and never
         // end with one (e.g. a directory). Also, resolve '.' and '..' to an absolute
@@ -819,7 +769,7 @@
         function readAs(what, fullPath, encoding, startPos, endPos, successCallback, errorCallback) {
             exports.getFile(function(fileEntry) {
                 var fileReader = new FileReader(),
-                    blob = MyFile.getBlob(fileEntry.file_).slice(startPos, endPos);
+                    blob = fileEntry.file_.blob_.slice(startPos, endPos);
 
                 fileReader.onload = function(e) {
                     successCallback(e.target.result);
