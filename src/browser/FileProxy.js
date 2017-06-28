@@ -714,7 +714,7 @@
 	    } else {	    
 		return new Blob([myFile.byteArray], {type: 'application/octet-binary'});
 	    }
-	}
+	};
 	/* 20170627 robert.fromont@canterbury.ac.nz: 
 	   use setBlob instead of set blob_, so that behaviour can be different for iOS browser */
 	MyFile.setBlob = function(myFile, val, callback) {
@@ -733,7 +733,7 @@
 		};
 		reader.readAsArrayBuffer(val);
 	    }
-	}
+	};
 
         // When saving an entry, the fullPath should always lead with a slash and never
         // end with one (e.g. a directory). Also, resolve '.' and '..' to an absolute
