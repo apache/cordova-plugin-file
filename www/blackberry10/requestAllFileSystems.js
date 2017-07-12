@@ -39,4 +39,4 @@ module.exports = function (success, fail, args) {
         { filesystemName: 'temporary', name: 'temporary', fullPath: '/', nativeURL: info.temporaryPath + '/' },
         { filesystemName: 'root', name: 'root', fullPath: '/', nativeURL: 'file:///' }
     ]);
-}
+};

@@ -22,7 +22,6 @@
 var exec = require('cordova/exec'),
     modulemapper = require('cordova/modulemapper'),
     utils = require('cordova/utils'),
-    File = require('./File'),
     FileError = require('./FileError'),
     ProgressEvent = require('./ProgressEvent'),
     origFileReader = modulemapper.getOriginalSymbol(window, 'FileReader');
@@ -39,9 +38,18 @@ var FileReader = function() {
     this._readyState = 0;
     this._error = null;
     this._result = null;
+    this._progress = null;
     this._localURL = '';
     this._realReader = origFileReader ? new origFileReader() : {};
 };
+
+/**
+ * Defines the maximum size to read at a time via the native API. The default value is a compromise between
+ * minimizing the overhead of many exec() calls while still reporting progress frequently enough for large files.
+ * (Note attempts to allocate more than a few MB of contiguous memory on the native side are likely to cause
+ * OOM exceptions, while the JS engine seems to have fewer problems managing large strings or ArrayBuffers.)
+ */
+FileReader.READ_CHUNK_SIZE = 256*1024;
 
 // States
 FileReader.EMPTY = 0;
@@ -82,6 +90,7 @@ function initRead(reader, file) {
 
     reader._result = null;
     reader._error = null;
+    reader._progress = 0;
     reader._readyState = FileReader.LOADING;
 
     if (typeof file.localURL == 'string') {
@@ -91,7 +100,91 @@ function initRead(reader, file) {
         return true;
     }
 
-    reader.onloadstart && reader.onloadstart(new ProgressEvent("loadstart", {target:reader}));
+    if (reader.onloadstart) {
+        reader.onloadstart(new ProgressEvent("loadstart", {target:reader}));
+    }
+}
+
+/**
+ * Callback used by the following read* functions to handle incremental or final success.
+ * Must be bound to the FileReader's this along with all but the last parameter,
+ * e.g. readSuccessCallback.bind(this, "readAsText", "UTF-8", offset, totalSize, accumulate)
+ * @param readType The name of the read function to call.
+ * @param encoding Text encoding, or null if this is not a text type read.
+ * @param offset Starting offset of the read.
+ * @param totalSize Total number of bytes or chars to read.
+ * @param accumulate A function that takes the callback result and accumulates it in this._result.
+ * @param r Callback result returned by the last read exec() call, or null to begin reading.
+ */
+function readSuccessCallback(readType, encoding, offset, totalSize, accumulate, r) {
+    if (this._readyState === FileReader.DONE) {
+        return;
+    }
+
+    var CHUNK_SIZE = FileReader.READ_CHUNK_SIZE;
+    if (readType === 'readAsDataURL') {
+        // Windows proxy does not support reading file slices as Data URLs
+        // so read the whole file at once.
+        CHUNK_SIZE = cordova.platformId === 'windows' ? totalSize :
+            // Calculate new chunk size for data URLs to be multiply of 3
+            // Otherwise concatenated base64 chunks won't be valid base64 data
+            FileReader.READ_CHUNK_SIZE - (FileReader.READ_CHUNK_SIZE % 3) + 3;
+    }
+
+    if (typeof r !== "undefined") {
+        accumulate(r);
+        this._progress = Math.min(this._progress + CHUNK_SIZE, totalSize);
+
+        if (typeof this.onprogress === "function") {
+            this.onprogress(new ProgressEvent("progress", {loaded:this._progress, total:totalSize}));
+        }
+    }
+
+    if (typeof r === "undefined" || this._progress < totalSize) {
+        var execArgs = [
+            this._localURL,
+            offset + this._progress,
+            offset + this._progress + Math.min(totalSize - this._progress, CHUNK_SIZE)];
+        if (encoding) {
+            execArgs.splice(1, 0, encoding);
+        }
+        exec(
+            readSuccessCallback.bind(this, readType, encoding, offset, totalSize, accumulate),
+            readFailureCallback.bind(this),
+            "File", readType, execArgs);
+    } else {
+        this._readyState = FileReader.DONE;
+
+        if (typeof this.onload === "function") {
+            this.onload(new ProgressEvent("load", {target:this}));
+        }
+
+        if (typeof this.onloadend === "function") {
+            this.onloadend(new ProgressEvent("loadend", {target:this}));
+        }
+    }
+}
+
+/**
+ * Callback used by the following read* functions to handle errors.
+ * Must be bound to the FileReader's this, e.g. readFailureCallback.bind(this)
+ */
+function readFailureCallback(e) {
+    if (this._readyState === FileReader.DONE) {
+        return;
+    }
+
+    this._readyState = FileReader.DONE;
+    this._result = null;
+    this._error = new FileError(e);
+
+    if (typeof this.onerror === "function") {
+        this.onerror(new ProgressEvent("error", {target:this}));
+    }
+
+    if (typeof this.onloadend === "function") {
+        this.onloadend(new ProgressEvent("loadend", {target:this}));
+    }
 }
 
 /**
@@ -132,60 +225,14 @@ FileReader.prototype.readAsText = function(file, encoding) {
 
     // Default encoding is UTF-8
     var enc = encoding ? encoding : "UTF-8";
-    var me = this;
-    var execArgs = [this._localURL, enc, file.start, file.end];
 
-    // Read file
-    exec(
-        // Success callback
-        function(r) {
-            // If DONE (cancelled), then don't do anything
-            if (me._readyState === FileReader.DONE) {
-                return;
-            }
-
-            // DONE state
-            me._readyState = FileReader.DONE;
-
-            // Save result
-            me._result = r;
-
-            // If onload callback
-            if (typeof me.onload === "function") {
-                me.onload(new ProgressEvent("load", {target:me}));
-            }
-
-            // If onloadend callback
-            if (typeof me.onloadend === "function") {
-                me.onloadend(new ProgressEvent("loadend", {target:me}));
-            }
-        },
-        // Error callback
-        function(e) {
-            // If DONE (cancelled), then don't do anything
-            if (me._readyState === FileReader.DONE) {
-                return;
-            }
-
-            // DONE state
-            me._readyState = FileReader.DONE;
-
-            // null result
-            me._result = null;
-
-            // Save error
-            me._error = new FileError(e);
-
-            // If onerror callback
-            if (typeof me.onerror === "function") {
-                me.onerror(new ProgressEvent("error", {target:me}));
-            }
-
-            // If onloadend callback
-            if (typeof me.onloadend === "function") {
-                me.onloadend(new ProgressEvent("loadend", {target:me}));
-            }
-        }, "File", "readAsText", execArgs);
+    var totalSize = file.end - file.start;
+    readSuccessCallback.bind(this)("readAsText", enc, file.start, totalSize, function(r) {
+        if (this._progress === 0) {
+            this._result = "";
+        }
+        this._result += r;
+    }.bind(this));
 };
 
 
@@ -201,59 +248,15 @@ FileReader.prototype.readAsDataURL = function(file) {
         return this._realReader.readAsDataURL(file);
     }
 
-    var me = this;
-    var execArgs = [this._localURL, file.start, file.end];
-
-    // Read file
-    exec(
-        // Success callback
-        function(r) {
-            // If DONE (cancelled), then don't do anything
-            if (me._readyState === FileReader.DONE) {
-                return;
-            }
-
-            // DONE state
-            me._readyState = FileReader.DONE;
-
-            // Save result
-            me._result = r;
-
-            // If onload callback
-            if (typeof me.onload === "function") {
-                me.onload(new ProgressEvent("load", {target:me}));
-            }
-
-            // If onloadend callback
-            if (typeof me.onloadend === "function") {
-                me.onloadend(new ProgressEvent("loadend", {target:me}));
-            }
-        },
-        // Error callback
-        function(e) {
-            // If DONE (cancelled), then don't do anything
-            if (me._readyState === FileReader.DONE) {
-                return;
-            }
-
-            // DONE state
-            me._readyState = FileReader.DONE;
-
-            me._result = null;
-
-            // Save error
-            me._error = new FileError(e);
-
-            // If onerror callback
-            if (typeof me.onerror === "function") {
-                me.onerror(new ProgressEvent("error", {target:me}));
-            }
-
-            // If onloadend callback
-            if (typeof me.onloadend === "function") {
-                me.onloadend(new ProgressEvent("loadend", {target:me}));
-            }
-        }, "File", "readAsDataURL", execArgs);
+    var totalSize = file.end - file.start;
+    readSuccessCallback.bind(this)("readAsDataURL", null, file.start, totalSize, function(r) {
+        var commaIndex = r.indexOf(',');
+        if (this._progress === 0) {
+            this._result = r;
+        } else {
+            this._result += r.substring(commaIndex + 1);
+        }
+    }.bind(this));
 };
 
 /**
@@ -266,58 +269,13 @@ FileReader.prototype.readAsBinaryString = function(file) {
         return this._realReader.readAsBinaryString(file);
     }
 
-    var me = this;
-    var execArgs = [this._localURL, file.start, file.end];
-
-    // Read file
-    exec(
-        // Success callback
-        function(r) {
-            // If DONE (cancelled), then don't do anything
-            if (me._readyState === FileReader.DONE) {
-                return;
-            }
-
-            // DONE state
-            me._readyState = FileReader.DONE;
-
-            me._result = r;
-
-            // If onload callback
-            if (typeof me.onload === "function") {
-                me.onload(new ProgressEvent("load", {target:me}));
-            }
-
-            // If onloadend callback
-            if (typeof me.onloadend === "function") {
-                me.onloadend(new ProgressEvent("loadend", {target:me}));
-            }
-        },
-        // Error callback
-        function(e) {
-            // If DONE (cancelled), then don't do anything
-            if (me._readyState === FileReader.DONE) {
-                return;
-            }
-
-            // DONE state
-            me._readyState = FileReader.DONE;
-
-            me._result = null;
-
-            // Save error
-            me._error = new FileError(e);
-
-            // If onerror callback
-            if (typeof me.onerror === "function") {
-                me.onerror(new ProgressEvent("error", {target:me}));
-            }
-
-            // If onloadend callback
-            if (typeof me.onloadend === "function") {
-                me.onloadend(new ProgressEvent("loadend", {target:me}));
-            }
-        }, "File", "readAsBinaryString", execArgs);
+    var totalSize = file.end - file.start;
+    readSuccessCallback.bind(this)("readAsBinaryString", null, file.start, totalSize, function(r) {
+        if (this._progress === 0) {
+            this._result = "";
+        }
+        this._result += r;
+    }.bind(this));
 };
 
 /**
@@ -330,61 +288,12 @@ FileReader.prototype.readAsArrayBuffer = function(file) {
         return this._realReader.readAsArrayBuffer(file);
     }
 
-    var me = this;
-    var execArgs = [this._localURL, file.start, file.end];
-
-    // Read file
-    exec(
-        // Success callback
-        function(r) {
-            // If DONE (cancelled), then don't do anything
-            if (me._readyState === FileReader.DONE) {
-                return;
-            }
-
-            // DONE state
-            me._readyState = FileReader.DONE;
-
-            if (r instanceof Array) {
-                r = new Uint8Array(r).buffer;
-            }
-            me._result = r;
-
-            // If onload callback
-            if (typeof me.onload === "function") {
-                me.onload(new ProgressEvent("load", {target:me}));
-            }
-
-            // If onloadend callback
-            if (typeof me.onloadend === "function") {
-                me.onloadend(new ProgressEvent("loadend", {target:me}));
-            }
-        },
-        // Error callback
-        function(e) {
-            // If DONE (cancelled), then don't do anything
-            if (me._readyState === FileReader.DONE) {
-                return;
-            }
-
-            // DONE state
-            me._readyState = FileReader.DONE;
-
-            me._result = null;
-
-            // Save error
-            me._error = new FileError(e);
-
-            // If onerror callback
-            if (typeof me.onerror === "function") {
-                me.onerror(new ProgressEvent("error", {target:me}));
-            }
-
-            // If onloadend callback
-            if (typeof me.onloadend === "function") {
-                me.onloadend(new ProgressEvent("loadend", {target:me}));
-            }
-        }, "File", "readAsArrayBuffer", execArgs);
+    var totalSize = file.end - file.start;
+    readSuccessCallback.bind(this)("readAsArrayBuffer", null, file.start, totalSize, function(r) {
+        var resultArray = (this._progress === 0 ? new Uint8Array(totalSize) : new Uint8Array(this._result));
+        resultArray.set(new Uint8Array(r), this._progress);
+        this._result = resultArray.buffer;
+    }.bind(this));
 };
 
 module.exports = FileReader;

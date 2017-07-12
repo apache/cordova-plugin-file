@@ -19,6 +19,8 @@
  *
  */
 
+/* global IDBKeyRange */
+
 var LocalFileSystem = require('./LocalFileSystem'),
     FileSystem = require('./FileSystem'),
     FileEntry = require('./FileEntry'),
@@ -67,10 +69,12 @@ QUIRKS:
 
     exports.requestFileSystem = function(successCallback, errorCallback, args) {
         var type = args[0];
-        var size = args[1];
+        //var size = args[1];
 
         if (type !== LocalFileSystem.TEMPORARY && type !== LocalFileSystem.PERSISTENT) {
-            errorCallback && errorCallback(FileError.INVALID_MODIFICATION_ERR);
+            if (errorCallback) {
+                errorCallback(FileError.INVALID_MODIFICATION_ERR);
+            }
             return;
         }
 
@@ -206,11 +210,13 @@ QUIRKS:
     exports.write = function(successCallback, errorCallback, args) {
         var fileName = args[0],
             data = args[1],
-            position = args[2],
-            isBinary = args[3];
+            position = args[2];
+            //isBinary = args[3];
 
         if (!data) {
-            errorCallback && errorCallback(FileError.INVALID_MODIFICATION_ERR);
+            if (errorCallback) {
+                errorCallback(FileError.INVALID_MODIFICATION_ERR);
+            }
             return;
         }
 
@@ -393,8 +399,8 @@ QUIRKS:
 
     exports.moveTo = function(successCallback, errorCallback, args) {
         var srcPath = args[0];
-        var parentFullPath = args[1];
-        var name = args[2];
+        //var parentFullPath = args[1];
+        //var name = args[2];
 
         exports.copyTo(function (fileEntry) {
 
@@ -449,12 +455,16 @@ QUIRKS:
             };
 
             xhr.onerror = function () {
-                errorCallback && errorCallback(FileError.NOT_READABLE_ERR);
+                if (errorCallback) {
+                    errorCallback(FileError.NOT_READABLE_ERR);
+                }
             };
 
             xhr.send();
         } else {
-            errorCallback && errorCallback(FileError.NOT_FOUND_ERR);
+            if (errorCallback) {
+                errorCallback(FileError.NOT_FOUND_ERR);
+            }
         }
 
         function writeFile(entry) {
@@ -466,7 +476,9 @@ QUIRKS:
                     }
                 };
                 fileWriter.onerror = function () {
-                    errorCallback && errorCallback(FileError.NOT_READABLE_ERR);
+                    if (errorCallback) {
+                        errorCallback(FileError.NOT_READABLE_ERR);
+                    }
                 };
                 fileWriter.write(new Blob([xhr.response]));
             }, errorCallback);
@@ -640,7 +652,7 @@ QUIRKS:
             self.db.onerror = onError;
 
             if (!self.db.objectStoreNames.contains(FILE_STORE_)) {
-                var store = self.db.createObjectStore(FILE_STORE_/*,{keyPath: 'id', autoIncrement: true}*/);
+                self.db.createObjectStore(FILE_STORE_/*,{keyPath: 'id', autoIncrement: true}*/);
             }
         };
 
@@ -660,7 +672,9 @@ QUIRKS:
 
     idb_.get = function(fullPath, successCallback, errorCallback) {
         if (!this.db) {
-            errorCallback && errorCallback(FileError.INVALID_MODIFICATION_ERR);
+            if (errorCallback) {
+                errorCallback(FileError.INVALID_MODIFICATION_ERR);
+            }
             return;
         }
 
@@ -679,7 +693,9 @@ QUIRKS:
 
     idb_.getAllEntries = function(fullPath, storagePath, successCallback, errorCallback) {
         if (!this.db) {
-            errorCallback && errorCallback(FileError.INVALID_MODIFICATION_ERR);
+            if (errorCallback) {
+                errorCallback(FileError.INVALID_MODIFICATION_ERR);
+            }
             return;
         }
 
@@ -689,7 +705,7 @@ QUIRKS:
             storagePath = storagePath.substring(0, storagePath.length - 1);
         }
 
-        range = IDBKeyRange.bound(
+        var range = IDBKeyRange.bound(
                 storagePath + DIR_SEPARATOR, storagePath + DIR_OPEN_BOUND, false, true);
 
         var tx = this.db.transaction([FILE_STORE_], 'readonly');
@@ -730,7 +746,9 @@ QUIRKS:
 
     idb_['delete'] = function(fullPath, successCallback, errorCallback) {
         if (!this.db) {
-            errorCallback && errorCallback(FileError.INVALID_MODIFICATION_ERR);
+            if (errorCallback) {
+                errorCallback(FileError.INVALID_MODIFICATION_ERR);
+            }
             return;
         }
 
@@ -746,7 +764,9 @@ QUIRKS:
 
     idb_.put = function(entry, storagePath, successCallback, errorCallback) {
         if (!this.db) {
-            errorCallback && errorCallback(FileError.INVALID_MODIFICATION_ERR);
+            if (errorCallback) {
+                errorCallback(FileError.INVALID_MODIFICATION_ERR);
+            }
             return;
         }
 

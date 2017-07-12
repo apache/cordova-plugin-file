@@ -448,7 +448,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     int type = [strType intValue];
     CDVPluginResult* result = nil;
 
-    if (type > self.fileSystems.count) {
+    if (type >= self.fileSystems.count) {
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:NOT_FOUND_ERR];
         NSLog(@"No filesystem of type requested");
     } else {
@@ -797,8 +797,10 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     }
 
     __weak CDVFile* weakSelf = self;
-    [destFs copyFileToURL:destURL withName:newName fromFileSystem:srcFs atURL:srcURL copy:bCopy callback:^(CDVPluginResult* result) {
-        [weakSelf.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+    [self.commandDelegate runInBackground:^ {
+        [destFs copyFileToURL:destURL withName:newName fromFileSystem:srcFs atURL:srcURL copy:bCopy callback:^(CDVPluginResult* result) {
+            [weakSelf.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+        }];
     }];
 
 }

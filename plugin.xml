@@ -21,13 +21,14 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
 xmlns:android="http://schemas.android.com/apk/res/android"
            id="cordova-plugin-file"
-      version="4.1.1-dev">
+      version="4.3.4-dev">
     <name>File</name>
     <description>Cordova File Plugin</description>
     <license>Apache 2.0</license>
     <keywords>cordova,file</keywords>
     <repo>https://git-wip-us.apache.org/repos/asf/cordova-plugin-file.git</repo>
     <issue>https://issues.apache.org/jira/browse/CB/component/12320651</issue>
+    <dependency id="cordova-plugin-compat" version="^1.0.0" />
 
     <js-module src="www/DirectoryEntry.js" name="DirectoryEntry">
         <clobbers target="window.DirectoryEntry" />
@@ -108,8 +109,10 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <runs />
     </js-module>
 
-    <info>
-The Android Persistent storage location now defaults to "Internal". Please check this plugins README to see if you application needs any changes in its config.xml.
+    <!-- android -->
+    <platform name="android">
+        <info>
+The Android Persistent storage location now defaults to "Internal". Please check this plugin's README to see if your application needs any changes in its config.xml.
 
 If this is a new application no changes are required.
 
@@ -118,16 +121,13 @@ If this is an update to an existing application that did not specify an "Android
       "&lt;preference name="AndroidPersistentFileLocation" value="Compatibility" /&gt;"
 
 to config.xml in order for the application to find previously stored files.
-
-    </info>
-
-    <!-- android -->
-    <platform name="android">
+        </info>
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="File" >
                 <param name="android-package" value="org.apache.cordova.file.FileUtils"/>
                 <param name="onload" value="true" />
             </feature>
+            <allow-navigation href="cdvfile:*" />
         </config-file>
 
         <config-file target="AndroidManifest.xml" parent="/*">
@@ -146,7 +146,7 @@ to config.xml in order for the application to find previously stored files.
         <source-file src="src/android/LocalFilesystem.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/ContentFilesystem.java" target-dir="src/org/apache/cordova/file" />
         <source-file src="src/android/AssetFilesystem.java" target-dir="src/org/apache/cordova/file" />
-        <source-file src="src/android/PermissionHelper.java" target-dir="src/org/apache/cordova/file" />
+        <source-file src="src/android/PendingRequests.java" target-dir="src/org/apache/cordova/file" />
 
         <!-- android specific file apis -->
         <js-module src="www/android/FileSystem.js" name="androidFileSystem">
@@ -363,7 +363,7 @@ to config.xml in order for the application to find previously stored files.
     <!-- windows8 -->
     <platform name="windows8">
         <js-module src="src/windows/FileProxy.js" name="FileProxy">
-            <merges target="" />
+            <runs />
         </js-module>
 
         <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
@@ -375,7 +375,7 @@ to config.xml in order for the application to find previously stored files.
     <!-- windows -->
     <platform name="windows">
         <js-module src="src/windows/FileProxy.js" name="FileProxy">
-            <merges target="" />
+            <runs />
         </js-module>
 
         <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">

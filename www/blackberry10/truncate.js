@@ -56,7 +56,7 @@ module.exports = function (success, fail, args) {
             fs.nativeEntry.file(function (file) {
                 var reader = new FileReader()._realReader;
                 reader.onloadend = function () {
-                    var contents = new Uint8Array(this.result).subarray(0, length);
+                    var contents = new Uint8Array(this.result).subarray(0, length),
                         blob = new Blob([contents]);
                     window.requestAnimationFrame(function () {
                         fs.nativeEntry.createWriter(function (fileWriter) {
