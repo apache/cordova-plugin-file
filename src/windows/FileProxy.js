@@ -130,6 +130,7 @@ function validName(name) {
 }
 
 function sanitize(path) {
+    path = decodeURI(path);
     var slashesRE = new RegExp('/{2,}','g');
     var components = path.replace(slashesRE, '/').split(/\/+/);
     // Remove double dots, use old school array iteration instead of RegExp
