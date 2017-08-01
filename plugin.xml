@@ -247,6 +247,11 @@ to config.xml in order for the application to find previously stored files.
 
         <framework src="AssetsLibrary.framework" />
         <framework src="MobileCoreServices.framework" />
+
+        <preference name="PHOTOLIBRARY_USAGE_DESCRIPTION" default=" "/>
+        <config-file target="*-Info.plist" parent="NSPhotoLibraryUsageDescription">
+            <string>$PHOTOLIBRARY_USAGE_DESCRIPTION</string>
+        </config-file>
     </platform>
 
     <!-- osx -->
