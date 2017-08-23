@@ -637,29 +637,33 @@ module.exports = {
         }
         var wpath = cordovaPathToNative(sanitize(fs.winpath + path));
 
-        getFileFromPathAsync(wpath).then(
-            function (storageFile) {
-                Windows.Storage.FileIO.readBufferAsync(storageFile).done(
-                    function (buffer) {
-                        var dataReader = Windows.Storage.Streams.DataReader.fromBuffer(buffer);
-                        // var fileContent = dataReader.readString(buffer.length);
-                        var byteArray = new Uint8Array(buffer.length),
-                            byteString = "";
-                        dataReader.readBytes(byteArray);
-                        dataReader.close();
-                        for (var i = 0; i < byteArray.length; i++) {
-                            var charByte = byteArray[i];
-                            // var charRepresentation = charByte <= 127 ? String.fromCharCode(charByte) : charByte.toString(16);
-                            var charRepresentation = String.fromCharCode(charByte);
-                            byteString += charRepresentation;
-                        }
-                        win(byteString.slice(startPos, endPos));
-                    }
-                );
-            }, function () {
-                fail(FileError.NOT_FOUND_ERR);
+        getFileFromPathAsync(wpath).then(function(file) {
+            return file.openReadAsync();
+        }).then(function (stream) {
+            startPos = (startPos < 0) ? Math.max(stream.size + startPos, 0) : Math.min(stream.size, startPos);
+            endPos = (endPos < 0) ? Math.max(endPos + stream.size, 0) : Math.min(stream.size, endPos);
+            stream.seek(startPos);
+
+            var readSize = endPos - startPos,
+                buffer = new Windows.Storage.Streams.Buffer(readSize);
+
+            return stream.readAsync(buffer, readSize, Windows.Storage.Streams.InputStreamOptions.none);
+        }).done(function(buffer) {
+            var dataReader = Windows.Storage.Streams.DataReader.fromBuffer(buffer);
+            var byteArray = new Uint8Array(buffer.length),
+                byteString = "";
+            dataReader.readBytes(byteArray);
+            dataReader.close();
+            for (var i = 0; i < byteArray.length; i++) {
+                var charByte = byteArray[i];
+                // var charRepresentation = charByte <= 127 ? String.fromCharCode(charByte) : charByte.toString(16);
+                var charRepresentation = String.fromCharCode(charByte);
+                byteString += charRepresentation;
             }
-        );
+            win(byteString);
+        },function() {
+            fail(FileError.NOT_FOUND_ERR);
+        });
     },
 
     readAsArrayBuffer:function(win,fail,args) {
