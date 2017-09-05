@@ -269,8 +269,11 @@ public abstract class Filesystem {
     public void readFileAtURL(LocalFilesystemURL inputURL, long start, long end,
                               ReadFileCallback readFileCallback) throws IOException {
         CordovaResourceApi.OpenForReadResult ofrr = resourceApi.openForRead(toNativeUri(inputURL));
+        long length = ofrr.length;
+        if (length < 0)
+            length = ofrr.inputStream.available();
         if (end < 0) {
-            end = ofrr.length;
+            end = length;
         }
         long numBytesToRead = end - start;
         try {
@@ -278,7 +281,7 @@ public abstract class Filesystem {
                 ofrr.inputStream.skip(start);
             }
             InputStream inputStream = ofrr.inputStream;
-            if (end < ofrr.length) {
+            if (end < length) {
                 inputStream = new LimitedInputStream(inputStream, numBytesToRead);
             }
             readFileCallback.handleData(inputStream, ofrr.mimeType);
