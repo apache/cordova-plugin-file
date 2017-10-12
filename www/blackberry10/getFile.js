@@ -19,7 +19,7 @@
  *
 */
 
-/* 
+/*
  * getFile
  *
  * IN:
@@ -32,24 +32,24 @@
  *  fail - FileError code
  */
 
-var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy');
+var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy'); // eslint-disable-line no-undef
 
 module.exports = function (success, fail, args) {
-    var uri = args[0] === "/" ? "" : args[0] + "/" + args[1],
-        options = args[2],
-        onSuccess = function (entry) {
-            if (typeof(success) === 'function') {
-                success(entry);
-            }
-        },
-        onFail = function (code) {
-            if (typeof(fail) === 'function') {
-                fail(code);
-            }
-        };
+    var uri = args[0] === '/' ? '' : args[0] + '/' + args[1];
+    var options = args[2];
+    var onSuccess = function (entry) {
+        if (typeof (success) === 'function') {
+            success(entry);
+        }
+    };
+    var onFail = function (code) {
+        if (typeof (fail) === 'function') {
+            fail(code);
+        }
+    };
     resolve(function (entry) {
         if (!entry.isFile) {
-            onFail(FileError.TYPE_MISMATCH_ERR);
+            onFail(FileError.TYPE_MISMATCH_ERR); // eslint-disable-line no-undef
         } else {
             onSuccess(entry);
         }

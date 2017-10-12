@@ -19,11 +19,11 @@
  *
 */
 
-/* 
+/*
  * requestFileSystem
  *
  * IN:
- *  args 
+ *  args
  *   0 - type (TEMPORARY = 0, PERSISTENT = 1)
  *   1 - size
  * OUT:
@@ -37,17 +37,17 @@
  *  fail - FileError code
  */
 
-var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy');
+var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy'); // eslint-disable-line no-undef
 
 module.exports = function (success, fail, args) {
-    var fsType = args[0] === 0 ? 'temporary' : 'persistent',
-        size = args[1],
-        onSuccess = function (fs) {
-            var directory = {
-                name: fsType,
-                root: fs
-            };
-            success(directory);
+    var fsType = args[0] === 0 ? 'temporary' : 'persistent';
+    var size = args[1];
+    var onSuccess = function (fs) {
+        var directory = {
+            name: fsType,
+            root: fs
         };
+        success(directory);
+    };
     resolve(onSuccess, fail, ['cdvfile://localhost/' + fsType + '/', undefined, size]);
 };

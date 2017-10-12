@@ -19,9 +19,9 @@
  *
 */
 
-/* 
+/*
  * copyTo
- * 
+ *
  * IN:
  *  args
  *   0 - URL of entry to copy
@@ -33,19 +33,21 @@
  *  fail - FileError
  */
 
-var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy'),
-    requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame');
+/* eslint-disable no-undef */
+var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy');
+var requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame');
+/* eslint-enable no-undef */
 
 module.exports = function (success, fail, args, move) {
-    var uri = args[0],
-        destination = args[1],
-        fileName = args[2],
-        copiedEntry;
+    var uri = args[0];
+    var destination = args[1];
+    var fileName = args[2];
+    var copiedEntry;
 
-    function onSuccess() {
+    function onSuccess () {
         resolve(
             function (entry) {
-                if (typeof(success) === 'function') {
+                if (typeof (success) === 'function') {
                     success(entry);
                 }
             },
@@ -53,14 +55,16 @@ module.exports = function (success, fail, args, move) {
             [destination + copiedEntry.name]
         );
     }
-    function onFail(error) {
-        if (typeof(fail) === 'function') {
+    function onFail (error) {
+        if (typeof (fail) === 'function') {
             if (error && error.code) {
-                //set error codes expected by mobile spec
+                // set error codes expected by mobile spec
+                /* eslint-disable no-undef */
                 if (uri === destination) {
                     fail(FileError.INVALID_MODIFICATION_ERR);
                 } else if (error.code === FileError.SECURITY_ERR) {
                     fail(FileError.INVALID_MODIFICATION_ERR);
+                    /* eslint-enable no-undef */
                 } else {
                     fail(error.code);
                 }
@@ -69,13 +73,13 @@ module.exports = function (success, fail, args, move) {
             }
         }
     }
-    function writeFile(fileEntry, blob, entry) {
+    function writeFile (fileEntry, blob, entry) {
         copiedEntry = fileEntry;
         fileEntry.createWriter(function (fileWriter) {
             fileWriter.onwriteend = function () {
                 if (move) {
                     entry.nativeEntry.remove(onSuccess, function () {
-                        console.error("Move operation failed. Files may exist at both source and destination");
+                        console.error('Move operation failed. Files may exist at both source and destination');
                     });
                 } else {
                     onSuccess();
@@ -85,33 +89,35 @@ module.exports = function (success, fail, args, move) {
             fileWriter.write(blob);
         }, onFail);
     }
-    function copyFile(entry) {
+    function copyFile (entry) {
         if (entry.nativeEntry.file) {
             entry.nativeEntry.file(function (file) {
+                /* eslint-disable no-undef */
                 var reader = new FileReader()._realReader;
                 reader.onloadend = function (e) {
-                    var contents = new Uint8Array(this.result),
-                        blob = new Blob([contents]);
+                    var contents = new Uint8Array(this.result);
+                    var blob = new Blob([contents]);
                     resolve(function (destEntry) {
                         requestAnimationFrame(function () {
                             destEntry.nativeEntry.getFile(fileName, {create: true}, function (fileEntry) {
                                 writeFile(fileEntry, blob, entry);
                             }, onFail);
                         });
-                    }, onFail, [destination]);   
+                    }, onFail, [destination]);
                 };
                 reader.onerror = onFail;
                 reader.readAsArrayBuffer(file);
             }, onFail);
         } else {
             onFail(FileError.INVALID_MODIFICATION_ERR);
+            /* eslint-enable no-undef */
         }
     }
-    function copyDirectory(entry) {
+    function copyDirectory (entry) {
         resolve(function (destEntry) {
             if (entry.filesystemName !== destEntry.filesystemName) {
-                console.error("Copying directories between filesystems is not supported on BB10");
-                onFail(FileError.INVALID_MODIFICATION_ERR);
+                console.error('Copying directories between filesystems is not supported on BB10');
+                onFail(FileError.INVALID_MODIFICATION_ERR); // eslint-disable-line no-undef
             } else {
                 entry.nativeEntry.copyTo(destEntry.nativeEntry, fileName, function () {
                     resolve(function (copiedDir) {
@@ -124,13 +130,13 @@ module.exports = function (success, fail, args, move) {
                     }, onFail, [destination + fileName]);
                 }, onFail);
             }
-        }, onFail, [destination]); 
+        }, onFail, [destination]);
     }
 
     if (destination + fileName === uri) {
-        onFail(FileError.INVALID_MODIFICATION_ERR);
+        onFail(FileError.INVALID_MODIFICATION_ERR); // eslint-disable-line no-undef
     } else if (fileName.indexOf(':') > -1) {
-        onFail(FileError.ENCODING_ERR);
+        onFail(FileError.ENCODING_ERR); // eslint-disable-line no-undef
     } else {
         resolve(function (entry) {
             if (entry.isDirectory) {

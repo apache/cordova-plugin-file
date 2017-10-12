@@ -19,7 +19,7 @@
  *
 */
 
-/* 
+/*
  * info
  *
  * persistentPath - full path to app sandboxed persistent storage
@@ -29,13 +29,13 @@
  */
 
 var info = {
-    persistentPath: "", 
-    temporaryPath: "", 
-    localPath: "",
+    persistentPath: '',
+    temporaryPath: '',
+    localPath: '',
     MAX_SIZE: 64 * 1024 * 1024 * 1024
 };
 
-cordova.exec(
+cordova.exec( // eslint-disable-line no-undef
     function (path) {
         info.persistentPath = 'file://' + path + '/webviews/webfs/persistent/local__0';
         info.temporaryPath = 'file://' + path + '/webviews/webfs/temporary/local__0';

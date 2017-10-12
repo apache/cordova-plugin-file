@@ -19,9 +19,9 @@
  *
 */
 
-/* 
+/*
  * moveTo
- * 
+ *
  * IN:
  *  args
  *   0 - URL of entry to move
@@ -32,7 +32,7 @@
  *  fail - FileError
  */
 
-var copy = cordova.require('cordova-plugin-file.copyToProxy');
+var copy = cordova.require('cordova-plugin-file.copyToProxy'); // eslint-disable-line no-undef
 
 module.exports = function (success, fail, args) {
     copy(success, fail, args, true);

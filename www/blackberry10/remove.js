@@ -19,9 +19,9 @@
  *
 */
 
-/* 
+/*
  * remove
- * 
+ *
  * IN:
  *  args
  *   0 - URL of Entry to remove
@@ -30,29 +30,31 @@
  *  fail - FileError
  */
 
-var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy'),
-    requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame');
+/* eslint-disable no-undef */
+var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy');
+var requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame');
+/* eslint-enable no-undef */
 
 module.exports = function (success, fail, args) {
-    var uri = args[0],
-        onSuccess = function (data) {
-            if (typeof success === 'function') {
-                success(data);
+    var uri = args[0];
+    var onSuccess = function (data) {
+        if (typeof success === 'function') {
+            success(data);
+        }
+    };
+    var onFail = function (error) {
+        if (typeof fail === 'function') {
+            if (error && error.code) {
+                fail(error.code);
+            } else {
+                fail(error);
             }
-        },
-        onFail = function (error) {
-            if (typeof fail === 'function') {
-                if (error && error.code) {
-                    fail(error.code);
-                } else {
-                    fail(error);
-                }
-            }
-        };
+        }
+    };
     resolve(function (fs) {
         requestAnimationFrame(function () {
             if (fs.fullPath === '/') {
-                onFail(FileError.NO_MODIFICATION_ALLOWED_ERR);
+                onFail(FileError.NO_MODIFICATION_ALLOWED_ERR); // eslint-disable-line no-undef
             } else {
                 fs.nativeEntry.remove(onSuccess, onFail);
             }

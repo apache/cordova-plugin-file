@@ -19,9 +19,9 @@
  *
 */
 
-/* 
+/*
  * truncate
- * 
+ *
  * IN:
  *  args
  *   0 - URL of file to truncate
@@ -31,33 +31,37 @@
  *  fail - FileError
  */
 
-var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy'),
-    requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame');
+/* eslint-disable no-undef */
+var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy');
+var requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame');
+/* eslint-enable no-undef */
 
 module.exports = function (success, fail, args) {
-    var uri = args[0],
-        length = args[1],
-        onSuccess = function (data) {
-            if (typeof success === 'function') {
-                success(data.loaded);
+    var uri = args[0];
+    var length = args[1];
+    var onSuccess = function (data) {
+        if (typeof success === 'function') {
+            success(data.loaded);
+        }
+    };
+    var onFail = function (error) {
+        if (typeof fail === 'function') {
+            if (error && error.code) {
+                fail(error.code);
+            } else {
+                fail(error);
             }
-        },
-        onFail = function (error) {
-            if (typeof fail === 'function') {
-                if (error && error.code) {
-                    fail(error.code);
-                } else {
-                    fail(error);
-                }
-            }
-        };
+        }
+    };
     resolve(function (fs) {
         requestAnimationFrame(function () {
             fs.nativeEntry.file(function (file) {
+                /* eslint-disable no-undef */
                 var reader = new FileReader()._realReader;
                 reader.onloadend = function () {
-                    var contents = new Uint8Array(this.result).subarray(0, length),
-                        blob = new Blob([contents]);
+                    var contents = new Uint8Array(this.result).subarray(0, length);
+                    var blob = new Blob([contents]);
+                        /* eslint-enable no-undef */
                     window.requestAnimationFrame(function () {
                         fs.nativeEntry.createWriter(function (fileWriter) {
                             fileWriter.onwriteend = onSuccess;

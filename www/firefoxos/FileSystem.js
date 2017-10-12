@@ -18,12 +18,11 @@
  * under the License.
  *
 */
-
-FILESYSTEM_PREFIX = "file:///";
+/* eslint no-undef : 0 */
+FILESYSTEM_PREFIX = 'file:///';
 
 module.exports = {
-    __format__: function(fullPath) {
+    __format__: function (fullPath) {
         return (FILESYSTEM_PREFIX + this.name + (fullPath[0] === '/' ? '' : '/') + FileSystem.encodeURIPath(fullPath));
     }
 };
-

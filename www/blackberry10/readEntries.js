@@ -19,9 +19,9 @@
  *
 */
 
-/* 
+/*
  * readEntries
- * 
+ *
  * IN:
  *  args
  *   0 - URL of directory to list
@@ -30,40 +30,42 @@
  *  fail - FileError
  */
 
-var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy'),
-    requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame'),
-    createEntryFromNative = cordova.require('cordova-plugin-file.bb10CreateEntryFromNative');
+/* eslint-disable no-undef */
+var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy');
+var requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame');
+var createEntryFromNative = cordova.require('cordova-plugin-file.bb10CreateEntryFromNative');
+/* eslint-enable no-undef */
 
 module.exports = function (success, fail, args) {
-    var uri = args[0],
-        onSuccess = function (data) {
-            if (typeof success === 'function') {
-                success(data);
+    var uri = args[0];
+    var onSuccess = function (data) {
+        if (typeof success === 'function') {
+            success(data);
+        }
+    };
+    var onFail = function (error) {
+        if (typeof fail === 'function') {
+            if (error.code) {
+                fail(error.code);
+            } else {
+                fail(error);
             }
-        },
-        onFail = function (error) {
-            if (typeof fail === 'function') {
-                if (error.code) {
-                    fail(error.code);
-                } else {
-                    fail(error);
-                }
-            }
-        };
+        }
+    };
     resolve(function (fs) {
         requestAnimationFrame(function () {
-            var reader = fs.nativeEntry.createReader(),
-                entries = [],
-                readEntries = function() {
-                    reader.readEntries(function (results) {
-                        if (!results.length) {
-                            onSuccess(entries.sort().map(createEntryFromNative));
-                        } else {
-                            entries = entries.concat(Array.prototype.slice.call(results || [], 0));
-                            readEntries();
-                        }
-                    }, onFail);
-                };
+            var reader = fs.nativeEntry.createReader();
+            var entries = [];
+            var readEntries = function () {
+                reader.readEntries(function (results) {
+                    if (!results.length) {
+                        onSuccess(entries.sort().map(createEntryFromNative));
+                    } else {
+                        entries = entries.concat(Array.prototype.slice.call(results || [], 0));
+                        readEntries();
+                    }
+                }, onFail);
+            };
             readEntries();
         });
     }, fail, [uri]);

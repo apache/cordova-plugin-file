@@ -19,9 +19,9 @@
  *
 */
 
-/* 
+/*
  * getDirectory
- * 
+ *
  * IN:
  *  args
  *   0 - local filesytem URI for the base directory to search
@@ -31,41 +31,44 @@
  *  success - DirectoryEntry
  *  fail - FileError code
  */
-
-var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy'),
-    requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame');
+/* eslint-disable no-undef */
+var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy');
+var requestAnimationFrame = cordova.require('cordova-plugin-file.bb10RequestAnimationFrame');
+/* eslint-enable no-undef */
 
 module.exports = function (success, fail, args) {
-    var uri = args[0] === "/" ? "" : args[0],
-        dir = args[1],
-        options = args[2],
-        onSuccess = function (entry) {
-            if (typeof(success) === 'function') {
-                success(entry);
-            }
-        },
-        onFail = function (error) {
-            if (typeof(fail) === 'function') {
-                if (error && error.code) {
-                    //set error codes expected by mobile-spec tests
-                    if (error.code === FileError.INVALID_MODIFICATION_ERR  && options.exclusive) {
-                        fail(FileError.PATH_EXISTS_ERR);
-                    } else if ( error.code === FileError.NOT_FOUND_ERR && dir.indexOf(':') > 0) {
-                        fail(FileError.ENCODING_ERR);
-                    } else {
-                        fail(error.code);
-                    }
+    var uri = args[0] === '/' ? '' : args[0];
+    var dir = args[1];
+    var options = args[2];
+    var onSuccess = function (entry) {
+        if (typeof (success) === 'function') {
+            success(entry);
+        }
+    };
+    var onFail = function (error) {
+        if (typeof (fail) === 'function') {
+            if (error && error.code) {
+                /* eslint-disable no-undef */
+                // set error codes expected by mobile-spec tests
+                if (error.code === FileError.INVALID_MODIFICATION_ERR && options.exclusive) {
+                    fail(FileError.PATH_EXISTS_ERR);
+                } else if (error.code === FileError.NOT_FOUND_ERR && dir.indexOf(':') > 0) {
+                    fail(FileError.ENCODING_ERR);
                 } else {
-                    fail(error);
+                    /* eslint-enable no-undef */
+                    fail(error.code);
                 }
+            } else {
+                fail(error);
             }
-        };
+        }
+    };
     resolve(function (entry) {
         requestAnimationFrame(function () {
             entry.nativeEntry.getDirectory(dir, options, function (nativeEntry) {
                 resolve(function (entry) {
                     onSuccess(entry);
-                }, onFail, [uri + "/" + dir]);
+                }, onFail, [uri + '/' + dir]);
             }, onFail);
         });
     }, onFail, [uri]);

@@ -19,7 +19,7 @@
  *
 */
 
-/* 
+/*
  * getMetadata
  *
  * IN:
@@ -30,24 +30,24 @@
  *  fail - FileError code
  */
 
-var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy');
+var resolve = cordova.require('cordova-plugin-file.resolveLocalFileSystemURIProxy'); // eslint-disable-line no-undef
 
 module.exports = function (success, fail, args) {
-    var uri = args[0],
-        onSuccess = function (entry) {
-            if (typeof(success) === 'function') {
-                success(entry);
+    var uri = args[0];
+    var onSuccess = function (entry) {
+        if (typeof (success) === 'function') {
+            success(entry);
+        }
+    };
+    var onFail = function (error) {
+        if (typeof (fail) === 'function') {
+            if (error.code) {
+                fail(error.code);
+            } else {
+                fail(error);
             }
-        },
-        onFail = function (error) {
-            if (typeof(fail) === 'function') {
-                if (error.code) {
-                    fail(error.code);
-                } else {
-                    fail(error);
-                }
-            }
-        };
+        }
+    };
     resolve(function (entry) {
         entry.nativeEntry.getMetadata(onSuccess, onFail);
     }, onFail, [uri]);

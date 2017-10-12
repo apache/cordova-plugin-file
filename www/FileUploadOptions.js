@@ -29,7 +29,7 @@
  * @param headers {Object}   Keys are header names, values are header values. Multiple
  *                           headers of the same name are not supported.
  */
-var FileUploadOptions = function(fileKey, fileName, mimeType, params, headers, httpMethod) {
+var FileUploadOptions = function (fileKey, fileName, mimeType, params, headers, httpMethod) {
     this.fileKey = fileKey || null;
     this.fileName = fileName || null;
     this.mimeType = mimeType || null;
