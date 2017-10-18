@@ -28,7 +28,10 @@ xmlns:android="http://schemas.android.com/apk/res/android"
     <keywords>cordova,file</keywords>
     <repo>https://git-wip-us.apache.org/repos/asf/cordova-plugin-file.git</repo>
     <issue>https://issues.apache.org/jira/browse/CB/component/12320651</issue>
-    <dependency id="cordova-plugin-compat" version="^1.0.0" />
+
+    <engines>
+        <engine name="cordova-android" version=">=6.3.0" />
+    </engines>
 
     <js-module src="www/DirectoryEntry.js" name="DirectoryEntry">
         <clobbers target="window.DirectoryEntry" />
