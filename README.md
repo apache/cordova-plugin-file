@@ -66,14 +66,9 @@ Report issues on the [Apache Cordova issue tracker](https://issues.apache.org/ji
 
 ## Supported Platforms
 
-- Amazon Fire OS
 - Android
-- BlackBerry 10
-- Firefox OS
 - iOS
 - OS X
-- Windows Phone 7 and 8*
-- Windows 8*
 - Windows*
 - Browser
 
@@ -184,19 +179,6 @@ the `cordova.file.*` properties map to physical paths on a real device.
 
 **Note**: If external storage can't be mounted, the `cordova.file.external*`
 properties are `null`.
-
-### BlackBerry 10 File System Layout
-
-| Device Path                                                  | `cordova.file.*`            | r/w? | persistent? | OS clears | private |
-|:-------------------------------------------------------------|:----------------------------|:----:|:-----------:|:---------:|:-------:|
-| `file:///accounts/1000/appdata/<app id>/`                    | applicationStorageDirectory | r    |     N/A     |     N/A   |   Yes   |
-| &nbsp;&nbsp;&nbsp;`app/native`                               | applicationDirectory        | r    |     N/A     |     N/A   |   Yes   |
-| &nbsp;&nbsp;&nbsp;`data/webviews/webfs/temporary/local__0`   | cacheDirectory              | r/w  |     No      |     Yes   |   Yes   |
-| &nbsp;&nbsp;&nbsp;`data/webviews/webfs/persistent/local__0`  | dataDirectory               | r/w  |     Yes     |     No    |   Yes   |
-| `file:///accounts/1000/removable/sdcard`                     | externalRemovableDirectory  | r/w  |     Yes     |     No    |   No    |
-| `file:///accounts/1000/shared`                               | sharedDirectory             | r/w  |     Yes     |     No    |   No    |
-
-*Note*: When application is deployed to work perimeter, all paths are relative to /accounts/1000-enterprise.
 
 ### OS X File System Layout
 
@@ -328,21 +310,6 @@ unable to access their previously-stored files.
 
 If your application is new, or has never previously stored files in the
 persistent filesystem, then the `Library` setting is generally recommended.
-
-## Firefox OS Quirks
-
-The File System API is not natively supported by Firefox OS and is implemented
-as a shim on top of indexedDB.
-
-* Does not fail when removing non-empty directories
-* Does not support metadata for directories
-* Methods `copyTo` and `moveTo` do not support directories
-
-The following data paths are supported:
-* `applicationDirectory` - Uses `xhr` to get local files that are packaged with the app.
-* `dataDirectory` - For persistent app-specific data files.
-* `cacheDirectory` - Cached files that should survive app restarts (Apps should not rely
-on the OS to delete files in here).
 
 ## Browser Quirks
 
