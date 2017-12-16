@@ -20,6 +20,9 @@
 -->
 # Release Notes
 
+### 6.0.0 (Dec 15, 2017)
+* [CB-13668](https://issues.apache.org/jira/browse/CB-13668) Remove deprecated platforms
+
 ### 5.0.0 (Nov 06, 2017)
 * [CB-13481](https://issues.apache.org/jira/browse/CB-13481) (android) Don't ask for permission to read `file:///android_asset/`
 * [CB-13518](https://issues.apache.org/jira/browse/CB-13518) Add 'protective' entry to `cordovaDependencies`
