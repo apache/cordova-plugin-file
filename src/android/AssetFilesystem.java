@@ -215,7 +215,7 @@ public class AssetFilesystem extends Filesystem {
         }
 
         // Check whether the supplied path is absolute or relative
-        if (directory && !path.endsWith("/")) {
+        if (directory && !path.endsWith("/") && !"".equals(path)) {
             path += "/";
         }
 
