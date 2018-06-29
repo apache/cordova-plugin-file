@@ -32,7 +32,7 @@ require('./fileSystems').getFs = function (name, callback) {
             var fsRoot = response[i];
             if (fsRoot) {
                 var fs = new FileSystem(fsRoot.filesystemName, fsRoot);
-                fsMap[fs.name] = fs;                    
+                fsMap[fs.name] = fs;
             }
         }
         callback(fsMap[name]);
