@@ -132,8 +132,15 @@ function readSuccessCallback (readType, encoding, offset, totalSize, accumulate,
     }
 
     if (typeof r !== 'undefined') {
-        accumulate(r);
-        this._progress = Math.min(this._progress + CHUNK_SIZE, totalSize);
+        // The native read methods can return either:
+        //   1) An object with properties 'value' and 'numBytesConsumed', or
+        //   2) Just the read value, in which case we assume numBytesConsumed matches the CHUNK_SIZE.
+        // Option 1 gives the native read methods flexibility to read more or fewer bytes as appropriate, e.g. to
+        // accomodate variable length encodings with readAsText.
+        var value = r && typeof r === 'object' && 'value' in r ? r.value : r;
+        var numBytesConsumed = r && typeof r === 'object' && 'numBytesConsumed' in r ? r.numBytesConsumed : CHUNK_SIZE;
+        accumulate(value);
+        this._progress = Math.min(this._progress + numBytesConsumed, totalSize);
 
         if (typeof this.onprogress === 'function') {
             this.onprogress(new ProgressEvent('progress', {loaded: this._progress, total: totalSize}));

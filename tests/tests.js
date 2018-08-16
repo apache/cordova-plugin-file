@@ -2505,6 +2505,25 @@ exports.defineAutoTests = function () {
                     done();
                 }, undefined, undefined, JSON.stringify(testObject));
             });
+            it('file.spec.84.2 should read multi-byte UTF-8 chars across chunk boundaries', function (done) {
+                var oldChunkSize = FileReader.READ_CHUNK_SIZE;
+                FileReader.READ_CHUNK_SIZE = 4;
+                // \u0080    -- 2 bytes in UTF-8
+                // \u0800    -- 3 bytes in UTF-8
+                // \u{10000} -- 4 bytes in UTF-8
+                // For UTF-8 spec, see https://www.unicode.org/versions/Unicode11.0.0/ch03.pdf, search "Table 3-6. UTF-8 Bit Distribution"
+                // A string that exercises 2-, 3-, and 4-byte characters, splitting in all possible
+                // ways across a chunk boundary.
+                var text = '---\u0080---\u0800--\u0800---\u{10000}--\u{10000}-\u{10000}';
+                var doneAndReset = function () {
+                    FileReader.READ_CHUNK_SIZE = oldChunkSize;
+                    done();
+                };
+                runReaderTest('readAsText', false, doneAndReset, null, function (evt) {
+                    expect(evt.target.result).toEqual(text);
+                    doneAndReset();
+                }, undefined, undefined, text);
+            });
             it('file.spec.85 should read file properly, Data URI', function (done) {
                 runReaderTest('readAsDataURL', true, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     /* `readAsDataURL` function is supported, but the mediatype in Chrome depends on entry name extension,
