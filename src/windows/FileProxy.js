@@ -487,6 +487,67 @@ function transport (success, fail, args, ops) { // ["fullPath","parent", "newNam
     );
 }
 
+// Given a stream, a desired endPos, and an encoding, extend the endPos as needed so that the specified
+// chunk ends at a character boundary.
+function extendEndPosForEncoding (stream, endPos, encoding) {
+    if (encoding === Windows.Storage.Streams.UnicodeEncoding.utf8) {
+        // All valid UTF-8 chars are 4 bytes or less. So it suffices to peek at the last 3 bytes
+        // of the desired chunk. If we find a character boundary within that small slice, then
+        // we can extend the chunk endPos accordingly. Otherwise, we'll return the original
+        // endPos unchanged.
+        var startOfPeek = Math.max(endPos - 3, 0);
+        stream.seek(startOfPeek);
+
+        var readSize = endPos - startOfPeek;
+        var buffer = new Windows.Storage.Streams.Buffer(readSize);
+
+        return stream.readAsync(buffer, readSize, Windows.Storage.Streams.InputStreamOptions.none).then(function (buffer) {
+            // Copy from buffer into a Uint8Array to examine individual bytes
+            var bytes = new Uint8Array(buffer.length);
+            var reader = Windows.Storage.Streams.DataReader.fromBuffer(buffer);
+            reader.readBytes(bytes);
+            reader.close();
+
+            // The last index within the bytes array that represents the start of a character.
+            // Start with the last byte in the array, then move backwards until we find a character boundary.
+            var lastCharStart = bytes.length - 1;
+            // Continue looping so long as:
+            //   - We don't extend past beginning of bytes array
+            //   - We don't find the start of a character. In UTF-8, a byte begins a character iff it has a binary prefix other than 10.
+            // For UTF-8 spec, see https://www.unicode.org/versions/Unicode11.0.0/ch03.pdf (search "Table 3-6. UTF-8 Bit Distribution")
+            while (lastCharStart > 0 && (bytes[lastCharStart] & 0xc0) === 0x80) {
+                lastCharStart -= 1;
+            }
+
+            if (lastCharStart < 0) {
+                // Skip reading from bytes array in this case
+            } else if ((bytes[lastCharStart] & 0xe0) === 0xc0) {
+                // Byte has prefix of 110 -> 2 byte char
+                endPos = startOfPeek + lastCharStart + 2;
+            } else if ((bytes[lastCharStart] & 0xf0) === 0xe0) {
+                // Byte has prefix of 1110 -> 3 byte char
+                endPos = startOfPeek + lastCharStart + 3;
+            } else if ((bytes[lastCharStart] & 0xf8) === 0xf0) {
+                // Byte has prefix of 11110 -> 4 byte char
+                endPos = startOfPeek + lastCharStart + 4;
+            }
+            // Anything else: either a single byte char or this must be invalid UTF-8.
+            // Either way, leave original endPos unchanged.
+
+            // Make sure new endPos doesn't go past end of stream.
+            return Math.min(endPos, stream.size);
+        });
+    } else {
+        // Other encodings -> return endPos as is.
+        // TODO: Handle case where an odd endPos is passed for UTF-16?
+        // Since UTF-16 is a fixed-length encoding, this should only come up if consuming
+        // code is passing odd indices to File.prototype.slice or overriding
+        // FileReader.READ_CHUNK_SIZE with an odd value, both of which would suggest that
+        // the consumer knows what it's doing and we should leave it alone.
+        return WinJS.Promise.as(endPos);
+    }
+}
+
 module.exports = {
     requestAllFileSystems: function () {
         return getAllFS();
@@ -593,15 +654,19 @@ module.exports = {
         }).then(function (stream) {
             startPos = (startPos < 0) ? Math.max(stream.size + startPos, 0) : Math.min(stream.size, startPos);
             endPos = (endPos < 0) ? Math.max(endPos + stream.size, 0) : Math.min(stream.size, endPos);
-            stream.seek(startPos);
 
-            var readSize = endPos - startPos;
-            var buffer = new Windows.Storage.Streams.Buffer(readSize);
+            return extendEndPosForEncoding(stream, endPos, encoding).then(function (newEndPos) {
+                stream.seek(startPos);
 
-            return stream.readAsync(buffer, readSize, Windows.Storage.Streams.InputStreamOptions.none);
+                var readSize = newEndPos - startPos;
+                var buffer = new Windows.Storage.Streams.Buffer(readSize);
+
+                return stream.readAsync(buffer, readSize, Windows.Storage.Streams.InputStreamOptions.none);
+            });
         }).done(function (buffer) {
             try {
-                win(Windows.Security.Cryptography.CryptographicBuffer.convertBinaryToString(encoding, buffer));
+                var text = Windows.Security.Cryptography.CryptographicBuffer.convertBinaryToString(encoding, buffer);
+                win({ value: text, numBytesConsumed: buffer.length });
             } catch (e) {
                 fail(FileError.ENCODING_ERR);
             }
