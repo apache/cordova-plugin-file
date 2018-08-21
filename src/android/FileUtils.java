@@ -44,7 +44,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.security.Permission;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,6 +58,15 @@ import java.util.HashSet;
  */
 public class FileUtils extends CordovaPlugin {
     private static final String LOG_TAG = "FileUtils";
+
+    private static final String READ_RESULT_TYPE_TEXT = "TEXT";
+    private static final String READ_RESULT_TYPE_ARRAYBUFFER = "ARRAYBUFFER";
+    private static final String READ_RESULT_TYPE_BINARYSTRING = "BINARYSTRING";
+    private static final String READ_RESULT_TYPE_DATAURL = "DATAURL";
+
+    // Using hard-coded encoding names vs java.nio.StandardCharsets for a lower min SDK version.
+    // java.nio.StandardCharsets requires Android SDK 19+.
+    private static final String ENCODING_UTF_8 = "UTF-8";
 
     public static int NOT_FOUND_ERR = 1;
     public static int SECURITY_ERR = 2;
@@ -314,7 +326,7 @@ public class FileUtils extends CordovaPlugin {
                     int start = args.getInt(2);
                     int end = args.getInt(3);
                     String fname=args.getString(0);
-                    readFileAs(fname, start, end, callbackContext, encoding, PluginResult.MESSAGE_TYPE_STRING);
+                    readFileAs(fname, start, end, callbackContext, encoding, READ_RESULT_TYPE_TEXT);
                 }
             }, rawArgs, callbackContext);
         }
@@ -324,7 +336,7 @@ public class FileUtils extends CordovaPlugin {
                     int start = args.getInt(1);
                     int end = args.getInt(2);
                     String fname=args.getString(0);
-                    readFileAs(fname, start, end, callbackContext, null, -1);
+                    readFileAs(fname, start, end, callbackContext, null, READ_RESULT_TYPE_DATAURL);
                 }
             }, rawArgs, callbackContext);
         }
@@ -334,7 +346,7 @@ public class FileUtils extends CordovaPlugin {
                     int start = args.getInt(1);
                     int end = args.getInt(2);
                     String fname=args.getString(0);
-                    readFileAs(fname, start, end, callbackContext, null, PluginResult.MESSAGE_TYPE_ARRAYBUFFER);
+                    readFileAs(fname, start, end, callbackContext, null, READ_RESULT_TYPE_ARRAYBUFFER);
                 }
             }, rawArgs, callbackContext);
         }
@@ -344,7 +356,7 @@ public class FileUtils extends CordovaPlugin {
                     int start = args.getInt(1);
                     int end = args.getInt(2);
                     String fname=args.getString(0);
-                    readFileAs(fname, start, end, callbackContext, null, PluginResult.MESSAGE_TYPE_BINARYSTRING);
+                    readFileAs(fname, start, end, callbackContext, null, READ_RESULT_TYPE_BINARYSTRING);
                 }
             }, rawArgs, callbackContext);
         }
@@ -1056,7 +1068,7 @@ public class FileUtils extends CordovaPlugin {
      * @param resultType        The desired type of data to send to the callback.
      * @return                  Contents of file.
      */
-    public void readFileAs(final String srcURLstr, final int start, final int end, final CallbackContext callbackContext, final String encoding, final int resultType) throws MalformedURLException {
+    public void readFileAs(final String srcURLstr, final int start, final int end, final CallbackContext callbackContext, final String encoding, final String resultType) throws MalformedURLException {
         try {
         	LocalFilesystemURL inputURL = LocalFilesystemURL.parse(srcURLstr);
         	Filesystem fs = this.filesystemForURL(inputURL);
@@ -1064,10 +1076,20 @@ public class FileUtils extends CordovaPlugin {
         		throw new MalformedURLException("No installed handlers for this URL");
         	}
 
-            fs.readFileAtURL(inputURL, start, end, new Filesystem.ReadFileCallback() {
+            Charset charset = READ_RESULT_TYPE_TEXT.equals(resultType) ? lookupCharset(encoding) : null;
+            // Canonical encoding name to abstract away insignificant differences in the passed encoding, e.g. UTF-8 vs utf8 vs utf-8
+            String canonicalEncoding = charset == null ? null : charset.name();
+
+            // For text reads, have to handle chunking and variable-length encoding (e.g. UTF-8)
+            // Handle the start offset strictly, but extend the end offset as needed to prevent splitting multi-byte characters.
+            int extendedEnd = READ_RESULT_TYPE_TEXT.equals(resultType) && end > 0 && end > start ?
+                extendTextSelectionEnd(end, canonicalEncoding) : end;
+            // NOTE: extendedEnd could extend past the end of the file.
+            // We're relying on our Filesystem class to be able to handle that.
+            fs.readFileAtURL(inputURL, start, extendedEnd, new Filesystem.ReadFileCallback() {
                 public void handleData(InputStream inputStream, String contentType) {
             		try {
-                        ByteArrayOutputStream os = new ByteArrayOutputStream();
+                        InspectableByteArrayOutputStream os = new InspectableByteArrayOutputStream();
                         final int BUFFER_SIZE = 8192;
                         byte[] buffer = new byte[BUFFER_SIZE];
 
@@ -1082,15 +1104,30 @@ public class FileUtils extends CordovaPlugin {
 
             			PluginResult result;
             			switch (resultType) {
-            			case PluginResult.MESSAGE_TYPE_STRING:
-                            result = new PluginResult(PluginResult.Status.OK, os.toString(encoding));
+            			case READ_RESULT_TYPE_TEXT:
+                            int length = end > 0 && end > start ? numBytesToDecode(os, end - start, canonicalEncoding) : os.size();
+                            // The output stream might contain more bytes than we want to decode, so we can't use
+                            // its toString(String charsetName) method. Instead wrap in a ByteBuffer to specify
+                            // the number of bytes to decode.
+                            String decoded = charset.decode(ByteBuffer.wrap(os.rawBytes(), 0, length)).toString();
+                            JSONObject msg = null;
+                            try {
+                                msg = new JSONObject()
+                                    .put("value", decoded)
+                                    .put("numBytesConsumed", length);
+                            } catch (JSONException e) {
+                                // Unreachable. Provided keys will never be null and provided values (String, int) will always be valid.
+                                LOG.d(LOG_TAG, e.getLocalizedMessage());
+                            }
+                            result = new PluginResult(PluginResult.Status.OK, msg);
             				break;
-            			case PluginResult.MESSAGE_TYPE_ARRAYBUFFER:
+            			case READ_RESULT_TYPE_ARRAYBUFFER:
                             result = new PluginResult(PluginResult.Status.OK, os.toByteArray());
             				break;
-            			case PluginResult.MESSAGE_TYPE_BINARYSTRING:
+            			case READ_RESULT_TYPE_BINARYSTRING:
                             result = new PluginResult(PluginResult.Status.OK, os.toByteArray(), true);
             				break;
+                        case READ_RESULT_TYPE_DATAURL:
             			default: // Base64.
                         byte[] base64 = Base64.encode(os.toByteArray(), Base64.NO_WRAP);
             			String s = "data:" + contentType + ";base64," + new String(base64, "US-ASCII");
@@ -1118,6 +1155,99 @@ public class FileUtils extends CordovaPlugin {
         }
     }
 
+    private Charset lookupCharset(final String encoding) throws IOException {
+        try {
+            return Charset.forName(encoding);
+        } catch (IllegalArgumentException e) {
+            // Convert to UnsupportedEncodingException, the same exception type thrown by other common ways of decoding text, e.g.
+            // new String(byte[] bytes, String charsetName) -- https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#String-byte:A-java.lang.String-
+            // ByteArrayOutputStream.toString(String charsetName) -- https://docs.oracle.com/javase/8/docs/api/java/io/ByteArrayOutputStream.html#toString-java.lang.String-
+            throw new UnsupportedEncodingException(String.format("Unsupported encoding '%s'", encoding));
+        }
+    }
+
+    // Extend the end offset passed to readFileAtURL to accomodate multi-byte characters when chunking.
+    // This determines how many extra bytes to read. We'll determine how many of these bytes to actually decode below.
+    private int extendTextSelectionEnd(final int end, final String canonicalEncoding) {
+        if (ENCODING_UTF_8.equals(canonicalEncoding)) {
+            // All valid UTF-8 chars are 4 bytes or less, so never have to look ahead more than 3 chars to find a
+            // character boundary.
+            return end + 3;
+        } else {
+            // Fallback to leaving specified range unchanged.
+            return end;
+        }
+    }
+
+    private int numBytesToDecode(final InspectableByteArrayOutputStream os, int desired, final String canonicalEncoding) {
+        if (desired > os.size()) {
+            // Never extend past end of buffer
+            return os.size();
+        } else if (desired == 0) {
+            // Don't try to extend if desired length is 0 (no way characters could be split)
+            return desired;
+        } else if (ENCODING_UTF_8.equals(canonicalEncoding)) {
+            byte[] bytes = os.rawBytes();
+
+            // The last index within the buffer that represents the start of a character.
+            // Start with the last byte in the desired range, then move backwards until we find a character boundary.
+            int lastCharStart = desired - 1;
+            // Continue looping so long as:
+            //   - We don't extend past beginning of buffer
+            //   - We don't examine more than 3 bytes, since valid UTF-8 characters are never more than 4 bytes
+            //   - We don't find the start of a character. In UTF-8, a byte begins a character iff it has a binary prefix other than 10.
+            // For UTF-8 spec, see https://www.unicode.org/versions/Unicode11.0.0/ch03.pdf (search "Table 3-6. UTF-8 Bit Distribution")
+            while (lastCharStart > 0 && lastCharStart > desired - 4 && (bytes[lastCharStart] & 0xc0) == 0x80) {
+                lastCharStart -= 1;
+            }
+            if ((bytes[lastCharStart] & 0xe0) == 0xc0) {
+                // Byte has prefix of 110 -> 2 byte char
+                desired = lastCharStart + 2;
+            } else if ((bytes[lastCharStart] & 0xf0) == 0xe0) {
+                // Byte has prefix of 1110 -> 3 byte char
+                desired = lastCharStart + 3;
+            } else if ((bytes[lastCharStart] & 0xf8) == 0xf0) {
+                // Byte has prefix of 11110 -> 4 byte char
+                desired = lastCharStart + 4;
+            }
+            // Anything else: Possibilities are
+            //   - Single-byte char, OR,
+            //   - Last 3 bytes of a 4-byte char, OR
+            //   - Invalid UTF-8
+            // In all those case, we'll leave the desired length unchanged.
+
+            // Once again, need to make sure we don't read past end of buffer
+            return Math.min(desired, os.size());
+        } else {
+            // Other encodings -> return desired length unchanged.
+            // TODO: Handle case where an odd desired length is passed for UTF-16?
+            // Since UTF-16 is a fixed-length encoding, this should only come up if consuming
+            // code is passing odd indices to File.prototype.slice or overriding
+            // FileReader.READ_CHUNK_SIZE with an odd value, both of which would suggest that
+            // the consumer knows what it's doing and we should leave it alone.
+            return desired;
+        }
+    }
+
+    // A ByteArrayOutputStream that allows "inspecting" its internal buffer.
+    // This simplifies support for variable-length encodings.
+    private static class InspectableByteArrayOutputStream extends ByteArrayOutputStream {
+        public InspectableByteArrayOutputStream() {
+            super();
+        }
+
+        public InspectableByteArrayOutputStream(int size) {
+            super(size);
+        }
+
+        // CAUTION: This is an internal, resizable buffer. Consuming code cannot assume that
+        // the entire returned buffer has been written to. In general, the returned buffer is
+        // at least as large as this.size(), and only the first this.size() bytes represent real data.
+        // Use the size method to determine how many bytes to read.
+        public byte[] rawBytes() {
+            return buf;
+        }
+    }
 
     /**
      * Write contents of file.

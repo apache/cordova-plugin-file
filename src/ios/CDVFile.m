@@ -923,7 +923,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         uint8_t *lastCharStart = start + desired - 1;
         // Continue looping so long as:
         //   - We don't extend past beginning of buffer
-        //   - We don't examine more than 4 bytes, since valid UTF-8 characters are never more than 4 bytes
+        //   - We don't examine more than 3 bytes, since valid UTF-8 characters are never more than 4 bytes
         //   - We don't find the start of a character. In UTF-8, a byte begins a character iff it has a binary prefix other than 10.
         // For UTF-8 spec, see https://www.unicode.org/versions/Unicode11.0.0/ch03.pdf (search "Table 3-6. UTF-8 Bit Distribution")
         while (lastCharStart > start && lastCharStart > start + desired - 4 && (*lastCharStart & 0xc0) == 0x80) {
@@ -939,8 +939,11 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
             // Byte has prefix of 11110 -> 4 byte char
             desired = lastCharStart - start + 4;
         }
-        // Anything else: either a single byte char or this must be invalid UTF-8.
-        // Either way, leave desired length unchanged.
+        // Anything else: Possibilities are
+        //   - Single-byte char, OR,
+        //   - Last 3 bytes of a 4-byte char, OR
+        //   - Invalid UTF-8
+        // In all those case, we'll leave the desired length unchanged.
 
         // Once again, need to make sure we don't read past end of buffer
         return desired > [data length] ? [data length] : desired;

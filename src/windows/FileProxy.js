@@ -531,8 +531,11 @@ function extendEndPosForEncoding (stream, endPos, encoding) {
                 // Byte has prefix of 11110 -> 4 byte char
                 endPos = startOfPeek + lastCharStart + 4;
             }
-            // Anything else: either a single byte char or this must be invalid UTF-8.
-            // Either way, leave original endPos unchanged.
+            // Anything else: Possibilities are
+            //   - Single-byte char, OR,
+            //   - Last 3 bytes of a 4-byte char, OR
+            //   - Invalid UTF-8
+            // In all those case, we'll leave the original endPos unchanged.
 
             // Make sure new endPos doesn't go past end of stream.
             return Math.min(endPos, stream.size);
