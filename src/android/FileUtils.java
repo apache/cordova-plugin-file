@@ -59,10 +59,10 @@ import java.util.HashSet;
 public class FileUtils extends CordovaPlugin {
     private static final String LOG_TAG = "FileUtils";
 
-    private static final String READ_RESULT_TYPE_TEXT = "TEXT";
-    private static final String READ_RESULT_TYPE_ARRAYBUFFER = "ARRAYBUFFER";
-    private static final String READ_RESULT_TYPE_BINARYSTRING = "BINARYSTRING";
-    private static final String READ_RESULT_TYPE_DATAURL = "DATAURL";
+    private static final int READ_RESULT_TYPE_TEXT = 0;
+    private static final int READ_RESULT_TYPE_ARRAYBUFFER = 10;
+    private static final int READ_RESULT_TYPE_BINARYSTRING = 20;
+    private static final int READ_RESULT_TYPE_DATAURL = 30;
 
     // Using hard-coded encoding names vs java.nio.StandardCharsets for a lower min SDK version.
     // java.nio.StandardCharsets requires Android SDK 19+.
@@ -1068,7 +1068,7 @@ public class FileUtils extends CordovaPlugin {
      * @param resultType        The desired type of data to send to the callback.
      * @return                  Contents of file.
      */
-    public void readFileAs(final String srcURLstr, final int start, final int end, final CallbackContext callbackContext, final String encoding, final String resultType) throws MalformedURLException {
+    public void readFileAs(final String srcURLstr, final int start, final int end, final CallbackContext callbackContext, final String encoding, final int resultType) throws MalformedURLException {
         try {
         	LocalFilesystemURL inputURL = LocalFilesystemURL.parse(srcURLstr);
         	Filesystem fs = this.filesystemForURL(inputURL);
@@ -1076,13 +1076,13 @@ public class FileUtils extends CordovaPlugin {
         		throw new MalformedURLException("No installed handlers for this URL");
         	}
 
-            Charset charset = READ_RESULT_TYPE_TEXT.equals(resultType) ? lookupCharset(encoding) : null;
+            final Charset charset = READ_RESULT_TYPE_TEXT == resultType ? lookupCharset(encoding) : null;
             // Canonical encoding name to abstract away insignificant differences in the passed encoding, e.g. UTF-8 vs utf8 vs utf-8
-            String canonicalEncoding = charset == null ? null : charset.name();
+            final String canonicalEncoding = charset == null ? null : charset.name();
 
             // For text reads, have to handle chunking and variable-length encoding (e.g. UTF-8)
             // Handle the start offset strictly, but extend the end offset as needed to prevent splitting multi-byte characters.
-            int extendedEnd = READ_RESULT_TYPE_TEXT.equals(resultType) && end > 0 && end > start ?
+            int extendedEnd = READ_RESULT_TYPE_TEXT == resultType && end > 0 && end > start ?
                 extendTextSelectionEnd(end, canonicalEncoding) : end;
             // NOTE: extendedEnd could extend past the end of the file.
             // We're relying on our Filesystem class to be able to handle that.
