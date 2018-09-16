@@ -24,11 +24,11 @@
  *
  * {Date} modificationTime (readonly)
  */
-var Metadata = function(metadata) {
-    if (typeof metadata == "object") {
+var Metadata = function (metadata) {
+    if (typeof metadata === 'object') {
         this.modificationTime = new Date(metadata.modificationTime);
         this.size = metadata.size || 0;
-    } else if (typeof metadata == "undefined") {
+    } else if (typeof metadata === 'undefined') {
         this.modificationTime = null;
         this.size = 0;
     } else {

@@ -98,7 +98,9 @@ public class ContentFilesystem extends Filesystem {
 			// Was seeing this on the File mobile-spec tests on 4.0.3 x86 emulator.
 			// The ContentResolver applies only when the file was registered in the
 			// first case, which is generally only the case with images.
-            throw new NoModificationAllowedException("Deleting not supported for content uri: " + contentUri);
+            NoModificationAllowedException nmae = new NoModificationAllowedException("Deleting not supported for content uri: " + contentUri);
+            nmae.initCause(t);
+            throw nmae;
 		}
         return true;
 	}
@@ -122,18 +124,23 @@ public class ContentFilesystem extends Filesystem {
         String mimeType = resourceApi.getMimeType(nativeUri);
         Cursor cursor = openCursorForURL(nativeUri);
         try {
-        	if (cursor != null && cursor.moveToFirst()) {
-        		size = resourceSizeForCursor(cursor);
+            if (cursor != null && cursor.moveToFirst()) {
+                Long sizeForCursor = resourceSizeForCursor(cursor);
+                if (sizeForCursor != null) {
+                    size = sizeForCursor.longValue();
+                }
                 Long modified = lastModifiedDateForCursor(cursor);
                 if (modified != null)
                     lastModified = modified.longValue();
-        	} else {
+            } else {
                 // Some content providers don't support cursors at all!
                 CordovaResourceApi.OpenForReadResult offr = resourceApi.openForRead(nativeUri);
-    			size = offr.length;
-        	}
+                size = offr.length;
+            }
         } catch (IOException e) {
-            throw new FileNotFoundException();
+            FileNotFoundException fnfe = new FileNotFoundException();
+            fnfe.initCause(e);
+            throw fnfe;
         } finally {
         	if (cursor != null)
         		cursor.close();
