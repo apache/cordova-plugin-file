@@ -510,7 +510,7 @@ filesystems to be installed. By default, all file-system roots are enabled.
 * `cache-external`: The application's external cache directory
 * `assets`: The application's bundle (read-only)
 * `root`: The entire device filesystem
-
+* `applicationDirectory`: ReadOnly with restricted access. Copying files in this directory is possible, but reading it directly results in 'file not found'.
 Android also supports a special filesystem named "documents", which represents a "/Documents/" subdirectory within the "files" filesystem.
 
 ### iOS
