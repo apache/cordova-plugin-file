@@ -21,14 +21,17 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
 xmlns:android="http://schemas.android.com/apk/res/android"
            id="cordova-plugin-file"
-      version="4.3.4-dev">
+      version="6.0.2-dev">
     <name>File</name>
     <description>Cordova File Plugin</description>
     <license>Apache 2.0</license>
     <keywords>cordova,file</keywords>
     <repo>https://git-wip-us.apache.org/repos/asf/cordova-plugin-file.git</repo>
     <issue>https://issues.apache.org/jira/browse/CB/component/12320651</issue>
-    <dependency id="cordova-plugin-compat" version="^1.0.0" />
+
+    <engines>
+        <engine name="cordova-android" version=">=6.3.0" />
+    </engines>
 
     <js-module src="www/DirectoryEntry.js" name="DirectoryEntry">
         <clobbers target="window.DirectoryEntry" />
@@ -161,61 +164,6 @@ to config.xml in order for the application to find previously stored files.
         </js-module>
     </platform>
 
-    <!-- amazon-fireos -->
-    <platform name="amazon-fireos">
-        <config-file target="res/xml/config.xml" parent="/*">
-            <feature name="File" >
-                <param name="android-package" value="org.apache.cordova.file.FileUtils"/>
-                <param name="onload" value="true" />
-            </feature>
-        </config-file>
-
-        <config-file target="AndroidManifest.xml" parent="/*">
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-        </config-file>
-
-        <source-file src="src/android/EncodingException.java" target-dir="src/org/apache/cordova/file" />
-        <source-file src="src/android/FileExistsException.java" target-dir="src/org/apache/cordova/file" />
-        <source-file src="src/android/InvalidModificationException.java" target-dir="src/org/apache/cordova/file" />
-        <source-file src="src/android/NoModificationAllowedException.java" target-dir="src/org/apache/cordova/file" />
-        <source-file src="src/android/TypeMismatchException.java" target-dir="src/org/apache/cordova/file" />
-        <source-file src="src/android/FileUtils.java" target-dir="src/org/apache/cordova/file" />
-        <source-file src="src/android/DirectoryManager.java" target-dir="src/org/apache/cordova/file" />
-        <source-file src="src/android/LocalFilesystemURL.java" target-dir="src/org/apache/cordova/file" />
-        <source-file src="src/android/Filesystem.java" target-dir="src/org/apache/cordova/file" />
-        <source-file src="src/android/LocalFilesystem.java" target-dir="src/org/apache/cordova/file" />
-        <source-file src="src/android/ContentFilesystem.java" target-dir="src/org/apache/cordova/file" />
-        <source-file src="src/android/AssetFilesystem.java" target-dir="src/org/apache/cordova/file" />
-
-
-        <!-- android specific file apis -->
-        <js-module src="www/android/FileSystem.js" name="androidFileSystem">
-            <merges target="window.FileSystem" />
-        </js-module>
-        <js-module src="www/fileSystems-roots.js" name="fileSystems-roots">
-            <runs/>
-        </js-module>
-        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
-            <merges target="cordova" />
-            <runs/>
-        </js-module>
-    </platform>
-
-    <!-- ubuntu -->
-    <platform name="ubuntu">
-        <header-file src="src/ubuntu/file.h" />
-        <source-file src="src/ubuntu/file.cpp" />
-        <js-module src="www/ubuntu/FileSystem.js" name="ubuntuFileSystem1">
-            <merges target="window.FileSystem" />
-        </js-module>
-        <js-module src="www/ubuntu/FileWriter.js" name="FileWriter1">
-            <merges target="window.FileWriter" />
-        </js-module>
-        <js-module src="www/ubuntu/fileSystems-roots.js" name="fileSystems-roots">
-            <runs/>
-        </js-module>
-    </platform>
-
     <!-- ios -->
     <platform name="ios">
         <config-file target="config.xml" parent="/*">
@@ -277,101 +225,6 @@ to config.xml in order for the application to find previously stored files.
         </js-module>
     </platform>
 
-    <!-- wp7 -->
-    <platform name="wp7">
-        <config-file target="config.xml" parent="/*">
-            <feature name="File">
-                <param name="wp-package" value="File"/>
-            </feature>
-        </config-file>
-
-        <source-file src="src/wp/File.cs" />
-
-        <!-- wp specific file apis -->
-        <js-module src="www/wp/FileUploadOptions.js" name="FileUploadOptions1">
-            <merges target="window.FileUploadOptions" />
-        </js-module>
-
-    </platform>
-
-    <!-- wp8 -->
-    <platform name="wp8">
-        <config-file target="config.xml" parent="/*">
-            <feature name="File">
-                <param name="wp-package" value="File"/>
-            </feature>
-        </config-file>
-
-        <source-file src="src/wp/File.cs" />
-
-        <!-- wp specific file apis -->
-        <js-module src="www/wp/FileUploadOptions.js" name="FileUploadOptions1">
-            <merges target="window.FileUploadOptions" />
-        </js-module>
-
-    </platform>
-
-    <!-- blackberry10 -->
-    <platform name="blackberry10">
-        <config-file target="www/config.xml" parent="/widget">
-            <feature name="File" value="File" />
-        </config-file>
-        <js-module src="www/blackberry10/FileProxy.js" name="FileProxy" >
-            <runs />
-        </js-module>
-        <js-module src="www/blackberry10/info.js" name="bb10FileSystemInfo">
-            <runs />
-        </js-module>
-        <js-module src="www/blackberry10/createEntryFromNative.js" name="bb10CreateEntryFromNative">
-            <runs />
-        </js-module>
-        <js-module src="www/blackberry10/requestAnimationFrame.js" name="bb10RequestAnimationFrame">
-            <runs />
-        </js-module>
-        <js-module src="www/blackberry10/FileSystem.js" name="bb10FileSystem">
-            <merges target="window.FileSystem" />
-        </js-module>
-        <js-module src="www/fileSystems-roots.js" name="fileSystems-roots">
-            <runs/>
-        </js-module>
-        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
-            <merges target="cordova" />
-        </js-module>
-        <js-module src="www/blackberry10/copyTo.js" name="copyToProxy" />
-        <js-module src="www/blackberry10/getDirectory.js" name="getDirectoryProxy" />
-        <js-module src="www/blackberry10/getFile.js" name="getFileProxy" />
-        <js-module src="www/blackberry10/getFileMetadata.js" name="getFileMetadataProxy" />
-        <js-module src="www/blackberry10/getMetadata.js" name="getMetadataProxy" />
-        <js-module src="www/blackberry10/getParent.js" name="getParentProxy" />
-        <js-module src="www/blackberry10/moveTo.js" name="moveToProxy" />
-        <js-module src="www/blackberry10/readAsArrayBuffer.js" name="readAsArrayBufferProxy" />
-        <js-module src="www/blackberry10/readAsBinaryString.js" name="readAsBinaryStringProxy" />
-        <js-module src="www/blackberry10/readAsDataURL.js" name="readAsDataURLProxy" />
-        <js-module src="www/blackberry10/readAsText.js" name="readAsTextProxy" />
-        <js-module src="www/blackberry10/readEntries.js" name="readEntriesProxy" />
-        <js-module src="www/blackberry10/remove.js" name="removeProxy" />
-        <js-module src="www/blackberry10/removeRecursively.js" name="removeRecursivelyProxy" />
-        <js-module src="www/blackberry10/resolveLocalFileSystemURI.js" name="resolveLocalFileSystemURIProxy" />
-        <js-module src="www/blackberry10/requestAllFileSystems.js" name="requestAllFileSystemsProxy" />
-        <js-module src="www/blackberry10/requestFileSystem.js" name="requestFileSystemProxy" />
-        <js-module src="www/blackberry10/setMetadata.js" name="setMetadataProxy" />
-        <js-module src="www/blackberry10/truncate.js" name="truncateProxy" />
-        <js-module src="www/blackberry10/write.js" name="writeProxy" />
-        <source-file src="src/blackberry10/index.js" target-dir="File" />
-    </platform>
-
-    <!-- windows8 -->
-    <platform name="windows8">
-        <js-module src="src/windows/FileProxy.js" name="FileProxy">
-            <runs />
-        </js-module>
-
-        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
-            <merges target="cordova" />
-            <runs/>
-        </js-module>
-    </platform>
-
     <!-- windows -->
     <platform name="windows">
         <js-module src="src/windows/FileProxy.js" name="FileProxy">
@@ -381,23 +234,6 @@ to config.xml in order for the application to find previously stored files.
         <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
             <merges target="cordova" />
             <runs/>
-        </js-module>
-    </platform>
-
-    <!-- firefox os -->
-    <platform name="firefoxos">
-        <js-module src="src/firefoxos/FileProxy.js" name="FileProxy">
-            <runs />
-        </js-module>
-
-        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
-            <merges target="cordova" />
-            <runs/>
-        </js-module>
-
-        <!-- Firefox OS specific file apis -->
-        <js-module src="www/firefoxos/FileSystem.js" name="firefoxFileSystem">
-            <merges target="window.FileSystem" />
         </js-module>
     </platform>
 

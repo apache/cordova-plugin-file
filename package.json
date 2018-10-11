@@ -1,22 +1,16 @@
 {
   "name": "cordova-plugin-file",
-  "version": "4.3.4-dev",
+  "version": "6.0.2-dev",
   "description": "Cordova File Plugin",
   "types": "./types/index.d.ts",
   "cordova": {
     "id": "cordova-plugin-file",
     "platforms": [
       "android",
-      "amazon-fireos",
-      "ubuntu",
+      "browser",
       "ios",
       "osx",
-      "wp7",
-      "wp8",
-      "blackberry10",
-      "windows8",
-      "windows",
-      "firefoxos"
+      "windows"
     ]
   },
   "repository": {
@@ -31,31 +25,34 @@
     "file",
     "ecosystem:cordova",
     "cordova-android",
-    "cordova-amazon-fireos",
-    "cordova-ubuntu",
+    "cordova-browser",
     "cordova-ios",
     "cordova-osx",
-    "cordova-wp7",
-    "cordova-wp8",
-    "cordova-blackberry10",
-    "cordova-windows8",
-    "cordova-windows",
-    "cordova-firefoxos"
+    "cordova-windows"
   ],
   "scripts": {
-    "test": "npm run jshint",
-    "jshint": "node node_modules/jshint/bin/jshint www && node node_modules/jshint/bin/jshint src && node node_modules/jshint/bin/jshint tests"
+    "test": "npm run eslint",
+    "eslint": "node node_modules/eslint/bin/eslint www && node node_modules/eslint/bin/eslint src && node node_modules/eslint/bin/eslint tests"
   },
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",
   "engines": {
     "cordovaDependencies": {
       "5.0.0": {
+        "cordova-android": ">=6.3.0"
+      },
+      "7.0.0": {
         "cordova": ">100"
       }
     }
   },
   "devDependencies": {
-    "jshint": "^2.6.0"
+    "eslint": "^3.19.0",
+    "eslint-config-semistandard": "^11.0.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.3.0",
+    "eslint-plugin-node": "^5.0.0",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1"
   }
 }

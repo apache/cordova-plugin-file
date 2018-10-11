@@ -22,8 +22,8 @@
 /**
  * FileError
  */
-function FileError(error) {
-  this.code = error || null;
+function FileError (error) {
+    this.code = error || null;
 }
 
 // File error codes
