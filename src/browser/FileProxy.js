@@ -18,12 +18,12 @@
  * under the License.
  *
  */
-(function() {
-    /*global require, exports, module*/
-    /*global FILESYSTEM_PREFIX*/
-    /*global IDBKeyRange*/
-    /* 20170627 robert.fromont@canterbury.ac.nz: 
-       detect iOS browser, as its indexedDB implementation doesn't support Blobs 
+(function () {
+    /* global require, exports, module */
+    /* global FILESYSTEM_PREFIX */
+    /* global IDBKeyRange */
+    /* 20170627 robert.fromont@canterbury.ac.nz:
+       detect iOS browser, as its indexedDB implementation doesn't support Blobs
        nor objects with methods. */
     /* This from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios/9039885#9039885 */
     var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -254,8 +254,8 @@
             }
 
             exports.getFile(function(fileEntry) {
-		/* 20170627 robert.fromont@canterbury.ac.nz: 
-		   use MyFile.getBlob instead of direct accessor because iOS browser behaviour is different */
+                /* 20170627 robert.fromont@canterbury.ac.nz:
+                   use MyFile.getBlob instead of direct accessor because iOS browser behaviour is different */
                 var blob_ = MyFile.getBlob(fileEntry.file_);
 
                 if (!blob_) {
@@ -277,20 +277,20 @@
                 }
 
                 // Set the blob we're writing on this file entry so we can recall it later.
-		/* 20170627 robert.fromont@canterbury.ac.nz:  
-		   use MyFile.setBlob instead of direct accessor because iOS browser behaviour is different
+                /* 20170627 robert.fromont@canterbury.ac.nz:
+                   use MyFile.setBlob instead of direct accessor because iOS browser behaviour is different
                 fileEntry.file_.blob_ = blob_;
-		*/		
-                MyFile.setBlob(fileEntry.file_, blob_, function() {
+                */
+                MyFile.setBlob(fileEntry.file_, blob_, function () {
                     fileEntry.file_.lastModifiedDate = new Date() || null;
                     fileEntry.file_.size = blob_.size;
                     fileEntry.file_.name = blob_.name;
                     fileEntry.file_.type = blob_.type;
-		    
-                    idb_.put(fileEntry, fileEntry.file_.storagePath, function() {
-			successCallback(data.size || data.byteLength);
+
+                    idb_.put(fileEntry, fileEntry.file_.storagePath, function () {
+                        successCallback(data.size || data.byteLength);
                     }, errorCallback);
-		            });
+                });
             }, errorCallback, [fileName, null]);
         };
 
@@ -669,16 +669,16 @@
          * @param {Object} opts Initial values.
          * @constructor
          */
-        function MyFile(opts) {
-	          /* 20170627 robert.fromont@canterbury.ac.nz:
-	             saving Blob doesn't work on iOS browser */
-	          this.blob_ = iOS?null:new Blob();
+        function MyFile (opts) {
+            /* 20170627 robert.fromont@canterbury.ac.nz:
+               saving Blob doesn't work on iOS browser */
+            this.blob_ = iOS ? null : new Blob();
 
-	          if (iOS) {
-		        /* 20170627 robert.fromont@canterbury.ac.nz: 
-		           save the blob as byteArray attribute */		
-    		      this.byteArray = new Uint8Array();
-	          }
+            if (iOS) {
+                  /* 20170627 robert.fromont@canterbury.ac.nz:
+                     save the blob as byteArray attribute */
+                  this.byteArray = new Uint8Array();
+            }
 
             this.size = opts.size || 0;
             this.name = opts.name || '';
@@ -687,34 +687,34 @@
             this.storagePath = opts.storagePath || '';
 
         }
-	
+
         MyFile.prototype.constructor = MyFile;
-        /* 20170627 robert.fromont@canterbury.ac.nz: 
+        /* 20170627 robert.fromont@canterbury.ac.nz:
            use getBlob instead of get blob_, so that behaviour can be different for iOS browser */
         MyFile.getBlob = function(myFile) {
             if (!iOS) {
-        	    return this.blob_;
-            } else {	    
-        	    return new Blob([myFile.byteArray], {type: 'application/octet-binary'});
+                return this.blob_;
+            } else {
+                return new Blob([myFile.byteArray], {type: 'application/octet-binary'});
             }
         };
-        /* 20170627 robert.fromont@canterbury.ac.nz: 
+        /* 20170627 robert.fromont@canterbury.ac.nz:
            use setBlob instead of set blob_, so that behaviour can be different for iOS browser */
-        MyFile.setBlob = function(myFile, val, callback) {
+        MyFile.setBlob = function (myFile, val, callback) {
             myFile.size = val.size;
             myFile.name = val.name;
             myFile.type = val.type;
             myFile.lastModifiedDate = val.lastModifiedDate;
             if (!iOS) {
-        	    myFile.blob_ = val;
-        	    if (callback) callback(this);
+               myFile.blob_ = val;
+               if (callback) callback(this);
             } else {
-        	    var reader = new FileReader();
-        	    reader.onload = function() {
-		             myFile.byteArray = reader.result;
-        	      if (callback) callback(this);
-        	    };
-        	    reader.readAsArrayBuffer(val);
+                var reader = new FileReader();
+                reader.onload = function() {
+	            myFile.byteArray = reader.result;
+                    if (callback) callback(this);
+                };
+                reader.readAsArrayBuffer(val);
             }
         };
 
@@ -799,13 +799,13 @@
             return clonedFileEntry;
         }
 
-        function readAs(what, fullPath, encoding, startPos, endPos, successCallback, errorCallback) {
-            exports.getFile(function(fileEntry) {
+        function readAs (what, fullPath, encoding, startPos, endPos, successCallback, errorCallback) {
+            exports.getFile (function (fileEntry) {
                 var fileReader = new FileReader(),
                     blob = MyFile.getBlob(fileEntry.file_).slice(startPos, endPos);
 
                 fileReader.onload = function (e) {
-                    successCallback(e.target.result);
+                    successCallback (e.target.result);
                 };
 
                 fileReader.onerror = errorCallback;
