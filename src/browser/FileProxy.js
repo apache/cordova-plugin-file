@@ -27,7 +27,7 @@
        nor objects with methods. */
     /* This from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios/9039885#9039885 */
     var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    
+
     /* Heavily based on https://github.com/ebidel/idb.filesystem.js */
 
     // For chrome we don't need to implement proxy methods
@@ -253,7 +253,7 @@
                 data = new Blob([data]); // eslint-disable-line no-undef
             }
 
-            exports.getFile(function(fileEntry) {
+            exports.getFile(function (fileEntry) {
                 /* 20170627 robert.fromont@canterbury.ac.nz:
                    use MyFile.getBlob instead of direct accessor because iOS browser behaviour is different */
                 var blob_ = MyFile.getBlob(fileEntry.file_);
@@ -675,9 +675,9 @@
             this.blob_ = iOS ? null : new Blob();
 
             if (iOS) {
-                  /* 20170627 robert.fromont@canterbury.ac.nz:
-                     save the blob as byteArray attribute */
-                  this.byteArray = new Uint8Array();
+                /* 20170627 robert.fromont@canterbury.ac.nz:
+                   save the blob as byteArray attribute */
+                this.byteArray = new Uint8Array();
             }
 
             this.size = opts.size || 0;
@@ -691,7 +691,7 @@
         MyFile.prototype.constructor = MyFile;
         /* 20170627 robert.fromont@canterbury.ac.nz:
            use getBlob instead of get blob_, so that behaviour can be different for iOS browser */
-        MyFile.getBlob = function(myFile) {
+        MyFile.getBlob = function (myFile) {
             if (!iOS) {
                 return this.blob_;
             } else {
@@ -706,12 +706,12 @@
             myFile.type = val.type;
             myFile.lastModifiedDate = val.lastModifiedDate;
             if (!iOS) {
-               myFile.blob_ = val;
-               if (callback) callback(this);
+                myFile.blob_ = val;
+                if (callback) callback(this);
             } else {
                 var reader = new FileReader();
-                reader.onload = function() {
-	            myFile.byteArray = reader.result;
+                reader.onload = function () {
+                    myFile.byteArray = reader.result;
                     if (callback) callback(this);
                 };
                 reader.readAsArrayBuffer(val);
@@ -800,12 +800,12 @@
         }
 
         function readAs (what, fullPath, encoding, startPos, endPos, successCallback, errorCallback) {
-            exports.getFile (function (fileEntry) {
+            exports.getFile(function (fileEntry) {
                 var fileReader = new FileReader(),
                     blob = MyFile.getBlob(fileEntry.file_).slice(startPos, endPos);
 
                 fileReader.onload = function (e) {
-                    successCallback (e.target.result);
+                    successCallback(e.target.result);
                 };
 
                 fileReader.onerror = errorCallback;
