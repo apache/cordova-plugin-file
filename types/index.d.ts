@@ -373,6 +373,6 @@ interface Cordova {
 
 
 declare enum LocalFileSystem {
-    PERSISTENT=0,
-    TEMPORARY=1
+    PERSISTENT=1,
+    TEMPORARY=0
 }
