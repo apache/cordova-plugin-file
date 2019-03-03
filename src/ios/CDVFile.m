@@ -92,7 +92,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     }
     else if ([[uri scheme] isEqualToString:@"https"] && [uri pathComponents] != nil &&
              [uri pathComponents].count > 2 && [[[uri pathComponents] objectAtIndex:1] isEqualToString:@"cdvfile"]) {
-        return [pathComponents objectAtIndex:2];
+        return [[uri pathComponents] objectAtIndex:2];
     }
     else if ([[uri scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
         return @"assets-library";
