@@ -11,25 +11,25 @@ matrix:
   - env: PLATFORM=browser-firefox
     os: linux
     language: node_js
-    node_js: '4.2'
+    node_js: '8'
   - env: PLATFORM=browser-safari
     os: linux
     language: node_js
-    node_js: '4.2'
+    node_js: '8'
   - env: PLATFORM=browser-edge
     os: linux
     language: node_js
-    node_js: '4.2'
+    node_js: '8'
   - env: PLATFORM=ios-9.3
     os: osx
     osx_image: xcode7.3
     language: node_js
-    node_js: '4.2'
+    node_js: '8'
   - env: PLATFORM=ios-10.0
     os: osx
     osx_image: xcode7.3
     language: node_js
-    node_js: '4.2'
+    node_js: '8'
   - env: PLATFORM=android-4.4
     os: linux
     language: android
