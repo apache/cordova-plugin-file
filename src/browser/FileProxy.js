@@ -22,6 +22,8 @@
     /* global require, exports, module */
     /* global FILESYSTEM_PREFIX */
     /* global IDBKeyRange */
+    /* global FileReader */
+    /* global atob, btoa, Blob */
 
     /* Heavily based on https://github.com/ebidel/idb.filesystem.js */
 
@@ -685,6 +687,41 @@
 
         MyFile.prototype.constructor = MyFile;
 
+        var MyFileHelper = {
+            toJson: function (myFile, success) {
+                /*
+                    Safari private browse mode cannot store Blob object to indexeddb.
+                    Then use pure json object instead of Blob object.
+                */
+                var fr = new FileReader();
+                fr.onload = function (ev) {
+                    var base64 = btoa(String.fromCharCode.apply(null, new Uint8Array(fr.result)));
+                    success({
+                        opt: {
+                            size: myFile.size,
+                            name: myFile.name,
+                            type: myFile.type,
+                            lastModifiedDate: myFile.lastModifiedDate,
+                            storagePath: myFile.storagePath
+                        },
+                        base64: base64
+                    });
+                };
+                fr.readAsArrayBuffer(myFile.blob_);
+            },
+            setBase64: function (myFile, base64) {
+                if (base64) {
+                    var arrayBuffer = (new Uint8Array(
+                        [].map.call(atob(base64), function (c) { return c.charCodeAt(0); })
+                    )).buffer;
+
+                    myFile.blob_ = new Blob([arrayBuffer], { type: myFile.type });
+                } else {
+                    myFile.blob_ = new Blob();
+                }
+            }
+        };
+
         // When saving an entry, the fullPath should always lead with a slash and never
         // end with one (e.g. a directory). Also, resolve '.' and '..' to an absolute
         // one. This method ensures path is legit!
@@ -847,7 +884,17 @@
 
             tx.onabort = errorCallback || onError;
             tx.oncomplete = function () {
-                successCallback(request.result);
+                var entry = request.result;
+                if (entry && entry.file_json) {
+                    /*
+                        Safari private browse mode cannot store Blob object to indexeddb.
+                        Then use pure json object instead of Blob object.
+                    */
+                    entry.file_ = new MyFile(entry.file_json.opt);
+                    MyFileHelper.setBase64(entry.file_, entry.file_json.base64);
+                    delete entry.file_json;
+                }
+                successCallback(entry);
             };
         };
 
@@ -946,7 +993,7 @@
             tx.objectStore(FILE_STORE_)['delete'](fullPath);
         };
 
-        idb_.put = function (entry, storagePath, successCallback, errorCallback) {
+        idb_.put = function (entry, storagePath, successCallback, errorCallback, retry) {
             if (!this.db) {
                 if (errorCallback) {
                     errorCallback(FileError.INVALID_MODIFICATION_ERR);
@@ -961,7 +1008,35 @@
                 successCallback(entry);
             };
 
-            tx.objectStore(FILE_STORE_).put(entry, storagePath);
+            try {
+                tx.objectStore(FILE_STORE_).put(entry, storagePath);
+            } catch (e) {
+                if (e.name === 'DataCloneError') {
+                    tx.oncomplete = null;
+                    /*
+                        Safari private browse mode cannot store Blob object to indexeddb.
+                        Then use pure json object instead of Blob object.
+                    */
+
+                    var successCallback2 = function (entry) {
+                        entry.file_ = new MyFile(entry.file_json.opt);
+                        delete entry.file_json;
+                        successCallback(entry);
+                    };
+
+                    if (!retry) {
+                        if (entry.file_ && entry.file_ instanceof MyFile && entry.file_.blob_) {
+                            MyFileHelper.toJson(entry.file_, function (json) {
+                                entry.file_json = json;
+                                delete entry.file_;
+                                idb_.put(entry, storagePath, successCallback2, errorCallback, true);
+                            });
+                            return;
+                        }
+                    }
+                }
+                throw e;
+            }
         };
 
         // Global error handler. Errors bubble from request, to transaction, to db.
