@@ -48,10 +48,15 @@ matrix:
       <<: *_ios
 
     # many tests with saucelabs
+    - env: PLATFORM=browser-chrome
     - env: PLATFORM=browser-firefox
     - env: PLATFORM=browser-safari
     - env: PLATFORM=browser-edge
 
+    - env: PLATFORM=ios-11.3
+      <<: *_ios
+    - env: PLATFORM=ios-12.0
+      <<: *_ios
     - env: PLATFORM=ios-12.2
       <<: *_ios
 
