@@ -18,7 +18,7 @@
     "url": "https://github.com/apache/cordova-plugin-file"
   },
   "bugs": {
-    "url": "https://issues.apache.org/jira/browse/CB"
+    "url": "https://github.com/apache/cordova-plugin-file/issues"
   },
   "keywords": [
     "cordova",
