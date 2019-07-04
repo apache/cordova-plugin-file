@@ -470,6 +470,7 @@ my_media.play();
 
 #### cdvfile quirks
 - Using `cdvfile://` paths in the DOM is not supported on Windows platform (a path can be converted to native instead).
+- Using `cdvfile://` paths in a WebView that is loaded over https will cause a mixed content error in android. To circumvent this, use `https://cdvfile/` instead, which the browser sees as secure.
 
 
 ## List of Error Codes and Meanings
