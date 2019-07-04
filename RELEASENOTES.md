@@ -7,9 +7,9 @@
 # to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-# 
+#
 # http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -19,6 +19,25 @@
 #
 -->
 # Release Notes
+
+### 6.0.1 (Dec 27, 2017)
+* [CB-13704](https://issues.apache.org/jira/browse/CB-13704) Fix to allow 6.0.0 version install
+
+### 6.0.0 (Dec 15, 2017)
+* [CB-13668](https://issues.apache.org/jira/browse/CB-13668) Remove deprecated platforms
+
+### 5.0.0 (Nov 06, 2017)
+* [CB-13481](https://issues.apache.org/jira/browse/CB-13481) (android) Don't ask for permission to read `file:///android_asset/`
+* [CB-13518](https://issues.apache.org/jira/browse/CB-13518) Add 'protective' entry to `cordovaDependencies`
+* [CB-13472](https://issues.apache.org/jira/browse/CB-13472) (CI) Fixed Travis **Android** builds again
+* [CB-13294](https://issues.apache.org/jira/browse/CB-13294) Remove `cordova-plugin-compat`
+* fixing `README` in use of `window.resolveLocalFileSystemURL`
+* [CB-12895](https://issues.apache.org/jira/browse/CB-12895) setup `eslint` and took out `jshint`
+* [CB-13028](https://issues.apache.org/jira/browse/CB-13028) (CI) **Browser** builds on Travis
+* [CB-13000](https://issues.apache.org/jira/browse/CB-13000) (CI) Speed up **Android** builds
+* [CB-12355](https://issues.apache.org/jira/browse/CB-12355) (iOS) add desciption about the `mimeTypeForFileAtPath` method
+* [CB-12355](https://issues.apache.org/jira/browse/CB-12355) (iOS) fix `FileEntry.file.type`
+* [CB-12847](https://issues.apache.org/jira/browse/CB-12847) added `bugs` entry to `package.json`.
 
 ### 4.3.3 (Apr 27, 2017)
 * [CB-12622](https://issues.apache.org/jira/browse/CB-12622) Added **Android 6.0** build badge to `README`
