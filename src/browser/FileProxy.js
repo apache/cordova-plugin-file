@@ -24,7 +24,7 @@
     /* global IDBKeyRange */
     /* global FileReader */
     /* global atob, btoa, Blob */
-  
+
     /* 20170627 robert.fromont@canterbury.ac.nz:
        detect iOS browser, as its indexedDB implementation doesn't support Blobs
        nor objects with methods. */
@@ -703,19 +703,19 @@
         };
         /* 20170627 robert.fromont@canterbury.ac.nz:
            use setBlob instead of set blob_, so that behaviour can be different for iOS browser */
-        MyFile.setBlob = function (myFile, val, callback) {
+        MyFile.setBlob = function (myFile, val, success) {
             myFile.size = val.size;
             myFile.name = val.name;
             myFile.type = val.type;
             myFile.lastModifiedDate = val.lastModifiedDate;
             if (!iOS) {
                 myFile.blob_ = val;
-                if (callback) callback(this);
+                if (callback) success(this);
             } else {
                 var reader = new FileReader();
                 reader.onload = function () {
                     myFile.byteArray = reader.result;
-                    if (callback) callback(this);
+                    if (callback) success(this);
                 };
                 reader.readAsArrayBuffer(val);
             }
@@ -839,8 +839,8 @@
 
         function readAs (what, fullPath, encoding, startPos, endPos, successCallback, errorCallback) {
             exports.getFile(function (fileEntry) {
-                var fileReader = new FileReader(),
-                    blob = MyFile.getBlob(fileEntry.file_).slice(startPos, endPos);
+                var fileReader = new FileReader();
+                var blob = MyFile.getBlob(fileEntry.file_).slice(startPos, endPos);
 
                 fileReader.onload = function (e) {
                     successCallback(e.target.result);
