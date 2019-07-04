@@ -710,12 +710,12 @@
             myFile.lastModifiedDate = val.lastModifiedDate;
             if (!iOS) {
                 myFile.blob_ = val;
-                if (callback) success(this);
+                if (success) success(this);
             } else {
                 var reader = new FileReader();
                 reader.onload = function () {
                     myFile.byteArray = reader.result;
-                    if (callback) success(this);
+                    if (success) success(this);
                 };
                 reader.readAsArrayBuffer(val);
             }
