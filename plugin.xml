@@ -21,13 +21,13 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
 xmlns:android="http://schemas.android.com/apk/res/android"
            id="cordova-plugin-file"
-      version="6.0.2-dev">
+      version="6.0.3-dev">
     <name>File</name>
     <description>Cordova File Plugin</description>
     <license>Apache 2.0</license>
     <keywords>cordova,file</keywords>
-    <repo>https://git-wip-us.apache.org/repos/asf/cordova-plugin-file.git</repo>
-    <issue>https://issues.apache.org/jira/browse/CB/component/12320651</issue>
+    <repo>https://github.com/apache/cordova-plugin-file</repo>
+    <issue>https://github.com/apache/cordova-plugin-file/issues</issue>
 
     <engines>
         <engine name="cordova-android" version=">=6.3.0" />
