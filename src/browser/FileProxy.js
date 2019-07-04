@@ -31,7 +31,6 @@
     /* This from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios/9039885#9039885 */
     var iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-
     /* Heavily based on https://github.com/ebidel/idb.filesystem.js */
 
     // For chrome we don't need to implement proxy methods
