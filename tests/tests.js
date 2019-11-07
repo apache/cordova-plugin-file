@@ -4160,4 +4160,30 @@ exports.defineManualTests = function (contentEl, createActionButton) {
     createActionButton('show-contact-image', function () {
         resolveFsContactImage();
     }, 'contactButton');
+
+    // This tests that we are allowed to navigate to cdvfile:// urls and
+    // that plugins are allowed to 'exec' on cdvfile urls.
+    // For exec details, see Issue 329 https://github.com/apache/cordova-plugin-file/issues/329\
+    div = document.createElement('h2');
+    div.appendChild(document.createTextNode('cdvfile:// url'));
+    div.setAttribute('align', 'center');
+    contentEl.appendChild(div);
+    div = document.createElement('div');
+    div.setAttribute('align', 'center');
+    div.innerHTML = 'clicking this button should re-load the tests page.'
+        + '<br>You should be able to run all the tests successfully after the page re-load.'
+        + '<br>NOTE: This will not work if you are not on file:// url to start.'
+        + '<br>eg. You are using an http server to hot re-load client-side files.';
+    contentEl.appendChild(div);
+    div = document.createElement('div');
+    div.setAttribute('id', 'cdvfilePageTests');
+    div.setAttribute('align', 'center');
+    contentEl.appendChild(div);
+    createActionButton('Navigate to cdvfile:// url', function () {
+        // Get current page's cdvfile Url
+        window.resolveLocalFileSystemURL(window.location.href, function (entry) {
+            var cdvfileUrl = entry.toInternalURL();
+            window.location.href = cdvfileUrl;
+        });
+    }, 'cdvfilePageTests');
 };
