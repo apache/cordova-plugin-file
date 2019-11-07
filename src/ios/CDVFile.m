@@ -194,6 +194,53 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
 
 @synthesize rootDocsPath, appDocsPath, appLibraryPath, appTempPath, userHasAllowed, fileSystems=fileSystems_;
 
+// If the url matches the cdvfile:// format,
+// will return the equivalent file:// url format if possible
+// else, return nil
+- (NSString*)nativeUrlFromCdvfileUrl:(NSURL*) uri
+{
+    // If the url matches the cdvfile format (cdvfile://<cdvfile path>)
+    if ([[uri scheme] isEqualToString:kCDVFilesystemURLPrefix]) {
+        NSString *cdvfileUrl = [uri absoluteString];
+        // Try to get the native Url from the cdvfile url
+        if (cdvfileUrl != nil) {
+            CDVFilesystemURL* inputURI = [self fileSystemURLforArg:cdvfileUrl];
+            // If the cdvfile url is valid
+            if (inputURI != nil && inputURI.fileSystemName != nil) {
+                // Get the filesystem
+                NSObject<CDVFileSystem> *fs = [self filesystemForURL:inputURI];
+                if (fs != nil) {
+                    // Get the file Entry
+                    NSDictionary *entry = [fs makeEntryForLocalURL:inputURI];
+                    if (entry != nil) {
+                        // Return the file URL
+                        return [entry objectForKey:@"nativeURL"];
+                    }
+                }
+            }
+        }
+    }
+    return nil;
+}
+// Checks if we are trying to load a url that we should override.
+// If we should override we send out a new load request and
+// return NO to stop loading the original request.
+// Note: When the lowest cordova supported iOS version is 11.0 this can
+// potentially be removed.  WKWebview for iOS 11+ supports WKURLSchemeHandler
+// and setURLSchemeHandler which should allow support for the cdvfile scheme.
+- (BOOL)shouldOverrideLoadWithRequest:(NSURLRequest*)request navigationType:(UIWebViewNavigationType)navigationType
+{
+    // check if the url matches the httpsCdvfileUrl and gets the equivalent file:// url
+    NSString *fileUrl = [self nativeUrlFromCdvfileUrl:[request URL]];
+    if (fileUrl != nil) {
+        // Create a new request for the file:// url instead
+        NSURLRequest *req = [NSURLRequest requestWithURL:[NSURL URLWithString:fileUrl]];
+        [[self webViewEngine] loadRequest:req];
+        return NO;
+    }
+    return YES;
+}
+
 - (void)registerFilesystem:(NSObject<CDVFileSystem> *)fs {
     __weak CDVFile* weakSelf = self;
     SEL sel = NSSelectorFromString(@"urlTransformer");
