@@ -68,14 +68,13 @@
 
         var DIR_SEPARATOR = '/';
 
+        // https://github.com/electron/electron/blob/master/docs/api/app.md#appgetpathname
         var pathsPrefix = {
-            // Read-only directory where the application is installed.
-            applicationDirectory: location.origin + '/', // eslint-disable-line no-undef
-            // Where to put app-specific data files.
-            dataDirectory: 'file:///persistent/',
-            // Cached files that should survive app restarts.
-            // Apps should not rely on the OS to delete files in here.
-            cacheDirectory: 'file:///temporary/'
+            applicationDirectory: app.getAppPath(), // eslint-disable-line no-undef
+            dataDirectory: app.getPath('userData'), // eslint-disable-line no-undef
+            cacheDirectory: app.getPath('cache'), // eslint-disable-line no-undef
+            tempDirectory: app.getPath('temp'), // eslint-disable-line no-undef
+            documentsDirectory: app.getPath('documents'), // eslint-disable-line no-undef
         };
 
         var unicodeLastChar = 65535;
