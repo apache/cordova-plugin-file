@@ -260,17 +260,13 @@ to config.xml in order for the application to find previously stored files.
 
     <!-- electron -->
     <platform name="electron">
-        <js-module src="src/browser/FileProxy.js" name="FileProxy">
+        <js-module src="src/electron/FileProxy.js" name="FileProxy">
             <runs />
         </js-module>
 
         <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
             <merges target="cordova" />
             <runs />
-        </js-module>
-
-        <js-module src="www/browser/FileSystem.js" name="firefoxFileSystem">
-            <merges target="window.FileSystem" />
         </js-module>
     </platform>
 
