@@ -24,7 +24,8 @@
     /* global FileReader */
     /* global atob, btoa, Blob */
 
-    var app = require('electron').app;
+    console.log(global.require('electron'));
+    var app = global.require('electron').app;
     var LocalFileSystem = require('./LocalFileSystem');
     var FileSystem = require('./FileSystem');
     var FileEntry = require('./FileEntry');
