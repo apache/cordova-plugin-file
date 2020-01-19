@@ -48,11 +48,11 @@
 
         // https://github.com/electron/electron/blob/master/docs/api/app.md#appgetpathname
         var pathsPrefix = {
-            applicationDirectory: app.getAppPath(), // eslint-disable-line no-undef
-            dataDirectory: app.getPath('userData'), // eslint-disable-line no-undef
-            cacheDirectory: app.getPath('cache'), // eslint-disable-line no-undef
-            tempDirectory: app.getPath('temp'), // eslint-disable-line no-undef
-            documentsDirectory: app.getPath('documents'), // eslint-disable-line no-undef
+            applicationDirectory: app.getAppPath(),
+            dataDirectory: app.getPath('userData'),
+            cacheDirectory: app.getPath('cache'),
+            tempDirectory: app.getPath('temp'),
+            documentsDirectory: app.getPath('documents')
         };
 
         var unicodeLastChar = 65535;
@@ -888,7 +888,7 @@
                 storagePath = storagePath.substring(0, storagePath.length - 1);
             }
 
-            var range = IDBKeyRange.bound(storagePath + DIR_SEPARATOR + ' ',
+            var range = IDBKeyRange.bound(storagePath + DIR_SEPARATOR + ' ', // eslint-disable-line no-undef
                 storagePath + DIR_SEPARATOR + String.fromCharCode(unicodeLastChar));
 
             var tx = this.db.transaction([FILE_STORE_], 'readonly');
@@ -956,7 +956,7 @@
 
                     // Range contains all entries in the form fullPath<symbol> where
                     // symbol in the range from ' ' to symbol which has code `unicodeLastChar`
-                    var range = IDBKeyRange.bound(fullPath + ' ', fullPath + String.fromCharCode(unicodeLastChar));
+                    var range = IDBKeyRange.bound(fullPath + ' ', fullPath + String.fromCharCode(unicodeLastChar)); // eslint-disable-line no-undef
 
                     var newTx = this.db.transaction([FILE_STORE_], 'readwrite');
                     newTx.oncomplete = successCallback;
