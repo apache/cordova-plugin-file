@@ -260,6 +260,10 @@ to config.xml in order for the application to find previously stored files.
 
     <!-- electron -->
     <platform name="electron">
+        <config-file target="config.xml" parent="/*">
+            <preference name="ElectronSettingsFilePath" value="res/electron/settings.json" />
+        </config-file>
+
         <js-module src="src/electron/FileProxy.js" name="FileProxy">
             <runs />
         </js-module>
