@@ -24,29 +24,6 @@
     /* global FileReader */
     /* global atob, btoa, Blob */
 
-    /* Heavily based on https://github.com/ebidel/idb.filesystem.js */
-
-    // For chrome we don't need to implement proxy methods
-    // All functionality can be accessed natively.
-    if (require('./isChrome')()) {
-        var pathsPrefix = {
-            // Read-only directory where the application is installed.
-            applicationDirectory: location.origin + '/', // eslint-disable-line no-undef
-            // Where to put app-specific data files.
-            dataDirectory: 'filesystem:file:///persistent/',
-            // Cached files that should survive app restarts.
-            // Apps should not rely on the OS to delete files in here.
-            cacheDirectory: 'filesystem:file:///temporary/'
-        };
-
-        exports.requestAllPaths = function (successCallback) {
-            successCallback(pathsPrefix);
-        };
-
-        require('cordova/exec/proxy').add('File', module.exports);
-        return;
-    }
-
     var LocalFileSystem = require('./LocalFileSystem');
     var FileSystem = require('./FileSystem');
     var FileEntry = require('./FileEntry');

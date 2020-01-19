@@ -260,7 +260,7 @@ to config.xml in order for the application to find previously stored files.
 
     <!-- electron -->
     <platform name="electron">
-        <js-module src="src/browser/FileProxy.js" name="browserFileProxy">
+        <js-module src="src/browser/FileProxy.js" name="FileProxy">
             <runs />
         </js-module>
 
