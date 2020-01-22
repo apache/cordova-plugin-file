@@ -26,7 +26,7 @@
 
     if (window.require === undefined) {
         console.error(
-            'Electron Node.js integration is disabled, you can not use cordova-file-plugin without it\n'+
+            'Electron Node.js integration is disabled, you can not use cordova-file-plugin without it\n' +
             'Check docs how to enable Node.js integration: https://cordova.apache.org/docs/en/latest/guide/platforms/electron/#quick-start'
         );
         return;
