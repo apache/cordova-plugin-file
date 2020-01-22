@@ -24,7 +24,15 @@
     /* global FileReader */
     /* global atob, btoa, Blob */
 
-    console.log(global.require('electron'));
+    if (window.require === undefined) {
+        console.error(
+            'Electron Node.js integration is disabled, you can not use cordova-file-plugin without it\n'+
+            'Check docs how to enable Node.js integration: https://cordova.apache.org/docs/en/latest/guide/platforms/electron/#quick-start'
+        );
+        return;
+    }
+
+    console.log(window.require('fs'));
     var app = global.require('electron').app;
     var LocalFileSystem = require('./LocalFileSystem');
     var FileSystem = require('./FileSystem');
