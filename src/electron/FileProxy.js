@@ -32,14 +32,15 @@
         return;
     }
 
-    console.log(window.require('fs'));
-    var app = global.require('electron').app;
-    var LocalFileSystem = require('./LocalFileSystem');
-    var FileSystem = require('./FileSystem');
-    var FileEntry = require('./FileEntry');
-    var FileError = require('./FileError');
-    var DirectoryEntry = require('./DirectoryEntry');
-    var File = require('./File');
+    const fs = window.require('fs');
+    const app = window.require('electron').remote.app;
+
+    const LocalFileSystem = require('./LocalFileSystem');
+    const FileSystem = require('./FileSystem');
+    const FileEntry = require('./FileEntry');
+    const FileError = require('./FileError');
+    const DirectoryEntry = require('./DirectoryEntry');
+    const File = require('./File');
 
     (function (exports, global) {
         var indexedDB = global.indexedDB || global.mozIndexedDB;
@@ -56,7 +57,7 @@
         var DIR_SEPARATOR = '/';
 
         // https://github.com/electron/electron/blob/master/docs/api/app.md#appgetpathname
-        var pathsPrefix = {
+        const pathsPrefix = {
             applicationDirectory: app.getAppPath(),
             dataDirectory: app.getPath('userData'),
             cacheDirectory: app.getPath('cache'),
