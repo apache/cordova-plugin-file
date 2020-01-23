@@ -266,6 +266,8 @@ to config.xml in order for the application to find previously stored files.
             <runs />
         </js-module>
 
+        <js-module src="src/electron/rimraf.js" name="rimraf" />
+
         <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
             <merges target="cordova" />
             <runs />

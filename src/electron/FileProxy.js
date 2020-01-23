@@ -301,23 +301,17 @@
 
         exports.removeRecursively = function (successCallback, errorCallback, args) {
             const fullPath = args[0];
+            const rimraf = require('./rimraf');
 
-            exports.readEntries((entries) => {
-                if (entries.length === 0) {
-                    exports.remove(successCallback, errorCallback, [fullPath]);
-                }
-                entries.forEach(entry => {
-                    if (entry.isDirectory) {
-                        exports.removeRecursively(() => {
-                            exports.remove(() => {
-                                exports.remove(successCallback, errorCallback, [fullPath]);
-                            }, errorCallback, [entry.fullPath]);
-                        }, errorCallback, [entry.fullPath]);
-                    } else {
-                        exports.remove(successCallback, errorCallback, [entry.fullPath]);
+            rimraf(fullPath, {disableGlob: true}, err => {
+                if (err) {
+                    if (errorCallback) {
+                        errorCallback(FileError.NO_MODIFICATION_ALLOWED_ERR);
                     }
-                });
-            }, errorCallback, [fullPath]);
+                    return;
+                }
+                successCallback();
+            });
         };
 
         exports.getDirectory = function (successCallback, errorCallback, args) {
