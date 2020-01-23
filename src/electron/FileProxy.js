@@ -168,7 +168,9 @@
             const fullPath = args[0];
             fs.stat(fullPath, (err, stats) => {
                 if (err) {
-                    errorCallback(FileError.NOT_FOUND_ERR);
+                    if (errorCallback) {
+                        errorCallback(FileError.NOT_FOUND_ERR);
+                    }
                     return;
                 }
                 const baseName = nodeRequire('path').basename(fullPath);
@@ -179,7 +181,9 @@
         exports.getMetadata = function (successCallback, errorCallback, args) {
             fs.stat(args[0], (err, stats) => {
                 if (err) {
-                    errorCallback(FileError.NOT_FOUND_ERR);
+                    if (errorCallback) {
+                        errorCallback(FileError.NOT_FOUND_ERR);
+                    }
                     return;
                 }
                 successCallback({
@@ -193,10 +197,15 @@
             var fullPath = args[0];
             var metadataObject = args[1];
 
-            exports.getFile(function (fileEntry) {
-                fileEntry.file_.lastModifiedDate = metadataObject.modificationTime;
-                idb_.put(fileEntry, fileEntry.file_.storagePath, successCallback, errorCallback);
-            }, errorCallback, [fullPath, null]);
+            fs.utime(fullPath, metadataObject.modificationTime, metadataObject.modificationTime, (err) => {
+                if (err) {
+                    if (errorCallback) {
+                        errorCallback(FileError.NOT_FOUND_ERR);
+                        return;
+                    }
+                    successCallback();
+                }
+            });
         };
 
         exports.write = function (successCallback, errorCallback, args) {
