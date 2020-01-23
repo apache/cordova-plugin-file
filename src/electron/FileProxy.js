@@ -305,81 +305,58 @@
         };
 
         exports.getDirectory = function (successCallback, errorCallback, args) {
-            var fullPath = args[0];
-            var path = args[1];
-            var options = args[2];
+            const path = args[0] + args[1];
+            const options = args[2] || {};
+            const exists = fs.existsSync(path);
+            const baseName = window.require('path').basename(path);
 
-            // Create an absolute path if we were handed a relative one.
-            path = resolveToFullPath_(fullPath, path);
-
-            idb_.get(path.storagePath, function (folderEntry) {
-                if (!options) {
-                    options = {};
+            if (options.create === true && options.exclusive === true && exists) {
+                // If create and exclusive are both true, and the path already exists,
+                // getDirectory must fail.
+                if (errorCallback) {
+                    errorCallback(FileError.PATH_EXISTS_ERR);
+                }
+                return;
+            }
+            if (options.create === true && !exists) {
+                // If create is true, the path doesn't exist, and no other error occurs,
+                // getDirectory must create it as a zero-length file and return a corresponding
+                // MyDirectoryEntry.
+                fs.mkdir(path, err => {
+                    if (err) throw err;
+                    successCallback(new DirectoryEntry(baseName, path));
+                })
+                return;
+            }
+            if (options.create === true && exists) {
+                if (fs.statSync(path).isDirectory()) {
+                    successCallback(new DirectoryEntry(baseName, path));
+                } else if (errorCallback) {
+                    errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                }
+                return;
+            }
+            if (!options.create && !exists) {
+                // If create is not true and the path doesn't exist, getDirectory must fail.
+                if (errorCallback) {
+                    errorCallback(FileError.NOT_FOUND_ERR);
                 }
 
-                if (options.create === true && options.exclusive === true && folderEntry) {
-                    // If create and exclusive are both true, and the path already exists,
-                    // getDirectory must fail.
-                    if (errorCallback) {
-                        errorCallback(FileError.PATH_EXISTS_ERR);
-                    }
-                    // There is a strange bug in mobilespec + FF, which results in coming to multiple else-if's
-                    // so we are shielding from it with returns.
-                    return;
+                return;
+            }
+            if (!options.create && exists && fs.statSync(path).isFile()) {
+                // If create is not true and the path exists, but is a file, getDirectory
+                // must fail.
+                if (errorCallback) {
+                    errorCallback(FileError.TYPE_MISMATCH_ERR);
                 }
+                return;
+            }
 
-                if (options.create === true && !folderEntry) {
-                    // If create is true, the path doesn't exist, and no other error occurs,
-                    // getDirectory must create it as a zero-length file and return a corresponding
-                    // MyDirectoryEntry.
-                    var dirEntry = new DirectoryEntry(path.fileName, path.fullPath, new FileSystem(path.fsName, fs_.root));
+            // Otherwise, if no other error occurs, getDirectory must return a
+            // DirectoryEntry corresponding to path.
+            successCallback(new DirectoryEntry(baseName, path));
 
-                    idb_.put(dirEntry, path.storagePath, successCallback, errorCallback);
-                    return;
-                }
-
-                if (options.create === true && folderEntry) {
-
-                    if (folderEntry.isDirectory) {
-                        // IDB won't save methods, so we need re-create the MyDirectoryEntry.
-                        successCallback(new DirectoryEntry(folderEntry.name, folderEntry.fullPath, folderEntry.filesystem));
-                    } else {
-                        if (errorCallback) {
-                            errorCallback(FileError.INVALID_MODIFICATION_ERR);
-                        }
-                    }
-                    return;
-                }
-
-                if ((!options.create || options.create === false) && !folderEntry) {
-                    // Handle root special. It should always exist.
-                    if (path.fullPath === DIR_SEPARATOR) {
-                        successCallback(fs_.root);
-                        return;
-                    }
-
-                    // If create is not true and the path doesn't exist, getDirectory must fail.
-                    if (errorCallback) {
-                        errorCallback(FileError.NOT_FOUND_ERR);
-                    }
-
-                    return;
-                }
-                if ((!options.create || options.create === false) && folderEntry && folderEntry.isFile) {
-                    // If create is not true and the path exists, but is a file, getDirectory
-                    // must fail.
-                    if (errorCallback) {
-                        errorCallback(FileError.TYPE_MISMATCH_ERR);
-                    }
-                    return;
-                }
-
-                // Otherwise, if no other error occurs, getDirectory must return a
-                // MyDirectoryEntry corresponding to path.
-
-                // IDB won't' save methods, so we need re-create MyDirectoryEntry.
-                successCallback(new DirectoryEntry(folderEntry.name, folderEntry.fullPath, folderEntry.filesystem));
-            }, errorCallback);
         };
 
         exports.getParent = function (successCallback, errorCallback, args) {
