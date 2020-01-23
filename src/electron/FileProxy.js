@@ -33,6 +33,7 @@
     }
 
     const nodeRequire = global.require;
+    const nodePath = nodeRequire('path');
     const fs = nodeRequire('fs');
     const app = nodeRequire('electron').remote.app;
 
@@ -87,13 +88,17 @@
                 }
                 const result = [];
                 files.forEach(d => {
+                    let path = fullPath + d.name;
+                    if (d.isDirectory()) {
+                        path += nodePath.sep;
+                    }
                     result.push({
                         isDirectory: d.isDirectory(),
                         isFile: d.isFile(),
                         name: d.name,
-                        fullPath: fullPath + d.name,
+                        fullPath: path,
                         filesystemName: 'temporary',
-                        nativeURL: fullPath + d.name
+                        nativeURL: path
                     });
                 });
                 successCallback(result);
@@ -273,7 +278,7 @@
 
         exports.remove = function (successCallback, errorCallback, args) {
             const fullPath = args[0];
-
+            console.log('remove', fullPath);
             fs.stat(fullPath, (err, stats) => {
                 if (err) {
                     if (errorCallback) {
@@ -295,31 +300,17 @@
         };
 
         exports.removeRecursively = function (successCallback, errorCallback, args) {
-            console.log('removeRecursively', args);
-
-            var fullPath = resolveToFullPath_(args[0]).storagePath;
-            if (fullPath === pathsPrefix.cacheDirectory || fullPath === pathsPrefix.dataDirectory) {
-                errorCallback(FileError.NO_MODIFICATION_ALLOWED_ERR);
-                return;
-            }
-
-            function deleteEntry (isDirectory) {
-                // TODO: This doesn't protect against directories that have content in it.
-                // Should throw an error instead if the dirEntry is not empty.
-                idb_['delete'](fullPath, function () {
-                    successCallback();
-                }, function () {
-                    if (errorCallback) { errorCallback(); }
-                }, isDirectory);
-            }
-
-            // We need to to understand what we are deleting:
-            exports.getDirectory(function (entry) {
-                deleteEntry(entry.isDirectory);
-            }, function () {
-                // DirectoryEntry was already deleted or entry is FileEntry
-                deleteEntry(false);
-            }, [fullPath, null, {create: false}]);
+            const fullPath = args[0];
+            console.log('removeRecursively', fullPath);
+            exports.readEntries((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isDirectory) {
+                        exports.removeRecursively(successCallback, errorCallback, [entry.fullPath]);
+                    }
+                    exports.remove(successCallback, errorCallback, [fullPath]);
+                });
+                successCallback();
+            }, errorCallback, [fullPath]);
         };
 
         exports.getDirectory = function (successCallback, errorCallback, args) {
@@ -376,7 +367,6 @@
                 throw Error('Expected successCallback argument.');
             }
 
-            const nodePath = nodeRequire('path');
             const parentPath = nodePath.dirname(args[0]);
             const parentName = nodePath.basename(parentPath);
             const path = nodePath.dirname(parentPath) + nodePath.sep;
