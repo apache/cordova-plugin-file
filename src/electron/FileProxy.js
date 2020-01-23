@@ -209,7 +209,7 @@
                 .then(fd => {
                     return promisify(fs.write)(fd, buf, 0, buf.length, position)
                               .then(bw => bytesWritten = bw)
-                              .then(() => promisify(fs.close)(fd));
+                              .finally(() => promisify(fs.close)(fd));
                 })
                 .then(() => successCallback(bytesWritten))
                 .catch(() => {
