@@ -278,7 +278,7 @@
 
         exports.remove = function (successCallback, errorCallback, args) {
             const fullPath = args[0];
-            console.log('remove', fullPath);
+
             fs.stat(fullPath, (err, stats) => {
                 if (err) {
                     if (errorCallback) {
@@ -301,15 +301,22 @@
 
         exports.removeRecursively = function (successCallback, errorCallback, args) {
             const fullPath = args[0];
-            console.log('removeRecursively', fullPath);
+
             exports.readEntries((entries) => {
+                if (entries.length === 0) {
+                    exports.remove(successCallback, errorCallback, [fullPath]);
+                }
                 entries.forEach(entry => {
                     if (entry.isDirectory) {
-                        exports.removeRecursively(successCallback, errorCallback, [entry.fullPath]);
+                        exports.removeRecursively(() => {
+                            exports.remove(() => {
+                                exports.remove(successCallback, errorCallback, [fullPath]);
+                            }, errorCallback, [entry.fullPath]);
+                        }, errorCallback, [entry.fullPath]);
+                    } else {
+                        exports.remove(successCallback, errorCallback, [entry.fullPath]);
                     }
-                    exports.remove(successCallback, errorCallback, [fullPath]);
                 });
-                successCallback();
             }, errorCallback, [fullPath]);
         };
 
