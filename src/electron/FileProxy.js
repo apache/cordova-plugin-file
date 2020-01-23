@@ -150,28 +150,33 @@
             } else {
                 // Otherwise, if no other error occurs, getFile must return a FileEntry
                 // corresponding to path.
-
                 successCallback(new FileEntry(baseName, path));
             }
         };
 
         exports.getFileMetadata = function (successCallback, errorCallback, args) {
             var fullPath = args[0];
-
-            exports.getFile(function (fileEntry) {
-                successCallback(new File(fileEntry.file_.name, fileEntry.fullPath, '', fileEntry.file_.lastModifiedDate,
-                    fileEntry.file_.size));
-            }, errorCallback, [fullPath, null]);
+            fs.stat(fullPath, (err, stats) => {
+                if (err) {
+                    errorCallback(FileError.NOT_FOUND_ERR);
+                    return;
+                }
+                const baseName = window.require('path').basename(path);
+                successCallback(new File(baseName, fullPath, '', stats.mtime, stats.size));
+            });
         };
 
         exports.getMetadata = function (successCallback, errorCallback, args) {
-            exports.getFile(function (fileEntry) {
-                successCallback(
-                    {
-                        modificationTime: fileEntry.file_.lastModifiedDate,
-                        size: fileEntry.file_.lastModifiedDate
-                    });
-            }, errorCallback, args);
+            fs.stat(args[0], (err, stats) => {
+                if (err) {
+                    errorCallback(FileError.NOT_FOUND_ERR);
+                    return;
+                }
+                successCallback({
+                    modificationTime: stats.mtime,
+                    size: stats.size
+                });
+            });
         };
 
         exports.setMetadata = function (successCallback, errorCallback, args) {
