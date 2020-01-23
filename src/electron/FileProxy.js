@@ -100,14 +100,14 @@
                 fs.open(path, 'w', (err, fd) => {
                     if (err) {
                         if (errorCallback) {
-                            errorCallback(FileError.INVALID_STATE_ERR, err);
+                            errorCallback(FileError.INVALID_STATE_ERR);
                         }
                         return;
                     }
                     fs.close(fd, (err) => {
                         if (err) {
                             if (errorCallback) {
-                                errorCallback(FileError.INVALID_STATE_ERR, err);
+                                errorCallback(FileError.INVALID_STATE_ERR);
                             }
                             return;
                         }
@@ -155,7 +155,7 @@
         };
 
         exports.getFileMetadata = function (successCallback, errorCallback, args) {
-            var fullPath = args[0];
+            const fullPath = args[0];
             fs.stat(fullPath, (err, stats) => {
                 if (err) {
                     errorCallback(FileError.NOT_FOUND_ERR);
@@ -190,10 +190,10 @@
         };
 
         exports.write = function (successCallback, errorCallback, args) {
-            var fileName = args[0];
-            var data = args[1];
-            var position = args[2];
-            var isBinary = args[3]; // eslint-disable-line no-unused-vars
+            const fileName = args[0];
+            const data = args[1];
+            const position = args[2];
+            const isBinary = args[3]; // eslint-disable-line no-unused-vars
 
             if (!data) {
                 if (errorCallback) {
@@ -202,42 +202,21 @@
                 return;
             }
 
-            if (typeof data === 'string' || data instanceof String) {
-                data = new Blob([data]); // eslint-disable-line no-undef
-            }
-
-            exports.getFile(function (fileEntry) {
-                var blob_ = fileEntry.file_.blob_;
-
-                if (!blob_) {
-                    blob_ = new Blob([data], {type: data.type}); // eslint-disable-line no-undef
-                } else {
-                    // Calc the head and tail fragments
-                    var head = blob_.slice(0, position);
-                    var tail = blob_.slice(position + (data.size || data.byteLength));
-
-                    // Calc the padding
-                    var padding = position - head.size;
-                    if (padding < 0) {
-                        padding = 0;
+            const buf = Buffer.from(data);
+            const promisify = window.require('util').promisify;
+            let bytesWritten = 0;
+            promisify(fs.open)(fileName, 'a')
+                .then(fd => {
+                    return promisify(fs.write)(fd, buf, 0, buf.length, position)
+                              .then(bw => bytesWritten = bw)
+                              .then(() => promisify(fs.close)(fd));
+                })
+                .then(() => successCallback(bytesWritten))
+                .catch(() => {
+                    if (errorCallback) {
+                        errorCallback(FileError.INVALID_MODIFICATION_ERR)
                     }
-
-                    // Do the "write". In fact, a full overwrite of the Blob.
-                    blob_ = new Blob([head, new Uint8Array(padding), data, tail], // eslint-disable-line no-undef
-                        {type: data.type});
-                }
-
-                // Set the blob we're writing on this file entry so we can recall it later.
-                fileEntry.file_.blob_ = blob_;
-                fileEntry.file_.lastModifiedDate = new Date() || null;
-                fileEntry.file_.size = blob_.size;
-                fileEntry.file_.name = blob_.name;
-                fileEntry.file_.type = blob_.type;
-
-                idb_.put(fileEntry, fileEntry.file_.storagePath, function () {
-                    successCallback(data.size || data.byteLength);
-                }, errorCallback);
-            }, errorCallback, [fileName, null]);
+                });
         };
 
         exports.readAsText = function (successCallback, errorCallback, args) {
