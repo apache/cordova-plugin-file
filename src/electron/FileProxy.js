@@ -72,23 +72,32 @@
 
         // list a directory's contents (files and folders).
         exports.readEntries = function (successCallback, errorCallback, args) {
-            var fullPath = args[0];
+            const fullPath = args[0];
 
             if (typeof successCallback !== 'function') {
                 throw Error('Expected successCallback argument.');
             }
 
-            var path = resolveToFullPath_(fullPath);
-
-            exports.getDirectory(function () {
-                idb_.getAllEntries(path.fullPath + DIR_SEPARATOR, path.storagePath, function (entries) {
-                    successCallback(entries);
-                }, errorCallback);
-            }, function () {
-                if (errorCallback) {
-                    errorCallback(FileError.NOT_FOUND_ERR);
+            fs.readdir(fullPath, {withFileTypes: true}, (err, files) => {
+                if (err) {
+                    if (errorCallback) {
+                        errorCallback(FileError.NOT_FOUND_ERR);
+                    }
+                    return;
                 }
-            }, [path.storagePath, path.fullPath, {create: false}]);
+                const result = [];
+                files.forEach(d => {
+                    result.push({
+                        isDirectory: d.isDirectory(),
+                        isFile: d.isFile(),
+                        name: d.name,
+                        fullPath: fullPath + d.name,
+                        filesystemName: 'temporary',
+                        nativeURL: fullPath + d.name
+                    });
+                });
+                successCallback(result);
+            });
         };
 
         exports.getFile = function (successCallback, errorCallback, args) {
