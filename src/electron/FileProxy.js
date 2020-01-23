@@ -271,10 +271,31 @@
             readAs('arrayBuffer', fileName, null, startPos, endPos, successCallback, errorCallback);
         };
 
-        exports.removeRecursively = exports.remove = function (successCallback, errorCallback, args) {
-            if (typeof successCallback !== 'function') {
-                throw Error('Expected successCallback argument.');
-            }
+        exports.remove = function (successCallback, errorCallback, args) {
+            const fullPath = args[0];
+
+            fs.stat(fullPath, (err, stats) => {
+                if (err) {
+                    if (errorCallback) {
+                        errorCallback(FileError.NOT_FOUND_ERR);
+                    }
+                    return;
+                }
+                const rm = stats.isDirectory() ? fs.rmdir : fs.unlink;
+                rm(fullPath, (err) => {
+                    if (err) {
+                        if (errorCallback) {
+                            errorCallback(FileError.NO_MODIFICATION_ALLOWED_ERR);
+                        }
+                        return;
+                    }
+                    successCallback();
+                });
+            });
+        };
+
+        exports.removeRecursively = function (successCallback, errorCallback, args) {
+            console.log('removeRecursively', args);
 
             var fullPath = resolveToFullPath_(args[0]).storagePath;
             if (fullPath === pathsPrefix.cacheDirectory || fullPath === pathsPrefix.dataDirectory) {
