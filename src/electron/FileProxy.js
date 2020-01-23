@@ -161,7 +161,7 @@
                     errorCallback(FileError.NOT_FOUND_ERR);
                     return;
                 }
-                const baseName = window.require('path').basename(path);
+                const baseName = window.require('path').basename(fullPath);
                 successCallback(new File(baseName, fullPath, '', stats.mtime, stats.size));
             });
         };
