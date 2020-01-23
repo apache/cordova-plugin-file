@@ -355,33 +355,10 @@
                 throw Error('Expected successCallback argument.');
             }
 
-            var fullPath = args[0];
-            // fullPath is like this:
-            // file:///persistent/path/to/file or
-            // file:///persistent/path/to/directory/
-
-            if (fullPath === DIR_SEPARATOR || fullPath === pathsPrefix.cacheDirectory ||
-                fullPath === pathsPrefix.dataDirectory) {
-                successCallback(fs_.root);
-                return;
-            }
-
-            // To delete all slashes at the end
-            while (fullPath[fullPath.length - 1] === '/') {
-                fullPath = fullPath.substr(0, fullPath.length - 1);
-            }
-
-            var pathArr = fullPath.split(DIR_SEPARATOR);
-            pathArr.pop();
-            var parentName = pathArr.pop();
-            var path = pathArr.join(DIR_SEPARATOR) + DIR_SEPARATOR;
-
-            // To get parent of root files
-            var joined = path + parentName + DIR_SEPARATOR;// is like this: file:///persistent/
-            if (joined === pathsPrefix.cacheDirectory || joined === pathsPrefix.dataDirectory) {
-                exports.getDirectory(successCallback, errorCallback, [joined, DIR_SEPARATOR, {create: false}]);
-                return;
-            }
+            const nodePath = nodeRequire('path');
+            const parentPath = nodePath.dirname(args[0]);
+            const parentName = nodePath.basename(parentPath);
+            const path = nodePath.dirname(parentPath) + nodePath.sep;
 
             exports.getDirectory(successCallback, errorCallback, [path, parentName, {create: false}]);
         };
