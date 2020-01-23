@@ -364,38 +364,19 @@
         };
 
         exports.copyTo = function (successCallback, errorCallback, args) {
-            var srcPath = args[0];
-            var parentFullPath = args[1];
-            var name = args[2];
+            const srcPath = args[0];
+            const dstDir = args[1];
+            const dstName = args[2];
 
-            if (name.indexOf('/') !== -1 || srcPath === parentFullPath + name) {
-                if (errorCallback) {
-                    errorCallback(FileError.INVALID_MODIFICATION_ERR);
+            fs.copyFile(srcPath, dstDir + dstName, (err) => {
+                if (err) {
+                    if (errorCallback) {
+                        errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                    }
+                    return;
                 }
-
-                return;
-            }
-
-            // Read src file
-            exports.getFile(function (srcFileEntry) {
-
-                var path = resolveToFullPath_(parentFullPath);
-                // Check directory
-                exports.getDirectory(function () {
-
-                    // Create dest file
-                    exports.getFile(function (dstFileEntry) {
-
-                        exports.write(function () {
-                            successCallback(dstFileEntry);
-                        }, errorCallback, [dstFileEntry.file_.storagePath, srcFileEntry.file_.blob_, 0]);
-
-                    }, errorCallback, [parentFullPath, name, {create: true}]);
-
-                }, function () { if (errorCallback) { errorCallback(FileError.NOT_FOUND_ERR); } },
-                [path.storagePath, null, {create: false}]);
-
-            }, errorCallback, [srcPath, null]);
+                exports.getFile(successCallback, errorCallback, [dstDir, dstName]);
+            });
         };
 
         exports.moveTo = function (successCallback, errorCallback, args) {
