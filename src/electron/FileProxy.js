@@ -32,8 +32,9 @@
         return;
     }
 
-    const fs = window.require('fs');
-    const app = window.require('electron').remote.app;
+    const nodeRequire = global.require;
+    const fs = nodeRequire('fs');
+    const app = nodeRequire('electron').remote.app;
 
     const LocalFileSystem = require('./LocalFileSystem');
     const FileSystem = require('./FileSystem');
@@ -94,7 +95,7 @@
             const path = args[0] + args[1];
             const options = args[2] || {};
             const exists = fs.existsSync(path);
-            const baseName = window.require('path').basename(path);
+            const baseName = nodeRequire('path').basename(path);
 
             function createFile() {
                 fs.open(path, 'w', (err, fd) => {
@@ -161,7 +162,7 @@
                     errorCallback(FileError.NOT_FOUND_ERR);
                     return;
                 }
-                const baseName = window.require('path').basename(fullPath);
+                const baseName = nodeRequire('path').basename(fullPath);
                 successCallback(new File(baseName, fullPath, '', stats.mtime, stats.size));
             });
         };
@@ -203,7 +204,7 @@
             }
 
             const buf = Buffer.from(data);
-            const promisify = window.require('util').promisify;
+            const promisify = nodeRequire('util').promisify;
             let bytesWritten = 0;
             promisify(fs.open)(fileName, 'a')
                 .then(fd => {
@@ -286,7 +287,7 @@
             const path = args[0] + args[1];
             const options = args[2] || {};
             const exists = fs.existsSync(path);
-            const baseName = window.require('path').basename(path);
+            const baseName = nodeRequire('path').basename(path);
 
             if (options.create === true && options.exclusive === true && exists) {
                 // If create and exclusive are both true, and the path already exists,
@@ -462,7 +463,7 @@
                 return;
             }
 
-            const baseName = window.require('path').basename(path);
+            const baseName = nodeRequire('path').basename(path);
             if (fs.statSync(path).isDirectory()) {
                 successCallback(new DirectoryEntry(baseName, path));
             } else {
