@@ -499,23 +499,11 @@
         };
 
         exports.resolveLocalFileSystemURI = function (successCallback, errorCallback, args) {
-            var path = args[0];
-
-            // Ignore parameters
-            if (path.indexOf('?') !== -1) {
-                path = String(path).split('?')[0];
-            }
+            const path = args[0];
 
             // support for encodeURI
             if (/\%5/g.test(path) || /\%20/g.test(path)) {  // eslint-disable-line no-useless-escape
                 path = decodeURI(path);
-            }
-
-            if (path.trim()[0] === '/') {
-                if (errorCallback) {
-                    errorCallback(FileError.ENCODING_ERR);
-                }
-                return;
             }
 
             // support for cdvfile
@@ -532,9 +520,9 @@
 
                 // cdvfile://localhost/persistent/path/to/file
                 if (indexPersistent !== -1) {
-                    path = 'file:///persistent' + path.substr(indexPersistent + 10);
+                    path = pathsPrefix.dataDirectory + path.substr(indexPersistent + 10);
                 } else if (indexTemporary !== -1) {
-                    path = 'file:///temporary' + path.substr(indexTemporary + 9);
+                    path = pathsPrefix.tempDirectory + path.substr(indexTemporary + 9);
                 } else {
                     if (errorCallback) {
                         errorCallback(FileError.ENCODING_ERR);
@@ -543,89 +531,28 @@
                 }
             }
 
-            // to avoid path form of '///path/to/file'
-            function handlePathSlashes (path) {
-                var cutIndex = 0;
-                for (var i = 0; i < path.length - 1; i++) {
-                    if (path[i] === DIR_SEPARATOR && path[i + 1] === DIR_SEPARATOR) {
-                        cutIndex = i + 1;
-                    } else break;
-                }
-
-                return path.substr(cutIndex);
-            }
-
-            // Handle localhost containing paths (see specs )
-            if (path.indexOf('file://localhost/') === 0) {
-                path = path.replace('file://localhost/', 'file:///');
-            }
-
+            let fsName = 'unknown';
             if (path.indexOf(pathsPrefix.dataDirectory) === 0) {
-                path = path.substring(pathsPrefix.dataDirectory.length - 1);
-                path = handlePathSlashes(path);
-
-                exports.requestFileSystem(function () {
-                    exports.getFile(successCallback, function () {
-                        exports.getDirectory(successCallback, errorCallback, [pathsPrefix.dataDirectory, path,
-                        {create: false}]);
-                    }, [pathsPrefix.dataDirectory, path, {create: false}]);
-                }, errorCallback, [LocalFileSystem.PERSISTENT]);
-            } else if (path.indexOf(pathsPrefix.cacheDirectory) === 0) {
-                path = path.substring(pathsPrefix.cacheDirectory.length - 1);
-                path = handlePathSlashes(path);
-
-                exports.requestFileSystem(function () {
-                    exports.getFile(successCallback, function () {
-                        exports.getDirectory(successCallback, errorCallback, [pathsPrefix.cacheDirectory, path,
-                        {create: false}]);
-                    }, [pathsPrefix.cacheDirectory, path, {create: false}]);
-                }, errorCallback, [LocalFileSystem.TEMPORARY]);
-            } else if (path.indexOf(pathsPrefix.applicationDirectory) === 0) {
-                path = path.substring(pathsPrefix.applicationDirectory.length);
-                // TODO: need to cut out redundant slashes?
-
-                var xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
-                xhr.open('GET', path, true);
-                xhr.onreadystatechange = function () {
-                    if (xhr.status === 200 && xhr.readyState === 4) {
-                        exports.requestFileSystem(function (fs) {
-                            fs.name = location.hostname; // eslint-disable-line no-undef
-
-                            // TODO: need to call exports.getFile(...) to handle errors correct
-                            fs.root.getFile(path, {create: true}, writeFile, errorCallback);
-                        }, errorCallback, [LocalFileSystem.PERSISTENT]);
-                    }
-                };
-
-                xhr.onerror = function () {
-                    if (errorCallback) {
-                        errorCallback(FileError.NOT_READABLE_ERR);
-                    }
-                };
-
-                xhr.send();
+                fsName = 'persistent';
+            } else if (path.indexOf(pathsPrefix.tempDirectory) === 0) {
+                fsName = 'temporary';
             } else {
                 if (errorCallback) {
                     errorCallback(FileError.NOT_FOUND_ERR);
                 }
+                return;
             }
 
-            function writeFile (entry) {
-                entry.createWriter(function (fileWriter) {
-                    fileWriter.onwriteend = function (evt) {
-                        if (!evt.target.error) {
-                            entry.filesystemName = location.hostname; // eslint-disable-line no-undef
-                            successCallback(entry);
-                        }
-                    };
-                    fileWriter.onerror = function () {
-                        if (errorCallback) {
-                            errorCallback(FileError.NOT_READABLE_ERR);
-                        }
-                    };
-                    fileWriter.write(new Blob([xhr.response])); // eslint-disable-line no-undef
-                }, errorCallback); // eslint-disable-line no-undef
+            if (!fs.existsSync(path) && !fs.mkdirSync(path, {recursive: true})) {
+                if (errorCallback) {
+                    errorCallback(FileError.NOT_FOUND_ERR);
+                }
+                return;
             }
+
+            const nodePath = window.require('path');
+            const root = new DirectoryEntry(nodePath.basename(path), path)
+            successCallback(new FileSystem(fsName, root));
         };
 
         exports.requestAllPaths = function (successCallback) {
