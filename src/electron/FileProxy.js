@@ -69,35 +69,6 @@
 
     /** * Exported functionality ***/
 
-        exports.requestFileSystem = function (successCallback, errorCallback, args) {
-            var type = args[0];
-            // Size is ignored since IDB filesystem size depends
-            // on browser implementation and can't be set up by user
-            var size = args[1]; // eslint-disable-line no-unused-vars
-
-            if (type !== LocalFileSystem.TEMPORARY && type !== LocalFileSystem.PERSISTENT) {
-                if (errorCallback) {
-                    errorCallback(FileError.INVALID_MODIFICATION_ERR);
-                }
-                return;
-            }
-
-            var name = type === LocalFileSystem.TEMPORARY ? 'temporary' : 'persistent';
-            var storageName = (location.protocol + location.host).replace(/:/g, '_'); // eslint-disable-line no-undef
-
-            var root = new DirectoryEntry('', DIR_SEPARATOR);
-            fs_ = new FileSystem(name, root);
-
-            idb_.open(storageName, function () {
-                successCallback(fs_);
-            }, errorCallback);
-        };
-
-        // Overridden by Android, BlackBerry 10 and iOS to populate fsMap
-        require('./fileSystems').getFs = function (name, callback) {
-            callback(new FileSystem(name, fs_.root));
-        };
-
         // list a directory's contents (files and folders).
         exports.readEntries = function (successCallback, errorCallback, args) {
             var fullPath = args[0];
@@ -499,7 +470,7 @@
         };
 
         exports.resolveLocalFileSystemURI = function (successCallback, errorCallback, args) {
-            const path = args[0];
+            let path = args[0];
 
             // support for encodeURI
             if (/\%5/g.test(path) || /\%20/g.test(path)) {  // eslint-disable-line no-useless-escape
@@ -531,28 +502,23 @@
                 }
             }
 
-            let fsName = 'unknown';
-            if (path.indexOf(pathsPrefix.dataDirectory) === 0) {
-                fsName = 'persistent';
-            } else if (path.indexOf(pathsPrefix.tempDirectory) === 0) {
-                fsName = 'temporary';
+            if (path.indexOf(pathsPrefix.dataDirectory) === 0 && !fs.existsSync(pathsPrefix.dataDirectory)) {
+                fs.mkdirSync(pathsPrefix.dataDirectory, {recursive: true});
+            }
+
+            if (!fs.existsSync(path)) {
+                if (errorCallback) {
+                    errorCallback(FileError.NOT_FOUND_ERR);
+                }
+                return;
+            }
+
+            const baseName = window.require('path').basename(path);
+            if (fs.statSync(path).isDirectory()) {
+                successCallback(new DirectoryEntry(baseName, path));
             } else {
-                if (errorCallback) {
-                    errorCallback(FileError.NOT_FOUND_ERR);
-                }
-                return;
+                successCallback(new FileEntry(baseName, path));
             }
-
-            if (!fs.existsSync(path) && !fs.mkdirSync(path, {recursive: true})) {
-                if (errorCallback) {
-                    errorCallback(FileError.NOT_FOUND_ERR);
-                }
-                return;
-            }
-
-            const nodePath = window.require('path');
-            const root = new DirectoryEntry(nodePath.basename(path), path)
-            successCallback(new FileSystem(fsName, root));
         };
 
         exports.requestAllPaths = function (successCallback) {
