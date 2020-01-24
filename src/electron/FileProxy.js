@@ -213,7 +213,7 @@
             promisify(fs.open)(fileName, 'a')
                 .then(fd => {
                     return promisify(fs.write)(fd, buf, 0, buf.length, position)
-                              .then(bw => {bytesWritten = bw})
+                              .then(bw => { bytesWritten = bw; })
                               .finally(() => promisify(fs.close)(fd));
                 })
                 .then(() => successCallback(bytesWritten))
