@@ -60,11 +60,11 @@
 
         // https://github.com/electron/electron/blob/master/docs/api/app.md#appgetpathname
         const pathsPrefix = {
-            applicationDirectory: app.getAppPath(),
-            dataDirectory: app.getPath('userData'),
-            cacheDirectory: app.getPath('cache'),
-            tempDirectory: app.getPath('temp'),
-            documentsDirectory: app.getPath('documents')
+            applicationDirectory: app.getAppPath() + nodePath.sep,
+            dataDirectory: app.getPath('userData') + nodePath.sep,
+            cacheDirectory: app.getPath('cache') + nodePath.sep,
+            tempDirectory: app.getPath('temp') + nodePath.sep,
+            documentsDirectory: app.getPath('documents') + nodePath.sep
         };
 
         var unicodeLastChar = 65535;
