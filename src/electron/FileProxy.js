@@ -182,8 +182,8 @@
         };
 
         exports.setMetadata = function (successCallback, errorCallback, args) {
-            var fullPath = args[0];
-            var metadataObject = args[1];
+            const fullPath = args[0];
+            const metadataObject = args[1];
 
             fs.utime(fullPath, metadataObject.modificationTime, metadataObject.modificationTime, (err) => {
                 if (err) {
@@ -227,34 +227,34 @@
         };
 
         exports.readAsText = function (successCallback, errorCallback, args) {
-            var fileName = args[0];
-            var enc = args[1];
-            var startPos = args[2];
-            var endPos = args[3];
+            const fileName = args[0];
+            const enc = args[1];
+            const startPos = args[2];
+            const endPos = args[3];
 
             readAs('text', fileName, enc, startPos, endPos, successCallback, errorCallback);
         };
 
         exports.readAsDataURL = function (successCallback, errorCallback, args) {
-            var fileName = args[0];
-            var startPos = args[1];
-            var endPos = args[2];
+            const fileName = args[0];
+            const startPos = args[1];
+            const endPos = args[2];
 
             readAs('dataURL', fileName, null, startPos, endPos, successCallback, errorCallback);
         };
 
         exports.readAsBinaryString = function (successCallback, errorCallback, args) {
-            var fileName = args[0];
-            var startPos = args[1];
-            var endPos = args[2];
+            const fileName = args[0];
+            const startPos = args[1];
+            const endPos = args[2];
 
             readAs('binaryString', fileName, null, startPos, endPos, successCallback, errorCallback);
         };
 
         exports.readAsArrayBuffer = function (successCallback, errorCallback, args) {
-            var fileName = args[0];
-            var startPos = args[1];
-            var endPos = args[2];
+            const fileName = args[0];
+            const startPos = args[1];
+            const endPos = args[2];
 
             readAs('arrayBuffer', fileName, null, startPos, endPos, successCallback, errorCallback);
         };
@@ -375,11 +375,11 @@
         };
 
         exports.moveTo = function (successCallback, errorCallback, args) {
-            var srcPath = args[0];
+            const srcPath = args[0];
             // parentFullPath and name parameters is ignored because
             // args is being passed downstream to exports.copyTo method
-            var parentFullPath = args[1]; // eslint-disable-line
-            var name = args[2]; // eslint-disable-line
+            const parentFullPath = args[1]; // eslint-disable-line
+            const name = args[2]; // eslint-disable-line
 
             exports.copyTo(function (fileEntry) {
 
@@ -407,8 +407,8 @@
                     return;
                 }
 
-                var indexPersistent = path.indexOf('persistent');
-                var indexTemporary = path.indexOf('temporary');
+                const indexPersistent = path.indexOf('persistent');
+                const indexTemporary = path.indexOf('temporary');
 
                 // cdvfile://localhost/persistent/path/to/file
                 if (indexPersistent !== -1) {
