@@ -621,32 +621,40 @@
         }
 
         function readAs (what, fullPath, encoding, startPos, endPos, successCallback, errorCallback) {
-            exports.getFile(function (fileEntry) {
-                var fileReader = new FileReader(); // eslint-disable-line no-undef
-                var blob = fileEntry.file_.blob_.slice(startPos, endPos);
+            const promisify = nodeRequire('util').promisify
 
-                fileReader.onload = function (e) {
-                    successCallback(e.target.result);
-                };
-
-                fileReader.onerror = errorCallback;
-
-                switch (what) {
-                case 'text':
-                    fileReader.readAsText(blob, encoding);
-                    break;
-                case 'dataURL':
-                    fileReader.readAsDataURL(blob);
-                    break;
-                case 'arrayBuffer':
-                    fileReader.readAsArrayBuffer(blob);
-                    break;
-                case 'binaryString':
-                    fileReader.readAsBinaryString(blob);
-                    break;
+            fs.open(fullPath, 'r', (err, fd) => {
+                if (err) {
+                    if (errorCallback) {
+                        errorCallback(FileError.NOT_FOUND_ERR);
+                    }
+                    return;
                 }
-
-            }, errorCallback, [fullPath, null]);
+                const buf = Buffer.alloc(endPos - startPos);
+                promisify(fs.read)(fd, buf, 0, buf.length, startPos)
+                    .then(() => {
+                        switch (what) {
+                            case 'text':
+                                successCallback(buf.toString(encoding));
+                                break;
+                            case 'dataURL':
+                                successCallback('data:;base64,' + buf.toString('base64'));
+                                break;
+                            case 'arrayBuffer':
+                                successCallback(buf);
+                                break;
+                            case 'binaryString':
+                                successCallback(buf.toString('binary'));
+                                break;
+                        }
+                    })
+                    .catch(() => promisify(fs.close)(fd))
+                    .catch(() => {
+                        if (errorCallback) {
+                            errorCallback(FileError.NOT_READABLE_ERR);
+                        }
+                    });
+            });
         }
 
     /** * Core logic to handle IDB operations ***/
