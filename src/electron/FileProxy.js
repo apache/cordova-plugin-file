@@ -34,8 +34,6 @@
     const fs = nodeRequire('fs');
     const app = nodeRequire('electron').remote.app;
 
-    const LocalFileSystem = require('./LocalFileSystem');
-    const FileSystem = require('./FileSystem');
     const FileEntry = require('./FileEntry');
     const FileError = require('./FileError');
     const DirectoryEntry = require('./DirectoryEntry');
@@ -94,7 +92,7 @@
             const exists = fs.existsSync(path);
             const baseName = nodeRequire('path').basename(path);
 
-            function createFile() {
+            function createFile () {
                 fs.open(path, 'w', (err, fd) => {
                     if (err) {
                         if (errorCallback) {
@@ -111,7 +109,7 @@
                         }
                         successCallback(new FileEntry(baseName, path));
                     });
-                })
+                });
             }
 
             if (options.create === true && options.exclusive === true && exists) {
@@ -215,13 +213,13 @@
             promisify(fs.open)(fileName, 'a')
                 .then(fd => {
                     return promisify(fs.write)(fd, buf, 0, buf.length, position)
-                              .then(bw => bytesWritten = bw)
+                              .then(bw => {bytesWritten = bw})
                               .finally(() => promisify(fs.close)(fd));
                 })
                 .then(() => successCallback(bytesWritten))
                 .catch(() => {
                     if (errorCallback) {
-                        errorCallback(FileError.INVALID_MODIFICATION_ERR)
+                        errorCallback(FileError.INVALID_MODIFICATION_ERR);
                     }
                 });
         };
@@ -321,7 +319,7 @@
                         return;
                     }
                     successCallback(new DirectoryEntry(baseName, path));
-                })
+                });
             } else if (options.create === true && exists) {
                 if (fs.statSync(path).isDirectory()) {
                     successCallback(new DirectoryEntry(baseName, path));
@@ -449,7 +447,7 @@
     /** * Helpers ***/
 
         function readAs (what, fullPath, encoding, startPos, endPos, successCallback, errorCallback) {
-            const promisify = nodeRequire('util').promisify
+            const promisify = nodeRequire('util').promisify;
 
             fs.open(fullPath, 'r', (err, fd) => {
                 if (err) {
@@ -462,18 +460,18 @@
                 promisify(fs.read)(fd, buf, 0, buf.length, startPos)
                     .then(() => {
                         switch (what) {
-                            case 'text':
-                                successCallback(buf.toString(encoding));
-                                break;
-                            case 'dataURL':
-                                successCallback('data:;base64,' + buf.toString('base64'));
-                                break;
-                            case 'arrayBuffer':
-                                successCallback(buf);
-                                break;
-                            case 'binaryString':
-                                successCallback(buf.toString('binary'));
-                                break;
+                        case 'text':
+                            successCallback(buf.toString(encoding));
+                            break;
+                        case 'dataURL':
+                            successCallback('data:;base64,' + buf.toString('base64'));
+                            break;
+                        case 'arrayBuffer':
+                            successCallback(buf);
+                            break;
+                        case 'binaryString':
+                            successCallback(buf.toString('binary'));
+                            break;
                         }
                     })
                     .catch(() => promisify(fs.close)(fd))

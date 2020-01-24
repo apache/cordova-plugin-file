@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 const path = global.require("path")
 const fs = global.require("fs")
 let glob = undefined
