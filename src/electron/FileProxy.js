@@ -89,65 +89,74 @@
         exports.getFile = function (successCallback, errorCallback, args) {
             const path = args[0] + args[1];
             const options = args[2] || {};
-            const exists = fs.existsSync(path);
-            const baseName = nodeRequire('path').basename(path);
 
-            function createFile () {
-                fs.open(path, 'w', (err, fd) => {
-                    if (err) {
-                        if (errorCallback) {
-                            errorCallback(FileError.INVALID_STATE_ERR);
-                        }
-                        return;
+            fs.stat(path, (err, stats) => {
+                if (err && err.code !== 'ENOENT') {
+                    if (errorCallback) {
+                        errorCallback(FileError.INVALID_STATE_ERR);
                     }
-                    fs.close(fd, (err) => {
+                    return;
+                }
+                const exists = !err;
+                const baseName = nodeRequire('path').basename(path);
+
+                function createFile () {
+                    fs.open(path, 'w', (err, fd) => {
                         if (err) {
                             if (errorCallback) {
                                 errorCallback(FileError.INVALID_STATE_ERR);
                             }
                             return;
                         }
-                        successCallback(new FileEntry(baseName, path));
+                        fs.close(fd, (err) => {
+                            if (err) {
+                                if (errorCallback) {
+                                    errorCallback(FileError.INVALID_STATE_ERR);
+                                }
+                                return;
+                            }
+                            successCallback(new FileEntry(baseName, path));
+                        });
                     });
-                });
-            }
+                }
 
-            if (options.create === true && options.exclusive === true && exists) {
-                // If create and exclusive are both true, and the path already exists,
-                // getFile must fail.
-                if (errorCallback) {
-                    errorCallback(FileError.PATH_EXISTS_ERR);
-                }
-            } else if (options.create === true && !exists) {
-                // If create is true, the path doesn't exist, and no other error occurs,
-                // getFile must create it as a zero-length file and return a corresponding
-                // FileEntry.
-                createFile();
-            } else if (options.create === true && exists) {
-                if (fs.statSync(path).isFile()) {
-                    // Overwrite file, delete then create new.
-                    createFile();
-                } else {
+                if (options.create === true && options.exclusive === true && exists) {
+                    // If create and exclusive are both true, and the path already exists,
+                    // getFile must fail.
                     if (errorCallback) {
-                        errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                        errorCallback(FileError.PATH_EXISTS_ERR);
                     }
+                } else if (options.create === true && !exists) {
+                    // If create is true, the path doesn't exist, and no other error occurs,
+                    // getFile must create it as a zero-length file and return a corresponding
+                    // FileEntry.
+                    createFile();
+                } else if (options.create === true && exists) {
+                    if (stats.isFile()) {
+                        // Overwrite file, delete then create new.
+                        createFile();
+                    } else {
+                        if (errorCallback) {
+                            errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                        }
+                    }
+                } else if (!options.create && !exists) {
+                    // If create is not true and the path doesn't exist, getFile must fail.
+                    if (errorCallback) {
+                        errorCallback(FileError.NOT_FOUND_ERR);
+                    }
+                } else if (!options.create && exists && stats.isDirectory()) {
+                    // If create is not true and the path exists, but is a directory, getFile
+                    // must fail.
+                    if (errorCallback) {
+                        errorCallback(FileError.TYPE_MISMATCH_ERR);
+                    }
+                } else {
+                    // Otherwise, if no other error occurs, getFile must return a FileEntry
+                    // corresponding to path.
+                    successCallback(new FileEntry(baseName, path));
                 }
-            } else if (!options.create && !exists) {
-                // If create is not true and the path doesn't exist, getFile must fail.
-                if (errorCallback) {
-                    errorCallback(FileError.NOT_FOUND_ERR);
-                }
-            } else if (!options.create && exists && fs.statSync(path).isDirectory()) {
-                // If create is not true and the path exists, but is a directory, getFile
-                // must fail.
-                if (errorCallback) {
-                    errorCallback(FileError.TYPE_MISMATCH_ERR);
-                }
-            } else {
-                // Otherwise, if no other error occurs, getFile must return a FileEntry
-                // corresponding to path.
-                successCallback(new FileEntry(baseName, path));
-            }
+            });
         };
 
         exports.getFileMetadata = function (successCallback, errorCallback, args) {
@@ -298,50 +307,59 @@
         exports.getDirectory = function (successCallback, errorCallback, args) {
             const path = args[0] + args[1];
             const options = args[2] || {};
-            const exists = fs.existsSync(path);
-            const baseName = nodeRequire('path').basename(path);
 
-            if (options.create === true && options.exclusive === true && exists) {
-                // If create and exclusive are both true, and the path already exists,
-                // getDirectory must fail.
-                if (errorCallback) {
-                    errorCallback(FileError.PATH_EXISTS_ERR);
-                }
-            } else if (options.create === true && !exists) {
-                // If create is true, the path doesn't exist, and no other error occurs,
-                // getDirectory must create it as a zero-length file and return a corresponding
-                // MyDirectoryEntry.
-                fs.mkdir(path, (err) => {
-                    if (err) {
-                        if (errorCallback) {
-                            errorCallback(FileError.PATH_EXISTS_ERR);
-                        }
-                        return;
+            fs.stat(path, (err, stats) => {
+                if (err && err.code !== 'ENOENT') {
+                    if (errorCallback) {
+                        errorCallback(FileError.INVALID_STATE_ERR);
                     }
+                    return;
+                }
+                const exists = !err;
+                const baseName = nodeRequire('path').basename(path);
+
+                if (options.create === true && options.exclusive === true && exists) {
+                    // If create and exclusive are both true, and the path already exists,
+                    // getDirectory must fail.
+                    if (errorCallback) {
+                        errorCallback(FileError.PATH_EXISTS_ERR);
+                    }
+                } else if (options.create === true && !exists) {
+                    // If create is true, the path doesn't exist, and no other error occurs,
+                    // getDirectory must create it as a zero-length file and return a corresponding
+                    // MyDirectoryEntry.
+                    fs.mkdir(path, (err) => {
+                        if (err) {
+                            if (errorCallback) {
+                                errorCallback(FileError.PATH_EXISTS_ERR);
+                            }
+                            return;
+                        }
+                        successCallback(new DirectoryEntry(baseName, path));
+                    });
+                } else if (options.create === true && exists) {
+                    if (stats.isDirectory()) {
+                        successCallback(new DirectoryEntry(baseName, path));
+                    } else if (errorCallback) {
+                        errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                    }
+                } else if (!options.create && !exists) {
+                    // If create is not true and the path doesn't exist, getDirectory must fail.
+                    if (errorCallback) {
+                        errorCallback(FileError.NOT_FOUND_ERR);
+                    }
+                } else if (!options.create && exists && stats.isFile()) {
+                    // If create is not true and the path exists, but is a file, getDirectory
+                    // must fail.
+                    if (errorCallback) {
+                        errorCallback(FileError.TYPE_MISMATCH_ERR);
+                    }
+                } else {
+                    // Otherwise, if no other error occurs, getDirectory must return a
+                    // DirectoryEntry corresponding to path.
                     successCallback(new DirectoryEntry(baseName, path));
-                });
-            } else if (options.create === true && exists) {
-                if (fs.statSync(path).isDirectory()) {
-                    successCallback(new DirectoryEntry(baseName, path));
-                } else if (errorCallback) {
-                    errorCallback(FileError.INVALID_MODIFICATION_ERR);
                 }
-            } else if (!options.create && !exists) {
-                // If create is not true and the path doesn't exist, getDirectory must fail.
-                if (errorCallback) {
-                    errorCallback(FileError.NOT_FOUND_ERR);
-                }
-            } else if (!options.create && exists && fs.statSync(path).isFile()) {
-                // If create is not true and the path exists, but is a file, getDirectory
-                // must fail.
-                if (errorCallback) {
-                    errorCallback(FileError.TYPE_MISMATCH_ERR);
-                }
-            } else {
-                // Otherwise, if no other error occurs, getDirectory must return a
-                // DirectoryEntry corresponding to path.
-                successCallback(new DirectoryEntry(baseName, path));
-            }
+            });
         };
 
         exports.getParent = function (successCallback, errorCallback, args) {
@@ -421,23 +439,21 @@
                 }
             }
 
-            if (path.indexOf(pathsPrefix.dataDirectory) === 0 && !fs.existsSync(pathsPrefix.dataDirectory)) {
-                fs.mkdirSync(pathsPrefix.dataDirectory, {recursive: true});
-            }
-
-            if (!fs.existsSync(path)) {
-                if (errorCallback) {
-                    errorCallback(FileError.NOT_FOUND_ERR);
+            fs.stat(path, (err, stats) => {
+                if (err) {
+                    if (errorCallback) {
+                        errorCallback(FileError.NOT_FOUND_ERR);
+                    }
+                    return;
                 }
-                return;
-            }
 
-            const baseName = nodeRequire('path').basename(path);
-            if (fs.statSync(path).isDirectory()) {
-                successCallback(new DirectoryEntry(baseName, path));
-            } else {
-                successCallback(new FileEntry(baseName, path));
-            }
+                const baseName = nodeRequire('path').basename(path);
+                if (stats.isDirectory()) {
+                    successCallback(new DirectoryEntry(baseName, path));
+                } else {
+                    successCallback(new FileEntry(baseName, path));
+                }
+            });
         };
 
         exports.requestAllPaths = function (successCallback) {
