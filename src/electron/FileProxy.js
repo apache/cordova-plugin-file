@@ -423,13 +423,15 @@
                     return;
                 }
 
+                const indexApplication = path.indexOf('application');
                 const indexPersistent = path.indexOf('persistent');
                 const indexTemporary = path.indexOf('temporary');
 
-                // cdvfile://localhost/persistent/path/to/file
-                if (indexPersistent !== -1) {
+                if (indexApplication !== -1) { // cdvfile://localhost/application/path/to/file
+                    path = pathsPrefix.applicationDirectory + path.substr(indexApplication + 11);
+                } else if (indexPersistent !== -1) { // cdvfile://localhost/persistent/path/to/file
                     path = pathsPrefix.dataDirectory + path.substr(indexPersistent + 10);
-                } else if (indexTemporary !== -1) {
+                } else if (indexTemporary !== -1) { // cdvfile://localhost/temporary/path/to/file
                     path = pathsPrefix.tempDirectory + path.substr(indexTemporary + 9);
                 } else {
                     if (errorCallback) {
