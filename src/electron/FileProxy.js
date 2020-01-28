@@ -428,11 +428,11 @@
                 const indexTemporary = path.indexOf('temporary');
 
                 if (indexApplication !== -1) { // cdvfile://localhost/application/path/to/file
-                    path = pathsPrefix.applicationDirectory + path.substr(indexApplication + 11);
+                    path = pathsPrefix.applicationDirectory + path.substr(indexApplication + 12);
                 } else if (indexPersistent !== -1) { // cdvfile://localhost/persistent/path/to/file
-                    path = pathsPrefix.dataDirectory + path.substr(indexPersistent + 10);
+                    path = pathsPrefix.dataDirectory + path.substr(indexPersistent + 11);
                 } else if (indexTemporary !== -1) { // cdvfile://localhost/temporary/path/to/file
-                    path = pathsPrefix.tempDirectory + path.substr(indexTemporary + 9);
+                    path = pathsPrefix.tempDirectory + path.substr(indexTemporary + 10);
                 } else {
                     if (errorCallback) {
                         errorCallback(FileError.ENCODING_ERR);
