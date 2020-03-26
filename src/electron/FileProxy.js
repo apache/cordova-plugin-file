@@ -196,10 +196,10 @@
                 if (err) {
                     if (errorCallback) {
                         errorCallback(FileError.NOT_FOUND_ERR);
-                        return;
                     }
-                    successCallback();
+                    return;
                 }
+                successCallback();
             });
         };
 
