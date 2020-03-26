@@ -492,12 +492,12 @@
                             break;
                         }
                     })
-                    .catch(() => promisify(fs.close)(fd))
                     .catch(() => {
                         if (errorCallback) {
                             errorCallback(FileError.NOT_READABLE_ERR);
                         }
-                    });
+                    })
+                    .then(() => promisify(fs.close)(fd));
             });
         }
 
