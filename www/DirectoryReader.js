@@ -62,7 +62,7 @@ DirectoryReader.prototype.readEntries = function (successCallback, errorCallback
             entry.isFile = result[i].isFile;
             entry.name = result[i].name;
             entry.fullPath = result[i].fullPath;
-            entry.filesystem = new (require('./FileSystem'))(result[i].filesystem.name || result[i].filesystemName);
+            entry.filesystem = new (require('./FileSystem'))(fs);
             entry.nativeURL = result[i].nativeURL;
             retVal.push(entry);
         }
