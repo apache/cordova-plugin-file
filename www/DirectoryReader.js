@@ -47,7 +47,7 @@ DirectoryReader.prototype.readEntries = function (successCallback, errorCallback
         var retVal = [];
         for (var i = 0; i < result.length; i++) {
             var fs;
-            if (typeof result[i].filesystem !== undefined)
+            if (typeof result[i].filesystem !== "undefined")
                 fs = result[i].filesystem.name;
             else
                 fs = result[i].filesystemName;
