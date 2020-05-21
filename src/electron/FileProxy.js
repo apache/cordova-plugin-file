@@ -289,6 +289,21 @@
             });
         };
 
+        exports.truncate = function (successCallback, errorCallback, args) {
+            const fullPath = args[0];
+            const size = args[1];
+
+            fs.truncate(fullPath, size, err => {
+                if (err) {
+                    if (errorCallback) {
+                        errorCallback(FileError.INVALID_STATE_ERR);
+                    }
+                    return;
+                }
+                successCallback(size);
+            })
+        };
+
         exports.removeRecursively = function (successCallback, errorCallback, args) {
             const fullPath = args[0];
             const rimraf = require('./rimraf');
