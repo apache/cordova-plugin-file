@@ -301,7 +301,7 @@
                     return;
                 }
                 successCallback(size);
-            })
+            });
         };
 
         exports.removeRecursively = function (successCallback, errorCallback, args) {
