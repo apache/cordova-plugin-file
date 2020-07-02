@@ -18,6 +18,7 @@
  * under the License.
  *
  */
+
 (function () {
     /* global require, exports, module */
     /* global FILESYSTEM_PREFIX */
@@ -32,7 +33,7 @@
     if (require('./isChrome')()) {
         var pathsPrefix = {
             // Read-only directory where the application is installed.
-            applicationDirectory: location.origin + '/', // eslint-disable-line no-undef
+            applicationDirectory: location.origin + '/',
             // Where to put app-specific data files.
             dataDirectory: 'filesystem:file:///persistent/',
             // Cached files that should survive app restarts.
@@ -56,11 +57,6 @@
     var File = require('./File');
 
     (function (exports, global) {
-        var indexedDB = global.indexedDB || global.mozIndexedDB;
-        if (!indexedDB) {
-            throw 'Firefox OS File plugin: indexedDB not supported';
-        }
-
         var fs_ = null;
 
         var idb_ = {};
@@ -71,7 +67,7 @@
 
         var pathsPrefix = {
             // Read-only directory where the application is installed.
-            applicationDirectory: location.origin + '/', // eslint-disable-line no-undef
+            applicationDirectory: location.origin + '/',
             // Where to put app-specific data files.
             dataDirectory: 'file:///persistent/',
             // Cached files that should survive app restarts.
@@ -81,13 +77,10 @@
 
         var unicodeLastChar = 65535;
 
-    /** * Exported functionality ***/
+        /** * Exported functionality ***/
 
         exports.requestFileSystem = function (successCallback, errorCallback, args) {
             var type = args[0];
-            // Size is ignored since IDB filesystem size depends
-            // on browser implementation and can't be set up by user
-            var size = args[1]; // eslint-disable-line no-unused-vars
 
             if (type !== LocalFileSystem.TEMPORARY && type !== LocalFileSystem.PERSISTENT) {
                 if (errorCallback) {
@@ -97,14 +90,18 @@
             }
 
             var name = type === LocalFileSystem.TEMPORARY ? 'temporary' : 'persistent';
-            var storageName = (location.protocol + location.host).replace(/:/g, '_'); // eslint-disable-line no-undef
+            var storageName = (location.protocol + location.host).replace(/:/g, '_');
 
             var root = new DirectoryEntry('', DIR_SEPARATOR);
             fs_ = new FileSystem(name, root);
 
-            idb_.open(storageName, function () {
-                successCallback(fs_);
-            }, errorCallback);
+            idb_.open(
+                storageName,
+                function () {
+                    successCallback(fs_);
+                },
+                errorCallback
+            );
         };
 
         // Overridden by Android, BlackBerry 10 and iOS to populate fsMap
@@ -122,15 +119,24 @@
 
             var path = resolveToFullPath_(fullPath);
 
-            exports.getDirectory(function () {
-                idb_.getAllEntries(path.fullPath + DIR_SEPARATOR, path.storagePath, function (entries) {
-                    successCallback(entries);
-                }, errorCallback);
-            }, function () {
-                if (errorCallback) {
-                    errorCallback(FileError.NOT_FOUND_ERR);
-                }
-            }, [path.storagePath, path.fullPath, {create: false}]);
+            exports.getDirectory(
+                function () {
+                    idb_.getAllEntries(
+                        path.fullPath + DIR_SEPARATOR,
+                        path.storagePath,
+                        function (entries) {
+                            successCallback(entries);
+                        },
+                        errorCallback
+                    );
+                },
+                function () {
+                    if (errorCallback) {
+                        errorCallback(FileError.NOT_FOUND_ERR);
+                    }
+                },
+                [path.storagePath, path.fullPath, { create: false }]
+            );
         };
 
         exports.getFile = function (successCallback, errorCallback, args) {
@@ -141,103 +147,121 @@
             // Create an absolute path if we were handed a relative one.
             path = resolveToFullPath_(fullPath, path);
 
-            idb_.get(path.storagePath, function (fileEntry) {
-                if (options.create === true && options.exclusive === true && fileEntry) {
-                    // If create and exclusive are both true, and the path already exists,
-                    // getFile must fail.
+            idb_.get(
+                path.storagePath,
+                function (fileEntry) {
+                    if (options.create === true && options.exclusive === true && fileEntry) {
+                        // If create and exclusive are both true, and the path already exists,
+                        // getFile must fail.
 
-                    if (errorCallback) {
-                        errorCallback(FileError.PATH_EXISTS_ERR);
-                    }
-                } else if (options.create === true && !fileEntry) {
-                    // If create is true, the path doesn't exist, and no other error occurs,
-                    // getFile must create it as a zero-length file and return a corresponding
-                    // FileEntry.
-                    var newFileEntry = new FileEntry(path.fileName, path.fullPath, new FileSystem(path.fsName, fs_.root));
-
-                    newFileEntry.file_ = new MyFile({
-                        size: 0,
-                        name: newFileEntry.name,
-                        lastModifiedDate: new Date(),
-                        storagePath: path.storagePath
-                    });
-
-                    idb_.put(newFileEntry, path.storagePath, successCallback, errorCallback);
-                } else if (options.create === true && fileEntry) {
-                    if (fileEntry.isFile) {
-                        // Overwrite file, delete then create new.
-                        idb_['delete'](path.storagePath, function () {
-                            var newFileEntry = new FileEntry(path.fileName, path.fullPath, new FileSystem(path.fsName, fs_.root));
-
-                            newFileEntry.file_ = new MyFile({
-                                size: 0,
-                                name: newFileEntry.name,
-                                lastModifiedDate: new Date(),
-                                storagePath: path.storagePath
-                            });
-
-                            idb_.put(newFileEntry, path.storagePath, successCallback, errorCallback);
-                        }, errorCallback);
-                    } else {
                         if (errorCallback) {
-                            errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                            errorCallback(FileError.PATH_EXISTS_ERR);
                         }
-                    }
-                } else if ((!options.create || options.create === false) && !fileEntry) {
-                    // If create is not true and the path doesn't exist, getFile must fail.
-                    if (errorCallback) {
-                        errorCallback(FileError.NOT_FOUND_ERR);
-                    }
-                } else if ((!options.create || options.create === false) && fileEntry &&
-                    fileEntry.isDirectory) {
-                    // If create is not true and the path exists, but is a directory, getFile
-                    // must fail.
-                    if (errorCallback) {
-                        errorCallback(FileError.TYPE_MISMATCH_ERR);
-                    }
-                } else {
-                    // Otherwise, if no other error occurs, getFile must return a FileEntry
-                    // corresponding to path.
+                    } else if (options.create === true && !fileEntry) {
+                        // If create is true, the path doesn't exist, and no other error occurs,
+                        // getFile must create it as a zero-length file and return a corresponding
+                        // FileEntry.
+                        var newFileEntry = new FileEntry(path.fileName, path.fullPath, new FileSystem(path.fsName, fs_.root));
 
-                    successCallback(fileEntryFromIdbEntry(fileEntry));
-                }
-            }, errorCallback);
+                        newFileEntry.file_ = new MyFile({
+                            size: 0,
+                            name: newFileEntry.name,
+                            lastModifiedDate: new Date(),
+                            storagePath: path.storagePath
+                        });
+
+                        idb_.put(newFileEntry, path.storagePath, successCallback, errorCallback);
+                    } else if (options.create === true && fileEntry) {
+                        if (fileEntry.isFile) {
+                            // Overwrite file, delete then create new.
+                            idb_.delete(
+                                path.storagePath,
+                                function () {
+                                    var newFileEntry = new FileEntry(path.fileName, path.fullPath, new FileSystem(path.fsName, fs_.root));
+
+                                    newFileEntry.file_ = new MyFile({
+                                        size: 0,
+                                        name: newFileEntry.name,
+                                        lastModifiedDate: new Date(),
+                                        storagePath: path.storagePath
+                                    });
+
+                                    idb_.put(newFileEntry, path.storagePath, successCallback, errorCallback);
+                                },
+                                errorCallback
+                            );
+                        } else {
+                            if (errorCallback) {
+                                errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                            }
+                        }
+                    } else if ((!options.create || options.create === false) && !fileEntry) {
+                        // If create is not true and the path doesn't exist, getFile must fail.
+                        if (errorCallback) {
+                            errorCallback(FileError.NOT_FOUND_ERR);
+                        }
+                    } else if ((!options.create || options.create === false) && fileEntry && fileEntry.isDirectory) {
+                        // If create is not true and the path exists, but is a directory, getFile
+                        // must fail.
+                        if (errorCallback) {
+                            errorCallback(FileError.TYPE_MISMATCH_ERR);
+                        }
+                    } else {
+                        // Otherwise, if no other error occurs, getFile must return a FileEntry
+                        // corresponding to path.
+
+                        successCallback(fileEntryFromIdbEntry(fileEntry));
+                    }
+                },
+                errorCallback
+            );
         };
 
         exports.getFileMetadata = function (successCallback, errorCallback, args) {
             var fullPath = args[0];
 
-            exports.getFile(function (fileEntry) {
-                successCallback(new File(fileEntry.file_.name, fileEntry.fullPath, '', fileEntry.file_.lastModifiedDate,
-                    fileEntry.file_.size));
-            }, errorCallback, [fullPath, null]);
+            exports.getFile(
+                function (fileEntry) {
+                    successCallback(
+                        new File(fileEntry.file_.name, fileEntry.fullPath, '', fileEntry.file_.lastModifiedDate, fileEntry.file_.size)
+                    );
+                },
+                errorCallback,
+                [fullPath, null]
+            );
         };
 
         exports.getMetadata = function (successCallback, errorCallback, args) {
-            exports.getFile(function (fileEntry) {
-                successCallback(
-                    {
+            exports.getFile(
+                function (fileEntry) {
+                    successCallback({
                         modificationTime: fileEntry.file_.lastModifiedDate,
                         size: fileEntry.file_.lastModifiedDate
                     });
-            }, errorCallback, args);
+                },
+                errorCallback,
+                args
+            );
         };
 
         exports.setMetadata = function (successCallback, errorCallback, args) {
             var fullPath = args[0];
             var metadataObject = args[1];
 
-            exports.getFile(function (fileEntry) {
-                fileEntry.file_.lastModifiedDate = metadataObject.modificationTime;
-                idb_.put(fileEntry, fileEntry.file_.storagePath, successCallback, errorCallback);
-            }, errorCallback, [fullPath, null]);
+            exports.getFile(
+                function (fileEntry) {
+                    fileEntry.file_.lastModifiedDate = metadataObject.modificationTime;
+                    idb_.put(fileEntry, fileEntry.file_.storagePath, successCallback, errorCallback);
+                },
+                errorCallback,
+                [fullPath, null]
+            );
         };
 
         exports.write = function (successCallback, errorCallback, args) {
             var fileName = args[0];
             var data = args[1];
             var position = args[2];
-            var isBinary = args[3]; // eslint-disable-line no-unused-vars
 
             if (!data) {
                 if (errorCallback) {
@@ -247,41 +271,49 @@
             }
 
             if (typeof data === 'string' || data instanceof String) {
-                data = new Blob([data]); // eslint-disable-line no-undef
+                data = new Blob([data]);
             }
 
-            exports.getFile(function (fileEntry) {
-                var blob_ = fileEntry.file_.blob_;
+            exports.getFile(
+                function (fileEntry) {
+                    var blob_ = fileEntry.file_.blob_;
 
-                if (!blob_) {
-                    blob_ = new Blob([data], {type: data.type}); // eslint-disable-line no-undef
-                } else {
-                    // Calc the head and tail fragments
-                    var head = blob_.slice(0, position);
-                    var tail = blob_.slice(position + (data.size || data.byteLength));
+                    if (!blob_) {
+                        blob_ = new Blob([data], { type: data.type });
+                    } else {
+                        // Calc the head and tail fragments
+                        var head = blob_.slice(0, position);
+                        var tail = blob_.slice(position + (data.size || data.byteLength));
 
-                    // Calc the padding
-                    var padding = position - head.size;
-                    if (padding < 0) {
-                        padding = 0;
+                        // Calc the padding
+                        var padding = position - head.size;
+                        if (padding < 0) {
+                            padding = 0;
+                        }
+
+                        // Do the "write". In fact, a full overwrite of the Blob.
+                        blob_ = new Blob([head, new Uint8Array(padding), data, tail], { type: data.type });
                     }
 
-                    // Do the "write". In fact, a full overwrite of the Blob.
-                    blob_ = new Blob([head, new Uint8Array(padding), data, tail], // eslint-disable-line no-undef
-                        {type: data.type});
-                }
+                    // Set the blob we're writing on this file entry so we can recall it later.
+                    fileEntry.file_.blob_ = blob_;
+                    fileEntry.file_.lastModifiedDate = new Date() || null;
+                    fileEntry.file_.size = blob_.size;
+                    fileEntry.file_.name = blob_.name;
+                    fileEntry.file_.type = blob_.type;
 
-                // Set the blob we're writing on this file entry so we can recall it later.
-                fileEntry.file_.blob_ = blob_;
-                fileEntry.file_.lastModifiedDate = new Date() || null;
-                fileEntry.file_.size = blob_.size;
-                fileEntry.file_.name = blob_.name;
-                fileEntry.file_.type = blob_.type;
-
-                idb_.put(fileEntry, fileEntry.file_.storagePath, function () {
-                    successCallback(data.size || data.byteLength);
-                }, errorCallback);
-            }, errorCallback, [fileName, null]);
+                    idb_.put(
+                        fileEntry,
+                        fileEntry.file_.storagePath,
+                        function () {
+                            successCallback(data.size || data.byteLength);
+                        },
+                        errorCallback
+                    );
+                },
+                errorCallback,
+                [fileName, null]
+            );
         };
 
         exports.readAsText = function (successCallback, errorCallback, args) {
@@ -331,20 +363,31 @@
             function deleteEntry (isDirectory) {
                 // TODO: This doesn't protect against directories that have content in it.
                 // Should throw an error instead if the dirEntry is not empty.
-                idb_['delete'](fullPath, function () {
-                    successCallback();
-                }, function () {
-                    if (errorCallback) { errorCallback(); }
-                }, isDirectory);
+                idb_.delete(
+                    fullPath,
+                    function () {
+                        successCallback();
+                    },
+                    function () {
+                        if (errorCallback) {
+                            errorCallback();
+                        }
+                    },
+                    isDirectory
+                );
             }
 
             // We need to to understand what we are deleting:
-            exports.getDirectory(function (entry) {
-                deleteEntry(entry.isDirectory);
-            }, function () {
-                // DirectoryEntry was already deleted or entry is FileEntry
-                deleteEntry(false);
-            }, [fullPath, null, {create: false}]);
+            exports.getDirectory(
+                function (entry) {
+                    deleteEntry(entry.isDirectory);
+                },
+                function () {
+                    // DirectoryEntry was already deleted or entry is FileEntry
+                    deleteEntry(false);
+                },
+                [fullPath, null, { create: false }]
+            );
         };
 
         exports.getDirectory = function (successCallback, errorCallback, args) {
@@ -355,74 +398,77 @@
             // Create an absolute path if we were handed a relative one.
             path = resolveToFullPath_(fullPath, path);
 
-            idb_.get(path.storagePath, function (folderEntry) {
-                if (!options) {
-                    options = {};
-                }
-
-                if (options.create === true && options.exclusive === true && folderEntry) {
-                    // If create and exclusive are both true, and the path already exists,
-                    // getDirectory must fail.
-                    if (errorCallback) {
-                        errorCallback(FileError.PATH_EXISTS_ERR);
+            idb_.get(
+                path.storagePath,
+                function (folderEntry) {
+                    if (!options) {
+                        options = {};
                     }
-                    // There is a strange bug in mobilespec + FF, which results in coming to multiple else-if's
-                    // so we are shielding from it with returns.
-                    return;
-                }
 
-                if (options.create === true && !folderEntry) {
-                    // If create is true, the path doesn't exist, and no other error occurs,
-                    // getDirectory must create it as a zero-length file and return a corresponding
-                    // MyDirectoryEntry.
-                    var dirEntry = new DirectoryEntry(path.fileName, path.fullPath, new FileSystem(path.fsName, fs_.root));
-
-                    idb_.put(dirEntry, path.storagePath, successCallback, errorCallback);
-                    return;
-                }
-
-                if (options.create === true && folderEntry) {
-
-                    if (folderEntry.isDirectory) {
-                        // IDB won't save methods, so we need re-create the MyDirectoryEntry.
-                        successCallback(new DirectoryEntry(folderEntry.name, folderEntry.fullPath, folderEntry.filesystem));
-                    } else {
+                    if (options.create === true && options.exclusive === true && folderEntry) {
+                        // If create and exclusive are both true, and the path already exists,
+                        // getDirectory must fail.
                         if (errorCallback) {
-                            errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                            errorCallback(FileError.PATH_EXISTS_ERR);
                         }
-                    }
-                    return;
-                }
-
-                if ((!options.create || options.create === false) && !folderEntry) {
-                    // Handle root special. It should always exist.
-                    if (path.fullPath === DIR_SEPARATOR) {
-                        successCallback(fs_.root);
+                        // There is a strange bug in mobilespec + FF, which results in coming to multiple else-if's
+                        // so we are shielding from it with returns.
                         return;
                     }
 
-                    // If create is not true and the path doesn't exist, getDirectory must fail.
-                    if (errorCallback) {
-                        errorCallback(FileError.NOT_FOUND_ERR);
+                    if (options.create === true && !folderEntry) {
+                        // If create is true, the path doesn't exist, and no other error occurs,
+                        // getDirectory must create it as a zero-length file and return a corresponding
+                        // MyDirectoryEntry.
+                        var dirEntry = new DirectoryEntry(path.fileName, path.fullPath, new FileSystem(path.fsName, fs_.root));
+
+                        idb_.put(dirEntry, path.storagePath, successCallback, errorCallback);
+                        return;
                     }
 
-                    return;
-                }
-                if ((!options.create || options.create === false) && folderEntry && folderEntry.isFile) {
-                    // If create is not true and the path exists, but is a file, getDirectory
-                    // must fail.
-                    if (errorCallback) {
-                        errorCallback(FileError.TYPE_MISMATCH_ERR);
+                    if (options.create === true && folderEntry) {
+                        if (folderEntry.isDirectory) {
+                            // IDB won't save methods, so we need re-create the MyDirectoryEntry.
+                            successCallback(new DirectoryEntry(folderEntry.name, folderEntry.fullPath, folderEntry.filesystem));
+                        } else {
+                            if (errorCallback) {
+                                errorCallback(FileError.INVALID_MODIFICATION_ERR);
+                            }
+                        }
+                        return;
                     }
-                    return;
-                }
 
-                // Otherwise, if no other error occurs, getDirectory must return a
-                // MyDirectoryEntry corresponding to path.
+                    if ((!options.create || options.create === false) && !folderEntry) {
+                        // Handle root special. It should always exist.
+                        if (path.fullPath === DIR_SEPARATOR) {
+                            successCallback(fs_.root);
+                            return;
+                        }
 
-                // IDB won't' save methods, so we need re-create MyDirectoryEntry.
-                successCallback(new DirectoryEntry(folderEntry.name, folderEntry.fullPath, folderEntry.filesystem));
-            }, errorCallback);
+                        // If create is not true and the path doesn't exist, getDirectory must fail.
+                        if (errorCallback) {
+                            errorCallback(FileError.NOT_FOUND_ERR);
+                        }
+
+                        return;
+                    }
+                    if ((!options.create || options.create === false) && folderEntry && folderEntry.isFile) {
+                        // If create is not true and the path exists, but is a file, getDirectory
+                        // must fail.
+                        if (errorCallback) {
+                            errorCallback(FileError.TYPE_MISMATCH_ERR);
+                        }
+                        return;
+                    }
+
+                    // Otherwise, if no other error occurs, getDirectory must return a
+                    // MyDirectoryEntry corresponding to path.
+
+                    // IDB won't' save methods, so we need re-create MyDirectoryEntry.
+                    successCallback(new DirectoryEntry(folderEntry.name, folderEntry.fullPath, folderEntry.filesystem));
+                },
+                errorCallback
+            );
         };
 
         exports.getParent = function (successCallback, errorCallback, args) {
@@ -435,8 +481,7 @@
             // file:///persistent/path/to/file or
             // file:///persistent/path/to/directory/
 
-            if (fullPath === DIR_SEPARATOR || fullPath === pathsPrefix.cacheDirectory ||
-                fullPath === pathsPrefix.dataDirectory) {
+            if (fullPath === DIR_SEPARATOR || fullPath === pathsPrefix.cacheDirectory || fullPath === pathsPrefix.dataDirectory) {
                 successCallback(fs_.root);
                 return;
             }
@@ -452,13 +497,13 @@
             var path = pathArr.join(DIR_SEPARATOR) + DIR_SEPARATOR;
 
             // To get parent of root files
-            var joined = path + parentName + DIR_SEPARATOR;// is like this: file:///persistent/
+            var joined = path + parentName + DIR_SEPARATOR; // is like this: file:///persistent/
             if (joined === pathsPrefix.cacheDirectory || joined === pathsPrefix.dataDirectory) {
-                exports.getDirectory(successCallback, errorCallback, [joined, DIR_SEPARATOR, {create: false}]);
+                exports.getDirectory(successCallback, errorCallback, [joined, DIR_SEPARATOR, { create: false }]);
                 return;
             }
 
-            exports.getDirectory(successCallback, errorCallback, [path, parentName, {create: false}]);
+            exports.getDirectory(successCallback, errorCallback, [path, parentName, { create: false }]);
         };
 
         exports.copyTo = function (successCallback, errorCallback, args) {
@@ -475,41 +520,56 @@
             }
 
             // Read src file
-            exports.getFile(function (srcFileEntry) {
-
-                var path = resolveToFullPath_(parentFullPath);
-                // Check directory
-                exports.getDirectory(function () {
-
-                    // Create dest file
-                    exports.getFile(function (dstFileEntry) {
-
-                        exports.write(function () {
-                            successCallback(dstFileEntry);
-                        }, errorCallback, [dstFileEntry.file_.storagePath, srcFileEntry.file_.blob_, 0]);
-
-                    }, errorCallback, [parentFullPath, name, {create: true}]);
-
-                }, function () { if (errorCallback) { errorCallback(FileError.NOT_FOUND_ERR); } },
-                [path.storagePath, null, {create: false}]);
-
-            }, errorCallback, [srcPath, null]);
+            exports.getFile(
+                function (srcFileEntry) {
+                    var path = resolveToFullPath_(parentFullPath);
+                    // Check directory
+                    exports.getDirectory(
+                        function () {
+                            // Create dest file
+                            exports.getFile(
+                                function (dstFileEntry) {
+                                    exports.write(
+                                        function () {
+                                            successCallback(dstFileEntry);
+                                        },
+                                        errorCallback,
+                                        [dstFileEntry.file_.storagePath, srcFileEntry.file_.blob_, 0]
+                                    );
+                                },
+                                errorCallback,
+                                [parentFullPath, name, { create: true }]
+                            );
+                        },
+                        function () {
+                            if (errorCallback) {
+                                errorCallback(FileError.NOT_FOUND_ERR);
+                            }
+                        },
+                        [path.storagePath, null, { create: false }]
+                    );
+                },
+                errorCallback,
+                [srcPath, null]
+            );
         };
 
         exports.moveTo = function (successCallback, errorCallback, args) {
             var srcPath = args[0];
-            // parentFullPath and name parameters is ignored because
-            // args is being passed downstream to exports.copyTo method
-            var parentFullPath = args[1]; // eslint-disable-line
-            var name = args[2]; // eslint-disable-line
 
-            exports.copyTo(function (fileEntry) {
-
-                exports.remove(function () {
-                    successCallback(fileEntry);
-                }, errorCallback, [srcPath]);
-
-            }, errorCallback, args);
+            exports.copyTo(
+                function (fileEntry) {
+                    exports.remove(
+                        function () {
+                            successCallback(fileEntry);
+                        },
+                        errorCallback,
+                        [srcPath]
+                    );
+                },
+                errorCallback,
+                args
+            );
         };
 
         exports.resolveLocalFileSystemURI = function (successCallback, errorCallback, args) {
@@ -521,7 +581,7 @@
             }
 
             // support for encodeURI
-            if (/\%5/g.test(path) || /\%20/g.test(path)) {  // eslint-disable-line no-useless-escape
+            if (/%5/g.test(path) || /%20/g.test(path)) {
                 path = decodeURI(path);
             }
 
@@ -578,36 +638,54 @@
                 path = path.substring(pathsPrefix.dataDirectory.length - 1);
                 path = handlePathSlashes(path);
 
-                exports.requestFileSystem(function () {
-                    exports.getFile(successCallback, function () {
-                        exports.getDirectory(successCallback, errorCallback, [pathsPrefix.dataDirectory, path,
-                        {create: false}]);
-                    }, [pathsPrefix.dataDirectory, path, {create: false}]);
-                }, errorCallback, [LocalFileSystem.PERSISTENT]);
+                exports.requestFileSystem(
+                    function () {
+                        exports.getFile(
+                            successCallback,
+                            function () {
+                                exports.getDirectory(successCallback, errorCallback, [pathsPrefix.dataDirectory, path, { create: false }]);
+                            },
+                            [pathsPrefix.dataDirectory, path, { create: false }]
+                        );
+                    },
+                    errorCallback,
+                    [LocalFileSystem.PERSISTENT]
+                );
             } else if (path.indexOf(pathsPrefix.cacheDirectory) === 0) {
                 path = path.substring(pathsPrefix.cacheDirectory.length - 1);
                 path = handlePathSlashes(path);
 
-                exports.requestFileSystem(function () {
-                    exports.getFile(successCallback, function () {
-                        exports.getDirectory(successCallback, errorCallback, [pathsPrefix.cacheDirectory, path,
-                        {create: false}]);
-                    }, [pathsPrefix.cacheDirectory, path, {create: false}]);
-                }, errorCallback, [LocalFileSystem.TEMPORARY]);
+                exports.requestFileSystem(
+                    function () {
+                        exports.getFile(
+                            successCallback,
+                            function () {
+                                exports.getDirectory(successCallback, errorCallback, [pathsPrefix.cacheDirectory, path, { create: false }]);
+                            },
+                            [pathsPrefix.cacheDirectory, path, { create: false }]
+                        );
+                    },
+                    errorCallback,
+                    [LocalFileSystem.TEMPORARY]
+                );
             } else if (path.indexOf(pathsPrefix.applicationDirectory) === 0) {
                 path = path.substring(pathsPrefix.applicationDirectory.length);
                 // TODO: need to cut out redundant slashes?
 
-                var xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
+                var xhr = new XMLHttpRequest();
                 xhr.open('GET', path, true);
                 xhr.onreadystatechange = function () {
                     if (xhr.status === 200 && xhr.readyState === 4) {
-                        exports.requestFileSystem(function (fs) {
-                            fs.name = location.hostname; // eslint-disable-line no-undef
+                        exports.requestFileSystem(
+                            function (fs) {
+                                fs.name = location.hostname;
 
-                            // TODO: need to call exports.getFile(...) to handle errors correct
-                            fs.root.getFile(path, {create: true}, writeFile, errorCallback);
-                        }, errorCallback, [LocalFileSystem.PERSISTENT]);
+                                // TODO: need to call exports.getFile(...) to handle errors correct
+                                fs.root.getFile(path, { create: true }, writeFile, errorCallback);
+                            },
+                            errorCallback,
+                            [LocalFileSystem.PERSISTENT]
+                        );
                     }
                 };
 
@@ -628,7 +706,7 @@
                 entry.createWriter(function (fileWriter) {
                     fileWriter.onwriteend = function (evt) {
                         if (!evt.target.error) {
-                            entry.filesystemName = location.hostname; // eslint-disable-line no-undef
+                            entry.filesystemName = location.hostname;
                             successCallback(entry);
                         }
                     };
@@ -637,8 +715,8 @@
                             errorCallback(FileError.NOT_READABLE_ERR);
                         }
                     };
-                    fileWriter.write(new Blob([xhr.response])); // eslint-disable-line no-undef
-                }, errorCallback); // eslint-disable-line no-undef
+                    fileWriter.write(new Blob([xhr.response]));
+                }, errorCallback);
             }
         };
 
@@ -646,7 +724,7 @@
             successCallback(pathsPrefix);
         };
 
-    /** * Helpers ***/
+        /** * Helpers ***/
 
         /**
          * Interface to wrap the native File interface.
@@ -660,7 +738,7 @@
          * @constructor
          */
         function MyFile (opts) {
-            var blob_ = new Blob(); // eslint-disable-line no-undef
+            var blob_ = new Blob();
 
             this.size = opts.size || 0;
             this.name = opts.name || '';
@@ -711,9 +789,11 @@
             },
             setBase64: function (myFile, base64) {
                 if (base64) {
-                    var arrayBuffer = (new Uint8Array(
-                        [].map.call(atob(base64), function (c) { return c.charCodeAt(0); })
-                    )).buffer;
+                    var arrayBuffer = new Uint8Array(
+                        [].map.call(atob(base64), function (c) {
+                            return c.charCodeAt(0);
+                        })
+                    ).buffer;
 
                     myFile.blob_ = new Blob([arrayBuffer], { type: myFile.type });
                 } else {
@@ -759,9 +839,11 @@
                     parts[i] = '';
                 }
             }
-            fullPath = parts.filter(function (el) {
-                return el;
-            }).join(DIR_SEPARATOR);
+            fullPath = parts
+                .filter(function (el) {
+                    return el;
+                })
+                .join(DIR_SEPARATOR);
 
             // Add back in leading slash.
             if (fullPath[0] !== DIR_SEPARATOR) {
@@ -778,8 +860,7 @@
             fullPath = fullPath.replace(/\/\./g, DIR_SEPARATOR);
 
             // Remove '/' if it appears on the end.
-            if (fullPath[fullPath.length - 1] === DIR_SEPARATOR &&
-                fullPath !== DIR_SEPARATOR) {
+            if (fullPath[fullPath.length - 1] === DIR_SEPARATOR && fullPath !== DIR_SEPARATOR) {
                 fullPath = fullPath.substring(0, fullPath.length - 1);
             }
 
@@ -804,41 +885,44 @@
         }
 
         function readAs (what, fullPath, encoding, startPos, endPos, successCallback, errorCallback) {
-            exports.getFile(function (fileEntry) {
-                var fileReader = new FileReader(); // eslint-disable-line no-undef
-                var blob = fileEntry.file_.blob_.slice(startPos, endPos);
+            exports.getFile(
+                function (fileEntry) {
+                    var fileReader = new FileReader();
+                    var blob = fileEntry.file_.blob_.slice(startPos, endPos);
 
-                fileReader.onload = function (e) {
-                    successCallback(e.target.result);
-                };
+                    fileReader.onload = function (e) {
+                        successCallback(e.target.result);
+                    };
 
-                fileReader.onerror = errorCallback;
+                    fileReader.onerror = errorCallback;
 
-                switch (what) {
-                case 'text':
-                    fileReader.readAsText(blob, encoding);
-                    break;
-                case 'dataURL':
-                    fileReader.readAsDataURL(blob);
-                    break;
-                case 'arrayBuffer':
-                    fileReader.readAsArrayBuffer(blob);
-                    break;
-                case 'binaryString':
-                    fileReader.readAsBinaryString(blob);
-                    break;
-                }
-
-            }, errorCallback, [fullPath, null]);
+                    switch (what) {
+                    case 'text':
+                        fileReader.readAsText(blob, encoding);
+                        break;
+                    case 'dataURL':
+                        fileReader.readAsDataURL(blob);
+                        break;
+                    case 'arrayBuffer':
+                        fileReader.readAsArrayBuffer(blob);
+                        break;
+                    case 'binaryString':
+                        fileReader.readAsBinaryString(blob);
+                        break;
+                    }
+                },
+                errorCallback,
+                [fullPath, null]
+            );
         }
 
-    /** * Core logic to handle IDB operations ***/
+        /** * Core logic to handle IDB operations ***/
 
         idb_.open = function (dbName, successCallback, errorCallback) {
             var self = this;
 
             // TODO: FF 12.0a1 isn't liking a db name with : in it.
-            var request = indexedDB.open(dbName.replace(':', '_')/*, 1 /*version */);
+            var request = indexedDB.open(dbName.replace(':', '_') /*, 1 /*version */);
 
             request.onerror = errorCallback || onError;
 
@@ -852,7 +936,7 @@
                 self.db.onerror = onError;
 
                 if (!self.db.objectStoreNames.contains(FILE_STORE_)) {
-                    self.db.createObjectStore(FILE_STORE_/*, {keyPath: 'id', autoIncrement: true} */);
+                    self.db.createObjectStore(FILE_STORE_ /*, {keyPath: 'id', autoIncrement: true} */);
                 }
             };
 
@@ -912,8 +996,10 @@
                 storagePath = storagePath.substring(0, storagePath.length - 1);
             }
 
-            var range = IDBKeyRange.bound(storagePath + DIR_SEPARATOR + ' ',
-                storagePath + DIR_SEPARATOR + String.fromCharCode(unicodeLastChar));
+            var range = IDBKeyRange.bound(
+                storagePath + DIR_SEPARATOR + ' ',
+                storagePath + DIR_SEPARATOR + String.fromCharCode(unicodeLastChar)
+            );
 
             var tx = this.db.transaction([FILE_STORE_], 'readonly');
             tx.onabort = errorCallback || onError;
@@ -956,12 +1042,12 @@
                     var val = cursor.value;
 
                     results.push(val.isFile ? fileEntryFromIdbEntry(val) : new DirectoryEntry(val.name, val.fullPath, val.filesystem));
-                    cursor['continue']();
+                    cursor.continue();
                 }
             };
         };
 
-        idb_['delete'] = function (fullPath, successCallback, errorCallback, isDirectory) {
+        idb_.delete = function (fullPath, successCallback, errorCallback, isDirectory) {
             if (!idb_.db) {
                 if (errorCallback) {
                     errorCallback(FileError.INVALID_MODIFICATION_ERR);
@@ -985,12 +1071,12 @@
                     var newTx = this.db.transaction([FILE_STORE_], 'readwrite');
                     newTx.oncomplete = successCallback;
                     newTx.onabort = errorCallback || onError;
-                    newTx.objectStore(FILE_STORE_)['delete'](range);
+                    newTx.objectStore(FILE_STORE_).delete(range);
                 } else {
                     successCallback();
                 }
             };
-            tx.objectStore(FILE_STORE_)['delete'](fullPath);
+            tx.objectStore(FILE_STORE_).delete(fullPath);
         };
 
         idb_.put = function (entry, storagePath, successCallback, errorCallback, retry) {
@@ -1043,8 +1129,7 @@
         function onError (e) {
             switch (e.target.errorCode) {
             case 12:
-                console.log('Error - Attempt to open db with a lower version than the ' +
-                        'current one.');
+                console.log('Error - Attempt to open db with a lower version than the ' + 'current one.');
                 break;
             default:
                 console.log('errorCode: ' + e.target.errorCode);
@@ -1052,7 +1137,6 @@
 
             console.log(e, e.code, e.message);
         }
-
     })(module.exports, window);
 
     require('cordova/exec/proxy').add('File', module.exports);
