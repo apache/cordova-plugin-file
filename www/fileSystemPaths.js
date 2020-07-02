@@ -17,7 +17,7 @@
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
 
 var exec = require('cordova/exec');
 var channel = require('cordova/channel');

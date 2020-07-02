@@ -17,7 +17,7 @@
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
 
 var utils = require('cordova/utils');
 var exec = require('cordova/exec');
@@ -79,13 +79,17 @@ FileEntry.prototype.createWriter = function (successCallback, errorCallback) {
  */
 FileEntry.prototype.file = function (successCallback, errorCallback) {
     var localURL = this.toInternalURL();
-    var win = successCallback && function (f) {
-        var file = new File(f.name, localURL, f.type, f.lastModifiedDate, f.size);
-        successCallback(file);
-    };
-    var fail = errorCallback && function (code) {
-        errorCallback(new FileError(code));
-    };
+    var win =
+        successCallback &&
+        function (f) {
+            var file = new File(f.name, localURL, f.type, f.lastModifiedDate, f.size);
+            successCallback(file);
+        };
+    var fail =
+        errorCallback &&
+        function (code) {
+            errorCallback(new FileError(code));
+        };
     exec(win, fail, 'File', 'getFileMetadata', [localURL]);
 };
 

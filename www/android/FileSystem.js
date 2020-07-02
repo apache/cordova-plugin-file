@@ -17,9 +17,11 @@
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
 
-FILESYSTEM_PROTOCOL = 'cdvfile'; // eslint-disable-line no-undef
+/* global FileSystem */
+
+var FILESYSTEM_PROTOCOL = 'cdvfile';
 
 module.exports = {
     __format__: function (fullPath, nativeUrl) {
@@ -32,7 +34,7 @@ module.exports = {
             // doesn't match the string for which permission was originally granted.
             path = nativeUrl.substring(contentUrlMatch[0].length - 1);
         } else {
-            path = FileSystem.encodeURIPath(fullPath); // eslint-disable-line no-undef
+            path = FileSystem.encodeURIPath(fullPath);
             if (!/^\//.test(path)) {
                 path = '/' + path;
             }
@@ -43,6 +45,6 @@ module.exports = {
             }
         }
 
-        return FILESYSTEM_PROTOCOL + '://localhost/' + this.name + path; // eslint-disable-line no-undef
+        return FILESYSTEM_PROTOCOL + '://localhost/' + this.name + path;
     }
 };

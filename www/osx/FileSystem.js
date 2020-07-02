@@ -17,9 +17,11 @@
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
-/* eslint no-undef : 0 */
-FILESYSTEM_PROTOCOL = 'cdvfile';
+ */
+
+/* global FileSystem */
+
+var FILESYSTEM_PROTOCOL = 'cdvfile';
 
 module.exports = {
     __format__: function (fullPath) {

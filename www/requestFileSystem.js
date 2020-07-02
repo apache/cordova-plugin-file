@@ -17,12 +17,14 @@
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
+
+/* global cordova */
 
 (function () {
     // For browser platform: not all browsers use this file.
     function checkBrowser () {
-        if (cordova.platformId === 'browser' && require('./isChrome')()) { // eslint-disable-line no-undef
+        if (cordova.platformId === 'browser' && require('./isChrome')()) {
             module.exports = window.requestFileSystem || window.webkitRequestFileSystem;
             return true;
         }

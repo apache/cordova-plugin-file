@@ -17,7 +17,7 @@
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
 
 var exec = require('cordova/exec');
 var FileError = require('./FileError');
@@ -43,29 +43,35 @@ DirectoryReader.prototype.readEntries = function (successCallback, errorCallback
         return;
     }
     var reader = this;
-    var win = typeof successCallback !== 'function' ? null : function (result) {
-        var retVal = [];
-        for (var i = 0; i < result.length; i++) {
-            var entry = null;
-            if (result[i].isDirectory) {
-                entry = new (require('./DirectoryEntry'))();
-            } else if (result[i].isFile) {
-                entry = new (require('./FileEntry'))();
-            }
-            entry.isDirectory = result[i].isDirectory;
-            entry.isFile = result[i].isFile;
-            entry.name = result[i].name;
-            entry.fullPath = result[i].fullPath;
-            entry.filesystem = new (require('./FileSystem'))(result[i].filesystemName);
-            entry.nativeURL = result[i].nativeURL;
-            retVal.push(entry);
-        }
-        reader.hasReadEntries = true;
-        successCallback(retVal);
-    };
-    var fail = typeof errorCallback !== 'function' ? null : function (code) {
-        errorCallback(new FileError(code));
-    };
+    var win =
+        typeof successCallback !== 'function'
+            ? null
+            : function (result) {
+                var retVal = [];
+                for (var i = 0; i < result.length; i++) {
+                    var entry = null;
+                    if (result[i].isDirectory) {
+                        entry = new (require('./DirectoryEntry'))();
+                    } else if (result[i].isFile) {
+                        entry = new (require('./FileEntry'))();
+                    }
+                    entry.isDirectory = result[i].isDirectory;
+                    entry.isFile = result[i].isFile;
+                    entry.name = result[i].name;
+                    entry.fullPath = result[i].fullPath;
+                    entry.filesystem = new (require('./FileSystem'))(result[i].filesystemName);
+                    entry.nativeURL = result[i].nativeURL;
+                    retVal.push(entry);
+                }
+                reader.hasReadEntries = true;
+                successCallback(retVal);
+            };
+    var fail =
+        typeof errorCallback !== 'function'
+            ? null
+            : function (code) {
+                errorCallback(new FileError(code));
+            };
     exec(win, fail, 'File', 'readEntries', [this.localURL]);
 };
 
