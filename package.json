@@ -13,13 +13,8 @@
       "windows"
     ]
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/apache/cordova-plugin-file"
-  },
-  "bugs": {
-    "url": "https://github.com/apache/cordova-plugin-file/issues"
-  },
+  "repository": "github:apache/cordova-plugin-file",
+  "bugs": "https://github.com/apache/cordova-plugin-file/issues",
   "keywords": [
     "cordova",
     "file",
