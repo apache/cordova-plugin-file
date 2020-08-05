@@ -13,8 +13,8 @@ env:
   global:
     - SAUCE_USERNAME=snay
     - TRAVIS_NODE_VERSION=12
-    - ANDROID_API_LEVEL=28
-    - ANDROID_BUILD_TOOLS_VERSION=28.0.3
+    - ANDROID_API_LEVEL=29
+    - ANDROID_BUILD_TOOLS_VERSION=29.0.3
 
 language: node_js
 node_js: 12
@@ -68,6 +68,8 @@ matrix:
     - env: PLATFORM=android-8.1
       <<: *_android
     - env: PLATFORM=android-9.0
+      <<: *_android
+    - env: PLATFORM=android-10.0
       <<: *_android
 
 before_install:
