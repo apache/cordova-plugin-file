@@ -478,11 +478,19 @@ public class LocalFilesystem extends Filesystem {
     private static void copyResource(CordovaResourceApi.OpenForReadResult input, OutputStream outputStream) throws IOException {
         try {
             InputStream inputStream = input.inputStream;
-            if (inputStream instanceof FileInputStream && outputStream instanceof FileOutputStream) {
+            
+            long offset = 0;
+	    long length = input.length;
+            
+            /*
+            * outChannel.transferFrom will throw IllegalArgumentException when trying
+            * to transfer files larger than Integer.MAX_VALUE. Use alternative method
+            * in this case
+            */ 
+            if (length < Integer.MAX_VALUE && inputStream instanceof FileInputStream && outputStream instanceof FileOutputStream) {
                 FileChannel inChannel = ((FileInputStream)input.inputStream).getChannel();
                 FileChannel outChannel = ((FileOutputStream)outputStream).getChannel();
-                long offset = 0;
-                long length = input.length;
+                
                 if (input.assetFd != null) {
                     offset = input.assetFd.getStartOffset();
                 }
