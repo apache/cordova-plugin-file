@@ -43,7 +43,7 @@
 
         // https://github.com/electron/electron/blob/master/docs/api/app.md#appgetpathname
         const pathsPrefix = {
-            applicationDirectory: app.getAppPath() + nodePath.sep,
+            applicationDirectory: nodePath.dirname(app.getAppPath()) + nodePath.sep,
             dataDirectory: app.getPath('userData') + nodePath.sep,
             cacheDirectory: app.getPath('cache') + nodePath.sep,
             tempDirectory: app.getPath('temp') + nodePath.sep,
