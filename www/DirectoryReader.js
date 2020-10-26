@@ -25,7 +25,7 @@ var FileError = require('./FileError');
 /**
  * An interface that lists the files and directories in a directory.
  */
-function DirectoryReader (localURL) {
+function DirectoryReader(localURL) {
     this.localURL = localURL || null;
     this.hasReadEntries = false;
 }
@@ -46,6 +46,12 @@ DirectoryReader.prototype.readEntries = function (successCallback, errorCallback
     var win = typeof successCallback !== 'function' ? null : function (result) {
         var retVal = [];
         for (var i = 0; i < result.length; i++) {
+            var fs;
+            if (typeof result[i].filesystem !== 'undefined') {
+                fs = result[i].filesystem.name;
+            } else {
+                fs = result[i].filesystemName;
+            }
             var entry = null;
             if (result[i].isDirectory) {
                 entry = new (require('./DirectoryEntry'))();
@@ -56,7 +62,7 @@ DirectoryReader.prototype.readEntries = function (successCallback, errorCallback
             entry.isFile = result[i].isFile;
             entry.name = result[i].name;
             entry.fullPath = result[i].fullPath;
-            entry.filesystem = new (require('./FileSystem'))(result[i].filesystemName);
+            entry.filesystem = new (require('./FileSystem'))(fs);
             entry.nativeURL = result[i].nativeURL;
             retVal.push(entry);
         }

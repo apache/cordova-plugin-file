@@ -29,7 +29,7 @@
 
     // For chrome we don't need to implement proxy methods
     // All functionality can be accessed natively.
-    if (require('./isChrome')()) {
+    if (cordova.platformId === 'browser' && require('./isChrome')()) {
         var pathsPrefix = {
             // Read-only directory where the application is installed.
             applicationDirectory: location.origin + '/', // eslint-disable-line no-undef

@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-file",
-  "version": "6.0.3-dev",
+  "version": "6.0.4",
   "description": "Cordova File Plugin",
   "types": "./types/index.d.ts",
   "cordova": {
