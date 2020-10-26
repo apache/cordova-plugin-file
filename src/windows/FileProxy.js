@@ -181,6 +181,30 @@ var windowsPaths = {
     applicationStorageDirectory: 'ms-appx:///'
 };
 
+if (Windows.Storage.UserDataPaths) {
+    var userDataPaths = null;
+    if (typeof Windows.Storage.UserDataPaths.getDefault === 'function') {
+        userDataPaths = Windows.Storage.UserDataPaths.getDefault();
+    }
+    if (!userDataPaths && typeof Windows.Storage.UserDataPaths.getForUser === 'function') {
+        userDataPaths = Windows.Storage.UserDataPaths.getForUser();
+    }
+    if (userDataPaths) {
+        if (userDataPaths.documents) {
+            windowsPaths.documentsDirectory = 'file:///' + nativePathToCordova(userDataPaths.documents);
+        }
+        if (userDataPaths.music) {
+            windowsPaths.musicDirectory = 'file:///' + nativePathToCordova(userDataPaths.music);
+        }
+        if (userDataPaths.pictures) {
+            windowsPaths.picturesDirectory = 'file:///' + nativePathToCordova(userDataPaths.pictures);
+        }
+        if (userDataPaths.videos) {
+            windowsPaths.videosDirectory = 'file:///' + nativePathToCordova(userDataPaths.videos);
+        }
+    }
+}
+
 var AllFileSystems;
 
 function getAllFS () {

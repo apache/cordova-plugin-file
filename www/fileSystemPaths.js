@@ -45,9 +45,16 @@ exports.file = {
     // iOS: Holds app-specific files that should be synced (e.g. to iCloud).
     syncedDataDirectory: null,
     // iOS: Files private to the app, but that are meaningful to other applications (e.g. Office files)
+    // Windows: Gets the path to a user's Documents folder.
     documentsDirectory: null,
     // BlackBerry10: Files globally available to all apps
-    sharedDirectory: null
+    sharedDirectory: null,
+    // Windows: Gets the path to a user's Music folder.
+    musicDirectory: null,
+    // Windows: Gets the path to a user's Pictures folder.
+    picturesDirectory: null,
+    // Windows: Gets the path to a user's Videos folder.
+    videoDirectory: null
 };
 
 channel.waitForInitialization('onFileSystemPathsReady');
