@@ -195,7 +195,7 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
             // We have the asset!  Get the data and send it off.
             ALAssetRepresentation* assetRepresentation = [asset defaultRepresentation];
             NSUInteger size = (end > start) ? (end - start) : [assetRepresentation size];
-            Byte* buffer = (Byte*)malloc(size);
+            Byte* buffer = (Byte*)calloc(1, size);
             NSUInteger bufferSize = [assetRepresentation getBytes:buffer fromOffset:start length:size error:nil];
             NSData* data = [NSData dataWithBytesNoCopy:buffer length:bufferSize freeWhenDone:YES];
             NSString* MIMEType = (__bridge_transfer NSString*)UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)[assetRepresentation UTI], kUTTagClassMIMEType);
