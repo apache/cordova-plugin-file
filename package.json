@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-file",
-  "version": "6.0.3-dev",
+  "version": "7.0.0-dev",
   "description": "Cordova File Plugin",
   "types": "./types/index.d.ts",
   "cordova": {
@@ -36,7 +36,7 @@
       "5.0.0": {
         "cordova-android": ">=6.3.0"
       },
-      "7.0.0": {
+      "8.0.0": {
         "cordova": ">100"
       }
     }
