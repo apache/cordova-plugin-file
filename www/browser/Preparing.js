@@ -174,7 +174,7 @@
         console.log('Persistent fs quota granted');
         quotaWasRequested = true;
     }, function (e) {
-        console.log('Error occured while trying to request Persistent fs quota: ' + JSON.stringify(e));
+        console.log('Error occurred while trying to request Persistent fs quota: ' + JSON.stringify(e));
     });
 
     channel.onCordovaReady.subscribe(function () {
