@@ -17,6 +17,7 @@
  under the License.
  */
 
+#import <stdint.h>
 #import <Cordova/CDV.h>
 #import "CDVFile.h"
 #import "CDVLocalFilesystem.h"
@@ -860,13 +861,23 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     __weak CDVFile* weakSelf = self;
 
     [self.commandDelegate runInBackground:^ {
-        [fs readFileAtURL:localURI start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
+        // Handle chunking and variable-length encoding (e.g. UTF-8).
+        // Handle the start offset strictly, but extend the end offset as needed to prevent splitting multi-byte characters.
+        NSInteger extendedEnd = end > 0 && end > start ? [self extendTextSelectionEnd:end encoding:encoding] : end;
+        // NOTE: extendedEnd could extend past the end of the file.
+        // We're relying on our CDVFileSystem impls to be able to handle that.
+        [fs readFileAtURL:localURI start:start end:extendedEnd callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
             CDVPluginResult* result = nil;
             if (data != nil) {
-                NSString* str = [[NSString alloc] initWithBytesNoCopy:(void*)[data bytes] length:[data length] encoding:NSUTF8StringEncoding freeWhenDone:NO];
+                NSUInteger length = end > 0 && end > start ? [self numBytesToDecodeOfData:data desired:(end - start) encoding:encoding] : [data length];
+                NSString* str = [[NSString alloc] initWithBytesNoCopy:(void*)[data bytes] length:length encoding:NSUTF8StringEncoding freeWhenDone:NO];
                 // Check that UTF8 conversion did not fail.
                 if (str != nil) {
-                    result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:str];
+                    NSDictionary *msg = @{
+                                          @"value": str,
+                                          @"numBytesConsumed": [NSNumber numberWithUnsignedInteger:length]
+                                          };
+                    result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:msg];
                     result.associatedObject = data;
                 } else {
                     errorCode = ENCODING_ERR;
@@ -879,6 +890,66 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
             [weakSelf.commandDelegate sendPluginResult:result callbackId:command.callbackId];
         }];
     }];
+}
+
+// Extend the end offset passed to readFileAtURL to accomodate multi-byte characters when chunking.
+// This determines how many extra bytes to read. We'll determine how many of these bytes to actually decode below.
+- (NSInteger)extendTextSelectionEnd:(NSInteger)end encoding:(NSString*)encoding
+{
+    if ([@"UTF-8" caseInsensitiveCompare:encoding] == NSOrderedSame) {
+        // All valid UTF-8 chars are 4 bytes or less, so never have to look ahead more than 3 chars to find a
+        // character boundary.
+        return end + 3;
+    } else {
+        // Fallback to leaving specified range unchanged.
+        return end;
+    }
+}
+
+// Given data, which may be longer than the desired length, a desired byte length, and an encoding,
+// determine how many bytes to decode, making sure the decoded chunk ends at a character boundary.
+- (NSUInteger)numBytesToDecodeOfData:(NSData*)data desired:(NSUInteger)desired encoding:(NSString*)encoding
+{
+    if (desired > [data length]) {
+        // Never extend past end of buffer
+        return [data length];
+    } else if (desired == 0) {
+        // Don't try to extend if desired length is 0 (no way characters could be split)
+        return desired;
+    } else if ([@"UTF-8" caseInsensitiveCompare:encoding] == NSOrderedSame) {
+        uint8_t *start = (uint8_t*)[data bytes];
+        // The last byte within the desired length that represents the start of a character.
+        // Start with the last byte in the desired range, then move backwards until we find a character boundary.
+        uint8_t *lastCharStart = start + desired - 1;
+        // Continue looping so long as:
+        //   - We don't extend past beginning of buffer
+        //   - We don't examine more than 3 bytes, since valid UTF-8 characters are never more than 4 bytes
+        //   - We don't find the start of a character. In UTF-8, a byte begins a character iff it has a binary prefix other than 10.
+        // For UTF-8 spec, see https://www.unicode.org/versions/Unicode11.0.0/ch03.pdf (search "Table 3-6. UTF-8 Bit Distribution")
+        while (lastCharStart > start && lastCharStart > start + desired - 4 && (*lastCharStart & 0xc0) == 0x80) {
+            lastCharStart -= 1;
+        }
+        if ((*lastCharStart & 0xe0) == 0xc0) {
+            // Byte has prefix of 110 -> 2 byte char
+            desired = lastCharStart - start + 2;
+        } else if ((*lastCharStart & 0xf0) == 0xe0) {
+            // Byte has prefix of 1110 -> 3 byte char
+            desired = lastCharStart - start + 3;
+        } else if ((*lastCharStart & 0xf8) == 0xf0) {
+            // Byte has prefix of 11110 -> 4 byte char
+            desired = lastCharStart - start + 4;
+        }
+        // Anything else: Possibilities are
+        //   - Single-byte char, OR,
+        //   - Last 3 bytes of a 4-byte char, OR
+        //   - Invalid UTF-8
+        // In all those case, we'll leave the desired length unchanged.
+
+        // Once again, need to make sure we don't read past end of buffer
+        return desired > [data length] ? [data length] : desired;
+    } else {
+        return desired;
+    }
 }
 
 /* Read content of text file and return as base64 encoded data url.
