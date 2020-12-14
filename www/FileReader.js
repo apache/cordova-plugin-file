@@ -5,14 +5,14 @@
  * distributed with this work for additional information
  * regarding copyright ownership.  The ASF licenses this file
  * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
+ * 'License'); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
  *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * 'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
@@ -31,7 +31,7 @@ var origFileReader = modulemapper.getOriginalSymbol(window, 'FileReader');
  *
  * For Android:
  *      The root directory is the root of the file system.
- *      To read from the SD card, the file name is "sdcard/my_file.txt"
+ *      To read from the SD card, the file name is 'sdcard/my_file.txt'
  * @constructor
  */
 var FileReader = function () {
@@ -108,7 +108,7 @@ function initRead (reader, file) {
 /**
  * Callback used by the following read* functions to handle incremental or final success.
  * Must be bound to the FileReader's this along with all but the last parameter,
- * e.g. readSuccessCallback.bind(this, "readAsText", "UTF-8", offset, totalSize, accumulate)
+ * e.g. readSuccessCallback.bind(this, 'readAsText', 'UTF-8', offset, totalSize, accumulate)
  * @param readType The name of the read function to call.
  * @param encoding Text encoding, or null if this is not a text type read.
  * @param offset Starting offset of the read.
@@ -136,7 +136,7 @@ function readSuccessCallback (readType, encoding, offset, totalSize, accumulate,
         this._progress = Math.min(this._progress + CHUNK_SIZE, totalSize);
 
         if (typeof this.onprogress === 'function') {
-            this.onprogress(new ProgressEvent('progress', {loaded: this._progress, total: totalSize}));
+            this.onprogress.apply(this._realReader, [new ProgressEvent('progress', {loaded: this._progress, total: totalSize})]);
         }
     }
 
@@ -156,11 +156,11 @@ function readSuccessCallback (readType, encoding, offset, totalSize, accumulate,
         this._readyState = FileReader.DONE;
 
         if (typeof this.onload === 'function') {
-            this.onload(new ProgressEvent('load', {target: this}));
+            this.onload.apply(this._realReader, [new ProgressEvent('load', {target: this})]);
         }
 
         if (typeof this.onloadend === 'function') {
-            this.onloadend(new ProgressEvent('loadend', {target: this}));
+            this.onloadend.apply(this._realReader, [new ProgressEvent('loadend', {target: this})]);
         }
     }
 }
@@ -179,11 +179,11 @@ function readFailureCallback (e) {
     this._error = new FileError(e);
 
     if (typeof this.onerror === 'function') {
-        this.onerror(new ProgressEvent('error', {target: this}));
+        this.onerror.apply(this._realReader, [new ProgressEvent('error', {target: this})]);
     }
 
     if (typeof this.onloadend === 'function') {
-        this.onloadend(new ProgressEvent('loadend', {target: this}));
+        this.onloadend.apply(this._realReader, [new ProgressEvent('loadend', {target: this})]);
     }
 }
 
@@ -204,11 +204,11 @@ FileReader.prototype.abort = function () {
 
     // If abort callback
     if (typeof this.onabort === 'function') {
-        this.onabort(new ProgressEvent('abort', {target: this}));
+        this.onabort.apply(this._realReader, [new ProgressEvent('abort', {target: this})]);
     }
     // If load end callback
     if (typeof this.onloadend === 'function') {
-        this.onloadend(new ProgressEvent('loadend', {target: this}));
+        this.onloadend.apply(this._realReader, [new ProgressEvent('loadend', {target: this})]);
     }
 };
 
