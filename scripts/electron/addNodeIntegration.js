@@ -6,5 +6,6 @@ module.exports = ctx => {
   cfg.browserWindow = cfg.browserWindow || {};
   cfg.browserWindow.webPreferences = cfg.browserWindow.webPreferences || {};
   cfg.browserWindow.webPreferences.nodeIntegration = true;
+  cfg.browserWindow.webPreferences.enableRemoteModule = true;
   fs.writeFileSync(cfgPath, JSON.stringify(cfg, null, 4), 'utf8');
 }
