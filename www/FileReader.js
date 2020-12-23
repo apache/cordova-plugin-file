@@ -41,6 +41,10 @@ var FileReader = function () {
     this._progress = null;
     this._localURL = '';
     this._realReader = origFileReader ? new origFileReader() : {}; // eslint-disable-line new-cap
+    this._listeners = {
+        singleEvent: {},
+        eventTarget: {}
+    };
 };
 
 /**
@@ -68,11 +72,60 @@ utils.defineGetter(FileReader.prototype, 'result', function () {
     return this._localURL ? this._result : this._realReader.result;
 });
 
-function defineEvent (eventName) {
-    utils.defineGetterSetter(FileReader.prototype, eventName, function () {
-        return this._realReader[eventName] || null;
+function listenToEvent (fileReader, eventName) {
+    var eventNameWithPrefix = 'on' + eventName;
+
+    if (fileReader._realReader[eventNameWithPrefix]) {
+        return;
+    }
+
+    fileReader._realReader[eventNameWithPrefix] = function () {
+        var args = Array.prototype.slice.call(arguments);
+        var listenerRunner = makeListenerRunner(args);
+
+        if (fileReader._listeners.singleEvent[eventNameWithPrefix]) {
+            listenerRunner(fileReader._listeners.singleEvent[eventNameWithPrefix]);
+        }
+
+        if (fileReader._listeners.eventTarget[eventName]) {
+            fileReader._listeners.eventTarget[eventName].forEach(listenerRunner);
+        }
+    };
+
+    function makeListenerRunner (args) {
+        return function (listener) {
+            setTimeout(function () {
+                listener.apply(fileReader, args);
+            });
+        };
+    }
+}
+
+function listenToEventWithPrefix (fileReader, eventNameWithPrefix) {
+    var eventName = eventNameWithPrefix.replace(/^on/, '');
+    return listenToEvent(fileReader, eventName);
+}
+
+FileReader.prototype.addEventListener = function (eventName, listener) {
+    var allListeners = this._listeners.eventTarget[eventName] || [];
+    allListeners.push(listener);
+    this._listeners.eventTarget[eventName] = allListeners;
+    listenToEvent(this, eventName);
+};
+
+FileReader.prototype.removeEventListener = function (eventName, listener) {
+    var allListeners = this._listeners.eventTarget[eventName] || [];
+    this._listeners.eventTarget[eventName] = allListeners.filter(function (currListener) {
+        return currListener !== listener;
+    });
+};
+
+function defineEvent (eventNameWithPrefix) {
+    utils.defineGetterSetter(FileReader.prototype, eventNameWithPrefix, function () {
+        return this._listeners.singleEvent[eventNameWithPrefix] || null;
     }, function (value) {
-        this._realReader[eventName] = value;
+        this._listeners.singleEvent[eventNameWithPrefix] = value;
+        listenToEventWithPrefix(this, eventNameWithPrefix);
     });
 }
 defineEvent('onloadstart');    // When the read starts.
@@ -100,8 +153,9 @@ function initRead (reader, file) {
         return true;
     }
 
-    if (reader.onloadstart) {
-        reader.onloadstart(new ProgressEvent('loadstart', {target: reader}));
+    var onloadstart = reader._realReader ? reader._realReader.onloadstart : reader.onloadstart;
+    if (onloadstart) {
+        onloadstart.call(reader, new ProgressEvent('loadstart', {target: reader}));
     }
 }
 
@@ -135,8 +189,9 @@ function readSuccessCallback (readType, encoding, offset, totalSize, accumulate,
         accumulate(r);
         this._progress = Math.min(this._progress + CHUNK_SIZE, totalSize);
 
-        if (typeof this.onprogress === 'function') {
-            this.onprogress(new ProgressEvent('progress', {loaded: this._progress, total: totalSize}));
+        var onprogress = this._realReader ? this._realReader.onprogress : this.onprogress;
+        if (typeof onprogress === 'function') {
+            onprogress.call(this, new ProgressEvent('progress', {loaded: this._progress, total: totalSize}));
         }
     }
 
@@ -155,12 +210,14 @@ function readSuccessCallback (readType, encoding, offset, totalSize, accumulate,
     } else {
         this._readyState = FileReader.DONE;
 
-        if (typeof this.onload === 'function') {
-            this.onload(new ProgressEvent('load', {target: this}));
+        var onload = this._realReader ? this._realReader.onload : this.onload;
+        if (typeof onload === 'function') {
+            onload.call(this, new ProgressEvent('load', {target: this}));
         }
 
-        if (typeof this.onloadend === 'function') {
-            this.onloadend(new ProgressEvent('loadend', {target: this}));
+        var onloadend = this._realReader ? this._realReader.onloadend : this.onloadend;
+        if (typeof onloadend === 'function') {
+            onloadend.call(this, new ProgressEvent('loadend', {target: this}));
         }
     }
 }
@@ -178,12 +235,14 @@ function readFailureCallback (e) {
     this._result = null;
     this._error = new FileError(e);
 
-    if (typeof this.onerror === 'function') {
-        this.onerror(new ProgressEvent('error', {target: this}));
+    var onerror = this._realReader ? this._realReader.onerror : this.onerror;
+    if (typeof onerror === 'function') {
+        onerror.call(this, new ProgressEvent('error', {target: this}));
     }
 
-    if (typeof this.onloadend === 'function') {
-        this.onloadend(new ProgressEvent('loadend', {target: this}));
+    var onloadend = this._realReader ? this._realReader.onloadend : this.onloadend;
+    if (typeof onloadend === 'function') {
+        onloadend.call(this, new ProgressEvent('loadend', {target: this}));
     }
 }
 
@@ -203,12 +262,14 @@ FileReader.prototype.abort = function () {
     this._readyState = FileReader.DONE;
 
     // If abort callback
-    if (typeof this.onabort === 'function') {
-        this.onabort(new ProgressEvent('abort', {target: this}));
+    var onabort = this._realReader ? this._realReader.onabort : this.onabort;
+    if (typeof onabort === 'function') {
+        onabort.call(this, new ProgressEvent('abort', {target: this}));
     }
     // If load end callback
-    if (typeof this.onloadend === 'function') {
-        this.onloadend(new ProgressEvent('loadend', {target: this}));
+    var onloadend = this._realReader ? this._realReader.onloadend : this.onloadend;
+    if (typeof onloadend === 'function') {
+        onloadend.call(this, new ProgressEvent('loadend', {target: this}));
     }
 };
 
