@@ -190,7 +190,9 @@ Entry.prototype.toInternalURL = function () {
  * <audio> tag. If that is not possible, construct a cdvfile:// URL.
  */
 Entry.prototype.toURL = function () {
-    if (this.nativeURL) {
+    if (this.nativeURL && window.WkWebView) {
+        return window.WkWebView.convertFilePath(this.nativeURL);
+    } else if (this.nativeURL) {
         return this.nativeURL;
     }
     // fullPath attribute may contain the full URL in the case that
