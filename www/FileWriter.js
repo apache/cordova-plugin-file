@@ -94,51 +94,22 @@ FileWriter.prototype.abort = function () {
 /**
  * Writes data to the file
  *
- * @param data text or blob to be written
+ * @param data File, String, Blob or ArrayBuffer to be written
  * @param isPendingBlobReadResult {Boolean} true if the data is the pending blob read operation result
  */
 FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
 
-    var that = this;
+    var me = this;
     var supportsBinary = (typeof window.Blob !== 'undefined' && typeof window.ArrayBuffer !== 'undefined');
     /* eslint-disable no-undef */
     var isProxySupportBlobNatively = (cordova.platformId === 'windows8' || cordova.platformId === 'windows');
     var isBinary;
 
-    // Check to see if the incoming data is a blob
-    if (data instanceof File || (!isProxySupportBlobNatively && supportsBinary && data instanceof Blob)) {
-        var fileReader = new FileReader();
-        /* eslint-enable no-undef */
-        fileReader.onload = function () {
-            // Call this method again, with the arraybuffer as argument
-            FileWriter.prototype.write.call(that, this.result, true /* isPendingBlobReadResult */);
-        };
-        fileReader.onerror = function () {
-            // DONE state
-            that.readyState = FileWriter.DONE;
-
-            // Save error
-            that.error = this.error;
-
-            // If onerror callback
-            if (typeof that.onerror === 'function') {
-                that.onerror(new ProgressEvent('error', {'target': that}));
-            }
-
-            // If onwriteend callback
-            if (typeof that.onwriteend === 'function') {
-                that.onwriteend(new ProgressEvent('writeend', {'target': that}));
-            }
-        };
-
-        // WRITING state
-        this.readyState = FileWriter.WRITING;
-
-        if (supportsBinary) {
-            fileReader.readAsArrayBuffer(data);
-        } else {
-            fileReader.readAsText(data);
-        }
+    if (data instanceof File) {
+        turnFileOrBlobIntoArrayBufferOrStringAndCallWrite.call(me, data, supportsBinary);
+        return;
+    } else if ((!isProxySupportBlobNatively && supportsBinary && data instanceof Blob)) {
+        turnFileOrBlobIntoArrayBufferOrStringAndCallWrite.call(me, data, supportsBinary);
         return;
     }
 
@@ -149,73 +120,224 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
         data = Array.apply(null, new Uint8Array(data));
     }
 
-    // Throw an exception if we are already writing a file
-    if (this.readyState === FileWriter.WRITING && !isPendingBlobReadResult) {
+    throwExceptionIfWriteIsInProgress(this.readyState, isPendingBlobReadResult);
+
+    this.readyState = FileWriter.WRITING;
+
+    notifyOnWriteStartCallback.call(me);
+
+    // do not use `isBinary` here, as the data might have been changed for windowsphone environment.
+    if (supportsBinary && (data instanceof ArrayBuffer)) {
+        writeBase64EncodedStringInChunks.call(
+            me,
+            function (bytesWritten) {
+                onSuccessfulWrite.call(me, bytesWritten);
+            },
+            function writeError (error) {
+                // TODO, should we try to "undo" the writing that has happened up until now?
+                me.readyState = FileWriter.DONE;
+
+                me.error = error;
+
+                notifyOnErrorCallback.call(me);
+
+                notifyOnWriteEndCallback.call(me);
+            },
+            data
+        );
+    } else {
+        execFileWrite.call(me, data, isBinary);
+    }
+};
+
+function writeBase64EncodedStringInChunks (successCallback, errorCallback, arrayBuffer) {
+    var me = this;
+    var chunkSizeBytes = 1024 * 1024; // 1MiB chunks
+    var startOfChunk = 0;
+    var sizeOfChunk = 0;
+    var endOfChunk = 0;
+
+    function convertCurrentChunkToBase64AndWriteToDisk () {
+        turnArrayBufferIntoBase64EncodedString(
+            writeConvertedChunk,
+            errorCallback,
+            arrayBuffer.slice(startOfChunk, endOfChunk)
+        );
+    }
+
+    function writeConvertedChunk (base64EncodedChunk) {
+        execChunkedWrite.call(
+            me,
+            wroteChunk,
+            errorCallback,
+            base64EncodedChunk
+        );
+    }
+
+    function wroteChunk (bytesWritten) {
+        // we need to keep track of the current position, so we do not override the same position over and over again.
+        onBytesWritten.call(me, bytesWritten);
+        goToNextChunk();
+
+        if (startOfChunk < arrayBuffer.byteLength) {
+            calculateCurrentChunk();
+            convertCurrentChunkToBase64AndWriteToDisk();
+        } else {
+            successCallback(arrayBuffer.byteLength);
+        }
+    }
+
+    function goToNextChunk () {
+        startOfChunk += chunkSizeBytes;
+    }
+
+    function calculateCurrentChunk () {
+        sizeOfChunk = Math.min(chunkSizeBytes, arrayBuffer.byteLength - startOfChunk);
+        endOfChunk = startOfChunk + sizeOfChunk;
+    }
+
+    calculateCurrentChunk();
+    convertCurrentChunkToBase64AndWriteToDisk();
+}
+
+function throwExceptionIfWriteIsInProgress (readyState, isPendingBlobReadResult) {
+    if (readyState === FileWriter.WRITING && !isPendingBlobReadResult) {
         throw new FileError(FileError.INVALID_STATE_ERR);
     }
+}
+
+function turnArrayBufferIntoBase64EncodedString (successCallback, errorCallback, arrayBuffer) {
+    var fileReader = new FileReader();
+    /* eslint-enable no-undef */
+    fileReader.onload = function () {
+        var withoutPrefix = removeBase64Prefix(this.result);
+        successCallback(withoutPrefix);
+    };
+    fileReader.onerror = function () {
+        errorCallback(this.error);
+    };
+
+    // it is important to mark this as 'application/octet-binary', otherwise you
+    // might not get a base64 encoding the binary data.
+    fileReader.readAsDataURL(
+        // eslint-disable-next-line no-undef
+        new Blob([arrayBuffer], {
+            type: 'application/octet-binary'
+        })
+    );
+}
+
+function removeBase64Prefix (base64EncodedString) {
+    var indexOfComma = base64EncodedString.indexOf(',');
+    if (indexOfComma > 0) {
+        return base64EncodedString.substr(indexOfComma + 1);
+    } else {
+        return base64EncodedString;
+    }
+}
+
+function execChunkedWrite (successCallback, errorCallback, base64EncodedChunk) {
+    var me = this;
+    exec(
+        successCallback,
+        errorCallback,
+        'File',
+        'write',
+        [
+            me.localURL,
+            base64EncodedChunk,
+            me.position,
+            true
+        ]
+    );
+}
+
+function execFileWrite (data, isBinary) {
+    var me = this;
+    exec(
+        function (bytesWritten) {
+            onSuccessfulWrite.call(me, bytesWritten);
+        },
+        // Error callback
+        function (error) {
+            errorCallback.call(me, error);
+        },
+        'File',
+        'write',
+        [
+            this.localURL,
+            data,
+            this.position,
+            isBinary
+        ]
+    );
+}
+
+function onSuccessfulWrite (bytesWritten) {
+    var me = this;
+    // If DONE (cancelled), then don't do anything
+    if (me.readyState === FileWriter.DONE) {
+        return;
+    }
+
+    onBytesWritten.call(me, bytesWritten);
+
+    // DONE state
+    me.readyState = FileWriter.DONE;
+
+    notifyOnWriteCallback.call(me);
+
+    notifyOnWriteEndCallback.call(me);
+}
+
+function onBytesWritten (bytesWritten) {
+    var me = this;
+    // position always increases by bytes written because file would be extended
+    me.position += bytesWritten;
+
+    // The length of the file is now where we are done writing.
+    me.length = me.position;
+}
+
+/**
+ * Read the data source, which can either be a File or a Blob.
+ * The data is read as an ArrayBuffer, if `supportsBinary` is `true`.
+ * The data is read as a string otherwise.
+ *
+ * The read data is then passed to FileWriter.prototype.write.
+ *
+ * @param fileOrBlob Is either a File or Blob object.
+ * @param supportsBinary Is a boolean that should be set depending on if ArrayBuffer and Blob are supported by the environment.
+ */
+function turnFileOrBlobIntoArrayBufferOrStringAndCallWrite (fileOrBlob, supportsBinary) {
+    var me = this;
+    var fileReader = new FileReader();
+    /* eslint-enable no-undef */
+    fileReader.onload = function () {
+        // Call this method again, with the arraybuffer as argument
+        FileWriter.prototype.write.call(me, this.result, true /* isPendingBlobReadResult */);
+    };
+    fileReader.onerror = function () {
+        // DONE state
+        me.readyState = FileWriter.DONE;
+
+        // Save error
+        me.error = this.error;
+
+        notifyOnErrorCallback.call(me);
+
+        notifyOnWriteEndCallback.call(me);
+    };
 
     // WRITING state
     this.readyState = FileWriter.WRITING;
 
-    var me = this;
-
-    // If onwritestart callback
-    if (typeof me.onwritestart === 'function') {
-        me.onwritestart(new ProgressEvent('writestart', {'target': me}));
+    if (supportsBinary) {
+        fileReader.readAsArrayBuffer(fileOrBlob);
+    } else {
+        fileReader.readAsText(fileOrBlob);
     }
-
-    // Write file
-    exec(
-        // Success callback
-        function (r) {
-            // If DONE (cancelled), then don't do anything
-            if (me.readyState === FileWriter.DONE) {
-                return;
-            }
-
-            // position always increases by bytes written because file would be extended
-            me.position += r;
-            // The length of the file is now where we are done writing.
-
-            me.length = me.position;
-
-            // DONE state
-            me.readyState = FileWriter.DONE;
-
-            // If onwrite callback
-            if (typeof me.onwrite === 'function') {
-                me.onwrite(new ProgressEvent('write', {'target': me}));
-            }
-
-            // If onwriteend callback
-            if (typeof me.onwriteend === 'function') {
-                me.onwriteend(new ProgressEvent('writeend', {'target': me}));
-            }
-        },
-        // Error callback
-        function (e) {
-            // If DONE (cancelled), then don't do anything
-            if (me.readyState === FileWriter.DONE) {
-                return;
-            }
-
-            // DONE state
-            me.readyState = FileWriter.DONE;
-
-            // Save error
-            me.error = new FileError(e);
-
-            // If onerror callback
-            if (typeof me.onerror === 'function') {
-                me.onerror(new ProgressEvent('error', {'target': me}));
-            }
-
-            // If onwriteend callback
-            if (typeof me.onwriteend === 'function') {
-                me.onwriteend(new ProgressEvent('writeend', {'target': me}));
-            }
-        }, 'File', 'write', [this.localURL, data, this.position, isBinary]);
-};
+}
 
 /**
  * Moves the file pointer to the location specified.
@@ -266,10 +388,7 @@ FileWriter.prototype.truncate = function (size) {
 
     var me = this;
 
-    // If onwritestart callback
-    if (typeof me.onwritestart === 'function') {
-        me.onwritestart(new ProgressEvent('writestart', {'target': this}));
-    }
+    notifyOnWriteStartCallback.call(me);
 
     // Write file
     exec(
@@ -287,39 +406,67 @@ FileWriter.prototype.truncate = function (size) {
             me.length = r;
             me.position = Math.min(me.position, r);
 
-            // If onwrite callback
-            if (typeof me.onwrite === 'function') {
-                me.onwrite(new ProgressEvent('write', {'target': me}));
-            }
+            notifyOnWriteCallback.call(me);
 
-            // If onwriteend callback
-            if (typeof me.onwriteend === 'function') {
-                me.onwriteend(new ProgressEvent('writeend', {'target': me}));
-            }
+            notifyOnWriteEndCallback.call(me);
         },
         // Error callback
-        function (e) {
-            // If DONE (cancelled), then don't do anything
-            if (me.readyState === FileWriter.DONE) {
-                return;
-            }
-
-            // DONE state
-            me.readyState = FileWriter.DONE;
-
-            // Save error
-            me.error = new FileError(e);
-
-            // If onerror callback
-            if (typeof me.onerror === 'function') {
-                me.onerror(new ProgressEvent('error', {'target': me}));
-            }
-
-            // If onwriteend callback
-            if (typeof me.onwriteend === 'function') {
-                me.onwriteend(new ProgressEvent('writeend', {'target': me}));
-            }
-        }, 'File', 'truncate', [this.localURL, size]);
+        function (error) {
+            errorCallback.call(me, error);
+        },
+        'File',
+        'truncate',
+        [
+            this.localURL,
+            size
+        ]
+    );
 };
+
+function errorCallback (error) {
+    var me = this;
+    // If DONE (cancelled), then don't do anything
+    if (me.readyState === FileWriter.DONE) {
+        return;
+    }
+
+    // DONE state
+    me.readyState = FileWriter.DONE;
+
+    // Save error
+    me.error = new FileError(error);
+
+    notifyOnErrorCallback.call(me);
+
+    notifyOnWriteEndCallback.call(me);
+}
+
+function notifyOnErrorCallback () {
+    var me = this;
+    if (typeof me.onerror === 'function') {
+        me.onerror(new ProgressEvent('error', {'target': me}));
+    }
+}
+
+function notifyOnWriteStartCallback () {
+    var me = this;
+    if (typeof me.onwritestart === 'function') {
+        me.onwritestart(new ProgressEvent('writestart', {'target': this}));
+    }
+}
+
+function notifyOnWriteEndCallback () {
+    var me = this;
+    if (typeof me.onwriteend === 'function') {
+        me.onwriteend(new ProgressEvent('writeend', {'target': me}));
+    }
+}
+
+function notifyOnWriteCallback () {
+    var me = this;
+    if (typeof me.onwrite === 'function') {
+        me.onwrite(new ProgressEvent('write', {'target': me}));
+    }
+}
 
 module.exports = FileWriter;
