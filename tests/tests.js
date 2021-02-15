@@ -3698,7 +3698,7 @@ exports.defineAutoTests = function () {
 
                         var img = new Image(); // eslint-disable-line no-undef
                         img.onerror = function (err) {
-                            expect(err).not.toBeDefined();
+                            expect(err).withContext(err.toString()).not.toBeDefined();
                             done();
                         };
                         img.onload = function () {
