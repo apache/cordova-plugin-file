@@ -27,7 +27,7 @@ exports.defineAutoTests = function () {
     // Use feature detection to determine current browser instead of checking user-agent
     var isChrome = isBrowser && window.webkitRequestFileSystem && window.webkitResolveLocalFileSystemURL;
     var isIE = isBrowser && (window.msIndexedDB);
-    var isIndexedDBShim = isBrowser && !isChrome;   // Firefox and IE for example
+    var isIndexedDBShim = isBrowser && !isChrome; // Firefox and IE for example
 
     var isWindows = (cordova.platformId === 'windows' || cordova.platformId === 'windows8');
     /* eslint-enable no-undef */
@@ -192,6 +192,7 @@ exports.defineAutoTests = function () {
             }
             return base + extension;
         };
+
         describe('FileError object', function () {
             /* eslint-disable no-undef */
             it('file.spec.1 should define FileError constants', function () {
@@ -209,16 +210,19 @@ exports.defineAutoTests = function () {
                 expect(FileError.PATH_EXISTS_ERR).toBe(12);
             });
         });
+
         describe('LocalFileSystem', function () {
             it('file.spec.2 should define LocalFileSystem constants', function () {
                 expect(LocalFileSystem.TEMPORARY).toBe(0);
                 expect(LocalFileSystem.PERSISTENT).toBe(1);
                 /* eslint-enable no-undef */
             });
+
             describe('window.requestFileSystem', function () {
                 it('file.spec.3 should be defined', function () {
                     expect(window.requestFileSystem).toBeDefined();
                 });
+
                 it('file.spec.4 should be able to retrieve a PERSISTENT file system', function (done) {
                     var win = function (fileSystem) {
                         expect(fileSystem).toBeDefined();
@@ -243,6 +247,7 @@ exports.defineAutoTests = function () {
                     // retrieve PERSISTENT file system
                     window.requestFileSystem(LocalFileSystem.PERSISTENT, spaceRequired, win, failed.bind(null, done, 'window.requestFileSystem - Error retrieving PERSISTENT file system')); // eslint-disable-line no-undef
                 });
+
                 it('file.spec.5 should be able to retrieve a TEMPORARY file system', function (done) {
                     var win = function (fileSystem) {
                         expect(fileSystem).toBeDefined();
@@ -259,6 +264,7 @@ exports.defineAutoTests = function () {
                     // retrieve TEMPORARY file system
                     window.requestFileSystem(LocalFileSystem.TEMPORARY, 0, win, failed.bind(null, done, 'window.requestFileSystem - Error retrieving TEMPORARY file system')); // eslint-disable-line no-undef
                 });
+
                 it('file.spec.6 should error if you request a file system that is too large', function (done) {
                     if (isBrowser) {
                         /* window.requestFileSystem TEMPORARY and PERSISTENT filesystem quota is not limited in Chrome.
@@ -279,8 +285,8 @@ exports.defineAutoTests = function () {
                     // Request the file system
                     window.requestFileSystem(LocalFileSystem.TEMPORARY, 1000000000000000, failed.bind(null, done, 'window.requestFileSystem - Error retrieving TEMPORARY file system'), fail); // eslint-disable-line no-undef
                 });
-                it('file.spec.7 should error out if you request a file system that does not exist', function (done) {
 
+                it('file.spec.7 should error out if you request a file system that does not exist', function (done) {
                     var fail = function (error) {
                         expect(error).toBeDefined();
                         if (isChrome) {
@@ -296,10 +302,12 @@ exports.defineAutoTests = function () {
                     window.requestFileSystem(-1, 0, succeed.bind(null, done, 'window.requestFileSystem'), fail);
                 });
             });
+
             describe('window.resolveLocalFileSystemURL', function () {
                 it('file.spec.8 should be defined', function () {
                     expect(window.resolveLocalFileSystemURL).toBeDefined();
                 });
+
                 it('file.spec.9 should resolve a valid file name', function (done) {
                     var fileName = 'file.spec.9';
                     var win = function (fileEntry) {
@@ -316,6 +324,7 @@ exports.defineAutoTests = function () {
                         window.resolveLocalFileSystemURL(entry.toURL(), win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving file URL: ' + entry.toURL()));
                     }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName), failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
                 });
+
                 it('file.spec.9.1 should resolve a file even with a terminating slash', function (done) {
                     var fileName = 'file.spec.9.1';
                     var win = function (fileEntry) {
@@ -333,6 +342,7 @@ exports.defineAutoTests = function () {
                         window.resolveLocalFileSystemURL(entryURL, win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving file URL: ' + entryURL));
                     }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName), failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
                 });
+
                 it('file.spec.9.5 should resolve a directory', function (done) {
                     var fileName = 'file.spec.9.5';
                     var win = function (fileEntry) {
@@ -351,6 +361,7 @@ exports.defineAutoTests = function () {
                     }
                     createDirectory(fileName, gotDirectory, failed.bind(null, done, 'createDirectory - Error creating directory: ' + fileName), failed.bind(null, done, 'createDirectory - Error creating directory: ' + fileName));
                 });
+
                 it('file.spec.9.6 should resolve a directory even without a terminating slash', function (done) {
                     var fileName = 'file.spec.9.6';
                     var win = function (fileEntry) {
@@ -404,6 +415,7 @@ exports.defineAutoTests = function () {
                         window.resolveLocalFileSystemURL(entry.toURL() + '?1234567890', win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving file URI: ' + entry.toURL()));
                     }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
                 });
+
                 it('file.spec.11 should error (NOT_FOUND_ERR) when resolving (non-existent) invalid file name', function (done) {
                     var fileName = cordova.platformId === 'windowsphone' ? root.toURL() + '/' + 'this.is.not.a.valid.file.txt' : joinURL(root.toURL(), 'this.is.not.a.valid.file.txt'); // eslint-disable-line no-undef
                     var fail = function (error) {
@@ -418,6 +430,7 @@ exports.defineAutoTests = function () {
                     // lookup file system entry
                     window.resolveLocalFileSystemURL(fileName, succeed.bind(null, done, 'window.resolveLocalFileSystemURL - Error unexpected callback resolving file URI: ' + fileName), fail);
                 });
+
                 it('file.spec.12 should error (ENCODING_ERR) when resolving invalid URI with leading /', function (done) {
                     var fileName = '/this.is.not.a.valid.url';
                     var fail = function (error) {
@@ -434,6 +447,7 @@ exports.defineAutoTests = function () {
                 });
             });
         });
+
         // LocalFileSystem
         describe('Metadata interface', function () {
             it('file.spec.13 should exist and have the right properties', function () {
@@ -442,6 +456,7 @@ exports.defineAutoTests = function () {
                 expect(metadata.modificationTime).toBeDefined();
             });
         });
+
         describe('Flags interface', function () {
             it('file.spec.14 should exist and have the right properties', function () {
                 var flags = new Flags(false, true); // eslint-disable-line no-undef
@@ -452,6 +467,7 @@ exports.defineAutoTests = function () {
                 expect(flags.exclusive).toBe(true);
             });
         });
+
         describe('FileSystem interface', function () {
             it('file.spec.15 should have a root that is a DirectoryEntry', function (done) {
                 var win = function (entry) {
@@ -475,6 +491,7 @@ exports.defineAutoTests = function () {
                 window.resolveLocalFileSystemURL(root.toURL(), win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving file URI: ' + root.toURL()));
             });
         });
+
         describe('DirectoryEntry', function () {
             it('file.spec.16 getFile: get Entry for file that does not exist', function (done) {
                 var fileName = 'de.no.file';
@@ -492,6 +509,7 @@ exports.defineAutoTests = function () {
                     create: false
                 }, succeed.bind(null, done, 'root.getFile - Error unexpected callback, file should not exists: ' + fileName), fail);
             });
+
             it('file.spec.17 getFile: create new file', function (done) {
                 var fileName = 'de.create.file';
                 var filePath = joinURL(root.fullPath, fileName);
@@ -509,6 +527,7 @@ exports.defineAutoTests = function () {
                     create: true
                 }, win, succeed.bind(null, done, 'root.getFile - Error unexpected callback, file should not exists: ' + fileName));
             });
+
             it('file.spec.18 getFile: create new file (exclusive)', function (done) {
                 var fileName = 'de.create.exclusive.file';
                 var filePath = joinURL(root.fullPath, fileName);
@@ -527,6 +546,7 @@ exports.defineAutoTests = function () {
                     exclusive: true
                 }, win, failed.bind(null, done, 'root.getFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.19 getFile: create file that already exists', function (done) {
                 var fileName = 'de.create.existing.file';
                 var filePath = joinURL(root.fullPath, fileName);
@@ -553,6 +573,7 @@ exports.defineAutoTests = function () {
                     create: true
                 }, getFile, failed.bind(null, done, 'root.getFile - Error on initial creating file: ' + fileName));
             });
+
             it('file.spec.20 getFile: create file that already exists (exclusive)', function (done) {
                 var fileName = 'de.create.exclusive.existing.file';
                 var existingFile;
@@ -584,6 +605,7 @@ exports.defineAutoTests = function () {
                     create: true
                 }, getFile, failed.bind(null, done, 'root.getFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.21 DirectoryEntry.getFile: get Entry for existing file', function (done) {
                 var fileName = 'de.get.file';
                 var filePath = joinURL(root.fullPath, fileName);
@@ -609,6 +631,7 @@ exports.defineAutoTests = function () {
                     create: true
                 }, getFile, failed.bind(null, done, 'root.getFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.22 DirectoryEntry.getFile: get FileEntry for invalid path', function (done) {
                 if (isBrowser) {
                     /* The plugin does not follow to ["8.3 Naming restrictions"]
@@ -627,6 +650,7 @@ exports.defineAutoTests = function () {
                     create: false
                 }, succeed.bind(null, done, 'root.getFile - Error unexpected callback, file should not exists: ' + fileName), fail);
             });
+
             it('file.spec.23 DirectoryEntry.getDirectory: get Entry for directory that does not exist', function (done) {
                 var dirName = 'de.no.dir';
                 var fail = function (error) {
@@ -643,6 +667,7 @@ exports.defineAutoTests = function () {
                     create: false
                 }, succeed.bind(null, done, 'root.getDirectory - Error unexpected callback, directory should not exists: ' + dirName), fail);
             });
+
             it('file.spec.24 DirectoryEntry.getDirectory: create new dir with space then resolveLocalFileSystemURL', function (done) {
                 var dirName = 'de create dir';
 
@@ -669,6 +694,7 @@ exports.defineAutoTests = function () {
                     create: true
                 }, getDir, failed.bind(null, done, 'root.getDirectory - Error creating directory : ' + dirName));
             });
+
             // This test is excluded, and should probably be removed. Filesystem
             // should always be properly encoded URLs, and *not* raw paths, and it
             // doesn't make sense to double-encode the URLs and expect that to be
@@ -700,6 +726,7 @@ exports.defineAutoTests = function () {
                     create: true
                 }, getDir, failed.bind(null, done, 'root.getDirectory - Error creating directory : ' + dirName));
             });
+
             it('file.spec.26 DirectoryEntry.getDirectory: create new directory', function (done) {
                 var dirName = 'de.create.dir';
                 var dirPath = joinURL(root.fullPath, dirName);
@@ -719,6 +746,7 @@ exports.defineAutoTests = function () {
                     create: true
                 }, win, failed.bind(null, done, 'root.getDirectory - Error creating directory : ' + dirName));
             });
+
             it('file.spec.27 DirectoryEntry.getDirectory: create new directory (exclusive)', function (done) {
                 var dirName = 'de.create.exclusive.dir';
                 var dirPath = joinURL(root.fullPath, dirName);
@@ -739,6 +767,7 @@ exports.defineAutoTests = function () {
                     exclusive: true
                 }, win, failed.bind(null, done, 'root.getDirectory - Error creating directory : ' + dirName));
             });
+
             it('file.spec.28 DirectoryEntry.getDirectory: create directory that already exists', function (done) {
                 var dirName = 'de.create.existing.dir';
                 var dirPath = joinURL(root.fullPath, dirName);
@@ -760,8 +789,8 @@ exports.defineAutoTests = function () {
                     }, win, failed.bind(null, done, 'root.getDirectory - Error creating existent second directory : ' + dirName));
                 }, failed.bind(null, done, 'root.getDirectory - Error creating directory : ' + dirName));
             });
-            it('file.spec.29 DirectoryEntry.getDirectory: create directory that already exists (exclusive)', function (done) {
 
+            it('file.spec.29 DirectoryEntry.getDirectory: create directory that already exists (exclusive)', function (done) {
                 var dirName = 'de.create.exclusive.existing.dir';
                 var existingDir;
                 var fail = function (error) {
@@ -788,6 +817,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'root.getDirectory - Unexpected success callback, second directory should not be created : ' + dirName), fail);
                 }, failed.bind(null, done, 'root.getDirectory - Error creating directory : ' + dirName));
             });
+
             it('file.spec.30 DirectoryEntry.getDirectory: get Entry for existing directory', function (done) {
                 var dirName = 'de.get.dir';
                 var dirPath = joinURL(root.fullPath, dirName);
@@ -809,6 +839,7 @@ exports.defineAutoTests = function () {
                     }, win, failed.bind(null, done, 'root.getDirectory - Error getting directory entry : ' + dirName));
                 }, failed.bind(null, done, 'root.getDirectory - Error creating directory : ' + dirName));
             });
+
             it('file.spec.31 DirectoryEntry.getDirectory: get DirectoryEntry for invalid path', function (done) {
                 if (isBrowser) {
                     /* The plugin does not follow to ["8.3 Naming restrictions"]
@@ -827,6 +858,7 @@ exports.defineAutoTests = function () {
                     create: false
                 }, succeed.bind(null, done, 'root.getDirectory - Unexpected success callback, directory should not exists: ' + dirName), fail);
             });
+
             it('file.spec.32 DirectoryEntry.getDirectory: get DirectoryEntry for existing file', function (done) {
                 var fileName = 'de.existing.file';
                 var existingFile;
@@ -850,6 +882,7 @@ exports.defineAutoTests = function () {
                     }, succeed.bind(null, done, 'root.getDirectory - Unexpected success callback, directory should not exists: ' + fileName), fail);
                 }, failed.bind(null, done, 'root.getFile - Error creating file : ' + fileName));
             });
+
             it('file.spec.33 DirectoryEntry.getFile: get FileEntry for existing directory', function (done) {
                 var dirName = 'de.existing.dir';
                 var existingDir;
@@ -873,6 +906,7 @@ exports.defineAutoTests = function () {
                     }, succeed.bind(null, done, 'root.getFile - Unexpected success callback, file should not exists: ' + dirName), fail);
                 }, failed.bind(null, done, 'root.getDirectory - Error creating directory : ' + dirName));
             });
+
             it('file.spec.34 DirectoryEntry.removeRecursively on directory', function (done) {
                 var dirName = 'de.removeRecursively';
                 var subDirName = 'dir';
@@ -900,14 +934,15 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'root.getDirectory - Error creating directory : ' + subDirName));
                 }, failed.bind(null, done, 'root.getDirectory - Error creating directory : ' + dirName));
             });
+
             it('file.spec.35 createReader: create reader on existing directory', function () {
                 // create reader for root directory
                 var reader = root.createReader();
                 expect(reader).toBeDefined();
                 expect(typeof reader.readEntries).toBe('function');
             });
-            it('file.spec.36 removeRecursively on root file system', function (done) {
 
+            it('file.spec.36 removeRecursively on root file system', function (done) {
                 var remove = function (error) {
                     expect(error).toBeDefined();
                     if (isChrome) {
@@ -924,6 +959,7 @@ exports.defineAutoTests = function () {
                 root.removeRecursively(succeed.bind(null, done, 'root.removeRecursively - Unexpected success callback, root cannot be removed'), remove);
             });
         });
+
         describe('DirectoryReader interface', function () {
             describe('readEntries', function () {
                 it('file.spec.37 should read contents of existing directory', function (done) {
@@ -938,6 +974,7 @@ exports.defineAutoTests = function () {
                     // read entries
                     reader.readEntries(win, failed.bind(null, done, 'reader.readEntries - Error reading entries'));
                 });
+
                 it('file.spec.37.1 should read contents of existing directory', function (done) {
                     var dirName = 'readEntries.dir';
                     var fileName = 'readeEntries.file';
@@ -967,6 +1004,7 @@ exports.defineAutoTests = function () {
                         }, failed.bind(null, done, 'directory.getFile - Error creating file : ' + fileName));
                     }, failed.bind(null, done, 'root.getDirectory - Error creating directory : ' + dirName));
                 });
+
                 it('file.spec.109 should return an empty entry list on the second call', function (done) {
                     var reader;
                     var fileName = 'test109.txt';
@@ -992,6 +1030,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'root.getFile - Error creating file : ' + fileName));
                 });
             });
+
             it('file.spec.38 should read contents of directory that has been removed', function (done) {
                 var dirName = 'de.createReader.notfound';
                 // create a new directory entry to kick off it
@@ -1023,12 +1062,14 @@ exports.defineAutoTests = function () {
                 }, failed.bind(null, done, 'root.getDirectory - Error creating directory : ' + dirName));
             });
         });
+
         // DirectoryReader interface
         describe('File', function () {
             it('file.spec.39 constructor should be defined', function () {
                 expect(File).toBeDefined(); // eslint-disable-line no-undef
                 expect(typeof File).toBe('function');
             });
+
             it('file.spec.40 should be define File attributes', function () {
                 var file = new File(); // eslint-disable-line no-undef
                 expect(file.name).toBeDefined();
@@ -1037,9 +1078,9 @@ exports.defineAutoTests = function () {
                 expect(file.size).toBeDefined();
             });
         });
+
         // File
         describe('FileEntry', function () {
-
             it('file.spec.41 should be define FileEntry methods', function (done) {
                 var fileName = 'fe.methods';
                 var testFileEntry = function (fileEntry) {
@@ -1054,6 +1095,7 @@ exports.defineAutoTests = function () {
                     create: true
                 }, testFileEntry, failed.bind(null, done, 'root.getFile - Error creating file : ' + fileName));
             });
+
             it('file.spec.42 createWriter should return a FileWriter object', function (done) {
                 var fileName = 'fe.createWriter';
                 var testFile;
@@ -1077,6 +1119,7 @@ exports.defineAutoTests = function () {
                     fileEntry.createWriter(testWriter, failed.bind(null, done, 'fileEntry.createWriter - Error creating Writer from entry'));
                 }, failed.bind(null, done, 'root.getFile - Error creating file : ' + fileName));
             });
+
             it('file.spec.43 file should return a File object', function (done) {
                 var fileName = 'fe.file';
                 var newFile;
@@ -1100,6 +1143,7 @@ exports.defineAutoTests = function () {
                     fileEntry.file(testFile, failed.bind(null, done, 'fileEntry.file - Error reading file using fileEntry: ' + fileEntry.name));
                 }, failed.bind(null, done, 'root.getFile - Error creating file : ' + fileName));
             });
+
             it('file.spec.44 file: on File that has been removed', function (done) {
                 var fileName = 'fe.no.file';
                 // create a new file entry to kick off it
@@ -1120,6 +1164,7 @@ exports.defineAutoTests = function () {
                 }, failed.bind(null, done, 'root.getFile - Error creating file : ' + fileName));
             });
         });
+
         // FileEntry
         describe('Entry', function () {
             it('file.spec.45 Entry object', function (done) {
@@ -1146,6 +1191,7 @@ exports.defineAutoTests = function () {
                 // create a new file entry
                 createFile(fileName, winEntry, failed.bind(null, done, 'createFile - Error creating file : ' + fileName));
             });
+
             it('file.spec.46 Entry.getMetadata on file', function (done) {
                 var fileName = 'entry.metadata.file';
                 // create a new file entry
@@ -1159,6 +1205,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'entry.getMetadata - Error getting metadata from entry : ' + fileName));
                 }, failed.bind(null, done, 'createFile - Error creating file : ' + fileName));
             });
+
             it('file.spec.47 Entry.getMetadata on directory', function (done) {
                 if (isIndexedDBShim) {
                     /* Does not support metadata for directories (Firefox, IE) */
@@ -1178,6 +1225,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'entry.getMetadata - Error getting metadata from entry : ' + dirName));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + dirName));
             });
+
             it('file.spec.48 Entry.getParent on file in root file system', function (done) {
                 var fileName = 'entry.parent.file';
                 var rootPath = root.fullPath;
@@ -1191,6 +1239,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'entry.getParent - Error getting parent directory of file : ' + fileName));
                 }, failed.bind(null, done, 'createFile - Error creating file : ' + fileName));
             });
+
             it('file.spec.49 Entry.getParent on directory in root file system', function (done) {
                 var dirName = 'entry.parent.dir';
                 var rootPath = root.fullPath;
@@ -1204,6 +1253,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'entry.getParent - Error getting parent directory of directory : ' + dirName));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + dirName));
             });
+
             it('file.spec.50 Entry.getParent on root file system', function (done) {
                 var rootPath = root.fullPath;
                 var winParent = function (parent) {
@@ -1214,6 +1264,7 @@ exports.defineAutoTests = function () {
                 // create a new directory entry
                 root.getParent(winParent, failed.bind(null, done, 'root.getParent - Error getting parent directory of root'));
             });
+
             it('file.spec.51 Entry.toURL on file', function (done) {
                 var fileName = 'entry.uri.file';
                 var rootPath = root.fullPath;
@@ -1227,6 +1278,7 @@ exports.defineAutoTests = function () {
                 // create a new file entry
                 createFile(fileName, winURI, failed.bind(null, done, 'createFile - Error creating file : ' + fileName));
             });
+
             it('file.spec.52 Entry.toURL on directory', function (done) {
                 var dirName_1 = 'num 1';
                 var dirName_2 = 'num 2';
@@ -1244,6 +1296,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'entry.getDirectory - Error creating directory : ' + dirName_2));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + dirName_1));
             });
+
             it('file.spec.53 Entry.remove on file', function (done) {
                 var fileName = 'entr .rm.file';
                 // create a new file entry
@@ -1263,6 +1316,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'entry.remove - Error removing entry : ' + fileName));
                 }, failed.bind(null, done, 'createFile - Error creating file : ' + fileName));
             });
+
             it('file.spec.53.1 Entry.remove on filename with #s', function (done) {
                 if (isBrowser) {
                     pending('Browsers can\'t do that');
@@ -1281,6 +1335,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'entry.remove - Error removing entry : ' + fileName));
                 }, failed.bind(null, done, 'createFile - Error creating file : ' + fileName));
             });
+
             it('file.spec.54 remove on empty directory', function (done) {
                 var dirName = 'entry.rm.dir';
                 // create a new directory entry
@@ -1300,6 +1355,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'entry.remove - Error removing entry : ' + dirName));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + dirName));
             });
+
             it('file.spec.55 remove on non-empty directory', function (done) {
                 if (isIndexedDBShim) {
                     /* Both Entry.remove and directoryEntry.removeRecursively don't fail when removing
@@ -1333,8 +1389,8 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'entry.getFile - Error creating file : ' + fileName + ' inside of ' + dirName));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + dirName));
             });
-            it('file.spec.56 remove on root file system', function (done) {
 
+            it('file.spec.56 remove on root file system', function (done) {
                 // remove entry that doesn't exist
                 root.remove(succeed.bind(null, done, 'entry.remove - Unexpected success callback, it should not remove entry that it does not exists'), function (error) {
                     expect(error).toBeDefined();
@@ -1349,6 +1405,7 @@ exports.defineAutoTests = function () {
                     done();
                 });
             });
+
             it('file.spec.57 copyTo: file', function (done) {
                 var file1 = 'entry copy.file1';
                 var file2 = 'entry copy.file2';
@@ -1380,6 +1437,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'createFile - Error creating file : ' + file1));
                 }, failed.bind(null, done, 'deleteEntry - Error removing file : ' + file2));
             });
+
             it('file.spec.58 copyTo: file onto itself', function (done) {
                 var file1 = 'entry.copy.fos.file1';
                 // create a new file entry to kick off it
@@ -1397,6 +1455,7 @@ exports.defineAutoTests = function () {
                     });
                 }, failed.bind(null, done, 'createFile - Error creating file : ' + file1));
             });
+
             it('file.spec.59 copyTo: directory', function (done) {
                 if (isIndexedDBShim) {
                     /* `copyTo` and `moveTo` functions do not support directories (Firefox, IE) */
@@ -1448,6 +1507,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
                 }, failed.bind(null, done, 'deleteEntry - Error removing directory : ' + dstDir));
             });
+
             it('file.spec.60 copyTo: directory to backup at same root directory', function (done) {
                 if (isIndexedDBShim) {
                     /* `copyTo` and `moveTo` functions do not support directories (Firefox, IE) */
@@ -1498,6 +1558,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
                 }, failed.bind(null, done, 'deleteEntry - Error removing directory : ' + dstDir));
             });
+
             it('file.spec.61 copyTo: directory onto itself', function (done) {
                 if (isIndexedDBShim) {
                     /* `copyTo` and `moveTo` functions do not support directories (Firefox, IE) */
@@ -1540,6 +1601,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'directory.getFile - Error creating file : ' + file1));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
             });
+
             it('file.spec.62 copyTo: directory into itself', function (done) {
                 if (isIndexedDBShim) {
                     /* `copyTo` and `moveTo` functions do not support directories (Firefox, IE) */
@@ -1571,6 +1633,7 @@ exports.defineAutoTests = function () {
                     });
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
             });
+
             it('file.spec.63 copyTo: directory that does not exist', function (done) {
                 var file1 = 'entry.copy.dnf.file1';
                 var dirName = 'dir-foo';
@@ -1590,6 +1653,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + dirName));
                 }, failed.bind(null, done, 'createFile - Error creating file : ' + file1));
             });
+
             it('file.spec.64 copyTo: invalid target name', function (done) {
                 if (isBrowser) {
                     /* The plugin does not follow ["8.3 Naming restrictions"]
@@ -1610,6 +1674,7 @@ exports.defineAutoTests = function () {
                     });
                 }, failed.bind(null, done, 'createFile - Error creating file : ' + file1));
             });
+
             it('file.spec.65 moveTo: file to same parent', function (done) {
                 var file1 = 'entry.move.fsp.file1';
                 var file2 = 'entry.move.fsp.file2';
@@ -1647,6 +1712,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'entry.moveTo - Error moving file : ' + file1 + ' to root as: ' + file2));
                 }, failed.bind(null, done, 'createFile - Error creating file : ' + file1));
             });
+
             it('file.spec.66 moveTo: file to new parent', function (done) {
                 var file1 = 'entry.move.fnp.file1';
                 var dir = 'entry.move.fnp.dir';
@@ -1693,6 +1759,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'createFile - Error creating file : ' + file1));
                 }, failed.bind(null, done, 'deleteEntry - Error removing directory : ' + dir));
             });
+
             it('file.spec.67 moveTo: directory to same parent', function (done) {
                 if (isIndexedDBShim) {
                     /* `copyTo` and `moveTo` functions do not support directories (Firefox, IE) */
@@ -1746,6 +1813,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
                 }, failed.bind(null, done, 'deleteEntry - Error removing directory : ' + dstDir));
             });
+
             it('file.spec.68 moveTo: directory to same parent with same name', function (done) {
                 if (isIndexedDBShim) {
                     /* `copyTo` and `moveTo` functions do not support directories (Firefox, IE) */
@@ -1799,6 +1867,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
                 }, failed.bind(null, done, 'deleteEntry - Error removing directory : ' + dstDir));
             });
+
             it('file.spec.69 moveTo: directory to new parent', function (done) {
                 if (isIndexedDBShim) {
                     /* `copyTo` and `moveTo` functions do not support directories (Firefox, IE) */
@@ -1929,6 +1998,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'directory.getFile - Error creating file : ' + file1));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
             });
+
             it('file.spec.71 moveTo: directory into itself', function (done) {
                 if (isIndexedDBShim) {
                     /* `copyTo` and `moveTo` functions do not support directories (Firefox, IE) */
@@ -1960,6 +2030,7 @@ exports.defineAutoTests = function () {
                     });
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
             });
+
             it('file.spec.130 moveTo: directory into similar directory', function (done) {
                 if (isIndexedDBShim) {
                     /* `copyTo` and `moveTo` functions do not support directories (Firefox, IE) */
@@ -1972,7 +2043,7 @@ exports.defineAutoTests = function () {
                 createDirectory(srcDir, function (srcDirEntry) {
                     deleteEntry(dstDir, function () {
                         createDirectory(dstDir, function (dstDirEntry) {
-                    // move source directory into itself
+                            // move source directory into itself
                             srcDirEntry.moveTo(dstDirEntry, 'file', function (newDirEntry) {
                                 expect(newDirEntry).toBeDefined();
                                 deleteEntry(dstDir, done);
@@ -1981,6 +2052,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'deleteEntry - Error deleting directory : ' + dstDir));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
             });
+
             it('file.spec.72 moveTo: file onto itself', function (done) {
                 var file1 = 'entry.move.fos.file1';
                 var filePath = joinURL(root.fullPath, file1);
@@ -2006,6 +2078,7 @@ exports.defineAutoTests = function () {
                     });
                 }, failed.bind(null, done, 'createFile - Error creating file : ' + file1));
             });
+
             it('file.spec.73 moveTo: file onto existing directory', function (done) {
                 var file1 = 'entry.move.fod.file1';
                 var dstDir = 'entry.move.fod.dstDir';
@@ -2056,6 +2129,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'createFile - Error creating file : ' + file1));
                 }, failed.bind(null, done, 'deleteEntry - Error removing directory : ' + dstDir));
             });
+
             it('file.spec.74 moveTo: directory onto existing file', function (done) {
                 if (isIndexedDBShim) {
                     /* `copyTo` and `moveTo` functions do not support directories (Firefox, IE) */
@@ -2103,6 +2177,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'root.getFile - Error creating file : ' + file1));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
             });
+
             it('file.spec.75 copyTo: directory onto existing file', function (done) {
                 if (isIndexedDBShim) {
                     /* `copyTo` and `moveTo` functions do not support directories (Firefox, IE) */
@@ -2150,6 +2225,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'root.getFile - Error creating file : ' + file1));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
             });
+
             it('file.spec.76 moveTo: directory onto directory that is not empty', function (done) {
                 if (isIndexedDBShim) {
                     /* `copyTo` and `moveTo` functions do not support directories (Firefox, IE) */
@@ -2206,6 +2282,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'createDirectory - Error creating directory : ' + srcDir));
                 }, failed.bind(null, done, 'deleteEntry - Error removing directory : ' + dstDir));
             });
+
             it('file.spec.77 moveTo: file replace existing file', function (done) {
                 var file1 = 'entry.move.frf.file1';
                 var file2 = 'entry.move.frf.file2';
@@ -2249,6 +2326,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'root.getFile - Error creating file: ' + file2));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + file1));
             });
+
             it('file.spec.78 moveTo: directory replace empty directory', function (done) {
                 if (isIndexedDBShim) {
                     /* `copyTo` and `moveTo` functions do not support directories (Firefox, IE) */
@@ -2307,6 +2385,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'createDirectory - Error creating directory: ' + srcDir));
                 }, failed.bind(null, done, 'deleteEntry - Error removing directory : ' + dstDir));
             });
+
             it('file.spec.79 moveTo: directory that does not exist', function (done) {
                 if (isChrome) {
                     pending('chrome freak out about non-existend dir not being a DirectoryEntry');
@@ -2334,6 +2413,7 @@ exports.defineAutoTests = function () {
                     });
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + file1));
             });
+
             it('file.spec.80 moveTo: invalid target name', function (done) {
                 if (isBrowser) {
                     /* The plugin does not follow ["8.3 Naming restrictions"]
@@ -2355,6 +2435,7 @@ exports.defineAutoTests = function () {
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + file1));
             });
         });
+
         // Entry
         describe('FileReader', function () {
             it('file.spec.81 should have correct methods', function () {
@@ -2368,6 +2449,7 @@ exports.defineAutoTests = function () {
                 expect(reader.result).toBe(null);
             });
         });
+
         // FileReader
         describe('Read method', function () {
             it('file.spec.82 should error out on non-existent file', function (done) {
@@ -2395,6 +2477,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'entry.file - Error reading file: ' + fileName));
                 }, failed.bind(null, done, 'root.getFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.83 should be able to read native blob objects', function (done) {
                 // Skip test if blobs are not supported (e.g.: Android 2.3).
                 if (typeof window.Blob === 'undefined' || typeof window.Uint8Array === 'undefined') {
@@ -2435,14 +2518,15 @@ exports.defineAutoTests = function () {
                 reader.onloadend = verifier;
                 reader.readAsText(blob);
             });
+
             function writeDummyFile (writeBinary, callback, done, fileContents) {
                 var fileName = 'dummy.txt';
                 var fileEntry = null;
                 // use default string if file data is not provided
-                var fileData = fileContents !== undefined ? fileContents :
-                    '\u20AC\xEB - There is an exception to every rule. Except this one.';
-                var fileDataAsBinaryString = fileContents !== undefined ? fileContents :
-                    '\xe2\x82\xac\xc3\xab - There is an exception to every rule. Except this one.';
+                var fileData = fileContents !== undefined ? fileContents
+                    : '\u20AC\xEB - There is an exception to every rule. Except this one.';
+                var fileDataAsBinaryString = fileContents !== undefined ? fileContents
+                    : '\xe2\x82\xac\xc3\xab - There is an exception to every rule. Except this one.';
 
                 function createWriter (fe) {
                     fileEntry = fe;
@@ -2464,6 +2548,7 @@ exports.defineAutoTests = function () {
                 // create a file, write to it, and read it in again
                 createFile(fileName, createWriter, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             }
+
             function runReaderTest (funcName, writeBinary, done, progressFunc, verifierFunc, sliceStart, sliceEnd, fileContents) {
                 writeDummyFile(writeBinary, function (fileEntry, file, fileData, fileDataAsBinaryString) {
                     var verifier = function (evt) {
@@ -2484,6 +2569,7 @@ exports.defineAutoTests = function () {
                     reader[funcName](file);
                 }, done, fileContents);
             }
+
             function arrayBufferEqualsString (ab, str) {
                 var buf = new Uint8Array(ab);
                 var match = buf.length === str.length;
@@ -2492,19 +2578,22 @@ exports.defineAutoTests = function () {
                 }
                 return match;
             }
+
             it('file.spec.84 should read file properly, readAsText', function (done) {
                 runReaderTest('readAsText', false, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     expect(evt.target.result).toBe(fileData);
                     done();
                 });
             });
+
             it('file.spec.84.1 should read JSON file properly, readAsText', function (done) {
-                var testObject = {key1: 'value1', key2: 2};
+                var testObject = { key1: 'value1', key2: 2 };
                 runReaderTest('readAsText', false, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     expect(evt.target.result).toEqual(JSON.stringify(testObject));
                     done();
                 }, undefined, undefined, JSON.stringify(testObject));
             });
+
             it('file.spec.85 should read file properly, Data URI', function (done) {
                 runReaderTest('readAsDataURL', true, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     /* `readAsDataURL` function is supported, but the mediatype in Chrome depends on entry name extension,
@@ -2524,6 +2613,7 @@ exports.defineAutoTests = function () {
                     done();
                 });
             });
+
             it('file.spec.86 should read file properly, readAsBinaryString', function (done) {
                 if (isIE) {
                     /* `readAsBinaryString` function is not supported by IE and has not the stub. */
@@ -2535,6 +2625,7 @@ exports.defineAutoTests = function () {
                     done();
                 });
             });
+
             it('file.spec.87 should read file properly, readAsArrayBuffer', function (done) {
                 // Skip test if ArrayBuffers are not supported (e.g.: Android 2.3).
                 if (typeof window.ArrayBuffer === 'undefined') {
@@ -2546,30 +2637,35 @@ exports.defineAutoTests = function () {
                     done();
                 });
             });
+
             it('file.spec.88 should read sliced file: readAsText', function (done) {
                 runReaderTest('readAsText', false, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     expect(evt.target.result).toBe(fileDataAsBinaryString.slice(10, 40));
                     done();
                 }, 10, 40);
             });
+
             it('file.spec.89 should read sliced file: slice past eof', function (done) {
                 runReaderTest('readAsText', false, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     expect(evt.target.result).toBe(fileData.slice(-5, 9999));
                     done();
                 }, -5, 9999);
             });
+
             it('file.spec.90 should read sliced file: slice to eof', function (done) {
                 runReaderTest('readAsText', false, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     expect(evt.target.result).toBe(fileData.slice(-5));
                     done();
                 }, -5);
             });
+
             it('file.spec.91 should read empty slice', function (done) {
                 runReaderTest('readAsText', false, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     expect(evt.target.result).toBe('');
                     done();
                 }, 0, 0);
             });
+
             it('file.spec.92 should read sliced file properly, readAsDataURL', function (done) {
                 runReaderTest('readAsDataURL', true, done, null, function (evt, fileData, fileDataAsBinaryString) {
                     /* `readAsDataURL` function is supported, but the mediatype in Chrome depends on entry name extension,
@@ -2589,6 +2685,7 @@ exports.defineAutoTests = function () {
                     done();
                 }, 10, -3);
             });
+
             it('file.spec.93 should read sliced file properly, readAsBinaryString', function (done) {
                 if (isIE) {
                     /* `readAsBinaryString` function is not supported by IE and has not the stub. */
@@ -2600,6 +2697,7 @@ exports.defineAutoTests = function () {
                     done();
                 }, -10, -5);
             });
+
             it('file.spec.94 should read sliced file properly, readAsArrayBuffer', function (done) {
                 // Skip test if ArrayBuffers are not supported (e.g.: Android 2.3).
                 if (typeof window.ArrayBuffer === 'undefined') {
@@ -2611,6 +2709,7 @@ exports.defineAutoTests = function () {
                     done();
                 }, 0, -1);
             });
+
             it('file.spec.94.5 should read large file in multiple chunks, readAsArrayBuffer', function (done) {
                 // Skip test if ArrayBuffers are not supported (e.g.: Android 2.3).
                 if (typeof window.ArrayBuffer === 'undefined') {
@@ -2655,6 +2754,7 @@ exports.defineAutoTests = function () {
                     },
                     0, -1, largeText);
             });
+
             it('file.spec.94.6 should read large file in multiple chunks, readAsDataURL', function (done) {
                 var largeText = '';
                 for (var i = 0; i < 10; i++) {
@@ -2687,9 +2787,10 @@ exports.defineAutoTests = function () {
                         expect(lastProgressValue).toEqual(largeText.length);
                         done();
                     },
-                undefined, undefined, largeText);
+                    undefined, undefined, largeText);
             });
         });
+
         // Read method
         describe('FileWriter', function () {
             it('file.spec.95 should have correct methods', function (done) {
@@ -2710,6 +2811,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'fileEntry.createWriter - Error creating writer using fileEntry: ' + fileEntry.name));
                 }, failed.bind(null, done, 'root.getFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.96 should be able to write and append to file, createWriter', function (done) {
                 var fileName = 'writer.append.createWriter'; // file content
                 var content = 'There is an exception to every rule.'; // for checkin file length
@@ -2749,6 +2851,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'fileEntry.createWriter - Error creating writer using fileEntry: ' + fileEntry.name));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.97 should be able to write and append to file, File object', function (done) {
                 var fileName = 'writer.append.File'; // file content
                 var content = 'There is an exception to every rule.'; // for checkin file length
@@ -2788,6 +2891,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'fileEntry.createWriter - Error creating writer using fileEntry: ' + fileEntry.name));
                 }, failed.bind(null, done, 'root.getFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.98 should be able to seek to the middle of the file and write more data than file.length', function (done) {
                 var fileName = 'writer.seek.write'; // file content
                 var content = 'This is our sentence.'; // for checking file length
@@ -2826,6 +2930,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'fileEntry.createWriter - Error creating writer using fileEntry: ' + fileEntry.name));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.99 should be able to seek to the middle of the file and write less data than file.length', function (done) {
                 if (isBrowser) {
                     /* Browser (re)writes as follows: "This is our sentence." -> "This is new.sentence.",
@@ -2870,6 +2975,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'fileEntry.createWriter - Error creating writer using fileEntry: ' + fileEntry.name));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.100 should be able to write XML data', function (done) {
                 var fileName = 'writer.xml'; // file content
                 var content = '<?xml version="1.0" encoding="UTF-8"?>\n<test prop="ack">\nData\n</test>\n'; // for testing file length
@@ -2890,6 +2996,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'fileEntry.createWriter - Error creating writer using fileEntry: ' + fileEntry.name));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.101 should be able to write JSON data', function (done) {
                 var fileName = 'writer.json'; // file content
                 var content = '{ "name": "Guy Incognito", "email": "here@there.com" }'; // for testing file length
@@ -2910,6 +3017,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'fileEntry.createWriter - Error creating writer using fileEntry: ' + fileEntry.name));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.102 should be able to seek', function (done) {
                 var fileName = 'writer.seek'; // file content
                 var content = 'There is an exception to every rule. Except this one.'; // for testing file length
@@ -2938,6 +3046,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'fileEntry.createWriter - Error creating writer using fileEntry: ' + fileEntry.name));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.103 should be able to truncate', function (done) {
                 if (isIndexedDBShim) {
                     /* `abort` and `truncate` functions are not supported (Firefox, IE) */
@@ -2966,6 +3075,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'fileEntry.createWriter - Error creating writer using fileEntry: ' + fileEntry.name));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.104 should be able to write binary data from an ArrayBuffer', function (done) {
                 // Skip test if ArrayBuffers are not supported (e.g.: Android 2.3).
                 if (typeof window.ArrayBuffer === 'undefined') {
@@ -2997,6 +3107,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'fileEntry.createWriter - Error creating writer using fileEntry: ' + fileEntry.name));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.105 should be able to write binary data from a Blob', function (done) {
                 // Skip test if Blobs are not supported (e.g.: Android 2.3).
                 if ((typeof window.Blob === 'undefined' && typeof window.WebKitBlobBuilder === 'undefined') || typeof window.ArrayBuffer === 'undefined') {
@@ -3014,8 +3125,8 @@ exports.defineAutoTests = function () {
                 }
                 try {
                     // Mobile Safari: Use Blob constructor
-                    blob = new Blob([data], { // eslint-disable-line no-undef
-                        'type': 'application/octet-stream'
+                    blob = new Blob([data], {
+                        type: 'application/octet-stream'
                     });
                 } catch (e) {
                     if (window.WebKitBlobBuilder) {
@@ -3046,6 +3157,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
                 }
             });
+
             it('file.spec.106 should be able to write a File to a FileWriter', function (done) {
                 var dummyFileName = 'dummy.txt';
                 var outputFileName = 'verify.txt';
@@ -3087,6 +3199,7 @@ exports.defineAutoTests = function () {
                     });
                 });
             });
+
             it('file.spec.107 should be able to write a sliced File to a FileWriter', function (done) {
                 var dummyFileName = 'dummy2.txt';
                 var outputFileName = 'verify2.txt';
@@ -3128,6 +3241,7 @@ exports.defineAutoTests = function () {
                     });
                 });
             });
+
             it('file.spec.108 should be able to write binary data from a File', function (done) {
                 // Skip test if Blobs are not supported (e.g.: Android 2.3).
                 if (typeof window.Blob === 'undefined' && typeof window.WebKitBlobBuilder === 'undefined') {
@@ -3178,8 +3292,8 @@ exports.defineAutoTests = function () {
                 }
                 try {
                     // Mobile Safari: Use Blob constructor
-                    blob = new Blob([data], { // eslint-disable-line no-undef
-                        'type': 'application/octet-stream'
+                    blob = new Blob([data], {
+                        type: 'application/octet-stream'
                     });
                 } catch (e) {
                     if (window.WebKitBlobBuilder) {
@@ -3202,6 +3316,7 @@ exports.defineAutoTests = function () {
                 }
             });
         });
+
         // FileWritter
         describe('Backwards compatibility', function () {
             /* These specs exist to test that the File plugin can still recognize file:///
@@ -3233,6 +3348,7 @@ exports.defineAutoTests = function () {
                 }, failed.bind(null, done, 'root.getFile - Error creating file: ' + localFilename));
             });
         });
+
         // Backwards Compatibility
         describe('Parent References', function () {
             /* These specs verify that paths with parent references i("..") in them
@@ -3256,6 +3372,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'createFile - Error creating file: ../' + fileName));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory: ' + dirName));
             });
+
             it('file.spec.111 should not traverse above above the root directory', function (done) {
                 var fileName = 'traverse.file.uri';
                 // create a new file entry
@@ -3273,6 +3390,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'root.getFile - Error getting file: ../' + fileName));
                 }, failed.bind(null, done, 'createFile - Error creating file: ../' + fileName));
             });
+
             it('file.spec.112 should traverse above above the current directory', function (done) {
                 var fileName = 'traverse2.file.uri';
                 var dirName = 'traverse2.subdir';
@@ -3294,6 +3412,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'createDirectory - Error creating directory: ' + dirName));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.113 getFile: get Entry should error for missing file above root directory', function (done) {
                 var fileName = '../missing.file';
                 // create:false, exclusive:false, file does not exist
@@ -3310,6 +3429,7 @@ exports.defineAutoTests = function () {
                 });
             });
         });
+
         // Parent References
         describe('toNativeURL interface', function () {
             /* These specs verify that FileEntries have a toNativeURL method
@@ -3319,6 +3439,7 @@ exports.defineAutoTests = function () {
             if (isChrome) {
                 pathExpect = 'filesystem:http://';
             }
+
             it('file.spec.114 fileEntry should have a toNativeURL method', function (done) {
                 var fileName = 'native.file.uri';
                 if (isWindows) {
@@ -3338,6 +3459,7 @@ exports.defineAutoTests = function () {
                     deleteEntry(fileName, done);
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.115 DirectoryReader should return entries with toNativeURL method', function (done) {
                 var dirName = 'nativeEntries.dir';
                 var fileName = 'nativeEntries.file';
@@ -3369,6 +3491,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'directory.getFile - Error creating file: ' + fileName));
                 }, failed.bind(null, done, 'root.getDirectory - Error creating directory: ' + dirName));
             });
+
             it('file.spec.116 resolveLocalFileSystemURL should return entries with toNativeURL method', function (done) {
                 var fileName = 'native.resolve.uri';
                 // create a new file entry
@@ -3387,6 +3510,7 @@ exports.defineAutoTests = function () {
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
         });
+
         // toNativeURL interface
         describe('resolveLocalFileSystemURL on file://', function () {
             /* These specs verify that window.resolveLocalFileSystemURL works correctly on file:// URLs
@@ -3398,6 +3522,7 @@ exports.defineAutoTests = function () {
                     done();
                 });
             });
+
             it('file.spec.118 should not resolve native URLs outside of FS roots', function (done) {
                 // lookup file system entry
                 window.resolveLocalFileSystemURL('file://localhost/this.is.an.invalid.url', succeed.bind(null, done, 'window.resolveLocalFileSystemURL - Unexpected success callback, it should not resolve invalid URL: file://localhost/this.is.an.invalid.url'), function (error) {
@@ -3405,6 +3530,7 @@ exports.defineAutoTests = function () {
                     done();
                 });
             });
+
             it('file.spec.119 should not resolve invalid native URLs', function (done) {
                 // lookup file system entry
                 window.resolveLocalFileSystemURL('file://localhost', succeed.bind(null, done, 'window.resolveLocalFileSystemURL - Unexpected success callback, it should not resolve invalid URL: file://localhost'), function (error) {
@@ -3412,6 +3538,7 @@ exports.defineAutoTests = function () {
                     done();
                 });
             });
+
             it('file.spec.120 should not resolve invalid native URLs with query strings', function (done) {
                 // lookup file system entry
                 window.resolveLocalFileSystemURL('file://localhost?test/test', succeed.bind(null, done, 'window.resolveLocalFileSystemURL - Unexpected success callback, it should not resolve invalid URL: file://localhost?test/test'), function (error) {
@@ -3419,6 +3546,7 @@ exports.defineAutoTests = function () {
                     done();
                 });
             });
+
             it('file.spec.121 should resolve native URLs returned by API', function (done) {
                 var fileName = 'native.resolve.uri1';
                 // create a new file entry
@@ -3431,6 +3559,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'resolveLocalFileSystemURL - Error resolving file URL: ' + entry.toNativeURL()));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.122 should resolve native URLs returned by API with localhost', function (done) {
                 var fileName = 'native.resolve.uri2';
                 // create a new file entry
@@ -3444,6 +3573,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'resolveLocalFileSystemURL - Error resolving file URL: ' + url));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.123 should resolve native URLs returned by API with query string', function (done) {
                 var fileName = 'native.resolve.uri3';
                 // create a new file entry
@@ -3457,6 +3587,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(null, done, 'resolveLocalFileSystemURL - Error resolving file URL: ' + url));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
+
             it('file.spec.124 should resolve native URLs returned by API with localhost and query string', function (done) {
                 var fileName = 'native.resolve.uri4';
                 // create a new file entry
@@ -3472,6 +3603,7 @@ exports.defineAutoTests = function () {
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
         });
+
         // resolveLocalFileSystemURL on file://
         describe('cross-file-system copy and move', function () {
             /* These specs verify that Entry.copyTo and Entry.moveTo work correctly
@@ -3519,6 +3651,7 @@ exports.defineAutoTests = function () {
                     entry.remove(createSourceAndTransfer, failed.bind(null, done, 'entry.remove - Error removing file: ' + file2));
                 }, createSourceAndTransfer);
             });
+
             it('file.spec.126 copyTo: persistent -> temporary', function (done) {
                 var file1 = 'entry.copy.file1b';
                 var file2 = 'entry.copy.file2b';
@@ -3551,7 +3684,7 @@ exports.defineAutoTests = function () {
                             expect(entry.filesystem.name).toEqual('persistent');
                         }
                         sourceEntry = entry;
-                    // Save for later cleanup
+                        // Save for later cleanup
                         entry.copyTo(temp_root, file2, validateFile, failed.bind(null, done, 'entry.copyTo - Error copying file: ' + file1 + ' to TEMPORAL root as: ' + file2));
                     }, failed.bind(null, done, 'persistent_root.getFile - Error creating file: ' + file1 + 'at PERSISTENT root'));
                 };
@@ -3560,6 +3693,7 @@ exports.defineAutoTests = function () {
                     entry.remove(createSourceAndTransfer, failed.bind(null, done, 'entry.remove - Error removing file: ' + file2));
                 }, createSourceAndTransfer);
             });
+
             it('file.spec.127 moveTo: temporary -> persistent', function (done) {
                 var file1 = 'entry.copy.file1a';
                 var file2 = 'entry.copy.file2a';
@@ -3602,6 +3736,7 @@ exports.defineAutoTests = function () {
                     entry.remove(createSourceAndTransfer, failed.bind(null, done, 'entry.remove - Error removing file: ' + file2));
                 }, createSourceAndTransfer);
             });
+
             it('file.spec.128 moveTo: persistent -> temporary', function (done) {
                 var file1 = 'entry.copy.file1b';
                 var file2 = 'entry.copy.file2b';
@@ -3643,6 +3778,7 @@ exports.defineAutoTests = function () {
                     entry.remove(createSourceAndTransfer, failed.bind(null, done, 'entry.remove - Error removing file: ' + file2));
                 }, createSourceAndTransfer);
             });
+
             it('file.spec.129 cordova.file.*Directory are set', function () {
                 var expectedPaths = ['applicationDirectory', 'applicationStorageDirectory', 'dataDirectory', 'cacheDirectory'];
                 /* eslint-disable no-undef */
@@ -3668,6 +3804,7 @@ exports.defineAutoTests = function () {
                 }
             });
         });
+
         describe('resolveLocalFileSystemURL on cdvfile://', function () {
             it('file.spec.147 should be able to resolve cdvfile applicationDirectory fs root', function (done) {
                 var cdvfileApplicationDirectoryFsRootName;
@@ -3709,6 +3846,7 @@ exports.defineAutoTests = function () {
                 }, failed.bind(null, done, 'resolveLocalFileSystemURL failed for cdvfile applicationDirectory'));
             });
         });
+
         // cross-file-system copy and move
         describe('IndexedDB-based impl', function () {
             it('file.spec.131 Nested file or nested directory should be removed when removing a parent directory', function (done) {
@@ -3730,6 +3868,7 @@ exports.defineAutoTests = function () {
                     }, failed.bind(this, done, 'getDirectory - Error creating directory : ' + nestedDirName));
                 }, failed.bind(this, done, 'root.getDirectory - Error creating directory : ' + parentDirName));
             });
+
             it('file.spec.132 Entry should be created succesfully when using relative paths if its parent directory exists', function (done) {
                 /* Directory entries have to be created successively.
                    For example, the call `fs.root.getDirectory('dir1/dir2', {create:true}, successCallback, errorCallback)`
@@ -3749,12 +3888,12 @@ exports.defineAutoTests = function () {
                 };
 
                 createDirectory(parentName, function () {
-                    root.getDirectory(parentName + '/' + nestedName, {create: true}, win,
+                    root.getDirectory(parentName + '/' + nestedName, { create: true }, win,
                         failed.bind(this, done, 'root.getDirectory - Error getting directory : ' + path));
                 }, failed.bind(this, done, 'root.getDirectory - Error getting directory : ' + parentName));
             });
-            it('file.spec.133 A file being removed should not affect another file with name being a prefix of the removed file name.', function (done) {
 
+            it('file.spec.133 A file being removed should not affect another file with name being a prefix of the removed file name.', function (done) {
                 // Names include special symbols so that we check the IndexedDB range used
                 var deletedFileName = 'deletedFile.0';
                 var secondFileName = 'deletedFile.0.1';
@@ -3770,15 +3909,15 @@ exports.defineAutoTests = function () {
                 createFile(deletedFileName, function (deletedFile) {
                     createFile(secondFileName, function () {
                         deletedFile.remove(function () {
-                            root.getFile(deletedFileName, {create: false}, failed.bind(this, done, 'getFile - unexpected success callback getting deleted file : ' + deletedFileName), function () {
-                                root.getFile(secondFileName, {create: false}, win, failed.bind(this, done, 'getFile - Error getting file after deleting deletedFile : ' + secondFileName));
+                            root.getFile(deletedFileName, { create: false }, failed.bind(this, done, 'getFile - unexpected success callback getting deleted file : ' + deletedFileName), function () {
+                                root.getFile(secondFileName, { create: false }, win, failed.bind(this, done, 'getFile - Error getting file after deleting deletedFile : ' + secondFileName));
                             });
                         }, failed.bind(this, done, 'remove - Error removing file : ' + deletedFileName));
                     }, failed.bind(this, done, 'getFile - Error creating file : ' + secondFileName));
                 }, failed.bind(this, done, 'getFile - Error creating file : ' + deletedFileName));
             });
-            it('file.spec.134 A directory being removed should not affect another directory with name being a prefix of the removed directory name.', function (done) {
 
+            it('file.spec.134 A directory being removed should not affect another directory with name being a prefix of the removed directory name.', function (done) {
                 // Names include special symbols so that we check the IndexedDB range used
                 var deletedDirName = 'deletedDir.0';
                 var secondDirName = 'deletedDir.0.1';
@@ -3794,15 +3933,15 @@ exports.defineAutoTests = function () {
                 createDirectory(deletedDirName, function (deletedDir) {
                     createDirectory(secondDirName, function () {
                         deletedDir.remove(function () {
-                            root.getDirectory(deletedDirName, {create: false}, failed.bind(this, done, 'getDirectory - unexpected success callback getting deleted directory : ' + deletedDirName), function () {
-                                root.getDirectory(secondDirName, {create: false}, win, failed.bind(this, done, 'getDirectory - Error getting directory after deleting deletedDirectory : ' + secondDirName));
+                            root.getDirectory(deletedDirName, { create: false }, failed.bind(this, done, 'getDirectory - unexpected success callback getting deleted directory : ' + deletedDirName), function () {
+                                root.getDirectory(secondDirName, { create: false }, win, failed.bind(this, done, 'getDirectory - Error getting directory after deleting deletedDirectory : ' + secondDirName));
                             });
                         }, failed.bind(this, done, 'remove - Error removing directory : ' + deletedDirName));
                     }, failed.bind(this, done, 'root.getDirectory - Error creating directory : ' + secondDirName));
                 }, failed.bind(this, done, 'root.getDirectory - Error creating directory : ' + deletedDirName));
             });
-            it('file.spec.135 Deletion of a child directory should not affect the parent directory.', function (done) {
 
+            it('file.spec.135 Deletion of a child directory should not affect the parent directory.', function (done) {
                 var parentName = 'parentName135';
                 var childName = 'childName135';
 
@@ -3815,16 +3954,16 @@ exports.defineAutoTests = function () {
                 };
 
                 createDirectory(parentName, function (parent) {
-                    parent.getDirectory(childName, {create: true}, function (child) {
+                    parent.getDirectory(childName, { create: true }, function (child) {
                         child.removeRecursively(function () {
-                            root.getDirectory(parentName, {create: false}, win, failed.bind(this, done, 'root.getDirectory - Error getting parent directory : ' + parentName));
+                            root.getDirectory(parentName, { create: false }, win, failed.bind(this, done, 'root.getDirectory - Error getting parent directory : ' + parentName));
                         },
                         failed.bind(this, done, 'getDirectory - Error removing directory : ' + childName));
                     }, failed.bind(this, done, 'getDirectory - Error creating directory : ' + childName));
                 }, failed.bind(this, done, 'root.getDirectory - Error creating directory : ' + parentName));
             });
-            it('file.spec.136 Paths should support Unicode symbols.', function (done) {
 
+            it('file.spec.136 Paths should support Unicode symbols.', function (done) {
                 var dirName = '文件插件';
 
                 var win = function (directory) {
@@ -3836,11 +3975,12 @@ exports.defineAutoTests = function () {
                 };
 
                 createDirectory(dirName, function () {
-                    root.getDirectory(dirName, {create: false}, win,
+                    root.getDirectory(dirName, { create: false }, win,
                         failed.bind(this, done, 'root.getDirectory - Error getting directory : ' + dirName));
                 }, failed.bind(this, done, 'root.getDirectory - Error creating directory : ' + dirName));
             });
         });
+
         // Content and Asset URLs
         if (cordova.platformId === 'android') { // eslint-disable-line no-undef
             describe('content: URLs', function () {
@@ -3985,14 +4125,13 @@ exports.defineAutoTests = function () {
             }, MEDIUM_TIMEOUT);
         }
     });
-
 };
+
 //* *****************************************************************************************
 //* **************************************Manual Tests***************************************
 //* *****************************************************************************************
 
 exports.defineManualTests = function (contentEl, createActionButton) {
-
     function resolveFs (fsname) {
         var fsURL = 'cdvfile://localhost/' + fsname + '/';
         logMessage('Resolving URL: ' + fsURL);
@@ -4085,11 +4224,11 @@ exports.defineManualTests = function (contentEl, createActionButton) {
     }
 
     var fsRoots = {
-        'ios': 'library,library-nosync,documents,documents-nosync,cache,bundle,root,private',
-        'osx': 'library,library-nosync,documents,documents-nosync,cache,bundle,root,private',
-        'android': 'files,files-external,documents,sdcard,cache,cache-external,assets,root',
+        ios: 'library,library-nosync,documents,documents-nosync,cache,bundle,root,private',
+        osx: 'library,library-nosync,documents,documents-nosync,cache,bundle,root,private',
+        android: 'files,files-external,documents,sdcard,cache,cache-external,assets,root',
         'amazon-fireos': 'files,files-external,documents,sdcard,cache,cache-external,root',
-        'windows': 'temporary,persistent'
+        windows: 'temporary,persistent'
     };
 
     // Add title and align to content
@@ -4108,7 +4247,7 @@ exports.defineManualTests = function (contentEl, createActionButton) {
     div.setAttribute('align', 'center');
     contentEl.appendChild(div);
     /* eslint-disable no-undef */
-    if (fsRoots.hasOwnProperty(cordova.platformId)) {
+    if (Object.prototype.hasOwnProperty.call(fsRoots, cordova.platformId)) {
         (fsRoots[cordova.platformId].split(',')).forEach(function (fs) {
             if (cordova.platformId === 'ios' && fs === 'private') {
                 /* eslint-enable no-undef */
