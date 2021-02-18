@@ -140,8 +140,9 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
     if (supportsBinary && (data instanceof ArrayBuffer)) {
         writeBase64EncodedStringInChunks.call(
             me,
-            function (bytesWritten) {
-                onSuccessfulWrite.call(me, bytesWritten);
+            function () {
+                // do not change position and length here, they have been updated while writing chunks
+                onSuccessfulChunkedWrite().call(me);
             },
             function writeError (error) {
                 // TODO, should we try to "undo" the writing that has happened up until now?
@@ -193,7 +194,7 @@ function writeBase64EncodedStringInChunks (successCallback, errorCallback, array
             calculateCurrentChunk();
             convertCurrentChunkToBase64AndWriteToDisk();
         } else {
-            successCallback(arrayBuffer.byteLength);
+            successCallback();
         }
     }
 
@@ -281,6 +282,21 @@ function execFileWrite (data, isBinary) {
             isBinary
         ]
     );
+}
+
+function onSuccessfulChunkedWrite () {
+    var me = this;
+    // If DONE (cancelled), then don't do anything
+    if (me.readyState === FileWriter.DONE) {
+        return;
+    }
+
+    // DONE state
+    me.readyState = FileWriter.DONE;
+
+    notifyOnWriteCallback.call(me);
+
+    notifyOnWriteEndCallback.call(me);
 }
 
 function onSuccessfulWrite (bytesWritten) {
