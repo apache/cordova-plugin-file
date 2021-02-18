@@ -53,12 +53,23 @@ var FileWriter = function (file) {
     this.error = null;
 
     // Event handlers
-    this.onwritestart = null;   // When writing starts
-    this.onprogress = null;     // While writing the file, and reporting partial file data
-    this.onwrite = null;        // When the write has successfully completed.
-    this.onwriteend = null;     // When the request has completed (either in success or failure).
-    this.onabort = null;        // When the write has been aborted. For instance, by invoking the abort() method.
-    this.onerror = null;        // When the write has failed (see errors).
+    // When writing starts
+    this.onwritestart = null;
+
+    // While writing the file, and reporting partial file data
+    this.onprogress = null;
+
+    // When the write has successfully completed.
+    this.onwrite = null;
+
+    // When the request has completed (either in success or failure).
+    this.onwriteend = null;
+
+    // When the write has been aborted. For instance, by invoking the abort() method.
+    this.onabort = null;
+
+    // When the write has failed (see errors).
+    this.onerror = null;
 };
 
 // States
@@ -82,12 +93,12 @@ FileWriter.prototype.abort = function () {
 
     // If abort callback
     if (typeof this.onabort === 'function') {
-        this.onabort(new ProgressEvent('abort', {'target': this}));
+        this.onabort(new ProgressEvent('abort', { target: this }));
     }
 
     // If write end callback
     if (typeof this.onwriteend === 'function') {
-        this.onwriteend(new ProgressEvent('writeend', {'target': this}));
+        this.onwriteend(new ProgressEvent('writeend', { target: this }));
     }
 };
 
@@ -98,7 +109,6 @@ FileWriter.prototype.abort = function () {
  * @param isPendingBlobReadResult {Boolean} true if the data is the pending blob read operation result
  */
 FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
-
     var me = this;
     var supportsBinary = (typeof window.Blob !== 'undefined' && typeof window.ArrayBuffer !== 'undefined');
     /* eslint-disable no-undef */
@@ -444,28 +454,28 @@ function errorCallback (error) {
 function notifyOnErrorCallback () {
     var me = this;
     if (typeof me.onerror === 'function') {
-        me.onerror(new ProgressEvent('error', {'target': me}));
+        me.onerror(new ProgressEvent('error', { target: me }));
     }
 }
 
 function notifyOnWriteStartCallback () {
     var me = this;
     if (typeof me.onwritestart === 'function') {
-        me.onwritestart(new ProgressEvent('writestart', {'target': this}));
+        me.onwritestart(new ProgressEvent('writestart', { target: this }));
     }
 }
 
 function notifyOnWriteEndCallback () {
     var me = this;
     if (typeof me.onwriteend === 'function') {
-        me.onwriteend(new ProgressEvent('writeend', {'target': me}));
+        me.onwriteend(new ProgressEvent('writeend', { target: me }));
     }
 }
 
 function notifyOnWriteCallback () {
     var me = this;
     if (typeof me.onwrite === 'function') {
-        me.onwrite(new ProgressEvent('write', {'target': me}));
+        me.onwrite(new ProgressEvent('write', { target: me }));
     }
 }
 

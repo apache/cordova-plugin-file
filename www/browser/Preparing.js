@@ -107,7 +107,7 @@
     };
 
     function createFileEntryFunctions (fs) {
-        fs.root.getFile('todelete_658674_833_4_cdv', {create: true}, function (fileEntry) {
+        fs.root.getFile('todelete_658674_833_4_cdv', { create: true }, function (fileEntry) {
             var fileEntryType = Object.getPrototypeOf(fileEntry);
             var entryType = Object.getPrototypeOf(fileEntryType);
 
