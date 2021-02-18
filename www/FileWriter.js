@@ -142,7 +142,7 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
             me,
             function () {
                 // do not change position and length here, they have been updated while writing chunks
-                onSuccessfulChunkedWrite().call(me);
+                onSuccessfulChunkedWrite.call(me);
             },
             function writeError (error) {
                 // TODO, should we try to "undo" the writing that has happened up until now?
