@@ -137,7 +137,7 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
     notifyOnWriteStartCallback.call(me);
 
     // do not use `isBinary` here, as the data might have been changed for windowsphone environment.
-    if (supportsBinary && (data instanceof ArrayBuffer)) {
+    if (supportsBinary && (data instanceof ArrayBuffer) && cordova.platformId === 'android') {
         writeBase64EncodedStringInChunks.call(
             me,
             function () {
@@ -205,6 +205,9 @@ function writeBase64EncodedStringInChunks (successCallback, errorCallback, array
     function calculateCurrentChunk () {
         sizeOfChunk = Math.min(chunkSizeBytes, arrayBuffer.byteLength - startOfChunk);
         endOfChunk = startOfChunk + sizeOfChunk;
+
+        console.log('size of chunk', sizeOfChunk);
+        console.log('endOfChunk', endOfChunk);
     }
 
     calculateCurrentChunk();
@@ -318,11 +321,14 @@ function onSuccessfulWrite (bytesWritten) {
 
 function onBytesWritten (bytesWritten) {
     var me = this;
+    console.log('bytes written', bytesWritten);
+
     // position always increases by bytes written because file would be extended
     me.position += bytesWritten;
 
     // The length of the file is now where we are done writing.
     me.length = me.position;
+    console.log('position', me.position);
 }
 
 /**
