@@ -103,7 +103,7 @@ FileWriter.prototype.abort = function () {
 };
 
 /**
- * Writes data to the file
+ * Writes data to the file.
  *
  * @param data File, String, Blob or ArrayBuffer to be written
  * @param isPendingBlobReadResult {Boolean} true if the data is the pending blob read operation result
