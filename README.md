@@ -49,9 +49,9 @@ To get a few ideas how to use the plugin, check out the [sample](#sample) at the
 For an overview of other storage options, refer to Cordova's
 [storage guide](http://cordova.apache.org/docs/en/latest/cordova/storage/storage.html).
 
-This plugin defines global `cordova.file` object.
+This plugin defines a global `cordova.file` object.
 
-Although in the global scope, it is not available until after the `deviceready` event.
+Although the object is in the global scope, it is not available to applications until after the `deviceready` event fires.
 
     document.addEventListener("deviceready", onDeviceReady, false);
     function onDeviceReady() {
