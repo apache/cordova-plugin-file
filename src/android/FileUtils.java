@@ -77,6 +77,7 @@ public class FileUtils extends CordovaPlugin {
     public static final int ACTION_GET_FILE = 0;
     public static final int ACTION_WRITE = 1;
     public static final int ACTION_GET_DIRECTORY = 2;
+    public static final int ACTION_READ_ENTRIES = 3;
 
     public static final int WRITE = 3;
     public static final int READ = 4;
@@ -273,6 +274,7 @@ public class FileUtils extends CordovaPlugin {
         if (action.equals("testSaveLocationExists")) {
             threadhelper(new FileOp() {
                 public void run(JSONArray args) {
+                    
                     boolean b = DirectoryManager.testSaveLocationExists();
                     callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, b));
                 }
@@ -525,10 +527,16 @@ public class FileUtils extends CordovaPlugin {
         }
         else if (action.equals("readEntries")) {
             threadhelper( new FileOp( ){
-                public void run(JSONArray args) throws FileNotFoundException, JSONException, MalformedURLException {
-                    String fname=args.getString(0);
-                    JSONArray entries = readEntries(fname);
-                    callbackContext.success(entries);
+                public void run(JSONArray args) throws FileNotFoundException, JSONException, MalformedURLException, IOException {
+                    String directory = args.getString(0);
+                    String nativeURL = resolveLocalFileSystemURI(directory).getString("nativeURL");
+                    if (needPermission(nativeURL, READ)) {
+                        getReadPermission(rawArgs, ACTION_READ_ENTRIES, callbackContext);
+                    }
+                    else {
+                        JSONArray entries = readEntries(directory);
+                        callbackContext.success(entries);
+                    }
                 }
             }, rawArgs, callbackContext);
         }
@@ -1214,6 +1222,15 @@ public class FileUtils extends CordovaPlugin {
                             Boolean isBinary=args.getBoolean(3);
                             long fileSize = write(fname, data, offset, isBinary);
                             req.getCallbackContext().sendPluginResult(new PluginResult(PluginResult.Status.OK, fileSize));
+                        }
+                    }, req.getRawArgs(), req.getCallbackContext());
+                    break;
+                case ACTION_READ_ENTRIES:
+                    threadhelper( new FileOp( ){
+                        public void run(JSONArray args) throws FileNotFoundException, JSONException, MalformedURLException {
+                            String fname=args.getString(0);
+                            JSONArray entries = readEntries(fname);
+                            req.getCallbackContext().success(entries);
                         }
                     }, req.getRawArgs(), req.getCallbackContext());
                     break;
