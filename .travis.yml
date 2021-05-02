@@ -12,12 +12,12 @@ addons:
 env:
   global:
     - SAUCE_USERNAME=snay
-    - TRAVIS_NODE_VERSION=12
+    - TRAVIS_NODE_VERSION=16
     - ANDROID_API_LEVEL=29
     - ANDROID_BUILD_TOOLS_VERSION=29.0.3
 
 language: node_js
-node_js: 14
+node_js: 16
 
 # yaml anchor/alias: https://medium.com/@tommyvn/travis-yml-dry-with-anchors-8b6a3ac1b027
 
