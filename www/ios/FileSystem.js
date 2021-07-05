@@ -23,8 +23,11 @@ FILESYSTEM_PROTOCOL = 'cdvfile';
 
 module.exports = {
     __format__: function (fullPath, internalUrl) {
-        return internalUrl;
-        // var path = ('/' + this.name + (fullPath[0] === '/' ? '' : '/') + FileSystem.encodeURIPath(fullPath)).replace('//', '/');
-        // return FILESYSTEM_PROTOCOL + '://localhost' + path;
+        // todo move to fileSystem like the toInternalUrl as above
+        if(window && window.WkWebView) { // https://github.com/apache/cordova-plugin-file/pull/457/commits/fea030f4e870ad7a2f07a8063c7da894ee9b2818
+            return window.WkWebView.convertFilePath(fullPath);
+        }
+        var path = ('/' + this.name + (fullPath[0] === '/' ? '' : '/') + FileSystem.encodeURIPath(fullPath)).replace('//', '/');
+        return FILESYSTEM_PROTOCOL + '://localhost' + path;
     }
 };
