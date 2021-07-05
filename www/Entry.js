@@ -52,6 +52,13 @@ function Entry (isFile, isDirectory, name, fullPath, fileSystem, nativeURL) {
     this.fullPath = fullPath || '';
     this.filesystem = fileSystem || null;
     this.nativeURL = nativeURL || null;
+
+    if (this.nativeURL) {
+        // todo move to fileSystem like the toInternalUrl
+        if(window.WkWebView) { // https://github.com/apache/cordova-plugin-file/pull/457/commits/fea030f4e870ad7a2f07a8063c7da894ee9b2818
+            this.nativeURL = window.WkWebView.convertFilePath(this.nativeURL);
+        }
+    }
 }
 
 /**
@@ -191,6 +198,10 @@ Entry.prototype.toInternalURL = function () {
  */
 Entry.prototype.toURL = function () {
     if (this.nativeURL) {
+        // todo move to fileSystem like the toInternalUrl as above
+        if(window.WkWebView) { // https://github.com/apache/cordova-plugin-file/pull/457/commits/fea030f4e870ad7a2f07a8063c7da894ee9b2818
+            return window.WkWebView.convertFilePath(this.nativeURL);
+        }
         return this.nativeURL;
     }
     // fullPath attribute may contain the full URL in the case that
