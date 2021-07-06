@@ -3832,7 +3832,8 @@ exports.defineAutoTests = function () {
                         expect(entry.name).toCanonicallyMatch('logo.png');
                         expect(entry.fullPath).toCanonicallyMatch('/www/img/logo.png');
                         expect(entry.filesystem.name).toEqual(cdvfileApplicationDirectoryFsRootName);
-
+                        var internalURL = entry.toInternalURL();
+                        expect(internalURL).toEqual(internalURL, 'It should be an internalUrl what is it?' + internalURL);
                         var img = new Image(); // eslint-disable-line no-undef
                         img.onerror = function (err) {
                             console.error('Current error', err);
@@ -3842,7 +3843,7 @@ exports.defineAutoTests = function () {
                         img.onload = function () {
                             done();
                         };
-                        img.src = entry.toInternalURL();
+                        img.src = internalURL;
                     }, failed.bind(null, done, 'resolveLocalFileSystemURL failed for cdvfile applicationDirectory'));
                 }, failed.bind(null, done, 'resolveLocalFileSystemURL failed for cdvfile applicationDirectory'));
             });
