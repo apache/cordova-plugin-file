@@ -3833,7 +3833,7 @@ exports.defineAutoTests = function () {
                         expect(entry.fullPath).toCanonicallyMatch('/www/img/logo.png');
                         expect(entry.filesystem.name).toEqual(cdvfileApplicationDirectoryFsRootName);
                         var internalURL = entry.toInternalURL();
-                        expect(internalURL).toEqual(internalURL, 'It should be an internalUrl what is it?' + internalURL);
+                        expect(internalURL).toEqual('wrong', 'It should be an internalUrl what is it?' + internalURL);
                         var img = new Image(); // eslint-disable-line no-undef
                         img.onerror = function (err) {
                             console.error('Current error', err);
