@@ -40,7 +40,6 @@ var File = function (name, localURL, type, lastModifiedDate, size) {
     // These store the absolute start and end for slicing the file.
     this.start = 0;
     this.end = this.size;
-
 };
 
 /**
