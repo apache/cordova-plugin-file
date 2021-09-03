@@ -1135,7 +1135,7 @@ public class FileUtils extends CordovaPlugin {
         		throw new MalformedURLException("No installed handlers for this URL");
         	}
 
-            long x = fs.writeToFileAtURL(inputURL, data, offset, isBinary); LOG.d("TEST",srcURLstr + ": "+x); return x;
+            long x = fs.writeToFileAtURL(inputURL, data, offset, isBinary);
         } catch (IllegalArgumentException e) {
             MalformedURLException mue = new MalformedURLException("Unrecognized filesystem URL");
             mue.initCause(e);
