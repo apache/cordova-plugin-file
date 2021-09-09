@@ -234,6 +234,17 @@ public class FileUtils extends CordovaPlugin {
     	}
     }
 
+    @Override
+    public Boolean shouldAllowBridgeAccess(String url) {
+        if (url.equals("")) {
+            url = this.webView.getUrl();
+            if (url.matches("^cdvfile://.*")) {
+                return true;
+            }
+        }
+        return super.shouldAllowBridgeAccess(url);
+    }
+
     public static FileUtils getFilePlugin() {
 		return filePlugin;
 	}
