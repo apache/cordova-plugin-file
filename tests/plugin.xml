@@ -38,6 +38,5 @@
                 android:exported="false" />
         </config-file>
         <asset src="www/fixtures/asset-test" target="fixtures/asset-test" />
-        <dependency id="cordova-plugin-contacts" />
     </platform>
 </plugin>

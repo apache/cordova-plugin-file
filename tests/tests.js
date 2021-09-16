@@ -4171,37 +4171,6 @@ exports.defineManualTests = function (contentEl, createActionButton) {
         }, logError('requestFileSystem'));
     }
 
-    function resolveFsContactImage () {
-        navigator.contacts.pickContact(function (contact) {
-            var logBox = document.getElementById('logContactBox');
-            logBox.innerHTML = '';
-            var resolveResult = document.createElement('p');
-            if (contact.photos) {
-                var photoURL = contact.photos[0].value;
-                resolveLocalFileSystemURL(photoURL, function (entry) {
-                    /* eslint-enable no-undef */
-                    var contactImage = document.createElement('img');
-                    var contactLabelImage = document.createElement('p');
-                    contactLabelImage.innerHTML = 'Result contact image';
-                    contactImage.setAttribute('src', entry.toURL());
-                    resolveResult.innerHTML = 'Success resolve\n' + entry.toURL();
-                    logBox.appendChild(contactLabelImage);
-                    logBox.appendChild(contactImage);
-                    logBox.appendChild(resolveResult);
-                },
-                function (err) {
-                    console.log('resolve error' + err);
-                });
-            } else {
-                resolveResult.innerHTML = 'Contact has no photos';
-                logBox.appendChild(resolveResult);
-            }
-        },
-        function (err) {
-            console.log('contact pick error' + err);
-        });
-    }
-
     function clearLog () {
         var log = document.getElementById('info');
         log.innerHTML = '';
@@ -4285,18 +4254,4 @@ exports.defineManualTests = function (contentEl, createActionButton) {
     div.appendChild(document.createTextNode('Resolving content urls'));
     div.setAttribute('align', 'center');
     contentEl.appendChild(div);
-
-    div = document.createElement('div');
-    div.setAttribute('id', 'contactButton');
-    div.setAttribute('align', 'center');
-    contentEl.appendChild(div);
-
-    div = document.createElement('div');
-    div.setAttribute('id', 'logContactBox');
-    div.setAttribute('align', 'center');
-    contentEl.appendChild(div);
-
-    createActionButton('show-contact-image', function () {
-        resolveFsContactImage();
-    }, 'contactButton');
 };
