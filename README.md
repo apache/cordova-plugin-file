@@ -74,7 +74,7 @@ Although the object is in the global scope, it is not available to applications 
 
 As of v1.2.0, URLs to important file-system directories are provided.
 Each URL is in the form _file:///path/to/spot/_, and can be converted to a
-`DirectoryEntry` using `window.resolveLocalFileSystemURL()`.
+`FileSystemDirectoryEntry` using `window.resolveLocalFileSystemURL()`.
 
 * `cordova.file.applicationDirectory` - Read-only directory where the application
   is installed. (_iOS_, _Android_, _BlackBerry 10_, _OSX_, _windows_)
@@ -342,7 +342,7 @@ You can use `window.isFilePluginReadyRaised` function to check whether event was
 - window.requestFileSystem TEMPORARY and PERSISTENT filesystem quotas are not limited in Chrome.
 - To increase persistent storage in Chrome you need to call `window.initPersistentFileSystem` method. Persistent storage quota is 5 MB by default.
 - Chrome requires `--allow-file-access-from-files` run argument to support API via `file:///` protocol.
-- `File` object will be not changed if you use flag `{create:true}` when getting an existing `Entry`.
+- `File` object will be not changed if you use flag `{create:true}` when getting an existing `FileSystemEntry`.
 - events `cancelable` property is set to true in Chrome. This is contrary to the [specification](http://dev.w3.org/2009/dap/file-system/file-writer.html).
 - `toURL` function in Chrome returns `filesystem:`-prefixed path depending on application host.
 For example, `filesystem:file:///persistent/somefile.txt`, `filesystem:http://localhost:8080/persistent/somefile.txt`.
@@ -366,13 +366,13 @@ once you hit that level you will be asked if you want to allow it to be increase
 So `size` parameter for `requestFileSystem` function does not affect filesystem in Firefox and IE.
 - `readAsBinaryString` function is not stated in the Specs and not supported in IE and does not have a stub.
 - `file.type` is always null.
-- You should not create entry using DirectoryEntry instance callback result which was deleted.
+- You should not create entry using FileSystemDirectoryEntry instance callback result which was deleted.
 Otherwise, you will get a 'hanging entry'.
 - Before you can read a file, which was just written you need to get a new instance of this file.
 - `setMetadata` function, which is not stated in the Specs supports `modificationTime` field change only.
 - `copyTo` and `moveTo` functions do not support directories.
 - Directories metadata is not supported.
-- Both Entry.remove and directoryEntry.removeRecursively don't fail when removing
+- Both FileSystemEntry.remove and directoryEntry.removeRecursively don't fail when removing
 non-empty directories - directories being removed are cleaned along with contents instead.
 - `abort` and `truncate` functions are not supported.
 - progress events are not fired. For example, this handler will be not executed:
