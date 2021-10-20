@@ -253,12 +253,6 @@ unable to access their previously-stored files, depending on their device.
 If your application is new, or has never previously stored files in the
 persistent filesystem, then the `Internal` setting is generally recommended.
 
-### Slow recursive operations for /android_asset
-
-Listing asset directories is really slow on Android. You can speed it up though, by
-adding `src/android/build-extras.gradle` to the root of your android project (also
-requires cordova-android@4.0.0 or greater).
-
 ### Permisson to write to external storage when it's not mounted on Marshmallow
 
 Marshmallow requires the apps to ask for permissions when reading/writing to external locations. By
