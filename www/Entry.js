@@ -45,13 +45,14 @@ var Metadata = require('./Metadata');
  *            webview controls, for example media players.
  *            (optional, readonly)
  */
-function Entry (isFile, isDirectory, name, fullPath, fileSystem, nativeURL) {
+function Entry (isFile, isDirectory, name, fullPath, fileSystem, nativeURL, cdvURL) {
     this.isFile = !!isFile;
     this.isDirectory = !!isDirectory;
     this.name = name || '';
     this.fullPath = fullPath || '';
     this.filesystem = fileSystem || null;
     this.nativeURL = nativeURL || null;
+    this.cdvURL = cdvURL || null;
 }
 
 /**
@@ -196,6 +197,14 @@ Entry.prototype.toURL = function () {
     // fullPath attribute may contain the full URL in the case that
     // toInternalURL fails.
     return this.toInternalURL() || 'file://localhost' + this.fullPath;
+};
+
+Entry.prototype.getCdvURL = function () {
+    if (this.cdvURL) {
+        return this.cdvURL;
+    }
+
+    return null;
 };
 
 /**

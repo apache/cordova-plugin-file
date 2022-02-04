@@ -19,6 +19,7 @@
 package org.apache.cordova.file;
 
 import android.net.Uri;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,6 +30,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.apache.cordova.CordovaPreferences;
 import org.apache.cordova.CordovaResourceApi;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,20 +40,25 @@ public abstract class Filesystem {
 
     protected final Uri rootUri;
     protected final CordovaResourceApi resourceApi;
+    protected final CordovaPreferences preferences;
     public final String name;
     private JSONObject rootEntry;
 
-    public Filesystem(Uri rootUri, String name, CordovaResourceApi resourceApi) {
+    private static String SCHEME_HTTPS = "https";
+    private static String DEFAULT_HOSTNAME = "localhost";
+
+    public Filesystem(Uri rootUri, String name, CordovaResourceApi resourceApi, CordovaPreferences preferences) {
         this.rootUri = rootUri;
         this.name = name;
         this.resourceApi = resourceApi;
+        this.preferences = preferences;
     }
 
     public interface ReadFileCallback {
 		public void handleData(InputStream inputStream, String contentType) throws IOException;
 	}
 
-    public static JSONObject makeEntryForURL(LocalFilesystemURL inputURL, Uri nativeURL) {
+    public static JSONObject makeEntryForURL(LocalFilesystemURL inputURL, Uri nativeURL, CordovaPreferences preferences) {
         try {
             String path = inputURL.path;
             int end = path.endsWith("/") ? 1 : 0;
@@ -74,6 +81,23 @@ public abstract class Filesystem {
                 nativeUrlStr += "/";
             }
             entry.put("nativeURL", nativeUrlStr);
+
+            String cdvURL = "";
+
+            if (!preferences.getBoolean("AndroidInsecureFileModeEnabled", false)) {
+                String scheme = preferences.getString("scheme", SCHEME_HTTPS).toLowerCase();
+                String hostname = preferences.getString("hostname", DEFAULT_HOSTNAME);
+
+                if (!inputURL.isDirectory) {
+                    if (inputURL.fsName.equals("persistent")) {
+                        cdvURL = scheme + "://" + hostname + "/__cdvfile_persistent__" + path;
+                    } else if (inputURL.fsName.equals("temporary")) {
+                        cdvURL = scheme + "://" + hostname + "/__cdvfile_temporary__" + path;
+                    }
+                }
+            }
+
+            entry.put("cdvURL", cdvURL);
             return entry;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -83,12 +107,12 @@ public abstract class Filesystem {
 
     public JSONObject makeEntryForURL(LocalFilesystemURL inputURL) {
         Uri nativeUri = toNativeUri(inputURL);
-        return nativeUri == null ? null : makeEntryForURL(inputURL, nativeUri);
+        return nativeUri == null ? null : makeEntryForURL(inputURL, nativeUri, preferences);
     }
 
     public JSONObject makeEntryForNativeUri(Uri nativeUri) {
         LocalFilesystemURL inputUrl = toLocalUri(nativeUri);
-        return inputUrl == null ? null : makeEntryForURL(inputUrl, nativeUri);
+        return inputUrl == null ? null : makeEntryForURL(inputUrl, nativeUri, preferences);
     }
 
     public JSONObject getEntryForLocalURL(LocalFilesystemURL inputURL) throws IOException {

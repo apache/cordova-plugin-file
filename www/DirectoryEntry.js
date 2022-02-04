@@ -104,7 +104,7 @@ DirectoryEntry.prototype.getFile = function (path, options, successCallback, err
     var fs = this.filesystem;
     var win = successCallback && function (result) {
         var FileEntry = require('./FileEntry');
-        var entry = new FileEntry(result.name, result.fullPath, fs, result.nativeURL);
+        var entry = new FileEntry(result.name, result.fullPath, fs, result.nativeURL, result.cdvURL);
         successCallback(entry);
     };
     var fail = errorCallback && function (code) {

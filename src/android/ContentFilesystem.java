@@ -28,6 +28,8 @@ import android.provider.OpenableColumns;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import org.apache.cordova.CordovaPreferences;
 import org.apache.cordova.CordovaResourceApi;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,8 +38,8 @@ public class ContentFilesystem extends Filesystem {
 
     private final Context context;
 
-	public ContentFilesystem(Context context, CordovaResourceApi resourceApi) {
-		super(Uri.parse("content://"), "content", resourceApi);
+	public ContentFilesystem(Context context, CordovaResourceApi resourceApi, CordovaPreferences preferences) {
+		super(Uri.parse("content://"), "content", resourceApi, preferences);
         this.context = context;
 	}
 

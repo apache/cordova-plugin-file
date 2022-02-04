@@ -20,16 +20,23 @@ package org.apache.cordova.file;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Base64;
+import android.util.Log;
+import android.webkit.MimeTypeMap;
+import android.webkit.WebResourceResponse;
+
+import androidx.webkit.WebViewAssetLoader;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaPluginPathHandler;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PermissionHelper;
@@ -39,12 +46,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.Permission;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,8 +97,6 @@ public class FileUtils extends CordovaPlugin {
     private boolean configured = false;
 
     private PendingRequests pendingRequests;
-
-
 
     /*
      * We need both read and write when accessing the storage, I think.
@@ -136,7 +145,7 @@ public class FileUtils extends CordovaPlugin {
                 if (fsRoot != null) {
                     File newRoot = new File(fsRoot);
                     if (newRoot.mkdirs() || newRoot.isDirectory()) {
-                        registerFilesystem(new LocalFilesystem(fsName, webView.getContext(), webView.getResourceApi(), newRoot));
+                        registerFilesystem(new LocalFilesystem(fsName, webView.getContext(), webView.getResourceApi(), newRoot, preferences));
                         installedFileSystems.add(fsName);
                     } else {
                        LOG.d(LOG_TAG, "Unable to create root dir for filesystem \"" + fsName + "\", skipping");
@@ -217,10 +226,10 @@ public class FileUtils extends CordovaPlugin {
     		// Note: The temporary and persistent filesystems need to be the first two
     		// registered, so that they will match window.TEMPORARY and window.PERSISTENT,
     		// per spec.
-    		this.registerFilesystem(new LocalFilesystem("temporary", webView.getContext(), webView.getResourceApi(), tmpRootFile));
-    		this.registerFilesystem(new LocalFilesystem("persistent", webView.getContext(), webView.getResourceApi(), persistentRootFile));
-    		this.registerFilesystem(new ContentFilesystem(webView.getContext(), webView.getResourceApi()));
-            this.registerFilesystem(new AssetFilesystem(webView.getContext().getAssets(), webView.getResourceApi()));
+    		this.registerFilesystem(new LocalFilesystem("temporary", webView.getContext(), webView.getResourceApi(), tmpRootFile, preferences));
+            this.registerFilesystem(new LocalFilesystem("persistent", webView.getContext(), webView.getResourceApi(), persistentRootFile, preferences));
+            this.registerFilesystem(new ContentFilesystem(webView.getContext(), webView.getResourceApi(), preferences));
+            this.registerFilesystem(new AssetFilesystem(webView.getContext().getAssets(), webView.getResourceApi(), preferences));
 
             registerExtraFileSystems(getExtraFileSystemsPreference(activity), getAvailableFileSystems(activity));
 
@@ -249,6 +258,7 @@ public class FileUtils extends CordovaPlugin {
         if (!LocalFilesystemURL.FILESYSTEM_PROTOCOL.equals(uri.getScheme())) {
             return null;
         }
+
         try {
         	LocalFilesystemURL inputURL = LocalFilesystemURL.parse(uri);
         	Filesystem fs = this.filesystemForURL(inputURL);
@@ -256,6 +266,7 @@ public class FileUtils extends CordovaPlugin {
         		return null;
         	}
         	String path = fs.filesystemPathForURL(inputURL);
+
         	if (path != null) {
         		return Uri.parse("file://" + fs.filesystemPathForURL(inputURL));
         	}
@@ -1221,5 +1232,57 @@ public class FileUtils extends CordovaPlugin {
         } else {
            LOG.d(LOG_TAG, "Received permission callback for unknown request code");
         }
+    }
+
+    private String getMimeType(Uri uri) {
+        String fileExtensionFromUrl = MimeTypeMap.getFileExtensionFromUrl(uri.toString()).toLowerCase();
+        return  MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtensionFromUrl);
+    }
+
+    public CordovaPluginPathHandler getPathHandler() {
+        WebViewAssetLoader.PathHandler pathHandler = path -> {
+            String targetFileSystem = null;
+
+            // currently only supports persistent & temporary
+            if (path.startsWith("__cdvfile_persistent__")) {
+                targetFileSystem = "persistent";
+            } else if (path.startsWith("__cdvfile_temporary__")) {
+                targetFileSystem = "temporary";
+            }
+
+            if (targetFileSystem != null) {
+                // Loop the registered file systems to find the target.
+                for (Filesystem fileSystem : filesystems) {
+
+                    /*
+                     * When target is discovered:
+                     * 1. Transform the url path to the native path
+                     * 2. Load the file contents
+                     * 3. Get the file mime type
+                     * 4. Return the file & mime information back we Web Resources
+                     */
+                    if (fileSystem.name.equals(targetFileSystem)) {
+                        // replace __cdvfile_persistent__ with native path "/data/user/0/com.example.file/files/files/"
+                        String fileSystemNativeUri = fileSystem.rootUri.toString().replace("file://", "");
+                        String persistentFileTarget = path.replace("__cdvfile_persistent__/", fileSystemNativeUri);
+
+                        File file = new File(persistentFileTarget);
+
+                        try {
+                            InputStream in = new FileInputStream(file);
+                            String mimeType = getMimeType(Uri.parse(file.toString()));
+                            return new WebResourceResponse(mimeType, null, in);
+                        } catch (FileNotFoundException e) {
+                            Log.e(LOG_TAG, e.getMessage());
+                        }
+                    }
+                }
+            }
+
+            return null;
+        };
+
+        Log.d(LOG_TAG, "Added CDVFile Proxy");
+        return new CordovaPluginPathHandler(pathHandler);
     }
 }
