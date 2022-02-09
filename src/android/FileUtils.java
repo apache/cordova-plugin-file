@@ -1262,11 +1262,11 @@ public class FileUtils extends CordovaPlugin {
                      * 4. Return the file & mime information back we Web Resources
                      */
                     if (fileSystem.name.equals(targetFileSystem)) {
-                        // replace __cdvfile_persistent__ with native path "/data/user/0/com.example.file/files/files/"
+                        // E.g. replace __cdvfile_persistent__ with native path "/data/user/0/com.example.file/files/files/"
                         String fileSystemNativeUri = fileSystem.rootUri.toString().replace("file://", "");
-                        String persistentFileTarget = path.replace("__cdvfile_persistent__/", fileSystemNativeUri);
+                        String fileTarget = path.replace("__cdvfile_" + targetFileSystem + "__/", fileSystemNativeUri);
 
-                        File file = new File(persistentFileTarget);
+                        File file = new File(fileTarget);
 
                         try {
                             InputStream in = new FileInputStream(file);
