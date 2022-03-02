@@ -35,7 +35,7 @@ var FileError = require('./FileError');
  * {DOMString} fullPath the absolute full path to the file (readonly)
  * {FileSystem} filesystem on which the file resides (readonly)
  */
-var FileEntry = function (name, fullPath, fileSystem, nativeURL, cdvURL) {
+var FileEntry = function (name, fullPath, fileSystem, nativeURL) {
     // remove trailing slash if it is present
     if (fullPath && /\/$/.test(fullPath)) {
         fullPath = fullPath.substring(0, fullPath.length - 1);
@@ -43,11 +43,8 @@ var FileEntry = function (name, fullPath, fileSystem, nativeURL, cdvURL) {
     if (nativeURL && /\/$/.test(nativeURL)) {
         nativeURL = nativeURL.substring(0, nativeURL.length - 1);
     }
-    if (cdvURL && /\/$/.test(cdvURL)) {
-        cdvURL = cdvURL.substring(0, cdvURL.length - 1);
-    }
 
-    FileEntry.__super__.constructor.apply(this, [true, false, name, fullPath, fileSystem, nativeURL, cdvURL]);
+    FileEntry.__super__.constructor.apply(this, [true, false, name, fullPath, fileSystem, nativeURL]);
 };
 
 utils.extend(FileEntry, Entry);

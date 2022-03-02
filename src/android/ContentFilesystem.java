@@ -70,11 +70,9 @@ public class ContentFilesystem extends Filesystem {
         if (subPath.length() > 0) {
             subPath = subPath.substring(1);
         }
-        Uri.Builder b = new Uri.Builder()
-            .scheme(LocalFilesystemURL.FILESYSTEM_PROTOCOL)
-            .authority("localhost")
-            .path(name)
-            .appendPath(inputURL.getAuthority());
+
+        Uri.Builder b = createLocalUriBuilder().appendPath(inputURL.getAuthority());
+
         if (subPath.length() > 0) {
             b.appendEncodedPath(subPath);
         }

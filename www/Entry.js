@@ -45,14 +45,13 @@ var Metadata = require('./Metadata');
  *            webview controls, for example media players.
  *            (optional, readonly)
  */
-function Entry (isFile, isDirectory, name, fullPath, fileSystem, nativeURL, cdvURL) {
+function Entry (isFile, isDirectory, name, fullPath, fileSystem, nativeURL) {
     this.isFile = !!isFile;
     this.isDirectory = !!isDirectory;
     this.name = name || '';
     this.fullPath = fullPath || '';
     this.filesystem = fileSystem || null;
     this.nativeURL = nativeURL || null;
-    this.cdvURL = cdvURL || null;
 }
 
 /**
@@ -188,23 +187,12 @@ Entry.prototype.toInternalURL = function () {
 /**
  * Return a URL that can be used to identify this entry.
  * Use a URL that can be used to as the src attribute of a <video> or
- * <audio> tag. If that is not possible, construct a cdvfile:// URL.
+ * <audio> tag. If that is not possible, construct a http(s)://(localhost) URL.
  */
 Entry.prototype.toURL = function () {
-    if (this.nativeURL) {
-        return this.nativeURL;
-    }
-    // fullPath attribute may contain the full URL in the case that
-    // toInternalURL fails.
-    return this.toInternalURL() || 'file://localhost' + this.fullPath;
-};
-
-Entry.prototype.getCdvURL = function () {
-    if (this.cdvURL) {
-        return this.cdvURL;
-    }
-
-    return null;
+    return window.location.origin.includes('file://')
+        ? this.nativeURL
+        : this.toInternalURL();
 };
 
 /**

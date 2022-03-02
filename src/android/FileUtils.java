@@ -148,7 +148,7 @@ public class FileUtils extends CordovaPlugin {
                         registerFilesystem(new LocalFilesystem(fsName, webView.getContext(), webView.getResourceApi(), newRoot, preferences));
                         installedFileSystems.add(fsName);
                     } else {
-                       LOG.d(LOG_TAG, "Unable to create root dir for filesystem \"" + fsName + "\", skipping");
+                        LOG.d(LOG_TAG, "Unable to create root dir for filesystem \"" + fsName + "\", skipping");
                     }
                 } else {
                     LOG.d(LOG_TAG, "Unrecognized extra filesystem identifier: " + fsName);
@@ -281,6 +281,7 @@ public class FileUtils extends CordovaPlugin {
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "File plugin is not configured. Please see the README.md file for details on how to update config.xml"));
             return true;
         }
+
         if (action.equals("testSaveLocationExists")) {
             threadhelper(new FileOp() {
                 public void run(JSONArray args) {
@@ -470,18 +471,24 @@ public class FileUtils extends CordovaPlugin {
                 public void run(JSONArray args) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
                     String dirname = args.getString(0);
                     String path = args.getString(1);
-                    String nativeURL = resolveLocalFileSystemURI(dirname).getString("nativeURL");
-                    boolean containsCreate = (args.isNull(2)) ? false : args.getJSONObject(2).optBoolean("create", false);
 
-                    if(containsCreate && needPermission(nativeURL, WRITE)) {
-                        getWritePermission(rawArgs, ACTION_GET_FILE, callbackContext);
-                    }
-                    else if(!containsCreate && needPermission(nativeURL, READ)) {
-                        getReadPermission(rawArgs, ACTION_GET_FILE, callbackContext);
-                    }
-                    else {
+                    if (dirname.contains(LocalFilesystemURL.CDVFILE_KEYWORD) == true) {
                         JSONObject obj = getFile(dirname, path, args.optJSONObject(2), false);
                         callbackContext.success(obj);
+                    } else {
+                        String nativeURL = resolveLocalFileSystemURI(dirname).getString("nativeURL");
+                        boolean containsCreate = (args.isNull(2)) ? false : args.getJSONObject(2).optBoolean("create", false);
+
+                        if(containsCreate && needPermission(nativeURL, WRITE)) {
+                            getWritePermission(rawArgs, ACTION_GET_FILE, callbackContext);
+                        }
+                        else if(!containsCreate && needPermission(nativeURL, READ)) {
+                            getReadPermission(rawArgs, ACTION_GET_FILE, callbackContext);
+                        }
+                        else {
+                            JSONObject obj = getFile(dirname, path, args.optJSONObject(2), false);
+                            callbackContext.success(obj);
+                        }
                     }
                 }
             }, rawArgs, callbackContext);
@@ -889,6 +896,7 @@ public class FileUtils extends CordovaPlugin {
     private JSONObject getFile(String baseURLstr, String path, JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
         try {
         	LocalFilesystemURL inputURL = LocalFilesystemURL.parse(baseURLstr);
+
         	Filesystem fs = this.filesystemForURL(inputURL);
         	if (fs == null) {
         		throw new MalformedURLException("No installed handlers for this URL");
@@ -1244,9 +1252,9 @@ public class FileUtils extends CordovaPlugin {
             String targetFileSystem = null;
 
             // currently only supports persistent & temporary
-            if (path.startsWith("__cdvfile_persistent__")) {
+            if (path.startsWith(LocalFilesystemURL.fsNameToCdvKeyword("persistent"))) {
                 targetFileSystem = "persistent";
-            } else if (path.startsWith("__cdvfile_temporary__")) {
+            } else if (path.startsWith(LocalFilesystemURL.fsNameToCdvKeyword("temporary"))) {
                 targetFileSystem = "temporary";
             }
 
@@ -1264,7 +1272,7 @@ public class FileUtils extends CordovaPlugin {
                     if (fileSystem.name.equals(targetFileSystem)) {
                         // E.g. replace __cdvfile_persistent__ with native path "/data/user/0/com.example.file/files/files/"
                         String fileSystemNativeUri = fileSystem.rootUri.toString().replace("file://", "");
-                        String fileTarget = path.replace("__cdvfile_" + targetFileSystem + "__/", fileSystemNativeUri);
+                        String fileTarget = path.replace(LocalFilesystemURL.fsNameToCdvKeyword(targetFileSystem) + "/", fileSystemNativeUri);
 
                         File file = new File(fileTarget);
 
@@ -1282,7 +1290,6 @@ public class FileUtils extends CordovaPlugin {
             return null;
         };
 
-        Log.d(LOG_TAG, "Added CDVFile Proxy");
         return new CordovaPluginPathHandler(pathHandler);
     }
 }

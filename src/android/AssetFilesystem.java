@@ -162,10 +162,9 @@ public class AssetFilesystem extends Filesystem {
         if (!subPath.isEmpty()) {
             subPath = subPath.substring(1);
         }
-        Uri.Builder b = new Uri.Builder()
-            .scheme(LocalFilesystemURL.FILESYSTEM_PROTOCOL)
-            .authority("localhost")
-            .path(name);
+
+        Uri.Builder b = createLocalUriBuilder();
+
         if (!subPath.isEmpty()) {
             b.appendEncodedPath(subPath);
         }

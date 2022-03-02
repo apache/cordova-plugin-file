@@ -71,7 +71,7 @@
                         if (!fs) {
                             fs = new FileSystem(fsName, { name: '', fullPath: '/' }); // eslint-disable-line no-undef
                         }
-                        var result = (entry.isDirectory) ? new DirectoryEntry(entry.name, entry.fullPath, fs, entry.nativeURL) : new FileEntry(entry.name, entry.fullPath, fs, entry.nativeURL, entry.cdvURL);
+                        var result = (entry.isDirectory) ? new DirectoryEntry(entry.name, entry.fullPath, fs, entry.nativeURL) : new FileEntry(entry.name, entry.fullPath, fs, entry.nativeURL);
                         successCallback(result);
                     });
                 }
