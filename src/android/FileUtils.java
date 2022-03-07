@@ -1251,7 +1251,6 @@ public class FileUtils extends CordovaPlugin {
         WebViewAssetLoader.PathHandler pathHandler = path -> {
             String targetFileSystem = null;
 
-            // currently only supports persistent & temporary
             if (path.startsWith(LocalFilesystemURL.fsNameToCdvKeyword("persistent"))) {
                 targetFileSystem = "persistent";
             } else if (path.startsWith(LocalFilesystemURL.fsNameToCdvKeyword("temporary"))) {
