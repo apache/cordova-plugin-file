@@ -1256,6 +1256,20 @@ public class FileUtils extends CordovaPlugin {
                 targetFileSystem = "persistent";
             } else if (path.startsWith(LocalFilesystemURL.fsNameToCdvKeyword("temporary"))) {
                 targetFileSystem = "temporary";
+            } else if (path.startsWith(LocalFilesystemURL.fsNameToCdvKeyword("files"))) {
+                targetFileSystem = "files";
+            } else if (path.startsWith(LocalFilesystemURL.fsNameToCdvKeyword("documents"))) {
+                targetFileSystem = "documents";
+            } else if (path.startsWith(LocalFilesystemURL.fsNameToCdvKeyword("cache"))) {
+                targetFileSystem = "cache";
+            } else if (path.startsWith(LocalFilesystemURL.fsNameToCdvKeyword("root"))) {
+                targetFileSystem = "root";
+            } else if (path.startsWith(LocalFilesystemURL.fsNameToCdvKeyword("files-external"))) {
+                targetFileSystem = "files-external";
+            } else if (path.startsWith(LocalFilesystemURL.fsNameToCdvKeyword("sdcard"))) {
+                targetFileSystem = "sdcard";
+            } else if (path.startsWith(LocalFilesystemURL.fsNameToCdvKeyword("cache-external"))) {
+                targetFileSystem = "cache-external";
             }
 
             if (targetFileSystem != null) {
