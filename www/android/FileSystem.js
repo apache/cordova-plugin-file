@@ -19,8 +19,6 @@
  *
 */
 
-FILESYSTEM_PROTOCOL = 'cdvfile'; // eslint-disable-line no-undef
-
 module.exports = {
     __format__: function (fullPath, nativeUrl) {
         var path;
