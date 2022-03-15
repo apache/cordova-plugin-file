@@ -19,8 +19,6 @@
  *
 */
 
-FILESYSTEM_PROTOCOL = 'cdvfile'; // eslint-disable-line no-undef
-
 module.exports = {
     __format__: function (fullPath, nativeUrl) {
         var path;
@@ -43,6 +41,6 @@ module.exports = {
             }
         }
 
-        return FILESYSTEM_PROTOCOL + '://localhost/' + this.name + path; // eslint-disable-line no-undef
+        return window.location.origin + '/__cdvfile_' + this.name + '__' + path;
     }
 };
