@@ -160,7 +160,7 @@ the `cordova.file.*` properties map to physical paths on a real device.
 | &nbsp;&nbsp;&nbsp;`cache`                       | cacheDirectory              | cache                     | r/w  |     Yes     |     Yes\* |   Yes   |
 | &nbsp;&nbsp;&nbsp;`files`                       | dataDirectory               | files                     | r/w  |     Yes     |     No    |   Yes   |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Documents` |                             | documents                 | r/w  |     Yes     |     No    |   Yes   |
-| `<sdcard>/`                                     | externalRootDirectory       | sdcard                    | r/w  |     Yes     |     No    |   No    |
+| `<sdcard>/`                                     | externalRootDirectory       | sdcard                    | r/w\*\*\*  |     Yes     |     No    |   No    |
 | &nbsp;&nbsp;&nbsp;`Android/data/<app-id>/`      | externalApplicationStorageDirectory | -                 | r/w  |     Yes     |     No    |   No    |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`cache`     | externalCacheDirectory       | cache-external            | r/w  |     Yes     |     No\*\*|   No    |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`files`     | externalDataDirectory       | files-external            | r/w  |     Yes     |     No    |   No    |
@@ -172,6 +172,8 @@ the `cordova.file.*` properties map to physical paths on a real device.
 \*\* The OS does not clear this directory automatically; you are responsible for managing
      the contents yourself. Should the user purge the cache manually, the contents of the
      directory are removed.
+
+\*\*\* As of API 30, these directories are no longer writable.
 
 **Note**: If external storage can't be mounted, the `cordova.file.external*`
 properties are `null`.
