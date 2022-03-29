@@ -187,12 +187,15 @@ Entry.prototype.toInternalURL = function () {
 /**
  * Return a URL that can be used to identify this entry.
  * Use a URL that can be used to as the src attribute of a <video> or
- * <audio> tag. If that is not possible, construct a http(s)://(localhost) URL.
+ * <audio> tag. If that is not possible, construct a cdvfile:// URL.
  */
 Entry.prototype.toURL = function () {
-    return window.location.origin.includes('file://')
-        ? this.nativeURL
-        : this.toInternalURL();
+    if (this.nativeURL) {
+        return this.nativeURL;
+    }
+    // fullPath attribute may contain the full URL in the case that
+    // toInternalURL fails.
+    return this.toInternalURL() || 'file://localhost' + this.fullPath;
 };
 
 /**

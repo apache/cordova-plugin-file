@@ -154,6 +154,9 @@ to config.xml in order for the application to find previously stored files.
         <framework src="androidx.webkit:webkit:$ANDROIDX_WEBKIT_VERSION" />
 
         <!-- android specific file apis -->
+        <js-module src="www/android/Entry.js" name="androidEntry">
+            <merges target="Entry" />
+        </js-module>
         <js-module src="www/android/FileSystem.js" name="androidFileSystem">
             <merges target="FileSystem" />
         </js-module>
