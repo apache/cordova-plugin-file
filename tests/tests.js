@@ -3436,6 +3436,7 @@ exports.defineAutoTests = function () {
              * which appears to be sane.
              */
             var pathExpect = cordova.platformId === 'windowsphone' ? '//nativ' : 'file://'; // eslint-disable-line no-undef
+
             if (isChrome) {
                 pathExpect = 'filesystem:http://';
             }
@@ -3805,18 +3806,22 @@ exports.defineAutoTests = function () {
             });
         });
 
-        describe('resolveLocalFileSystemURL on cdvfile://', function () {
+        describe('resolveLocalFileSystemURL for cdvfile', function () {
             it('file.spec.147 should be able to resolve cdvfile applicationDirectory fs root', function (done) {
                 var cdvfileApplicationDirectoryFsRootName;
+                var cdvfileApplicationDirectoryFsRootNameURL;
                 if (cordova.platformId === 'android') {
                     cdvfileApplicationDirectoryFsRootName = 'assets';
+                    cdvfileApplicationDirectoryFsRootNameURL = 'https://localhost/__cdvfile_' + cdvfileApplicationDirectoryFsRootName + '__/'
                 } else if (cordova.platformId === 'ios') {
                     cdvfileApplicationDirectoryFsRootName = 'bundle';
+                    cdvfileApplicationDirectoryFsRootNameURL = 'cdvfile://localhost/' + cdvfileApplicationDirectoryFsRootName + '/'
                 } else {
                     pending();
                 }
 
-                resolveLocalFileSystemURL('cdvfile://localhost/' + cdvfileApplicationDirectoryFsRootName + '/', function (applicationDirectoryRoot) {
+                resolveLocalFileSystemURL(cdvfileApplicationDirectoryFsRootNameURL, function (applicationDirectoryRoot) {
+                    console.log(applicationDirectoryRoot);
                     expect(applicationDirectoryRoot.isFile).toBe(false);
                     expect(applicationDirectoryRoot.isDirectory).toBe(true);
                     expect(applicationDirectoryRoot.name).toCanonicallyMatch('');
@@ -3825,7 +3830,7 @@ exports.defineAutoTests = function () {
 
                     // Requires HelloCordova www assets, <allow-navigation href="cdvfile:*" /> in config.xml or
                     // cdvfile: in CSP and <access origin="cdvfile://*" /> in config.xml
-                    resolveLocalFileSystemURL('cdvfile://localhost/' + cdvfileApplicationDirectoryFsRootName + '/www/img/logo.png', function (entry) {
+                    resolveLocalFileSystemURL(cdvfileApplicationDirectoryFsRootNameURL + '/www/img/logo.png', function (entry) {
                         /* eslint-enable no-undef */
                         expect(entry.isFile).toBe(true);
                         expect(entry.isDirectory).toBe(false);
@@ -3841,7 +3846,7 @@ exports.defineAutoTests = function () {
                         img.onload = function () {
                             done();
                         };
-                        img.src = entry.toInternalURL();
+                        img.src = entry.toURL();
                     }, failed.bind(null, done, 'resolveLocalFileSystemURL failed for cdvfile applicationDirectory'));
                 }, failed.bind(null, done, 'resolveLocalFileSystemURL failed for cdvfile applicationDirectory'));
             });

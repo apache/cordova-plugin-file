@@ -1286,12 +1286,15 @@ public class FileUtils extends CordovaPlugin {
                 targetFileSystem = "sdcard";
             } else if (path.startsWith(LocalFilesystemURL.fsNameToCdvKeyword("cache-external"))) {
                 targetFileSystem = "cache-external";
+            } else if (path.startsWith(LocalFilesystemURL.fsNameToCdvKeyword("assets"))) {
+                targetFileSystem = "assets";
             }
+
+            boolean isAssetsFS = targetFileSystem == "assets";
 
             if (targetFileSystem != null) {
                 // Loop the registered file systems to find the target.
                 for (Filesystem fileSystem : filesystems) {
-
                     /*
                      * When target is discovered:
                      * 1. Transform the url path to the native path
@@ -1303,14 +1306,27 @@ public class FileUtils extends CordovaPlugin {
                         // E.g. replace __cdvfile_persistent__ with native path "/data/user/0/com.example.file/files/files/"
                         String fileSystemNativeUri = fileSystem.rootUri.toString().replace("file://", "");
                         String fileTarget = path.replace(LocalFilesystemURL.fsNameToCdvKeyword(targetFileSystem) + "/", fileSystemNativeUri);
+                        File file = null;
 
-                        File file = new File(fileTarget);
+                        if (isAssetsFS) {
+                            fileTarget = fileTarget.replace("/android_asset/", "");
+                        } else {
+                            file = new File(fileTarget);
+                        }
 
                         try {
-                            InputStream in = new FileInputStream(file);
-                            String mimeType = getMimeType(Uri.parse(file.toString()));
-                            return new WebResourceResponse(mimeType, null, in);
+                            InputStream fileIS = !isAssetsFS ?
+                                new FileInputStream(file) :
+                                webView.getContext().getAssets().open(fileTarget);
+
+                            String filePath = !isAssetsFS ? file.toString() : fileTarget;
+                            Uri fileUri = Uri.parse(filePath);
+                            String fileMimeType = getMimeType(fileUri);
+
+                            return new WebResourceResponse(fileMimeType, null, fileIS);
                         } catch (FileNotFoundException e) {
+                            Log.e(LOG_TAG, e.getMessage());
+                        } catch (IOException e) {
                             Log.e(LOG_TAG, e.getMessage());
                         }
                     }
