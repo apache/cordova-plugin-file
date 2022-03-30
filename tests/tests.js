@@ -3786,7 +3786,7 @@ exports.defineAutoTests = function () {
             it('file.spec.129 cordova.file.*Directory are set', function () {
                 var expectedPaths = ['applicationDirectory', 'applicationStorageDirectory', 'dataDirectory', 'cacheDirectory'];
                 /* eslint-disable no-undef */
-                if (cordova.platformId === 'android' || cordova.platformId === 'amazon-fireos') {
+                if (cordova.platformId === 'android') {
                     if (cordova.file.externalApplicationStorageDirectory !== null) {
                         // https://issues.apache.org/jira/browse/CB-10411
                         // If external storage can't be mounted, the cordova.file.external* properties are null.
@@ -4202,7 +4202,6 @@ exports.defineManualTests = function (contentEl, createActionButton) {
         ios: 'library,library-nosync,documents,documents-nosync,cache,bundle,root,private',
         osx: 'library,library-nosync,documents,documents-nosync,cache,bundle,root,private',
         android: 'files,files-external,documents,sdcard,cache,cache-external,assets,root',
-        'amazon-fireos': 'files,files-external,documents,sdcard,cache,cache-external,root',
         windows: 'temporary,persistent'
     };
 
