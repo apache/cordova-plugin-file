@@ -154,7 +154,7 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
 
     // Mark data type for safer transport over the binary bridge
     isBinary = supportsBinary && (data instanceof ArrayBuffer);
-    if (isBinary && cordova.platformId === 'windowsphone') { // eslint-disable-line no-undef
+    if (isBinary && cordova.platformId === 'windowsphone') {
         // create a plain array, using the keys from the Uint8Array view so that we can serialize it
         data = Array.apply(null, new Uint8Array(data));
     }

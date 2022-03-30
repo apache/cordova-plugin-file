@@ -2,9 +2,15 @@ root: true
 extends: '@cordova/eslint-config/browser'
 globals:
   cordova: true
+  LocalFileSystem: true
+  FileError: true
+  DirectoryEntry: true
+  FileWriter: true
+  Flags: true
+  Metadata: true
+  FileSystem: true
+  resolveLocalFileSystemURL: true
 
 overrides:
   - files: [tests/**/*.js]
     extends: '@cordova/eslint-config/node-tests'
-    globals:
-      cordova: true

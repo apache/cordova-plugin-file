@@ -117,7 +117,7 @@ Entry.prototype.moveTo = function (parent, newName, successCallback, errorCallba
             if (successCallback) {
                 // create appropriate Entry object
                 var newFSName = entry.filesystemName || (entry.filesystem && entry.filesystem.name);
-                var fs = newFSName ? new FileSystem(newFSName, { name: '', fullPath: '/' }) : new FileSystem(parent.filesystem.name, { name: '', fullPath: '/' }); // eslint-disable-line no-undef
+                var fs = newFSName ? new FileSystem(newFSName, { name: '', fullPath: '/' }) : new FileSystem(parent.filesystem.name, { name: '', fullPath: '/' });
                 var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath, fs, entry.nativeURL) : new (require('cordova-plugin-file.FileEntry'))(entry.name, entry.fullPath, fs, entry.nativeURL);
                 successCallback(result);
             }
@@ -159,7 +159,7 @@ Entry.prototype.copyTo = function (parent, newName, successCallback, errorCallba
             if (successCallback) {
                 // create appropriate Entry object
                 var newFSName = entry.filesystemName || (entry.filesystem && entry.filesystem.name);
-                var fs = newFSName ? new FileSystem(newFSName, { name: '', fullPath: '/' }) : new FileSystem(parent.filesystem.name, { name: '', fullPath: '/' }); // eslint-disable-line no-undef
+                var fs = newFSName ? new FileSystem(newFSName, { name: '', fullPath: '/' }) : new FileSystem(parent.filesystem.name, { name: '', fullPath: '/' });
                 var result = (entry.isDirectory) ? new (require('./DirectoryEntry'))(entry.name, entry.fullPath, fs, entry.nativeURL) : new (require('cordova-plugin-file.FileEntry'))(entry.name, entry.fullPath, fs, entry.nativeURL);
                 successCallback(result);
             }
