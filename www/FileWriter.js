@@ -112,7 +112,7 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
     var that = this;
     var supportsBinary = (typeof window.Blob !== 'undefined' && typeof window.ArrayBuffer !== 'undefined');
     /* eslint-disable no-undef */
-    var isProxySupportBlobNatively = (cordova.platformId === 'windows8' || cordova.platformId === 'windows');
+    var isProxySupportBlobNatively = cordova.platformId === 'windows';
     var isBinary;
 
     // Check to see if the incoming data is a blob
