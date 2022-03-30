@@ -20,14 +20,14 @@
 */
 
 module.exports = {
-  /**
+    /**
    * Return a URL that can be used to identify this entry.
    * Use a URL that can be used to as the src attribute of a <video> or
    * <audio> tag. If that is not possible, construct a http(s)://(localhost) URL.
    */
-  toURL: function () {
-    return window.location.origin.includes('file://')
-        ? this.nativeURL
-        : this.toInternalURL();
-  }
+    toURL: function () {
+        return window.location.origin.includes('file://')
+            ? this.nativeURL
+            : this.toInternalURL();
+    }
 };
