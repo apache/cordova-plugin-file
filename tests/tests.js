@@ -29,7 +29,7 @@ exports.defineAutoTests = function () {
     var isIE = isBrowser && (window.msIndexedDB);
     var isIndexedDBShim = isBrowser && !isChrome; // Firefox and IE for example
 
-    var isWindows = (cordova.platformId === 'windows' || cordova.platformId === 'windows8');
+    var isWindows = cordova.platformId === 'windows';
     /* eslint-enable no-undef */
     var MEDIUM_TIMEOUT = 15000;
 
@@ -417,7 +417,7 @@ exports.defineAutoTests = function () {
                 });
 
                 it('file.spec.11 should error (NOT_FOUND_ERR) when resolving (non-existent) invalid file name', function (done) {
-                    var fileName = cordova.platformId === 'windowsphone' ? root.toURL() + '/' + 'this.is.not.a.valid.file.txt' : joinURL(root.toURL(), 'this.is.not.a.valid.file.txt'); // eslint-disable-line no-undef
+                    var fileName = joinURL(root.toURL(), 'this.is.not.a.valid.file.txt');
                     var fail = function (error) {
                         expect(error).toBeDefined();
                         if (isChrome) {
@@ -2453,7 +2453,7 @@ exports.defineAutoTests = function () {
         // FileReader
         describe('Read method', function () {
             it('file.spec.82 should error out on non-existent file', function (done) {
-                var fileName = cordova.platformId === 'windowsphone' ? root.toURL() + '/' + 'somefile.txt' : 'somefile.txt'; // eslint-disable-line no-undef
+                var fileName = 'somefile.txt';
                 var verifier = function (evt) {
                     expect(evt).toBeDefined();
                     if (isChrome) {
@@ -3440,8 +3440,6 @@ exports.defineAutoTests = function () {
             if (cordova.platformId === 'android') {
                 // Starting from Cordova-Android 10.x, the app content is served from the https scheme
                 pathExpect = 'https://';
-            } else if (cordova.platformId === 'windowsphone') {
-                pathExpect = '//nativ';
             } else if (isChrome) {
                 pathExpect = 'filesystem:http://';
             }
@@ -3788,14 +3786,12 @@ exports.defineAutoTests = function () {
             it('file.spec.129 cordova.file.*Directory are set', function () {
                 var expectedPaths = ['applicationDirectory', 'applicationStorageDirectory', 'dataDirectory', 'cacheDirectory'];
                 /* eslint-disable no-undef */
-                if (cordova.platformId === 'android' || cordova.platformId === 'amazon-fireos') {
+                if (cordova.platformId === 'android') {
                     if (cordova.file.externalApplicationStorageDirectory !== null) {
                         // https://issues.apache.org/jira/browse/CB-10411
                         // If external storage can't be mounted, the cordova.file.external* properties are null.
                         expectedPaths.push('externalApplicationStorageDirectory', 'externalRootDirectory', 'externalCacheDirectory', 'externalDataDirectory');
                     }
-                } else if (cordova.platformId === 'blackberry10') {
-                    expectedPaths.push('externalRootDirectory', 'sharedDirectory');
                 } else if (cordova.platformId === 'ios') {
                     expectedPaths.push('syncedDataDirectory', 'documentsDirectory', 'tempDirectory');
                 } else if (cordova.platformId === 'osx') {
@@ -3817,10 +3813,10 @@ exports.defineAutoTests = function () {
                 var cdvfileApplicationDirectoryFsRootNameURL;
                 if (cordova.platformId === 'android') {
                     cdvfileApplicationDirectoryFsRootName = 'assets';
-                    cdvfileApplicationDirectoryFsRootNameURL = 'https://localhost/__cdvfile_' + cdvfileApplicationDirectoryFsRootName + '__/'
+                    cdvfileApplicationDirectoryFsRootNameURL = 'https://localhost/__cdvfile_' + cdvfileApplicationDirectoryFsRootName + '__/';
                 } else if (cordova.platformId === 'ios') {
                     cdvfileApplicationDirectoryFsRootName = 'bundle';
-                    cdvfileApplicationDirectoryFsRootNameURL = 'cdvfile://localhost/' + cdvfileApplicationDirectoryFsRootName + '/'
+                    cdvfileApplicationDirectoryFsRootNameURL = 'cdvfile://localhost/' + cdvfileApplicationDirectoryFsRootName + '/';
                 } else {
                     pending();
                 }
@@ -4206,7 +4202,6 @@ exports.defineManualTests = function (contentEl, createActionButton) {
         ios: 'library,library-nosync,documents,documents-nosync,cache,bundle,root,private',
         osx: 'library,library-nosync,documents,documents-nosync,cache,bundle,root,private',
         android: 'files,files-external,documents,sdcard,cache,cache-external,assets,root',
-        'amazon-fireos': 'files,files-external,documents,sdcard,cache,cache-external,root',
         windows: 'temporary,persistent'
     };
 

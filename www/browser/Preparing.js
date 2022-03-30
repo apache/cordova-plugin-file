@@ -30,7 +30,7 @@
     var channel = require('cordova/channel');
     var FileError = require('./FileError');
     var PERSISTENT_FS_QUOTA = 5 * 1024 * 1024;
-    var filePluginIsReadyEvent = new Event('filePluginIsReady'); // eslint-disable-line no-undef
+    var filePluginIsReadyEvent = new Event('filePluginIsReady');
 
     var entryFunctionsCreated = false;
     var quotaWasRequested = false;
@@ -75,8 +75,8 @@
                    For example, filesystem:file:///persistent/somefile.txt,
                    filesystem:http://localhost:8080/persistent/somefile.txt. */
                 var prefix = 'filesystem:file:///';
-                if (location.protocol !== 'file:') { // eslint-disable-line no-undef
-                    prefix = 'filesystem:' + location.origin + '/'; // eslint-disable-line no-undef
+                if (location.protocol !== 'file:') {
+                    prefix = 'filesystem:' + location.origin + '/';
                 }
 
                 var result;
@@ -146,10 +146,10 @@
                 var originalWrite = writer.write;
                 var writerProto = Object.getPrototypeOf(writer);
                 writerProto.write = function (blob) {
-                    if (blob instanceof Blob) { // eslint-disable-line no-undef
+                    if (blob instanceof Blob) {
                         originalWrite.apply(this, [blob]);
                     } else {
-                        var realBlob = new Blob([blob]); // eslint-disable-line no-undef
+                        var realBlob = new Blob([blob]);
                         originalWrite.apply(this, [realBlob]);
                     }
                 };
