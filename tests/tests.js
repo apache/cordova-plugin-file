@@ -3435,9 +3435,14 @@ exports.defineAutoTests = function () {
             /* These specs verify that FileEntries have a toNativeURL method
              * which appears to be sane.
              */
-            var pathExpect = cordova.platformId === 'windowsphone' ? '//nativ' : 'file://'; // eslint-disable-line no-undef
+            var pathExpect = 'file://';
 
-            if (isChrome) {
+            if (cordova.platformId === 'android') {
+                // Starting from Cordova-Android 10.x, the app content is served from the https scheme
+                pathExpect = 'https://';
+            } else if (cordova.platformId === 'windowsphone') {
+                pathExpect = '//nativ';
+            } else if (isChrome) {
                 pathExpect = 'filesystem:http://';
             }
 
