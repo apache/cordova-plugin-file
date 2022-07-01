@@ -992,6 +992,8 @@ public class FileUtils extends CordovaPlugin {
         ret.put("applicationStorageDirectory", toDirUrl(context.getFilesDir().getParentFile()));
         ret.put("dataDirectory", toDirUrl(context.getFilesDir()));
         ret.put("cacheDirectory", toDirUrl(context.getCacheDir()));
+		// databasepath
+		ret.put("databaseDirectory", toDirUrl(context.getDatabasePath("dummy").getParentFile()));
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
           try {
             ret.put("externalApplicationStorageDirectory", toDirUrl(context.getExternalFilesDir(null).getParentFile()));
