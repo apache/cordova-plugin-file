@@ -1323,7 +1323,12 @@ public class FileUtils extends CordovaPlugin {
                             Uri fileUri = Uri.parse(filePath);
                             String fileMimeType = getMimeType(fileUri);
 
-                            return new WebResourceResponse(fileMimeType, null, fileIS);
+                            WebResourceResponse response = new WebResourceResponse(fileMimeType, null, fileIS);
+                            if (response.getResponseHeaders() == null) {
+                                response.setResponseHeaders(new HashMap<String, String>());
+                            }
+                            response.getResponseHeaders().put("Access-Control-Allow-Origin", "*");
+                            return response;
                         } catch (FileNotFoundException e) {
                             Log.e(LOG_TAG, e.getMessage());
                         } catch (IOException e) {
