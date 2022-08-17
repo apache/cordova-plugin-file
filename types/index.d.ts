@@ -44,9 +44,9 @@ interface Window {
 /** This interface represents a file system. */
 interface FileSystem {
     /* The name of the file system, unique across the list of exposed file systems. */
-    name: string;
+    readonly name: string;
     /** The root directory of the file system. */
-    root: DirectoryEntry;
+    readonly root: FileSystemDirectoryEntry;
 }
 
 /**
@@ -55,15 +55,15 @@ interface FileSystem {
  */
 interface Entry {
     /** Entry is a file. */
-    isFile: boolean;
+    readonly isFile: boolean;
     /** Entry is a directory. */
-    isDirectory: boolean;
+    readonly isDirectory: boolean;
     /** The name of the entry, excluding the path leading to it. */
-    name: string;
+    readonly name: string;
     /** The full absolute path from the root to the entry. */
-    fullPath: string;
+    readonly fullPath: string;
     /** The file system on which the entry resides. */
-    filesystem: FileSystem;
+    readonly filesystem: FileSystem;
     nativeURL: string;
     /**
      * Look up metadata about this entry.
@@ -132,8 +132,8 @@ interface Entry {
      * @param successCallback A callback that is called with the time of the last modification.
      * @param errorCallback   A callback that is called when errors happen.
      */
-    getParent(successCallback: (entry: Entry) => void,
-        errorCallback?: (error: FileError) => void): void;
+    getParent(successCallback?: (entry: Entry) => void,
+        errorCallback?: (error: DOMException) => void): void;
 }
 
 /** This interface supplies information about the state of a file or directory. */
@@ -164,7 +164,7 @@ interface DirectoryEntry extends Entry {
      * @param errorCallback   A callback that is called when errors happen.
      */
     getFile(path: string, options?: Flags,
-        successCallback?: (entry: FileEntry) => void,
+        successCallback?: (entry: Entry) => void,
         errorCallback?: (error: FileError) => void): void;
     /**
      * Creates or looks up a directory.
@@ -180,7 +180,7 @@ interface DirectoryEntry extends Entry {
      * @param errorCallback   A callback that is called when errors happen.
      */
     getDirectory(path: string, options?: Flags,
-        successCallback?: (entry: DirectoryEntry) => void,
+        successCallback?: (entry: Entry) => void,
         errorCallback?: (error: FileError) => void): void;
     /**
      * Deletes a directory and all of its contents, if any. In the event of an error (e.g. trying
@@ -376,3 +376,7 @@ declare enum LocalFileSystem {
     PERSISTENT=1,
     TEMPORARY=0
 }
+
+// Compatibility shim to support beyond tsc4.4
+interface FileSystemDirectoryEntry extends DirectoryEntry {}
+interface FileSystemEntry extends Entry {}
