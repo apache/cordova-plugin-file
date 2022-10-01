@@ -739,7 +739,8 @@
     
     CFStringRef UTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)[path pathExtension], NULL);
     CFStringRef mimeType = UTTypeCopyPreferredTagWithClass (UTI, kUTTagClassMIMEType);
-    CFRelease(UTI);
+    // A CFType object to release. This value must not be NULL.
+    if (UTI) { CFRelease(UTI);}
     
     if (!mimeType) {
         return @"application/octet-stream";
