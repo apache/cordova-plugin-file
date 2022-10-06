@@ -2,6 +2,7 @@
 title: File
 description: Read/write files on the device.
 ---
+
 <!--
 # license: Licensed to the Apache Software Foundation (ASF) under one
 #         or more contributor license agreements.  See the NOTICE file
@@ -40,7 +41,7 @@ Although most of the plugin code was written when an earlier spec was current:
 It also implements the FileWriter spec :
 [http://dev.w3.org/2009/dap/file-system/file-writer.html](http://dev.w3.org/2009/dap/file-system/file-writer.html)
 
->*Note* While the W3C FileSystem spec is deprecated for web browsers, the FileSystem APIs are supported in Cordova applications with this plugin for the platforms listed in the _Supported Platforms_ list, with the exception of the Browser platform.
+> _Note_ While the W3C FileSystem spec is deprecated for web browsers, the FileSystem APIs are supported in Cordova applications with this plugin for the platforms listed in the _Supported Platforms_ list, with the exception of the Browser platform.
 
 To get a few ideas how to use the plugin, check out the [sample](#sample) at the bottom of this page. For additional examples (browser focused), see the HTML5 Rocks' [FileSystem article.](http://www.html5rocks.com/en/tutorials/file/filesystem/)
 
@@ -65,7 +66,7 @@ Although the object is in the global scope, it is not available to applications 
 - Android
 - iOS
 - OS X
-- Windows*
+- Windows\*
 - Browser
 
 \* _These platforms do not support `FileReader.readAsArrayBuffer` nor `FileWriter.write(blob)`._
@@ -76,46 +77,48 @@ As of v1.2.0, URLs to important file-system directories are provided.
 Each URL is in the form _file:///path/to/spot/_, and can be converted to a
 `DirectoryEntry` using `window.resolveLocalFileSystemURL()`.
 
-* `cordova.file.applicationDirectory` - Read-only directory where the application
+- `cordova.file.applicationDirectory` - Read-only directory where the application
   is installed. (_iOS_, _Android_, _BlackBerry 10_, _OSX_, _windows_)
 
-* `cordova.file.applicationStorageDirectory` - Root directory of the application's
+- `cordova.file.applicationStorageDirectory` - Root directory of the application's
   sandbox; on iOS & windows this location is read-only (but specific subdirectories [like
   `/Documents` on iOS or `/localState` on windows] are read-write). All data contained within
   is private to the app. (_iOS_, _Android_, _BlackBerry 10_, _OSX_)
 
-* `cordova.file.dataDirectory` - Persistent and private data storage within the
+- `cordova.file.dataDirectory` - Persistent and private data storage within the
   application's sandbox using internal memory (on Android, if you need to use
   external memory, use `.externalDataDirectory`). On iOS, this directory is not
   synced with iCloud (use `.syncedDataDirectory`). (_iOS_, _Android_, _BlackBerry 10_, _windows_)
 
-* `cordova.file.cacheDirectory` -  Directory for cached data files or any files
+- `cordova.file.cacheDirectory` - Directory for cached data files or any files
   that your app can re-create easily. The OS may delete these files when the device
   runs low on storage, nevertheless, apps should not rely on the OS to delete files
   in here. (_iOS_, _Android_, _BlackBerry 10_, _OSX_, _windows_)
 
-* `cordova.file.externalApplicationStorageDirectory` - Application space on
+- `cordova.file.externalApplicationStorageDirectory` - Application space on
   external storage. (_Android_)
 
-* `cordova.file.externalDataDirectory` - Where to put app-specific data files on
+- `cordova.file.externalDataDirectory` - Where to put app-specific data files on
   external storage. (_Android_)
 
-* `cordova.file.externalCacheDirectory` - Application cache on external storage.
+- `cordova.file.externalCacheDirectory` - Application cache on external storage.
   (_Android_)
 
-* `cordova.file.externalRootDirectory` - External storage (SD card) root. (_Android_, _BlackBerry 10_)
+- `cordova.file.externalRootDirectory` - External storage (SD card) root. (_Android_, _BlackBerry 10_)
 
-* `cordova.file.tempDirectory` - Temp directory that the OS can clear at will. Do not
+- `cordova.file.downloadDirectory` - Download Directory from External Storage Public Directory. (_Android_)
+
+- `cordova.file.tempDirectory` - Temp directory that the OS can clear at will. Do not
   rely on the OS to clear this directory; your app should always remove files as
   applicable. (_iOS_, _OSX_, _windows_)
 
-* `cordova.file.syncedDataDirectory` - Holds app-specific files that should be synced
+- `cordova.file.syncedDataDirectory` - Holds app-specific files that should be synced
   (e.g. to iCloud). (_iOS_, _windows_)
 
-* `cordova.file.documentsDirectory` - Files private to the app, but that are meaningful
+- `cordova.file.documentsDirectory` - Files private to the app, but that are meaningful
   to other application (e.g. Office files). Note that for _OSX_ this is the user's `~/Documents` directory. (_iOS_, _OSX_)
 
-* `cordova.file.sharedDirectory` - Files globally available to all applications (_BlackBerry 10_)
+- `cordova.file.sharedDirectory` - Files globally available to all applications (_BlackBerry 10_)
 
 ## File System Layouts
 
@@ -125,53 +128,53 @@ the `cordova.file.*` properties map to physical paths on a real device.
 ### iOS File System Layout
 
 | Device Path                                    | `cordova.file.*`            | `iosExtraFileSystems` | r/w? | persistent? | OS clears | sync | private |
-|:-----------------------------------------------|:----------------------------|:----------------------|:----:|:-----------:|:---------:|:----:|:-------:|
-| `/var/mobile/Applications/<UUID>/`             | applicationStorageDirectory | -                     | r    |     N/A     |     N/A   | N/A  |   Yes   |
-| &nbsp;&nbsp;&nbsp;`appname.app/`               | applicationDirectory        | bundle                | r    |     N/A     |     N/A   | N/A  |   Yes   |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`www/`     | -                           | -                     | r    |     N/A     |     N/A   | N/A  |   Yes   |
-| &nbsp;&nbsp;&nbsp;`Documents/`                 | documentsDirectory          | documents             | r/w  |     Yes     |     No    | Yes  |   Yes   |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`NoCloud/` | -                           | documents-nosync      | r/w  |     Yes     |     No    | No   |   Yes   |
-| &nbsp;&nbsp;&nbsp;`Library`                    | -                           | library               | r/w  |     Yes     |     No    | Yes? |   Yes   |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`NoCloud/` | dataDirectory               | library-nosync        | r/w  |     Yes     |     No    | No   |   Yes   |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Cloud/`   | syncedDataDirectory         | -                     | r/w  |     Yes     |     No    | Yes  |   Yes   |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Caches/`  | cacheDirectory              | cache                 | r/w  |     Yes*    |  Yes\*\*\*| No   |   Yes   |
-| &nbsp;&nbsp;&nbsp;`tmp/`                       | tempDirectory               | -                     | r/w  |     No\*\*  |  Yes\*\*\*| No   |   Yes   |
+| :--------------------------------------------- | :-------------------------- | :-------------------- | :--: | :---------: | :-------: | :--: | :-----: |
+| `/var/mobile/Applications/<UUID>/`             | applicationStorageDirectory | -                     |  r   |     N/A     |    N/A    | N/A  |   Yes   |
+| &nbsp;&nbsp;&nbsp;`appname.app/`               | applicationDirectory        | bundle                |  r   |     N/A     |    N/A    | N/A  |   Yes   |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`www/`     | -                           | -                     |  r   |     N/A     |    N/A    | N/A  |   Yes   |
+| &nbsp;&nbsp;&nbsp;`Documents/`                 | documentsDirectory          | documents             | r/w  |     Yes     |    No     | Yes  |   Yes   |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`NoCloud/` | -                           | documents-nosync      | r/w  |     Yes     |    No     |  No  |   Yes   |
+| &nbsp;&nbsp;&nbsp;`Library`                    | -                           | library               | r/w  |     Yes     |    No     | Yes? |   Yes   |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`NoCloud/` | dataDirectory               | library-nosync        | r/w  |     Yes     |    No     |  No  |   Yes   |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Cloud/`   | syncedDataDirectory         | -                     | r/w  |     Yes     |    No     | Yes  |   Yes   |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Caches/`  | cacheDirectory              | cache                 | r/w  |    Yes\*    | Yes\*\*\* |  No  |   Yes   |
+| &nbsp;&nbsp;&nbsp;`tmp/`                       | tempDirectory               | -                     | r/w  |   No\*\*    | Yes\*\*\* |  No  |   Yes   |
 
-
-  \* Files persist across app restarts and upgrades, but this directory can
-     be cleared whenever the OS desires. Your app should be able to recreate any
-     content that might be deleted.
+\* Files persist across app restarts and upgrades, but this directory can
+be cleared whenever the OS desires. Your app should be able to recreate any
+content that might be deleted.
 
 \*\* Files may persist across app restarts, but do not rely on this behavior. Files
-     are not guaranteed to persist across updates. Your app should remove files from
-     this directory when it is applicable, as the OS does not guarantee when (or even
-     if) these files are removed.
+are not guaranteed to persist across updates. Your app should remove files from
+this directory when it is applicable, as the OS does not guarantee when (or even
+if) these files are removed.
 
 \*\*\* The OS may clear the contents of this directory whenever it feels it is
-     necessary, but do not rely on this. You should clear this directory as
-     appropriate for your application.
+necessary, but do not rely on this. You should clear this directory as
+appropriate for your application.
 
 ### Android File System Layout
 
-| Device Path                                     | `cordova.file.*`            | `AndroidExtraFileSystems` | r/w? | persistent? | OS clears | private |
-|:------------------------------------------------|:----------------------------|:--------------------------|:----:|:-----------:|:---------:|:-------:|
-| `file:///android_asset/`                        | applicationDirectory        | assets                    | r    |     N/A     |     N/A   |   Yes   |
-| `/data/data/<app-id>/`                          | applicationStorageDirectory | -                         | r/w  |     N/A     |     N/A   |   Yes   |
-| &nbsp;&nbsp;&nbsp;`cache`                       | cacheDirectory              | cache                     | r/w  |     Yes     |     Yes\* |   Yes   |
-| &nbsp;&nbsp;&nbsp;`files`                       | dataDirectory               | files                     | r/w  |     Yes     |     No    |   Yes   |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Documents` |                             | documents                 | r/w  |     Yes     |     No    |   Yes   |
-| `<sdcard>/`                                     | externalRootDirectory       | sdcard                    | r/w\*\*\*  |     Yes     |     No    |   No    |
-| &nbsp;&nbsp;&nbsp;`Android/data/<app-id>/`      | externalApplicationStorageDirectory | -                 | r/w  |     Yes     |     No    |   No    |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`cache`     | externalCacheDirectory       | cache-external            | r/w  |     Yes     |     No\*\*|   No    |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`files`     | externalDataDirectory       | files-external            | r/w  |     Yes     |     No    |   No    |
+| Device Path                                     | `cordova.file.*`                    | `AndroidExtraFileSystems` |   r/w?    | persistent? | OS clears | private |
+| :---------------------------------------------- | :---------------------------------- | :------------------------ | :-------: | :---------: | :-------: | :-----: |
+| `file:///android_asset/`                        | applicationDirectory                | assets                    |     r     |     N/A     |    N/A    |   Yes   |
+| `/data/data/<app-id>/`                          | applicationStorageDirectory         | -                         |    r/w    |     N/A     |    N/A    |   Yes   |
+| &nbsp;&nbsp;&nbsp;`cache`                       | cacheDirectory                      | cache                     |    r/w    |     Yes     |   Yes\*   |   Yes   |
+| &nbsp;&nbsp;&nbsp;`files`                       | dataDirectory                       | files                     |    r/w    |     Yes     |    No     |   Yes   |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Documents` |                                     | documents                 |    r/w    |     Yes     |    No     |   Yes   |
+| `<sdcard>/`                                     | externalRootDirectory               | sdcard                    | r/w\*\*\* |     Yes     |    No     |   No    |
+| `<sdcard>/`                                     | downloadDirectory                   | sdcard                    | r/w\*\*\* |     Yes     |    No     |   No    |
+| &nbsp;&nbsp;&nbsp;`Android/data/<app-id>/`      | externalApplicationStorageDirectory | -                         |    r/w    |     Yes     |    No     |   No    |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`cache`     | externalCacheDirectory              | cache-external            |    r/w    |     Yes     |  No\*\*   |   No    |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`files`     | externalDataDirectory               | files-external            |    r/w    |     Yes     |    No     |   No    |
 
 \* The OS may periodically clear this directory, but do not rely on this behavior. Clear
-   the contents of this directory as appropriate for your application. Should a user
-   purge the cache manually, the contents of this directory are removed.
+the contents of this directory as appropriate for your application. Should a user
+purge the cache manually, the contents of this directory are removed.
 
 \*\* The OS does not clear this directory automatically; you are responsible for managing
-     the contents yourself. Should the user purge the cache manually, the contents of the
-     directory are removed.
+the contents yourself. Should the user purge the cache manually, the contents of the
+directory are removed.
 
 \*\*\* As of API 30, these directories are no longer writable.
 
@@ -180,38 +183,37 @@ properties are `null`.
 
 ### OS X File System Layout
 
-| Device Path                                      | `cordova.file.*`            | `iosExtraFileSystems` | r/w? |  OS clears | private |
-|:-------------------------------------------------|:----------------------------|:----------------------|:----:|:---------:|:-------:|
-| `/Applications/<appname>.app/`                   | -                           | bundle                | r    |     N/A   |   Yes   |
-| &nbsp;&nbsp;&nbsp;&nbsp;`Content/Resources/`     | applicationDirectory        | -                     | r    |     N/A   |   Yes   |
-| `~/Library/Application Support/<bundle-id>/`     | applicationStorageDirectory | -                     | r/w  |     No    |   Yes   |
-| &nbsp;&nbsp;&nbsp;&nbsp;`files/`                 | dataDirectory               | -                     | r/w  |     No    |   Yes   |
-| `~/Documents/`                                   | documentsDirectory          | documents             | r/w  |     No    |    No   |
-| `~/Library/Caches/<bundle-id>/`                  | cacheDirectory              | cache                 | r/w  |     No    |   Yes   |
-| `/tmp/`                                          | tempDirectory               | -                     | r/w  |    Yes\*  |   Yes   |
-| `/`                                              | rootDirectory               | root                  | r/w  |    No\*\* |    No   |
+| Device Path                                  | `cordova.file.*`            | `iosExtraFileSystems` | r/w? | OS clears | private |
+| :------------------------------------------- | :-------------------------- | :-------------------- | :--: | :-------: | :-----: |
+| `/Applications/<appname>.app/`               | -                           | bundle                |  r   |    N/A    |   Yes   |
+| &nbsp;&nbsp;&nbsp;&nbsp;`Content/Resources/` | applicationDirectory        | -                     |  r   |    N/A    |   Yes   |
+| `~/Library/Application Support/<bundle-id>/` | applicationStorageDirectory | -                     | r/w  |    No     |   Yes   |
+| &nbsp;&nbsp;&nbsp;&nbsp;`files/`             | dataDirectory               | -                     | r/w  |    No     |   Yes   |
+| `~/Documents/`                               | documentsDirectory          | documents             | r/w  |    No     |   No    |
+| `~/Library/Caches/<bundle-id>/`              | cacheDirectory              | cache                 | r/w  |    No     |   Yes   |
+| `/tmp/`                                      | tempDirectory               | -                     | r/w  |   Yes\*   |   Yes   |
+| `/`                                          | rootDirectory               | root                  | r/w  |  No\*\*   |   No    |
 
 **Note**: This is the layout for non sandboxed applications. I you enable sandboxing, the `applicationStorageDirectory` will be below ` ~/Library/Containers/<bundle-id>/Data/Library/Application Support`.
 
 \* Files persist across app restarts and upgrades, but this directory can
-     be cleared whenever the OS desires. Your app should be able to recreate any
-     content that might be deleted. You should clear this directory as
-     appropriate for your application.
+be cleared whenever the OS desires. Your app should be able to recreate any
+content that might be deleted. You should clear this directory as
+appropriate for your application.
 
 \*\* Allows access to the entire file system. This is only available for non sandboxed apps.
 
 ### Windows File System Layout
 
-| Device Path                                           | `cordova.file.*`            | r/w? | persistent? | OS clears | private |
-|:------------------------------------------------------|:----------------------------|:----:|:-----------:|:---------:|:-------:|
-| `ms-appdata:///`                                      | applicationDirectory        | r    |     N/A     |     N/A   |   Yes   |
-| &nbsp;&nbsp;&nbsp;`local/`                            | dataDirectory               | r/w  |     Yes     |     No    |   Yes   |
-| &nbsp;&nbsp;&nbsp;`temp/`                             | cacheDirectory              | r/w  |     No      |     Yes\* |   Yes   |
-| &nbsp;&nbsp;&nbsp;`temp/`                             | tempDirectory               | r/w  |     No      |     Yes\* |   Yes   |
-| &nbsp;&nbsp;&nbsp;`roaming/`                          | syncedDataDirectory         | r/w  |     Yes     |     No    |   Yes   |
+| Device Path                  | `cordova.file.*`     | r/w? | persistent? | OS clears | private |
+| :--------------------------- | :------------------- | :--: | :---------: | :-------: | :-----: |
+| `ms-appdata:///`             | applicationDirectory |  r   |     N/A     |    N/A    |   Yes   |
+| &nbsp;&nbsp;&nbsp;`local/`   | dataDirectory        | r/w  |     Yes     |    No     |   Yes   |
+| &nbsp;&nbsp;&nbsp;`temp/`    | cacheDirectory       | r/w  |     No      |   Yes\*   |   Yes   |
+| &nbsp;&nbsp;&nbsp;`temp/`    | tempDirectory        | r/w  |     No      |   Yes\*   |   Yes   |
+| &nbsp;&nbsp;&nbsp;`roaming/` | syncedDataDirectory  | r/w  |     Yes     |    No     |   Yes   |
 
 \* The OS may periodically clear this directory
-
 
 ## Android Quirks
 
@@ -312,11 +314,12 @@ persistent filesystem, then the `Library` setting is generally recommended.
 ## Browser Quirks
 
 ### Common quirks and remarks
+
 - Each browser uses its own sandboxed filesystem. IE and Firefox use IndexedDB as a base.
-All browsers use forward slash as directory separator in a path.
+  All browsers use forward slash as directory separator in a path.
 - Directory entries have to be created successively.
-For example, the call `fs.root.getDirectory('dir1/dir2', {create:true}, successCallback, errorCallback)`
-will fail if dir1 did not exist.
+  For example, the call `fs.root.getDirectory('dir1/dir2', {create:true}, successCallback, errorCallback)`
+  will fail if dir1 did not exist.
 - The plugin requests user permission to use persistent storage at the application first start.
 - Plugin supports `cdvfile://localhost` (local resources) only. I.e. external resources are not supported via `cdvfile`.
 - The plugin does not follow ["File System API 8.3 Naming restrictions"](http://www.w3.org/TR/2011/WD-file-system-api-20110419/#naming-restrictions).
@@ -327,59 +330,73 @@ will fail if dir1 did not exist.
 - Files created via constructor are not supported. You should use entry.file method instead.
 - Each browser uses its own form for blob URL references.
 - `readAsDataURL` function is supported, but the mediatype in Chrome depends on entry name extension,
-mediatype in IE is always empty (which is the same as `text-plain` according the specification),
-the mediatype in Firefox is always `application/octet-stream`.
-For example, if the content is `abcdefg` then Firefox returns `data:application/octet-stream;base64,YWJjZGVmZw==`,
-IE returns `data:;base64,YWJjZGVmZw==`, Chrome returns `data:<mediatype depending on extension of entry name>;base64,YWJjZGVmZw==`.
+  mediatype in IE is always empty (which is the same as `text-plain` according the specification),
+  the mediatype in Firefox is always `application/octet-stream`.
+  For example, if the content is `abcdefg` then Firefox returns `data:application/octet-stream;base64,YWJjZGVmZw==`,
+  IE returns `data:;base64,YWJjZGVmZw==`, Chrome returns `data:<mediatype depending on extension of entry name>;base64,YWJjZGVmZw==`.
 - `toInternalURL` returns the path in the form `file:///persistent/path/to/entry` (Firefox, IE).
-Chrome returns the path in the form `cdvfile://localhost/persistent/file`.
+  Chrome returns the path in the form `cdvfile://localhost/persistent/file`.
 
 ### Chrome quirks
+
 - Chrome filesystem is not immediately ready after device ready event. As a workaround you can subscribe to `filePluginIsReady` event.
-Example:
+  Example:
+
 ```javascript
-window.addEventListener('filePluginIsReady', function(){ console.log('File plugin is ready');}, false);
+window.addEventListener(
+  "filePluginIsReady",
+  function () {
+    console.log("File plugin is ready");
+  },
+  false
+);
 ```
+
 You can use `window.isFilePluginReadyRaised` function to check whether event was already raised.
+
 - window.requestFileSystem TEMPORARY and PERSISTENT filesystem quotas are not limited in Chrome.
 - To increase persistent storage in Chrome you need to call `window.initPersistentFileSystem` method. Persistent storage quota is 5 MB by default.
 - Chrome requires `--allow-file-access-from-files` run argument to support API via `file:///` protocol.
 - `File` object will be not changed if you use flag `{create:true}` when getting an existing `Entry`.
 - events `cancelable` property is set to true in Chrome. This is contrary to the [specification](http://dev.w3.org/2009/dap/file-system/file-writer.html).
 - `toURL` function in Chrome returns `filesystem:`-prefixed path depending on application host.
-For example, `filesystem:file:///persistent/somefile.txt`, `filesystem:http://localhost:8080/persistent/somefile.txt`.
+  For example, `filesystem:file:///persistent/somefile.txt`, `filesystem:http://localhost:8080/persistent/somefile.txt`.
 - `toURL` function result does not contain trailing slash in case of directory entry.
-Chrome resolves directories with slash-trailed urls correctly though.
+  Chrome resolves directories with slash-trailed urls correctly though.
 - `resolveLocalFileSystemURL` method requires the inbound `url` to have `filesystem` prefix. For example, `url` parameter for `resolveLocalFileSystemURL`
-should be in the form `filesystem:file:///persistent/somefile.txt` as opposed to the form `file:///persistent/somefile.txt` in Android.
+  should be in the form `filesystem:file:///persistent/somefile.txt` as opposed to the form `file:///persistent/somefile.txt` in Android.
 - Deprecated `toNativeURL` function is not supported and does not have a stub.
 - `setMetadata` function is not stated in the specifications and not supported.
 - INVALID_MODIFICATION_ERR (code: 9) is thrown instead of SYNTAX_ERR(code: 8) on requesting of a non-existant filesystem.
 - INVALID_MODIFICATION_ERR (code: 9) is thrown instead of PATH_EXISTS_ERR(code: 12) on trying to exclusively create a file or directory, which already exists.
-- INVALID_MODIFICATION_ERR (code: 9) is thrown instead of  NO_MODIFICATION_ALLOWED_ERR(code: 6) on trying to call removeRecursively on the root file system.
+- INVALID_MODIFICATION_ERR (code: 9) is thrown instead of NO_MODIFICATION_ALLOWED_ERR(code: 6) on trying to call removeRecursively on the root file system.
 - INVALID_MODIFICATION_ERR (code: 9) is thrown instead of NOT_FOUND_ERR(code: 1) on trying to moveTo directory that does not exist.
 
 ### IndexedDB-based impl quirks (Firefox and IE)
+
 - `.` and `..` are not supported.
 - IE does not support `file:///`-mode; only hosted mode is supported (http://localhost:xxxx).
 - Firefox filesystem size is not limited but each 50MB extension will request a user permission.
-IE10 allows up to 10mb of combined AppCache and IndexedDB used in implementation of filesystem without prompting,
-once you hit that level you will be asked if you want to allow it to be increased up to a max of 250mb per site.
-So `size` parameter for `requestFileSystem` function does not affect filesystem in Firefox and IE.
+  IE10 allows up to 10mb of combined AppCache and IndexedDB used in implementation of filesystem without prompting,
+  once you hit that level you will be asked if you want to allow it to be increased up to a max of 250mb per site.
+  So `size` parameter for `requestFileSystem` function does not affect filesystem in Firefox and IE.
 - `readAsBinaryString` function is not stated in the Specs and not supported in IE and does not have a stub.
 - `file.type` is always null.
 - You should not create entry using DirectoryEntry instance callback result which was deleted.
-Otherwise, you will get a 'hanging entry'.
+  Otherwise, you will get a 'hanging entry'.
 - Before you can read a file, which was just written you need to get a new instance of this file.
 - `setMetadata` function, which is not stated in the Specs supports `modificationTime` field change only.
 - `copyTo` and `moveTo` functions do not support directories.
 - Directories metadata is not supported.
 - Both Entry.remove and directoryEntry.removeRecursively don't fail when removing
-non-empty directories - directories being removed are cleaned along with contents instead.
+  non-empty directories - directories being removed are cleaned along with contents instead.
 - `abort` and `truncate` functions are not supported.
 - progress events are not fired. For example, this handler will be not executed:
+
 ```javascript
-writer.onprogress = function() { /*commands*/ };
+writer.onprogress = function () {
+  /*commands*/
+};
 ```
 
 ## Upgrading Notes
@@ -443,19 +460,21 @@ It is recommended to always use the `toURL()` to ensure that the correct URL is 
 `cdvfile://localhost/persistent|temporary|another-fs-root*/path/to/file` can be used for platform-independent file paths.
 cdvfile paths are supported by core plugins - for example you can download an mp3 file to cdvfile-path via `cordova-plugin-file-transfer` and play it via `cordova-plugin-media`.
 
-__*Note__: See [Where to Store Files](#where-to-store-files), [File System Layouts](#file-system-layouts) and [Configuring the Plugin](#configuring-the-plugin-optional) for more details about available fs roots.
+**\*Note**: See [Where to Store Files](#where-to-store-files), [File System Layouts](#file-system-layouts) and [Configuring the Plugin](#configuring-the-plugin-optional) for more details about available fs roots.
 
 To use `cdvfile` as a tag' `src` you can convert it to native path via `toURL()` method of the resolved fileEntry, which you can get via `resolveLocalFileSystemURL` - see examples below.
 
 You can also use `cdvfile://` paths directly in the DOM, for example:
+
 ```HTML
 <img src="cdvfile://localhost/persistent/img/logo.png" />
 ```
 
-__Note__: This method requires following Content Security rules updates:
-* Add `cdvfile:` scheme to `Content-Security-Policy` meta tag of the index page, e.g.:
+**Note**: This method requires following Content Security rules updates:
+
+- Add `cdvfile:` scheme to `Content-Security-Policy` meta tag of the index page, e.g.:
   - `<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: `**cdvfile:**` https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">`
-* Add `<access origin="cdvfile://*" />` to `config.xml`.
+- Add `<access origin="cdvfile://*" />` to `config.xml`.
 
 **Converting cdvfile:// to native path**
 
@@ -478,20 +497,22 @@ resolveLocalFileSystemURL(nativePath, function(entry) {
 ```javascript
 fileTransfer.download(uri, 'cdvfile://localhost/temporary/path/to/file.mp3', function (entry) { ...
 ```
+
 ```javascript
 var my_media = new Media('cdvfile://localhost/temporary/path/to/file.mp3', ...);
 my_media.play();
 ```
 
 #### cdvfile quirks
+
 - Using `cdvfile://` paths in the DOM is not supported on Windows platform (a path can be converted to native instead).
 
-
 ## List of Error Codes and Meanings
+
 When an error is thrown, one of the following codes will be used.
 
 | Code | Constant                      |
-|-----:|:------------------------------|
+| ---: | :---------------------------- |
 |    1 | `NOT_FOUND_ERR`               |
 |    2 | `SECURITY_ERR`                |
 |    3 | `ABORT_ERR`                   |
@@ -516,36 +537,37 @@ filesystems to be installed. By default, all file-system roots are enabled.
 
 ### Android
 
-* `files`: The application's internal file storage directory
-* `files-external`: The application's external file storage directory
-* `sdcard`: The global external file storage directory (this is the root of the SD card, if one is installed). You must have the `android.permission.WRITE_EXTERNAL_STORAGE` permission to use this.
-* `cache`: The application's internal cache directory
-* `cache-external`: The application's external cache directory
-* `assets`: The application's bundle (read-only)
-* `root`: The entire device filesystem
-* `applicationDirectory`: ReadOnly with restricted access. Copying files in this directory is possible, but reading it directly results in 'file not found'.
-Android also supports a special filesystem named "documents", which represents a "/Documents/" subdirectory within the "files" filesystem.
+- `files`: The application's internal file storage directory
+- `files-external`: The application's external file storage directory
+- `sdcard`: The global external file storage directory (this is the root of the SD card, if one is installed). You must have the `android.permission.WRITE_EXTERNAL_STORAGE` permission to use this.
+- `cache`: The application's internal cache directory
+- `cache-external`: The application's external cache directory
+- `assets`: The application's bundle (read-only)
+- `root`: The entire device filesystem
+- `applicationDirectory`: ReadOnly with restricted access. Copying files in this directory is possible, but reading it directly results in 'file not found'.
+  Android also supports a special filesystem named "documents", which represents a "/Documents/" subdirectory within the "files" filesystem.
 
 ### iOS
 
-* `library`: The application's Library directory
-* `documents`: The application's Documents directory
-* `cache`: The application's Cache directory
-* `bundle`: The application's bundle; the location of the app itself on disk (read-only)
-* `root`: The entire device filesystem
+- `library`: The application's Library directory
+- `documents`: The application's Documents directory
+- `cache`: The application's Cache directory
+- `bundle`: The application's bundle; the location of the app itself on disk (read-only)
+- `root`: The entire device filesystem
 
 By default, the library and documents directories can be synced to iCloud. You can also request two additional filesystems, `library-nosync` and `documents-nosync`, which represent a special non-synced directory within the `/Library` or `/Documents` filesystem.
 
 ## Sample: Create Files and Directories, Write, Read, and Append files <a name="sample"></a>
 
 The File plugin allows you to do things like store files in a temporary or persistent storage location for your app (sandboxed storage) and to store files in other platform-dependent locations. The code snippets in this section demonstrate different tasks including:
-* [Accessing the file system](#persistent)
-* Using cross-platform Cordova file URLs to [store your files](#appendFile) (see _Where to Store Files_ for more info)
-* Creating [files](#persistent) and [directories](#createDir)
-* [Writing to files](#writeFile)
-* [Reading files](#readFile)
-* [Appending files](#appendFile)
-* [Display an image file](#displayImage)
+
+- [Accessing the file system](#persistent)
+- Using cross-platform Cordova file URLs to [store your files](#appendFile) (see _Where to Store Files_ for more info)
+- Creating [files](#persistent) and [directories](#createDir)
+- [Writing to files](#writeFile)
+- [Reading files](#readFile)
+- [Appending files](#appendFile)
+- [Display an image file](#displayImage)
 
 ## Create a persistent file <a name="persistent"></a>
 
@@ -555,22 +577,28 @@ When you get file system access using `requestFileSystem`, access is granted for
 
 Here is a request for persistent storage.
 
->*Note* When targeting WebView clients (instead of a browser) or native apps (Windows), you dont need to use `requestQuota` before using persistent storage.
+> _Note_ When targeting WebView clients (instead of a browser) or native apps (Windows), you dont need to use `requestQuota` before using persistent storage.
 
 ```js
-window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
-
-    console.log('file system open: ' + fs.name);
-    fs.root.getFile("newPersistentFile.txt", { create: true, exclusive: false }, function (fileEntry) {
-
+window.requestFileSystem(
+  LocalFileSystem.PERSISTENT,
+  0,
+  function (fs) {
+    console.log("file system open: " + fs.name);
+    fs.root.getFile(
+      "newPersistentFile.txt",
+      { create: true, exclusive: false },
+      function (fileEntry) {
         console.log("fileEntry is file?" + fileEntry.isFile.toString());
         // fileEntry.name == 'someFile.txt'
         // fileEntry.fullPath == '/someFile.txt'
         writeFile(fileEntry, null);
-
-    }, onErrorCreateFile);
-
-}, onErrorLoadFs);
+      },
+      onErrorCreateFile
+    );
+  },
+  onErrorLoadFs
+);
 ```
 
 The success callback receives FileSystem object (fs). Use `fs.root` to return a DirectoryEntry object, which you can use to create or get a file (by calling `getFile`). In this example, `fs.root` is a DirectoryEntry object that represents the persistent storage in the sandboxed file system.
@@ -582,24 +610,30 @@ The success callback for `getFile` receives a FileEntry object. You can use this
 Here is an example of a request for temporary storage. Temporary storage may be deleted by the operating system if the device runs low on memory.
 
 ```js
-window.requestFileSystem(window.TEMPORARY, 5 * 1024 * 1024, function (fs) {
-
-    console.log('file system open: ' + fs.name);
+window.requestFileSystem(
+  window.TEMPORARY,
+  5 * 1024 * 1024,
+  function (fs) {
+    console.log("file system open: " + fs.name);
     createFile(fs.root, "newTempFile.txt", false);
-
-}, onErrorLoadFs);
+  },
+  onErrorLoadFs
+);
 ```
+
 When you are using temporary storage, you can create or get the file by calling `getFile`. As in the persistent storage example, this will give you a FileEntry object that you can use for read or write operations.
 
 ```js
 function createFile(dirEntry, fileName, isAppend) {
-    // Creates a new file or returns the file if it already exists.
-    dirEntry.getFile(fileName, {create: true, exclusive: false}, function(fileEntry) {
-
-        writeFile(fileEntry, null, isAppend);
-
-    }, onErrorCreateFile);
-
+  // Creates a new file or returns the file if it already exists.
+  dirEntry.getFile(
+    fileName,
+    { create: true, exclusive: false },
+    function (fileEntry) {
+      writeFile(fileEntry, null, isAppend);
+    },
+    onErrorCreateFile
+  );
 }
 ```
 
@@ -609,26 +643,25 @@ Once you have a FileEntry object, you can write to the file by calling `createWr
 
 ```js
 function writeFile(fileEntry, dataObj) {
-    // Create a FileWriter object for our FileEntry (log.txt).
-    fileEntry.createWriter(function (fileWriter) {
+  // Create a FileWriter object for our FileEntry (log.txt).
+  fileEntry.createWriter(function (fileWriter) {
+    fileWriter.onwriteend = function () {
+      console.log("Successful file write...");
+      readFile(fileEntry);
+    };
 
-        fileWriter.onwriteend = function() {
-            console.log("Successful file write...");
-            readFile(fileEntry);
-        };
+    fileWriter.onerror = function (e) {
+      console.log("Failed file write: " + e.toString());
+    };
 
-        fileWriter.onerror = function (e) {
-            console.log("Failed file write: " + e.toString());
-        };
+    // If data object is not passed in,
+    // create a new Blob instead.
+    if (!dataObj) {
+      dataObj = new Blob(["some file data"], { type: "text/plain" });
+    }
 
-        // If data object is not passed in,
-        // create a new Blob instead.
-        if (!dataObj) {
-            dataObj = new Blob(['some file data'], { type: 'text/plain' });
-        }
-
-        fileWriter.write(dataObj);
-    });
+    fileWriter.write(dataObj);
+  });
 }
 ```
 
@@ -638,18 +671,16 @@ You also need a FileEntry object to read an existing file. Use the file property
 
 ```js
 function readFile(fileEntry) {
+  fileEntry.file(function (file) {
+    var reader = new FileReader();
 
-    fileEntry.file(function (file) {
-        var reader = new FileReader();
+    reader.onloadend = function () {
+      console.log("Successful file read: " + this.result);
+      displayFileData(fileEntry.fullPath + ": " + this.result);
+    };
 
-        reader.onloadend = function() {
-            console.log("Successful file read: " + this.result);
-            displayFileData(fileEntry.fullPath + ": " + this.result);
-        };
-
-        reader.readAsText(file);
-
-    }, onErrorReadFile);
+    reader.readAsText(file);
+  }, onErrorReadFile);
 }
 ```
 
@@ -658,11 +689,15 @@ function readFile(fileEntry) {
 Of course, you will often want to append existing files instead of creating new ones. Here is an example of that. This example shows another way that you can access the file system using window.resolveLocalFileSystemURL. In this example, pass the cross-platform Cordova file URL, cordova.file.dataDirectory, to the function. The success callback receives a DirectoryEntry object, which you can use to do things like create a file.
 
 ```js
-window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (dirEntry) {
-    console.log('file system open: ' + dirEntry.name);
+window.resolveLocalFileSystemURL(
+  cordova.file.dataDirectory,
+  function (dirEntry) {
+    console.log("file system open: " + dirEntry.name);
     var isAppend = true;
     createFile(dirEntry, "fileToAppend.txt", isAppend);
-}, onErrorLoadFs);
+  },
+  onErrorLoadFs
+);
 ```
 
 In addition to this usage, you can use `resolveLocalFileSystemURL` to get access to some file system locations that are not part of the sandboxed storage system. See _Where to store Files_ for more information; many of these storage locations are platform-specific. You can also pass cross-platform file system locations to `resolveLocalFileSystemURL` using the _cdvfile protocol_.
@@ -673,29 +708,27 @@ Once you have a FileWriter object, call the `seek` method, and pass in the index
 
 ```js
 function writeFile(fileEntry, dataObj, isAppend) {
-    // Create a FileWriter object for our FileEntry (log.txt).
-    fileEntry.createWriter(function (fileWriter) {
+  // Create a FileWriter object for our FileEntry (log.txt).
+  fileEntry.createWriter(function (fileWriter) {
+    fileWriter.onwriteend = function () {
+      console.log("Successful file read...");
+      readFile(fileEntry);
+    };
 
-        fileWriter.onwriteend = function() {
-            console.log("Successful file read...");
-            readFile(fileEntry);
-        };
+    fileWriter.onerror = function (e) {
+      console.log("Failed file read: " + e.toString());
+    };
 
-        fileWriter.onerror = function (e) {
-            console.log("Failed file read: " + e.toString());
-        };
-
-        // If we are appending data to file, go to the end of the file.
-        if (isAppend) {
-            try {
-                fileWriter.seek(fileWriter.length);
-            }
-            catch (e) {
-                console.log("file doesn't exist!");
-            }
-        }
-        fileWriter.write(dataObj);
-    });
+    // If we are appending data to file, go to the end of the file.
+    if (isAppend) {
+      try {
+        fileWriter.seek(fileWriter.length);
+      } catch (e) {
+        console.log("file doesn't exist!");
+      }
+    }
+    fileWriter.write(dataObj);
+  });
 }
 ```
 
@@ -706,45 +739,49 @@ We already showed how to write to a file that you just created in the sandboxed 
 Before you get the file, get a FileSystem reference using `requestFileSystem`. By passing window.TEMPORARY in the method call (same as before), the returned FileSystem object (fs) represents the cache in the sandboxed file system. Use `fs.root` to get the DirectoryEntry object that you need.
 
 ```js
-window.requestFileSystem(window.TEMPORARY, 5 * 1024 * 1024, function (fs) {
-
-    console.log('file system open: ' + fs.name);
+window.requestFileSystem(
+  window.TEMPORARY,
+  5 * 1024 * 1024,
+  function (fs) {
+    console.log("file system open: " + fs.name);
     getSampleFile(fs.root);
-
-}, onErrorLoadFs);
+  },
+  onErrorLoadFs
+);
 ```
 
 For completeness, here is the xhr request to get a Blob image. There is nothing Cordova-specific in this code, except that you forward the DirectoryEntry reference that you already obtained as an argument to the saveFile function. You will save the blob image and display it later after reading the file (to validate the operation).
 
 ```js
 function getSampleFile(dirEntry) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", "http://cordova.apache.org/static/img/cordova_bot.png", true);
+  xhr.responseType = "blob";
 
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'http://cordova.apache.org/static/img/cordova_bot.png', true);
-    xhr.responseType = 'blob';
-
-    xhr.onload = function() {
-        if (this.status == 200) {
-
-            var blob = new Blob([this.response], { type: 'image/png' });
-            saveFile(dirEntry, blob, "downloadedImage.png");
-        }
-    };
-    xhr.send();
+  xhr.onload = function () {
+    if (this.status == 200) {
+      var blob = new Blob([this.response], { type: "image/png" });
+      saveFile(dirEntry, blob, "downloadedImage.png");
+    }
+  };
+  xhr.send();
 }
 ```
->*Note* For Cordova 5 security, the preceding code requires that you add the domain name, http://cordova.apache.org, to the Content-Security-Policy <meta> element in index.html.
+
+> _Note_ For Cordova 5 security, the preceding code requires that you add the domain name, http://cordova.apache.org, to the Content-Security-Policy <meta> element in index.html.
 
 After getting the file, copy the contents to a new file. The current DirectoryEntry object is already associated with the app cache.
 
 ```js
 function saveFile(dirEntry, fileData, fileName) {
-
-    dirEntry.getFile(fileName, { create: true, exclusive: false }, function (fileEntry) {
-
-        writeFile(fileEntry, fileData);
-
-    }, onErrorCreateFile);
+  dirEntry.getFile(
+    fileName,
+    { create: true, exclusive: false },
+    function (fileEntry) {
+      writeFile(fileEntry, fileData);
+    },
+    onErrorCreateFile
+  );
 }
 ```
 
@@ -752,26 +789,23 @@ In writeFile, you pass in the Blob object as the dataObj and you will save that 
 
 ```js
 function writeFile(fileEntry, dataObj, isAppend) {
+  // Create a FileWriter object for our FileEntry (log.txt).
+  fileEntry.createWriter(function (fileWriter) {
+    fileWriter.onwriteend = function () {
+      console.log("Successful file write...");
+      if (dataObj.type == "image/png") {
+        readBinaryFile(fileEntry);
+      } else {
+        readFile(fileEntry);
+      }
+    };
 
-    // Create a FileWriter object for our FileEntry (log.txt).
-    fileEntry.createWriter(function (fileWriter) {
+    fileWriter.onerror = function (e) {
+      console.log("Failed file write: " + e.toString());
+    };
 
-        fileWriter.onwriteend = function() {
-            console.log("Successful file write...");
-            if (dataObj.type == "image/png") {
-                readBinaryFile(fileEntry);
-            }
-            else {
-                readFile(fileEntry);
-            }
-        };
-
-        fileWriter.onerror = function(e) {
-            console.log("Failed file write: " + e.toString());
-        };
-
-        fileWriter.write(dataObj);
-    });
+    fileWriter.write(dataObj);
+  });
 }
 ```
 
@@ -779,22 +813,19 @@ After writing to the file, read it and display it. You saved the image as binary
 
 ```js
 function readBinaryFile(fileEntry) {
+  fileEntry.file(function (file) {
+    var reader = new FileReader();
 
-    fileEntry.file(function (file) {
-        var reader = new FileReader();
+    reader.onloadend = function () {
+      console.log("Successful file write: " + this.result);
+      displayFileData(fileEntry.fullPath + ": " + this.result);
 
-        reader.onloadend = function() {
+      var blob = new Blob([new Uint8Array(this.result)], { type: "image/png" });
+      displayImage(blob);
+    };
 
-            console.log("Successful file write: " + this.result);
-            displayFileData(fileEntry.fullPath + ": " + this.result);
-
-            var blob = new Blob([new Uint8Array(this.result)], { type: "image/png" });
-            displayImage(blob);
-        };
-
-        reader.readAsArrayBuffer(file);
-
-    }, onErrorReadFile);
+    reader.readAsArrayBuffer(file);
+  }, onErrorReadFile);
 }
 ```
 
@@ -802,11 +833,10 @@ After reading the data, you can display the image using code like this. Use wind
 
 ```js
 function displayImage(blob) {
-
-    // Displays image if result is a valid DOM string for an image.
-    var elem = document.getElementById('imageFile');
-    // Note: Use window.URL.revokeObjectURL when finished with image.
-    elem.src = window.URL.createObjectURL(blob);
+  // Displays image if result is a valid DOM string for an image.
+  var elem = document.getElementById("imageFile");
+  // Note: Use window.URL.revokeObjectURL when finished with image.
+  elem.src = window.URL.createObjectURL(blob);
 }
 ```
 
@@ -816,15 +846,18 @@ To display an image using a FileEntry, you can call the `toURL` method.
 
 ```js
 function displayImageByFileURL(fileEntry) {
-    var elem = document.getElementById('imageFile');
-    elem.src = fileEntry.toURL();
+  var elem = document.getElementById("imageFile");
+  elem.src = fileEntry.toURL();
 }
 ```
 
 If you are using some platform-specific URIs instead of a FileEntry and you want to display an image, you may need to include the main part of the URI in the Content-Security-Policy <meta> element in index.html. For example, on Windows 10, you can include `ms-appdata:` in your <meta> element. Here is an example.
 
 ```html
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: ms-appdata: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">
+<meta
+  http-equiv="Content-Security-Policy"
+  content="default-src 'self' data: gap: ms-appdata: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *"
+/>
 ```
 
 ## Create Directories <a name="createDir"></a>
@@ -835,13 +868,21 @@ This code creates the /NewDirInRoot/images folder in the application cache. For 
 
 ```js
 function createDirectory(rootDirEntry) {
-    rootDirEntry.getDirectory('NewDirInRoot', { create: true }, function (dirEntry) {
-        dirEntry.getDirectory('images', { create: true }, function (subDirEntry) {
-
-            createFile(subDirEntry, "fileInNewSubDir.txt");
-
-        }, onErrorGetDir);
-    }, onErrorGetDir);
+  rootDirEntry.getDirectory(
+    "NewDirInRoot",
+    { create: true },
+    function (dirEntry) {
+      dirEntry.getDirectory(
+        "images",
+        { create: true },
+        function (subDirEntry) {
+          createFile(subDirEntry, "fileInNewSubDir.txt");
+        },
+        onErrorGetDir
+      );
+    },
+    onErrorGetDir
+  );
 }
 ```
 

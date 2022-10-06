@@ -296,7 +296,7 @@ interface FileWriter extends FileSaver {
      * Write the supplied data to the file at position.
      * @param {Blob|string} data The blob to write.
      */
-    write(data: Blob|string): void;
+    write(data: Blob | string): void;
     /**
      * The file position at which the next write will occur.
      * @param offset If nonnegative, an absolute byte offset into the file.
@@ -324,7 +324,7 @@ interface FileError {
 }
 
 declare var FileError: {
-    new (code: number): FileError;
+    new(code: number): FileError;
     NOT_FOUND_ERR: number;
     SECURITY_ERR: number;
     ABORT_ERR: number;
@@ -367,12 +367,14 @@ interface Cordova {
         /* iOS: Files private to the app, but that are meaningful to other applciations (e.g. Office files) */
         documentsDirectory: string;
         /* BlackBerry10: Files globally available to all apps */
-        sharedDirectory: string
+        sharedDirectory: string;
+        /* Android: The Download Directory from External Storage Public Directory */
+        downloadDirectory: string;
     }
 }
 
 
 declare enum LocalFileSystem {
-    PERSISTENT=1,
-    TEMPORARY=0
+    PERSISTENT = 1,
+    TEMPORARY = 0
 }

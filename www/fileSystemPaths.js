@@ -47,12 +47,14 @@ exports.file = {
     // iOS: Files private to the app, but that are meaningful to other applications (e.g. Office files)
     documentsDirectory: null,
     // BlackBerry10: Files globally available to all apps
-    sharedDirectory: null
+    sharedDirectory: null,
+    /* Android: The Download Directory from External Storage Public Directory */
+    downloadDirectory: null
 };
 
 channel.waitForInitialization('onFileSystemPathsReady');
 channel.onCordovaReady.subscribe(function () {
-    function after (paths) {
+    function after(paths) {
         for (var k in paths) {
             exports.file[k] = paths[k];
         }

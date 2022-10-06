@@ -1025,6 +1025,7 @@ public class FileUtils extends CordovaPlugin {
             ret.put("externalDataDirectory", toDirUrl(context.getExternalFilesDir(null)));
             ret.put("externalCacheDirectory", toDirUrl(context.getExternalCacheDir()));
             ret.put("externalRootDirectory", toDirUrl(Environment.getExternalStorageDirectory()));
+            ret.put("downloadDirectory", toDirUrl(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)));
           }
           catch(NullPointerException e) {
             /* If external storage is unavailable, context.getExternal* returns null */
