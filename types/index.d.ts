@@ -294,9 +294,9 @@ interface FileWriter extends FileSaver {
     length: number;
     /**
      * Write the supplied data to the file at position.
-     * @param {Blob|string} data The blob to write.
+     * @param {Blob|string|ArrayBuffer} data The blob to write.
      */
-    write(data: Blob|string): void;
+    write(data: Blob|string|ArrayBuffer): void;
     /**
      * The file position at which the next write will occur.
      * @param offset If nonnegative, an absolute byte offset into the file.
