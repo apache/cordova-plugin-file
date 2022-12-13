@@ -262,4 +262,20 @@ to config.xml in order for the application to find previously stored files.
         </js-module>
     </platform>
 
+
+    <platform name="electron">
+        <hook type="after_plugin_install" src="scripts/electron/expose-node-modules.js" />
+        <hook type="before_plugin_uninstall" src="scripts/electron/remove-added-code.js" />
+        <js-module src="src/electron/FileProxy.js" name="FileProxy">
+            <runs />
+        </js-module>
+        <js-module src="www/browser/Preparing.js" name="Preparing">
+            <runs />
+        </js-module>
+
+        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
+            <merges target="cordova" />
+            <runs />
+        </js-module>
+    </platform>
 </plugin>
