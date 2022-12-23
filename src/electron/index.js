@@ -1,18 +1,40 @@
+/*
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
+
+const { Buffer } = require('node:buffer');
+const path = require('node:path');
 const fs = require('fs-extra');
-const nodePath = require('path');
-const app = require('electron').app;
+const { app } = require('electron');
 
 const FileError = require('../../www/FileError');
 
-pathsPrefix = {
-    applicationDirectory: nodePath.dirname(app.getAppPath()) + nodePath.sep,
-    dataDirectory: app.getPath('userData') + nodePath.sep,
-    cacheDirectory: app.getPath('cache') + nodePath.sep,
-    tempDirectory: app.getPath('temp') + nodePath.sep,
-    documentsDirectory: app.getPath('documents') + nodePath.sep
+const pathsPrefix = {
+    applicationDirectory: path.dirname(app.getAppPath()) + path.sep,
+    dataDirectory: app.getPath('userData') + path.sep,
+    cacheDirectory: app.getPath('cache') + path.sep,
+    tempDirectory: app.getPath('temp') + path.sep,
+    documentsDirectory: app.getPath('documents') + path.sep
 };
 
-function returnEntry(isFile, name, fullPath, filesystem = null, nativeURL = null) {
+function returnEntry (isFile, name, fullPath, filesystem = null, nativeURL = null) {
     return {
         isFile,
         isDirectory: !isFile,
@@ -20,124 +42,179 @@ function returnEntry(isFile, name, fullPath, filesystem = null, nativeURL = null
         fullPath,
         filesystem,
         nativeURL
-    }
+    };
 }
 
 module.exports = {
-
-    readEntries: ([args]) => {
-        const fullPath = args[0];
-        return new Promise((resolve, reject) => {    
-            fs.readdir(fullPath, {withFileTypes: true}, (err, files) => {
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
+    readEntries: function ([[fullPath]]) {
+        return new Promise((resolve, reject) => {
+            fs.readdir(fullPath, { withFileTypes: true }, (err, files) => {
                 if (err) {
                     reject(err);
                     return;
                 }
+
                 const result = [];
+
                 files.forEach(d => {
-                    let path = fullPath + d.name;
+                    let absolutePath = fullPath + d.name;
+
                     if (d.isDirectory()) {
-                        path += nodePath.sep;
+                        absolutePath += path.sep;
                     }
+
                     result.push({
                         isDirectory: d.isDirectory(),
                         isFile: d.isFile(),
                         name: d.name,
-                        fullPath: path,
+                        fullPath: absolutePath,
                         filesystemName: 'temporary',
-                        nativeURL: path
+                        nativeURL: absolutePath
                     });
                 });
+
                 resolve(result);
             });
-        })
+        });
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     getFile,
 
-    getFileMetadata: ([args]) => {
-        const fullPath = args[0];
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
+    getFileMetadata: function ([[fullPath]]) {
         return new Promise((resolve, reject) => {
             fs.stat(fullPath, (err, stats) => {
                 if (err) {
                     reject(FileError.NOT_FOUND_ERR);
                     return;
                 }
-                const baseName = nodePath.basename(fullPath);
-                resolve({name: baseName, localURL: fullPath, type: '', lastModified: stats.mtime, size: stats.size, lastModifiedDate: stats.mtime});
+
+                resolve({
+                    name: path.basename(fullPath),
+                    localURL: fullPath,
+                    type: '',
+                    lastModified: stats.mtime,
+                    size: stats.size,
+                    lastModifiedDate: stats.mtime
+                });
             });
-        })
+        });
     },
 
-    getMetadata: ([args]) => {
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
+    getMetadata: function ([[url]]) {
         return new Promise((resolve, reject) => {
-            fs.stat(args[0], (err, stats) => {
+            fs.stat(url, (err, stats) => {
                 if (err) {
                     reject(FileError.NOT_FOUND_ERR);
                     return;
                 }
+
                 resolve({
                     modificationTime: stats.mtime,
                     size: stats.size
                 });
             });
-        })
+        });
     },
 
-    setMetadata: ([args]) => {
-        const fullPath = args[0];
-        const metadataObject = args[1];
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
+    setMetadata: function ([[fullPath, metadataObject]]) {
         return new Promise((resolve, reject) => {
-            fs.utimes(fullPath, metadataObject.modificationTime, metadataObject.modificationTime, (err) => {
+            const modificationTime = metadataObject.modificationTime;
+            const utimesError = function (err) {
                 if (err) {
                     reject(FileError.NOT_FOUND_ERR);
                     return;
                 }
                 resolve();
-            });
-        })
+            };
+
+            fs.utimes(fullPath, modificationTime, modificationTime, utimesError);
+        });
     },
 
-    readAsText: ([args]) => {
-        const fileName = args[0];
-        const enc = args[1];
-        const startPos = args[2];
-        const endPos = args[3];
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
+    readAsText: function ([[fileName, enc, startPos, endPos]]) {
         return readAs('text', fileName, enc, startPos, endPos);
     },
 
-    readAsDataURL: ([args]) => {
-        const fileName = args[0];
-        const startPos = args[1];
-        const endPos = args[2];
-
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
+    readAsDataURL: function ([[fileName, startPos, endPos]]) {
         return readAs('dataURL', fileName, null, startPos, endPos);
     },
 
-    readAsBinaryString: ([args]) => {
-        const fileName = args[0];
-        const startPos = args[1];
-        const endPos = args[2];
-
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
+    readAsBinaryString: function ([[fileName, startPos, endPos]]) {
         return readAs('binaryString', fileName, null, startPos, endPos);
     },
 
-    readAsArrayBuffer: ([args]) => {
-        const fileName = args[0];
-        const startPos = args[1];
-        const endPos = args[2];
-
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
+    readAsArrayBuffer: function ([[fileName, startPos, endPos]]) {
         return readAs('arrayBuffer', fileName, null, startPos, endPos);
     },
 
-    remove: ([args]) => {
-        const fullPath = args[0];
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
+    remove: function ([[fullPath]]) {
         return new Promise((resolve, reject) => {
             fs.stat(fullPath, (err, stats) => {
                 if (err) {
                     reject(FileError.NOT_FOUND_ERR);
                     return;
                 }
+
                 fs.remove(fullPath, (err) => {
                     if (err) {
                         reject(FileError.NO_MODIFICATION_ALLOWED_ERR);
@@ -146,129 +223,168 @@ module.exports = {
                     resolve();
                 });
             });
-        })
+        });
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     removeRecursively: this.remove,
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     getDirectory: getDirectory,
 
-    getParent: ([args]) => {
-        const parentPath = nodePath.dirname(args[0]);
-        const parentName = nodePath.basename(parentPath);
-        const path = nodePath.dirname(parentPath) + nodePath.sep;
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
+    getParent: function ([[url]]) {
+        const parentPath = path.dirname(url);
+        const parentName = path.basename(parentPath);
+        const fullPath = path.dirname(parentPath) + path.sep;
 
-        return getDirectory([[path, parentName, {create: false}]]);
+        return getDirectory([fullPath, parentName, { create: false }]);
     },
 
-    copyTo: ([args]) => {
-        const srcPath = args[0];
-        const dstDir = args[1];
-        const dstName = args[2];
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
+    copyTo: function ([[srcPath, dstDir, dstName]]) {
         return new Promise((resolve, reject) => {
             fs.copyFile(srcPath, dstDir + dstName, async (err) => {
                 if (err) {
                     reject(FileError.INVALID_MODIFICATION_ERR);
                     return;
                 }
+
                 resolve(await getFile([[dstDir, dstName]]));
             });
-        })
+        });
     },
 
-    moveTo: ([args]) => {
-        const srcPath = args[0];
-        // parentFullPath and name parameters is ignored because
-        // args is being passed downstream to copyTo method
-        const dstDir = args[1]; // eslint-disable-line
-        const dstName = args[2]; // eslint-disable-line
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
+    moveTo: function ([[srcPath, dstDir, dstName]]) {
         return new Promise((resolve, reject) => {
-            fs.move(srcPath, dstDir + dstName, {overwrite: true})
-            .then(async () => {
-                resolve(await getFile([[dstDir, dstName]]));
-            })
-            .catch(err => reject(err));
-        })
+            fs.move(srcPath, dstDir + dstName, { overwrite: true })
+                .then(async () => {
+                    resolve(await getFile([[dstDir, dstName]]));
+                })
+                .catch(err => reject(err));
+        });
     },
 
-    resolveLocalFileSystemURI: ([args]) => {
-        let path = args[0];
-
-        // support for encodeURI
-        if (/\%5/g.test(path) || /\%20/g.test(path)) {  // eslint-disable-line no-useless-escape
-            path = decodeURI(path);
-        }
-        // support for cdvfile
-        if (path.trim().substr(0, 7) === 'cdvfile') {
-            if (path.indexOf('cdvfile://localhost') === -1) {
-                reject(FileError.ENCODING_ERR);
-                return;
-            }
-
-            const indexApplication = path.indexOf('application');
-            const indexPersistent = path.indexOf('persistent');
-            const indexTemporary = path.indexOf('temporary');
-
-            if (indexApplication !== -1) { // cdvfile://localhost/application/path/to/file
-                path = pathsPrefix.applicationDirectory + path.substr(indexApplication + 12);
-            } else if (indexPersistent !== -1) { // cdvfile://localhost/persistent/path/to/file
-                path = pathsPrefix.dataDirectory + path.substr(indexPersistent + 11);
-            } else if (indexTemporary !== -1) { // cdvfile://localhost/temporary/path/to/file
-                path = pathsPrefix.tempDirectory + path.substr(indexTemporary + 10);
-            } else {
-                reject(FileError.ENCODING_ERR);
-                return;
-            }
-        }
-
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
+    resolveLocalFileSystemURI: function ([args]) {
         return new Promise((resolve, reject) => {
-            fs.stat(path, (err, stats) => {
+            let uri = args[0];
+
+            // support for encodeURI
+            if (/\%5/g.test(uri) || /\%20/g.test(uri)) { // eslint-disable-line no-useless-escape
+                uri = decodeURI(uri);
+            }
+
+            // support for cdvfile
+            if (uri.trim().substr(0, 7) === 'cdvfile') {
+                if (uri.indexOf('cdvfile://localhost') === -1) {
+                    reject(FileError.ENCODING_ERR);
+                    return;
+                }
+
+                const indexApplication = uri.indexOf('application');
+                const indexPersistent = uri.indexOf('persistent');
+                const indexTemporary = uri.indexOf('temporary');
+
+                if (indexApplication !== -1) { // cdvfile://localhost/application/path/to/file
+                    uri = pathsPrefix.applicationDirectory + uri.substr(indexApplication + 12);
+                } else if (indexPersistent !== -1) { // cdvfile://localhost/persistent/path/to/file
+                    uri = pathsPrefix.dataDirectory + uri.substr(indexPersistent + 11);
+                } else if (indexTemporary !== -1) { // cdvfile://localhost/temporary/path/to/file
+                    uri = pathsPrefix.tempDirectory + uri.substr(indexTemporary + 10);
+                } else {
+                    reject(FileError.ENCODING_ERR);
+                    return;
+                }
+            }
+
+            fs.stat(uri, (err, stats) => {
                 if (err) {
                     reject(new Error(FileError.NOT_FOUND_ERR));
                     return;
                 }
-    
-                const baseName = nodePath.basename(path);
+
+                const baseName = path.basename(uri);
                 if (stats.isDirectory()) {
                     // add trailing slash if it is missing
-                    if ((path) && !/\/$/.test(path)) {
-                        path += '/';
+                    if ((uri) && !/\/$/.test(uri)) {
+                        uri += '/';
                     }
-                    resolve(returnEntry(false, baseName, path));
+
+                    resolve(returnEntry(false, baseName, uri));
                 } else {
                     // remove trailing slash if it is present
-                    if (path && /\/$/.test(path)) {
-                        path = path.substring(0, path.length - 1);
+                    if (uri && /\/$/.test(uri)) {
+                        uri = uri.substring(0, uri.length - 1);
                     }
-                    resolve(returnEntry(true, baseName, path));
+
+                    resolve(returnEntry(true, baseName, uri));
                 }
             });
         });
-        
     },
 
-    requestAllPaths: () => {
+    /**
+     * @todo write comment & param information
+     *
+     * @returns {Promise}
+     */
+    requestAllPaths: function () {
         return pathsPrefix;
     },
 
-    write: ([args]) => {
-        const fileName = args[0];
-        const data = args[1];
-        const position = args[2];
-        const isBinary = args[3]; // eslint-disable-line no-unused-vars
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
+    write: function ([[fileName, data, position]]) {
         return new Promise((resolve, reject) => {
             if (!data) {
                 reject(FileError.INVALID_MODIFICATION_ERR);
                 return;
             }
-    
+
             const buf = Buffer.from(data);
             let bytesWritten = 0;
+
             fs.open(fileName, 'a')
                 .then(fd => {
                     return fs.write(fd, buf, 0, buf.length, position)
-                              .then(bw => { bytesWritten = bw; })
-                              .finally(() => fs.close(fd));
+                        .then(bw => { bytesWritten = bw; })
+                        .finally(() => fs.close(fd));
                 })
                 .then(() => resolve(bytesWritten))
                 .catch(() => {
@@ -277,31 +393,44 @@ module.exports = {
         });
     },
 
-    truncate: ([args]) => {
-        const fullPath = args[0];
-        const size = args[1];
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
+    truncate: function ([[fullPath, size]]) {
         return new Promise((resolve, reject) => {
             fs.truncate(fullPath, size, err => {
                 if (err) {
                     reject(FileError.INVALID_STATE_ERR);
                     return;
                 }
+
                 resolve(size);
             });
-        })
-    }  
+        });
+    }
 };
 
 /** * Helpers ***/
 
-function readAs(what, fullPath, encoding, startPos, endPos) {
+/**
+ * @todo write comment & param information
+ *
+ * @param {Array} param0
+ * @returns {Promise}
+ */
+function readAs (what, fullPath, encoding, startPos, endPos) {
     return new Promise((resolve, reject) => {
         fs.open(fullPath, 'r', (err, fd) => {
             if (err) {
                 reject(FileError.NOT_FOUND_ERR);
                 return;
             }
+
             const buf = Buffer.alloc(endPos - startPos);
+
             fs.read(fd, buf, 0, buf.length, startPos)
                 .then(() => {
                     switch (what) {
@@ -324,33 +453,40 @@ function readAs(what, fullPath, encoding, startPos, endPos) {
                 })
                 .then(() => fs.close(fd));
         });
-    })
+    });
 }
 
-function getFile([args]) {
-    const path = args[0] + args[1];
-    const options = args[2] || {};
+/**
+ * @todo write comment & param information
+ *
+ * @param {Array} param0
+ * @returns {Promise}
+ */
+function getFile ([[dstDir, dstName, options = {}]]) {
+    const absolutePath = dstDir + dstName;
     return new Promise((resolve, reject) => {
-        fs.stat(path, (err, stats) => {
+        fs.stat(absolutePath, (err, stats) => {
             if (err && err.message && err.message.indexOf('ENOENT') !== 0) {
                 reject(FileError.INVALID_STATE_ERR);
                 return;
             }
+
             const exists = !err;
-            const baseName = nodePath.basename(path);
+            const baseName = path.basename(absolutePath);
 
             function createFile () {
-                fs.open(path, 'w', (err, fd) => {
+                fs.open(absolutePath, 'w', (err, fd) => {
                     if (err) {
                         reject(FileError.INVALID_STATE_ERR);
                         return;
                     }
+
                     fs.close(fd, (err) => {
                         if (err) {
                             reject(FileError.INVALID_STATE_ERR);
                             return;
                         }
-                        resolve(returnEntry(true, baseName, path));
+                        resolve(returnEntry(true, baseName, absolutePath));
                     });
                 });
             }
@@ -381,23 +517,29 @@ function getFile([args]) {
             } else {
                 // Otherwise, if no other error occurs, getFile must return a FileEntry
                 // corresponding to path.
-                resolve(returnEntry(true, baseName, path));
+                resolve(returnEntry(true, baseName, absolutePath));
             }
         });
     });
 }
 
-function getDirectory([args]) {
-    const path = args[0] + args[1];
-    const options = args[2] || {};
+/**
+ * @todo write comment & param information
+ *
+ * @param {Array} param0
+ * @returns {Promise}
+ */
+function getDirectory ([[dstDir, dstName, options = {}]]) {
+    const absolutePath = dstDir + dstName;
     return new Promise((resolve, reject) => {
-        fs.stat(path, (err, stats) => {
+        fs.stat(absolutePath, (err, stats) => {
             if (err && err.message && err.message.indexOf('ENOENT') !== 0) {
                 reject(FileError.INVALID_STATE_ERR);
                 return;
             }
+
             const exists = !err;
-            const baseName = nodePath.basename(path);
+            const baseName = path.basename(absolutePath);
 
             if (options.create === true && options.exclusive === true && exists) {
                 // If create and exclusive are both true, and the path already exists,
@@ -407,16 +549,16 @@ function getDirectory([args]) {
                 // If create is true, the path doesn't exist, and no other error occurs,
                 // getDirectory must create it as a zero-length file and return a corresponding
                 // MyDirectoryEntry.
-                fs.mkdir(path, (err) => {
+                fs.mkdir(absolutePath, (err) => {
                     if (err) {
                         reject(FileError.PATH_EXISTS_ERR);
                         return;
                     }
-                    resolve(returnEntry(false, baseName, path));
+                    resolve(returnEntry(false, baseName, absolutePath));
                 });
             } else if (options.create === true && exists) {
                 if (stats.isDirectory()) {
-                    resolve(returnEntry(false, baseName, path));
+                    resolve(returnEntry(false, baseName, absolutePath));
                 } else {
                     reject(FileError.INVALID_MODIFICATION_ERR);
                 }
@@ -430,8 +572,8 @@ function getDirectory([args]) {
             } else {
                 // Otherwise, if no other error occurs, getDirectory must return a
                 // DirectoryEntry corresponding to path.
-                resolve(returnEntry(false, baseName, path));
+                resolve(returnEntry(false, baseName, absolutePath));
             }
         });
-    })
+    });
 }
