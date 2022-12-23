@@ -25,7 +25,6 @@ function returnEntry (isFile, name, fullPath, filesystem = null, nativeURL = nul
 }
 
 module.exports = {
-
     readEntries: ([args]) => {
         const fullPath = args[0];
         return new Promise((resolve, reject) => {
