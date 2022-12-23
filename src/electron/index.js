@@ -46,6 +46,12 @@ function returnEntry (isFile, name, fullPath, filesystem = null, nativeURL = nul
 }
 
 module.exports = {
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     readEntries: function ([[fullPath]]) {
         return new Promise((resolve, reject) => {
             fs.readdir(fullPath, { withFileTypes: true }, (err, files) => {
@@ -78,8 +84,20 @@ module.exports = {
         });
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     getFile,
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     getFileMetadata: function ([[fullPath]]) {
         return new Promise((resolve, reject) => {
             fs.stat(fullPath, (err, stats) => {
@@ -100,6 +118,12 @@ module.exports = {
         });
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     getMetadata: function ([[url]]) {
         return new Promise((resolve, reject) => {
             fs.stat(url, (err, stats) => {
@@ -116,6 +140,12 @@ module.exports = {
         });
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     setMetadata: function ([[fullPath, metadataObject]]) {
         return new Promise((resolve, reject) => {
             const modificationTime = metadataObject.modificationTime;
@@ -131,22 +161,52 @@ module.exports = {
         });
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     readAsText: function ([[fileName, enc, startPos, endPos]]) {
         return readAs('text', fileName, enc, startPos, endPos);
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     readAsDataURL: function ([[fileName, startPos, endPos]]) {
         return readAs('dataURL', fileName, null, startPos, endPos);
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     readAsBinaryString: function ([[fileName, startPos, endPos]]) {
         return readAs('binaryString', fileName, null, startPos, endPos);
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     readAsArrayBuffer: function ([[fileName, startPos, endPos]]) {
         return readAs('arrayBuffer', fileName, null, startPos, endPos);
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     remove: function ([[fullPath]]) {
         return new Promise((resolve, reject) => {
             fs.stat(fullPath, (err, stats) => {
@@ -166,10 +226,28 @@ module.exports = {
         });
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     removeRecursively: this.remove,
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     getDirectory: getDirectory,
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     getParent: function ([[url]]) {
         const parentPath = path.dirname(url);
         const parentName = path.basename(parentPath);
@@ -178,6 +256,12 @@ module.exports = {
         return getDirectory([fullPath, parentName, { create: false }]);
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     copyTo: function ([[srcPath, dstDir, dstName]]) {
         return new Promise((resolve, reject) => {
             fs.copyFile(srcPath, dstDir + dstName, async (err) => {
@@ -191,6 +275,12 @@ module.exports = {
         });
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     moveTo: function ([[srcPath, dstDir, dstName]]) {
         return new Promise((resolve, reject) => {
             fs.move(srcPath, dstDir + dstName, { overwrite: true })
@@ -201,6 +291,12 @@ module.exports = {
         });
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     resolveLocalFileSystemURI: function ([args]) {
         return new Promise((resolve, reject) => {
             let uri = args[0];
@@ -259,10 +355,21 @@ module.exports = {
         });
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @returns {Promise}
+     */
     requestAllPaths: function () {
         return pathsPrefix;
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     write: function ([[fileName, data, position]]) {
         return new Promise((resolve, reject) => {
             if (!data) {
@@ -286,6 +393,12 @@ module.exports = {
         });
     },
 
+    /**
+     * @todo write comment & param information
+     *
+     * @param {Array} param0
+     * @returns {Promise}
+     */
     truncate: function ([[fullPath, size]]) {
         return new Promise((resolve, reject) => {
             fs.truncate(fullPath, size, err => {
@@ -302,6 +415,12 @@ module.exports = {
 
 /** * Helpers ***/
 
+/**
+ * @todo write comment & param information
+ *
+ * @param {Array} param0
+ * @returns {Promise}
+ */
 function readAs (what, fullPath, encoding, startPos, endPos) {
     return new Promise((resolve, reject) => {
         fs.open(fullPath, 'r', (err, fd) => {
@@ -337,6 +456,12 @@ function readAs (what, fullPath, encoding, startPos, endPos) {
     });
 }
 
+/**
+ * @todo write comment & param information
+ *
+ * @param {Array} param0
+ * @returns {Promise}
+ */
 function getFile ([[dstDir, dstName, options = {}]]) {
     const absolutePath = dstDir + dstName;
     return new Promise((resolve, reject) => {
@@ -398,6 +523,12 @@ function getFile ([[dstDir, dstName, options = {}]]) {
     });
 }
 
+/**
+ * @todo write comment & param information
+ *
+ * @param {Array} param0
+ * @returns {Promise}
+ */
 function getDirectory ([[dstDir, dstName, options = {}]]) {
     const absolutePath = dstDir + dstName;
     return new Promise((resolve, reject) => {
