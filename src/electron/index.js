@@ -25,8 +25,7 @@ function returnEntry (isFile, name, fullPath, filesystem = null, nativeURL = nul
 }
 
 module.exports = {
-    readEntries: function ([args]) {
-        const fullPath = args[0];
+    readEntries: function ([[fullPath]]) {
         return new Promise((resolve, reject) => {
             fs.readdir(fullPath, { withFileTypes: true }, (err, files) => {
                 if (err) {
@@ -55,8 +54,7 @@ module.exports = {
 
     getFile,
 
-    getFileMetadata: function ([args]) {
-        const fullPath = args[0];
+    getFileMetadata: function ([[fullPath]]) {
         return new Promise((resolve, reject) => {
             fs.stat(fullPath, (err, stats) => {
                 if (err) {
@@ -69,9 +67,9 @@ module.exports = {
         });
     },
 
-    getMetadata: function ([args]) {
+    getMetadata: function ([[url]]) {
         return new Promise((resolve, reject) => {
-            fs.stat(args[0], (err, stats) => {
+            fs.stat(url, (err, stats) => {
                 if (err) {
                     reject(FileError.NOT_FOUND_ERR);
                     return;
@@ -84,9 +82,7 @@ module.exports = {
         });
     },
 
-    setMetadata: function ([args]) {
-        const fullPath = args[0];
-        const metadataObject = args[1];
+    setMetadata: function ([[fullPath, metadataObject]]) {
         return new Promise((resolve, reject) => {
             fs.utimes(fullPath, metadataObject.modificationTime, metadataObject.modificationTime, (err) => {
                 if (err) {
@@ -98,40 +94,23 @@ module.exports = {
         });
     },
 
-    readAsText: function ([args]) {
-        const fileName = args[0];
-        const enc = args[1];
-        const startPos = args[2];
-        const endPos = args[3];
+    readAsText: function ([[fileName, enc, startPos, endPos]]) {
         return readAs('text', fileName, enc, startPos, endPos);
     },
 
-    readAsDataURL: function ([args]) {
-        const fileName = args[0];
-        const startPos = args[1];
-        const endPos = args[2];
-
+    readAsDataURL: function ([[fileName, startPos, endPos]]) {
         return readAs('dataURL', fileName, null, startPos, endPos);
     },
 
-    readAsBinaryString: function ([args]) {
-        const fileName = args[0];
-        const startPos = args[1];
-        const endPos = args[2];
-
+    readAsBinaryString: function ([[fileName, startPos, endPos]]) {
         return readAs('binaryString', fileName, null, startPos, endPos);
     },
 
-    readAsArrayBuffer: function ([args]) {
-        const fileName = args[0];
-        const startPos = args[1];
-        const endPos = args[2];
-
+    readAsArrayBuffer: function ([[fileName, startPos, endPos]]) {
         return readAs('arrayBuffer', fileName, null, startPos, endPos);
     },
 
-    remove: function ([args]) {
-        const fullPath = args[0];
+    remove: function ([[fullPath]]) {
         return new Promise((resolve, reject) => {
             fs.stat(fullPath, (err, stats) => {
                 if (err) {
@@ -153,18 +132,15 @@ module.exports = {
 
     getDirectory: getDirectory,
 
-    getParent: function ([args]) {
-        const parentPath = path.dirname(args[0]);
+    getParent: function ([[url]]) {
+        const parentPath = path.dirname(url);
         const parentName = path.basename(parentPath);
         const fullPath = path.dirname(parentPath) + path.sep;
 
-        return getDirectory([[fullPath, parentName, { create: false }]]);
+        return getDirectory([fullPath, parentName, { create: false }]);
     },
 
-    copyTo: function ([args]) {
-        const srcPath = args[0];
-        const dstDir = args[1];
-        const dstName = args[2];
+    copyTo: function ([[srcPath, dstDir, dstName]]) {
         return new Promise((resolve, reject) => {
             fs.copyFile(srcPath, dstDir + dstName, async (err) => {
                 if (err) {
@@ -176,12 +152,7 @@ module.exports = {
         });
     },
 
-    moveTo: function ([args]) {
-        const srcPath = args[0];
-        // parentFullPath and name parameters is ignored because
-        // args is being passed downstream to copyTo method
-        const dstDir = args[1]; // eslint-disable-line
-        const dstName = args[2]; // eslint-disable-line
+    moveTo: function ([[srcPath, dstDir, dstName]]) {
         return new Promise((resolve, reject) => {
             fs.move(srcPath, dstDir + dstName, { overwrite: true })
                 .then(async () => {
@@ -250,11 +221,8 @@ module.exports = {
         return pathsPrefix;
     },
 
-    write: function ([args]) {
-        const fileName = args[0];
-        const data = args[1];
-        const position = args[2];
-        const isBinary = args[3]; // eslint-disable-line no-unused-vars
+    write: function ([[fileName, data, position]]) {
+        // const isBinary[3];
         return new Promise((resolve, reject) => {
             if (!data) {
                 reject(FileError.INVALID_MODIFICATION_ERR);
@@ -276,9 +244,7 @@ module.exports = {
         });
     },
 
-    truncate: function ([args]) {
-        const fullPath = args[0];
-        const size = args[1];
+    truncate: function ([[fullPath, size]]) {
         return new Promise((resolve, reject) => {
             fs.truncate(fullPath, size, err => {
                 if (err) {
@@ -326,9 +292,8 @@ function readAs (what, fullPath, encoding, startPos, endPos) {
     });
 }
 
-function getFile ([args]) {
-    const absolutePath = args[0] + args[1];
-    const options = args[2] || {};
+function getFile ([[dstDir, dstName, options = {}]]) {
+    const absolutePath = dstDir + dstName;
     return new Promise((resolve, reject) => {
         fs.stat(absolutePath, (err, stats) => {
             if (err && err.message && err.message.indexOf('ENOENT') !== 0) {
@@ -386,9 +351,8 @@ function getFile ([args]) {
     });
 }
 
-function getDirectory ([args]) {
-    const absolutePath = args[0] + args[1];
-    const options = args[2] || {};
+function getDirectory ([[dstDir, dstName, options = {}]]) {
+    const absolutePath = dstDir + dstName;
     return new Promise((resolve, reject) => {
         fs.stat(absolutePath, (err, stats) => {
             if (err && err.message && err.message.indexOf('ENOENT') !== 0) {
