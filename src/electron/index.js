@@ -1,3 +1,4 @@
+const { Buffer } = require('node:buffer');
 const fs = require('fs-extra');
 const nodePath = require('path');
 const app = require('electron').app;
