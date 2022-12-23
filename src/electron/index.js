@@ -1,16 +1,16 @@
 const { Buffer } = require('node:buffer');
+const path = require('node:path');
 const fs = require('fs-extra');
-const nodePath = require('path');
 const app = require('electron').app;
 
 const FileError = require('../../www/FileError');
 
 const pathsPrefix = {
-    applicationDirectory: nodePath.dirname(app.getAppPath()) + nodePath.sep,
-    dataDirectory: app.getPath('userData') + nodePath.sep,
-    cacheDirectory: app.getPath('cache') + nodePath.sep,
-    tempDirectory: app.getPath('temp') + nodePath.sep,
-    documentsDirectory: app.getPath('documents') + nodePath.sep
+    applicationDirectory: path.dirname(app.getAppPath()) + path.sep,
+    dataDirectory: app.getPath('userData') + path.sep,
+    cacheDirectory: app.getPath('cache') + path.sep,
+    tempDirectory: app.getPath('temp') + path.sep,
+    documentsDirectory: app.getPath('documents') + path.sep
 };
 
 function returnEntry (isFile, name, fullPath, filesystem = null, nativeURL = null) {
@@ -38,7 +38,7 @@ module.exports = {
                 files.forEach(d => {
                     let absolutePath = fullPath + d.name;
                     if (d.isDirectory()) {
-                        absolutePath += nodePath.sep;
+                        absolutePath += path.sep;
                     }
                     result.push({
                         isDirectory: d.isDirectory(),
@@ -64,7 +64,7 @@ module.exports = {
                     reject(FileError.NOT_FOUND_ERR);
                     return;
                 }
-                const baseName = nodePath.basename(fullPath);
+                const baseName = path.basename(fullPath);
                 resolve({ name: baseName, localURL: fullPath, type: '', lastModified: stats.mtime, size: stats.size, lastModifiedDate: stats.mtime });
             });
         });
@@ -155,9 +155,9 @@ module.exports = {
     getDirectory: getDirectory,
 
     getParent: ([args]) => {
-        const parentPath = nodePath.dirname(args[0]);
-        const parentName = nodePath.basename(parentPath);
-        const fullPath = nodePath.dirname(parentPath) + nodePath.sep;
+        const parentPath = path.dirname(args[0]);
+        const parentName = path.basename(parentPath);
+        const fullPath = path.dirname(parentPath) + path.sep;
 
         return getDirectory([[fullPath, parentName, { create: false }]]);
     },
@@ -229,7 +229,7 @@ module.exports = {
                     return;
                 }
 
-                const baseName = nodePath.basename(uri);
+                const baseName = path.basename(uri);
                 if (stats.isDirectory()) {
                     // add trailing slash if it is missing
                     if ((uri) && !/\/$/.test(uri)) {
@@ -337,7 +337,7 @@ function getFile ([args]) {
                 return;
             }
             const exists = !err;
-            const baseName = nodePath.basename(absolutePath);
+            const baseName = path.basename(absolutePath);
 
             function createFile () {
                 fs.open(absolutePath, 'w', (err, fd) => {
@@ -397,7 +397,7 @@ function getDirectory ([args]) {
                 return;
             }
             const exists = !err;
-            const baseName = nodePath.basename(absolutePath);
+            const baseName = path.basename(absolutePath);
 
             if (options.create === true && options.exclusive === true && exists) {
                 // If create and exclusive are both true, and the path already exists,
