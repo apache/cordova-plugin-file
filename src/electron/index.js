@@ -36,17 +36,17 @@ module.exports = {
                 }
                 const result = [];
                 files.forEach(d => {
-                    let path = fullPath + d.name;
+                    let absolutePath = fullPath + d.name;
                     if (d.isDirectory()) {
-                        path += nodePath.sep;
+                        absolutePath += nodePath.sep;
                     }
                     result.push({
                         isDirectory: d.isDirectory(),
                         isFile: d.isFile(),
                         name: d.name,
-                        fullPath: path,
+                        fullPath: absolutePath,
                         filesystemName: 'temporary',
-                        nativeURL: path
+                        nativeURL: absolutePath
                     });
                 });
                 resolve(result);
@@ -157,9 +157,9 @@ module.exports = {
     getParent: ([args]) => {
         const parentPath = nodePath.dirname(args[0]);
         const parentName = nodePath.basename(parentPath);
-        const path = nodePath.dirname(parentPath) + nodePath.sep;
+        const fullPath = nodePath.dirname(parentPath) + nodePath.sep;
 
-        return getDirectory([[path, parentName, { create: false }]]);
+        return getDirectory([[fullPath, parentName, { create: false }]]);
     },
 
     copyTo: ([args]) => {
@@ -193,29 +193,29 @@ module.exports = {
     },
 
     resolveLocalFileSystemURI: ([args]) => {
-        let path = args[0];
+        let uri = args[0];
 
         // support for encodeURI
-        if (/\%5/g.test(path) || /\%20/g.test(path)) { // eslint-disable-line no-useless-escape
-            path = decodeURI(path);
+        if (/\%5/g.test(uri) || /\%20/g.test(uri)) { // eslint-disable-line no-useless-escape
+            uri = decodeURI(uri);
         }
         // support for cdvfile
-        if (path.trim().substr(0, 7) === 'cdvfile') {
-            if (path.indexOf('cdvfile://localhost') === -1) {
+        if (uri.trim().substr(0, 7) === 'cdvfile') {
+            if (uri.indexOf('cdvfile://localhost') === -1) {
                 reject(FileError.ENCODING_ERR);
                 return;
             }
 
-            const indexApplication = path.indexOf('application');
-            const indexPersistent = path.indexOf('persistent');
-            const indexTemporary = path.indexOf('temporary');
+            const indexApplication = uri.indexOf('application');
+            const indexPersistent = uri.indexOf('persistent');
+            const indexTemporary = uri.indexOf('temporary');
 
             if (indexApplication !== -1) { // cdvfile://localhost/application/path/to/file
-                path = pathsPrefix.applicationDirectory + path.substr(indexApplication + 12);
+                uri = pathsPrefix.applicationDirectory + uri.substr(indexApplication + 12);
             } else if (indexPersistent !== -1) { // cdvfile://localhost/persistent/path/to/file
-                path = pathsPrefix.dataDirectory + path.substr(indexPersistent + 11);
+                uri = pathsPrefix.dataDirectory + uri.substr(indexPersistent + 11);
             } else if (indexTemporary !== -1) { // cdvfile://localhost/temporary/path/to/file
-                path = pathsPrefix.tempDirectory + path.substr(indexTemporary + 10);
+                uri = pathsPrefix.tempDirectory + uri.substr(indexTemporary + 10);
             } else {
                 reject(FileError.ENCODING_ERR);
                 return;
@@ -223,25 +223,25 @@ module.exports = {
         }
 
         return new Promise((resolve, reject) => {
-            fs.stat(path, (err, stats) => {
+            fs.stat(uri, (err, stats) => {
                 if (err) {
                     reject(new Error(FileError.NOT_FOUND_ERR));
                     return;
                 }
 
-                const baseName = nodePath.basename(path);
+                const baseName = nodePath.basename(uri);
                 if (stats.isDirectory()) {
                     // add trailing slash if it is missing
-                    if ((path) && !/\/$/.test(path)) {
-                        path += '/';
+                    if ((uri) && !/\/$/.test(uri)) {
+                        uri += '/';
                     }
-                    resolve(returnEntry(false, baseName, path));
+                    resolve(returnEntry(false, baseName, uri));
                 } else {
                     // remove trailing slash if it is present
-                    if (path && /\/$/.test(path)) {
-                        path = path.substring(0, path.length - 1);
+                    if (uri && /\/$/.test(uri)) {
+                        uri = uri.substring(0, uri.length - 1);
                     }
-                    resolve(returnEntry(true, baseName, path));
+                    resolve(returnEntry(true, baseName, uri));
                 }
             });
         });
@@ -328,19 +328,19 @@ function readAs (what, fullPath, encoding, startPos, endPos) {
 }
 
 function getFile ([args]) {
-    const path = args[0] + args[1];
+    const absolutePath = args[0] + args[1];
     const options = args[2] || {};
     return new Promise((resolve, reject) => {
-        fs.stat(path, (err, stats) => {
+        fs.stat(absolutePath, (err, stats) => {
             if (err && err.message && err.message.indexOf('ENOENT') !== 0) {
                 reject(FileError.INVALID_STATE_ERR);
                 return;
             }
             const exists = !err;
-            const baseName = nodePath.basename(path);
+            const baseName = nodePath.basename(absolutePath);
 
             function createFile () {
-                fs.open(path, 'w', (err, fd) => {
+                fs.open(absolutePath, 'w', (err, fd) => {
                     if (err) {
                         reject(FileError.INVALID_STATE_ERR);
                         return;
@@ -350,7 +350,7 @@ function getFile ([args]) {
                             reject(FileError.INVALID_STATE_ERR);
                             return;
                         }
-                        resolve(returnEntry(true, baseName, path));
+                        resolve(returnEntry(true, baseName, absolutePath));
                     });
                 });
             }
@@ -381,23 +381,23 @@ function getFile ([args]) {
             } else {
                 // Otherwise, if no other error occurs, getFile must return a FileEntry
                 // corresponding to path.
-                resolve(returnEntry(true, baseName, path));
+                resolve(returnEntry(true, baseName, absolutePath));
             }
         });
     });
 }
 
 function getDirectory ([args]) {
-    const path = args[0] + args[1];
+    const absolutePath = args[0] + args[1];
     const options = args[2] || {};
     return new Promise((resolve, reject) => {
-        fs.stat(path, (err, stats) => {
+        fs.stat(absolutePath, (err, stats) => {
             if (err && err.message && err.message.indexOf('ENOENT') !== 0) {
                 reject(FileError.INVALID_STATE_ERR);
                 return;
             }
             const exists = !err;
-            const baseName = nodePath.basename(path);
+            const baseName = nodePath.basename(absolutePath);
 
             if (options.create === true && options.exclusive === true && exists) {
                 // If create and exclusive are both true, and the path already exists,
@@ -407,16 +407,16 @@ function getDirectory ([args]) {
                 // If create is true, the path doesn't exist, and no other error occurs,
                 // getDirectory must create it as a zero-length file and return a corresponding
                 // MyDirectoryEntry.
-                fs.mkdir(path, (err) => {
+                fs.mkdir(absolutePath, (err) => {
                     if (err) {
                         reject(FileError.PATH_EXISTS_ERR);
                         return;
                     }
-                    resolve(returnEntry(false, baseName, path));
+                    resolve(returnEntry(false, baseName, absolutePath));
                 });
             } else if (options.create === true && exists) {
                 if (stats.isDirectory()) {
-                    resolve(returnEntry(false, baseName, path));
+                    resolve(returnEntry(false, baseName, absolutePath));
                 } else {
                     reject(FileError.INVALID_MODIFICATION_ERR);
                 }
@@ -430,7 +430,7 @@ function getDirectory ([args]) {
             } else {
                 // Otherwise, if no other error occurs, getDirectory must return a
                 // DirectoryEntry corresponding to path.
-                resolve(returnEntry(false, baseName, path));
+                resolve(returnEntry(false, baseName, absolutePath));
             }
         });
     });
