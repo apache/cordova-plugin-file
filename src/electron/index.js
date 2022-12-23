@@ -4,7 +4,7 @@ const app = require('electron').app;
 
 const FileError = require('../../www/FileError');
 
-pathsPrefix = {
+const pathsPrefix = {
     applicationDirectory: nodePath.dirname(app.getAppPath()) + nodePath.sep,
     dataDirectory: app.getPath('userData') + nodePath.sep,
     cacheDirectory: app.getPath('cache') + nodePath.sep,
