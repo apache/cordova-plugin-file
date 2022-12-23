@@ -1,7 +1,7 @@
 const { Buffer } = require('node:buffer');
 const path = require('node:path');
 const fs = require('fs-extra');
-const app = require('electron').app;
+const { app } = require('electron');
 
 const FileError = require('../../www/FileError');
 
