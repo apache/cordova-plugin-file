@@ -12,7 +12,7 @@ pathsPrefix = {
     documentsDirectory: app.getPath('documents') + nodePath.sep
 };
 
-function returnEntry(isFile, name, fullPath, filesystem = null, nativeURL = null) {
+function returnEntry (isFile, name, fullPath, filesystem = null, nativeURL = null) {
     return {
         isFile,
         isDirectory: !isFile,
@@ -20,15 +20,15 @@ function returnEntry(isFile, name, fullPath, filesystem = null, nativeURL = null
         fullPath,
         filesystem,
         nativeURL
-    }
+    };
 }
 
 module.exports = {
 
     readEntries: ([args]) => {
         const fullPath = args[0];
-        return new Promise((resolve, reject) => {    
-            fs.readdir(fullPath, {withFileTypes: true}, (err, files) => {
+        return new Promise((resolve, reject) => {
+            fs.readdir(fullPath, { withFileTypes: true }, (err, files) => {
                 if (err) {
                     reject(err);
                     return;
@@ -50,7 +50,7 @@ module.exports = {
                 });
                 resolve(result);
             });
-        })
+        });
     },
 
     getFile,
@@ -64,9 +64,9 @@ module.exports = {
                     return;
                 }
                 const baseName = nodePath.basename(fullPath);
-                resolve({name: baseName, localURL: fullPath, type: '', lastModified: stats.mtime, size: stats.size, lastModifiedDate: stats.mtime});
+                resolve({ name: baseName, localURL: fullPath, type: '', lastModified: stats.mtime, size: stats.size, lastModifiedDate: stats.mtime });
             });
-        })
+        });
     },
 
     getMetadata: ([args]) => {
@@ -81,7 +81,7 @@ module.exports = {
                     size: stats.size
                 });
             });
-        })
+        });
     },
 
     setMetadata: ([args]) => {
@@ -95,7 +95,7 @@ module.exports = {
                 }
                 resolve();
             });
-        })
+        });
     },
 
     readAsText: ([args]) => {
@@ -146,7 +146,7 @@ module.exports = {
                     resolve();
                 });
             });
-        })
+        });
     },
 
     removeRecursively: this.remove,
@@ -158,7 +158,7 @@ module.exports = {
         const parentName = nodePath.basename(parentPath);
         const path = nodePath.dirname(parentPath) + nodePath.sep;
 
-        return getDirectory([[path, parentName, {create: false}]]);
+        return getDirectory([[path, parentName, { create: false }]]);
     },
 
     copyTo: ([args]) => {
@@ -173,7 +173,7 @@ module.exports = {
                 }
                 resolve(await getFile([[dstDir, dstName]]));
             });
-        })
+        });
     },
 
     moveTo: ([args]) => {
@@ -183,19 +183,19 @@ module.exports = {
         const dstDir = args[1]; // eslint-disable-line
         const dstName = args[2]; // eslint-disable-line
         return new Promise((resolve, reject) => {
-            fs.move(srcPath, dstDir + dstName, {overwrite: true})
-            .then(async () => {
-                resolve(await getFile([[dstDir, dstName]]));
-            })
-            .catch(err => reject(err));
-        })
+            fs.move(srcPath, dstDir + dstName, { overwrite: true })
+                .then(async () => {
+                    resolve(await getFile([[dstDir, dstName]]));
+                })
+                .catch(err => reject(err));
+        });
     },
 
     resolveLocalFileSystemURI: ([args]) => {
         let path = args[0];
 
         // support for encodeURI
-        if (/\%5/g.test(path) || /\%20/g.test(path)) {  // eslint-disable-line no-useless-escape
+        if (/\%5/g.test(path) || /\%20/g.test(path)) { // eslint-disable-line no-useless-escape
             path = decodeURI(path);
         }
         // support for cdvfile
@@ -227,7 +227,7 @@ module.exports = {
                     reject(new Error(FileError.NOT_FOUND_ERR));
                     return;
                 }
-    
+
                 const baseName = nodePath.basename(path);
                 if (stats.isDirectory()) {
                     // add trailing slash if it is missing
@@ -244,7 +244,6 @@ module.exports = {
                 }
             });
         });
-        
     },
 
     requestAllPaths: () => {
@@ -261,14 +260,14 @@ module.exports = {
                 reject(FileError.INVALID_MODIFICATION_ERR);
                 return;
             }
-    
+
             const buf = Buffer.from(data);
             let bytesWritten = 0;
             fs.open(fileName, 'a')
                 .then(fd => {
                     return fs.write(fd, buf, 0, buf.length, position)
-                              .then(bw => { bytesWritten = bw; })
-                              .finally(() => fs.close(fd));
+                        .then(bw => { bytesWritten = bw; })
+                        .finally(() => fs.close(fd));
                 })
                 .then(() => resolve(bytesWritten))
                 .catch(() => {
@@ -288,13 +287,13 @@ module.exports = {
                 }
                 resolve(size);
             });
-        })
-    }  
+        });
+    }
 };
 
 /** * Helpers ***/
 
-function readAs(what, fullPath, encoding, startPos, endPos) {
+function readAs (what, fullPath, encoding, startPos, endPos) {
     return new Promise((resolve, reject) => {
         fs.open(fullPath, 'r', (err, fd) => {
             if (err) {
@@ -324,10 +323,10 @@ function readAs(what, fullPath, encoding, startPos, endPos) {
                 })
                 .then(() => fs.close(fd));
         });
-    })
+    });
 }
 
-function getFile([args]) {
+function getFile ([args]) {
     const path = args[0] + args[1];
     const options = args[2] || {};
     return new Promise((resolve, reject) => {
@@ -387,7 +386,7 @@ function getFile([args]) {
     });
 }
 
-function getDirectory([args]) {
+function getDirectory ([args]) {
     const path = args[0] + args[1];
     const options = args[2] || {};
     return new Promise((resolve, reject) => {
@@ -433,5 +432,5 @@ function getDirectory([args]) {
                 resolve(returnEntry(false, baseName, path));
             }
         });
-    })
+    });
 }
