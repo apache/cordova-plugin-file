@@ -25,7 +25,7 @@ function returnEntry (isFile, name, fullPath, filesystem = null, nativeURL = nul
 }
 
 module.exports = {
-    readEntries: ([args]) => {
+    readEntries: function ([args]) {
         const fullPath = args[0];
         return new Promise((resolve, reject) => {
             fs.readdir(fullPath, { withFileTypes: true }, (err, files) => {
@@ -55,7 +55,7 @@ module.exports = {
 
     getFile,
 
-    getFileMetadata: ([args]) => {
+    getFileMetadata: function ([args]) {
         const fullPath = args[0];
         return new Promise((resolve, reject) => {
             fs.stat(fullPath, (err, stats) => {
@@ -69,7 +69,7 @@ module.exports = {
         });
     },
 
-    getMetadata: ([args]) => {
+    getMetadata: function ([args]) {
         return new Promise((resolve, reject) => {
             fs.stat(args[0], (err, stats) => {
                 if (err) {
@@ -84,7 +84,7 @@ module.exports = {
         });
     },
 
-    setMetadata: ([args]) => {
+    setMetadata: function ([args]) {
         const fullPath = args[0];
         const metadataObject = args[1];
         return new Promise((resolve, reject) => {
@@ -98,7 +98,7 @@ module.exports = {
         });
     },
 
-    readAsText: ([args]) => {
+    readAsText: function ([args]) {
         const fileName = args[0];
         const enc = args[1];
         const startPos = args[2];
@@ -106,7 +106,7 @@ module.exports = {
         return readAs('text', fileName, enc, startPos, endPos);
     },
 
-    readAsDataURL: ([args]) => {
+    readAsDataURL: function ([args]) {
         const fileName = args[0];
         const startPos = args[1];
         const endPos = args[2];
@@ -114,7 +114,7 @@ module.exports = {
         return readAs('dataURL', fileName, null, startPos, endPos);
     },
 
-    readAsBinaryString: ([args]) => {
+    readAsBinaryString: function ([args]) {
         const fileName = args[0];
         const startPos = args[1];
         const endPos = args[2];
@@ -122,7 +122,7 @@ module.exports = {
         return readAs('binaryString', fileName, null, startPos, endPos);
     },
 
-    readAsArrayBuffer: ([args]) => {
+    readAsArrayBuffer: function ([args]) {
         const fileName = args[0];
         const startPos = args[1];
         const endPos = args[2];
@@ -130,7 +130,7 @@ module.exports = {
         return readAs('arrayBuffer', fileName, null, startPos, endPos);
     },
 
-    remove: ([args]) => {
+    remove: function ([args]) {
         const fullPath = args[0];
         return new Promise((resolve, reject) => {
             fs.stat(fullPath, (err, stats) => {
@@ -153,7 +153,7 @@ module.exports = {
 
     getDirectory: getDirectory,
 
-    getParent: ([args]) => {
+    getParent: function ([args]) {
         const parentPath = path.dirname(args[0]);
         const parentName = path.basename(parentPath);
         const fullPath = path.dirname(parentPath) + path.sep;
@@ -161,7 +161,7 @@ module.exports = {
         return getDirectory([[fullPath, parentName, { create: false }]]);
     },
 
-    copyTo: ([args]) => {
+    copyTo: function ([args]) {
         const srcPath = args[0];
         const dstDir = args[1];
         const dstName = args[2];
@@ -176,7 +176,7 @@ module.exports = {
         });
     },
 
-    moveTo: ([args]) => {
+    moveTo: function ([args]) {
         const srcPath = args[0];
         // parentFullPath and name parameters is ignored because
         // args is being passed downstream to copyTo method
@@ -191,7 +191,7 @@ module.exports = {
         });
     },
 
-    resolveLocalFileSystemURI: ([args]) => {
+    resolveLocalFileSystemURI: function ([args]) {
         let uri = args[0];
 
         // support for encodeURI
@@ -250,7 +250,7 @@ module.exports = {
         return pathsPrefix;
     },
 
-    write: ([args]) => {
+    write: function ([args]) {
         const fileName = args[0];
         const data = args[1];
         const position = args[2];
@@ -276,7 +276,7 @@ module.exports = {
         });
     },
 
-    truncate: ([args]) => {
+    truncate: function ([args]) {
         const fullPath = args[0];
         const size = args[1];
         return new Promise((resolve, reject) => {
