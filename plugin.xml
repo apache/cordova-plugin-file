@@ -268,7 +268,7 @@ to config.xml in order for the application to find previously stored files.
         
         <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
             <merges target="cordova" />
-            <runs/>
+            <runs />
         </js-module>
     </platform>
 </plugin>
