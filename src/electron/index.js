@@ -37,10 +37,10 @@ const pathsPrefix = {
 /**
  * Returns an an object that's converted by cordova to a FileEntry or a DirectoryEntry.
  * @param {boolean} isFile - is the object a file or a directory. true for file and false for directory.
- * @param {String} name - the name of the file. 
+ * @param {String} name - the name of the file.
  * @param {String} fullPath - the full path to the file.
  * @param {String} [filesystem = null] - the filesystem.
- * @param {String} [nativeURL = null] - the native URL of to the file. 
+ * @param {String} [nativeURL = null] - the native URL of to the file.
  * @returns {Promise<Array>} - An object containing Entry information.
 */
 function returnEntry (isFile, name, fullPath, filesystem = null, nativeURL = null) {
