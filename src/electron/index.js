@@ -19,8 +19,8 @@
  *
  */
 
-const { Buffer } = require('node:buffer');
-const path = require('node:path');
+const { Buffer } = require('buffer');
+const path = require('path');
 const fs = require('fs-extra');
 const { app } = require('electron');
 
@@ -34,6 +34,15 @@ const pathsPrefix = {
     documentsDirectory: app.getPath('documents') + path.sep
 };
 
+/**
+ * Returns an an object that's converted by cordova to a FileEntry or a DirectoryEntry.
+ * @param {boolean} isFile - is the object a file or a directory. true for file and false for directory.
+ * @param {String} name - the name of the file. 
+ * @param {String} fullPath - the full path to the file.
+ * @param {String} [filesystem = null] - the filesystem.
+ * @param {String} [nativeURL = null] - the native URL of to the file. 
+ * @returns {Promise<Array>} - An object containing Entry information.
+*/
 function returnEntry (isFile, name, fullPath, filesystem = null, nativeURL = null) {
     return {
         isFile,
@@ -47,10 +56,12 @@ function returnEntry (isFile, name, fullPath, filesystem = null, nativeURL = nul
 
 module.exports = {
     /**
-     * @todo write comment & param information
+     * Read the file contents as text
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[fullPath: String]} params
+     *      fullPath - the full path of the directory to read entries from
+     * @returns {Promise<Array>} - An array of Entries in that directory
+     *
      */
     readEntries: function ([[fullPath]]) {
         return new Promise((resolve, reject) => {
@@ -85,18 +96,23 @@ module.exports = {
     },
 
     /**
-     * @todo write comment & param information
+     * Get the file given the path and fileName.
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[dstDir: String, dstName: String, options: Object]} param
+     *   dstDir: The fullPath to the directory the file is in.
+     *   dstName: The filename including the extension.
+     *   options: fileOptions {create: boolean, exclusive: boolean}.
+     *
+     * @returns {Promise<Object>} - The file object that is converted to FileEntry by cordova.
      */
     getFile,
 
     /**
-     * @todo write comment & param information
+     * get the file Metadata.
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[fullPath: String]} param
+     *  fullPath: the full path of the file including the extension.
+     * @returns {Promise<Object>} - An Object containing the file metadata.
      */
     getFileMetadata: function ([[fullPath]]) {
         return new Promise((resolve, reject) => {
@@ -119,10 +135,11 @@ module.exports = {
     },
 
     /**
-     * @todo write comment & param information
+     * get the file or directory Metadata.
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[fullPath: String]} param
+     *      fullPath: the full path of the file or directory.
+     * @returns {Promise<Object>} - An Object containing the metadata.
      */
     getMetadata: function ([[url]]) {
         return new Promise((resolve, reject) => {
@@ -141,10 +158,12 @@ module.exports = {
     },
 
     /**
-     * @todo write comment & param information
+     * set the file or directory Metadata.
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[fullPath: String, metadataObject: Object]} param
+     *      fullPath: the full path of the file including the extension.
+     *      metadataObject: the object containing metadataValues (currently only supports modificationTime)
+     * @returns {Promise<Object>} - An Object containing the file metadata.
      */
     setMetadata: function ([[fullPath, metadataObject]]) {
         return new Promise((resolve, reject) => {
@@ -162,50 +181,69 @@ module.exports = {
     },
 
     /**
-     * @todo write comment & param information
+     * Read the file contents as text
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[fileName: String, enc: String, startPos: number, endPos: number]} param
+     *   fileName: The fullPath of the file to be read.
+     *   enc: The encoding to use to read the file.
+     *   startPos: The start position from which to begin reading the file.
+     *   endPos: The end position at which to stop reading the file.
+     *
+     * @returns {Promise<String>} The string value within the file.
      */
     readAsText: function ([[fileName, enc, startPos, endPos]]) {
         return readAs('text', fileName, enc, startPos, endPos);
     },
 
     /**
-     * @todo write comment & param information
+     * Read the file as a data URL.
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[fileName: String, startPos: number, endPos: number]} param
+     *   fileName: The fullPath of the file to be read.
+     *   startPos: The start position from which to begin reading the file.
+     *   endPos: The end position at which to stop reading the file.
+     *
+     * @returns {Promise<String>} the file as a dataUrl.
      */
     readAsDataURL: function ([[fileName, startPos, endPos]]) {
         return readAs('dataURL', fileName, null, startPos, endPos);
     },
 
     /**
-     * @todo write comment & param information
+     * Read the file contents as binary string.
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[fileName: String, startPos: number, endPos: number]} param
+     *   fileName: The fullPath of the file to be read.
+     *   startPos: The start position from which to begin reading the file.
+     *   endPos: The end position at which to stop reading the file.
+     *
+     * @returns {Promise<String>} The file as a binary string.
      */
     readAsBinaryString: function ([[fileName, startPos, endPos]]) {
         return readAs('binaryString', fileName, null, startPos, endPos);
     },
 
     /**
-     * @todo write comment & param information
+     * Read the file contents as text
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[fileName: String, startPos: number, endPos: number]} param
+     *   fileName: The fullPath of the file to be read.
+     *   startPos: The start position from which to begin reading the file.
+     *   endPos: The end position at which to stop reading the file.
+     *
+     * @returns {Promise<Array>} The file as an arrayBuffer.
      */
     readAsArrayBuffer: function ([[fileName, startPos, endPos]]) {
         return readAs('arrayBuffer', fileName, null, startPos, endPos);
     },
 
     /**
-     * @todo write comment & param information
+     * Remove the file or directory
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[fullPath: String]} param
+     *   fullePath: The fullPath of the file or directory.
+     *
+     * @returns {Promise<void>} resolves when file or directory is deleted.
      */
     remove: function ([[fullPath]]) {
         return new Promise((resolve, reject) => {
@@ -227,26 +265,34 @@ module.exports = {
     },
 
     /**
-     * @todo write comment & param information
+     * Remove the file or directory
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[fullPath: String]} param
+     *   fullePath: The fullPath of the file or directory.
+     *
+     * @returns {Promise<void>} resolves when file or directory is deleted.
      */
     removeRecursively: this.remove,
 
     /**
-     * @todo write comment & param information
+     * Get the directory given the path and directory name.
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[dstDir: String, dstName: String, options: Object]} param
+     *   dstDir: The fullPath to the directory the directory is in.
+     *   dstName: The name of the directory.
+     *   options: options {create: boolean, exclusive: boolean}.
+     *
+     * @returns {Promise<Object>} The directory object that is converted to DirectoryEntry by cordova.
      */
     getDirectory: getDirectory,
 
     /**
-     * @todo write comment & param information
+     * Get the Parent directory
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[url: String]} param
+     *   url: The fullPath to the directory the directory is in.
+     *
+     * @returns {Promise<Object>} The parent directory object that is converted to DirectoryEntry by cordova.
      */
     getParent: function ([[url]]) {
         const parentPath = path.dirname(url);
@@ -257,10 +303,14 @@ module.exports = {
     },
 
     /**
-     * @todo write comment & param information
+     * Copy File
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[srcPath: String, dstDir: String, dstName: String]} param
+     *      srcPath: The fullPath to the file including extension.
+     *      dstDir: The destination directory.
+     *      dstName: The destination file name.
+     *
+     * @returns {Promise<Object>} The copied file.
      */
     copyTo: function ([[srcPath, dstDir, dstName]]) {
         return new Promise((resolve, reject) => {
@@ -276,10 +326,14 @@ module.exports = {
     },
 
     /**
-     * @todo write comment & param information
+     * Move File. Always Overwrites.
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[srcPath: String, dstDir: String, dstName: String]} param
+     *      srcPath: The fullPath to the file including extension.
+     *      dstDir: The destination directory.
+     *      dstName: The destination file name.
+     *
+     * @returns {Promise<Object>} The moved file.
      */
     moveTo: function ([[srcPath, dstDir, dstName]]) {
         return new Promise((resolve, reject) => {
@@ -292,15 +346,14 @@ module.exports = {
     },
 
     /**
-     * @todo write comment & param information
+     * resolve the File system URL as a FileEntry or a DirectoryEntry.
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[uri: String]} param
+     *      uri: The full path for the file.
+     * @returns {Promise<Object>} The entry for the file or directory.
      */
-    resolveLocalFileSystemURI: function ([args]) {
+    resolveLocalFileSystemURI: function ([[uri]]) {
         return new Promise((resolve, reject) => {
-            let uri = args[0];
-
             // support for encodeURI
             if (/\%5/g.test(uri) || /\%20/g.test(uri)) { // eslint-disable-line no-useless-escape
                 uri = decodeURI(uri);
@@ -356,19 +409,22 @@ module.exports = {
     },
 
     /**
-     * @todo write comment & param information
+     * Gets all the path URLs.
      *
-     * @returns {Promise}
+     * @returns {Object} returns an object with all the paths.
      */
     requestAllPaths: function () {
         return pathsPrefix;
     },
 
     /**
-     * @todo write comment & param information
+     * Write to a file.
      *
-     * @param {Array} param0
-     * @returns {Promise}
+     * @param {[fileName: String, data: String, position: Number]} param
+     *      fileName: the full path of the file including fileName and extension.
+     *      data: the data to be written to the file.
+     *      position: the position offset to start writing from.
+     * @returns {Promise<Object>} An object with information about the amount of bytes written.
      */
     write: function ([[fileName, data, position]]) {
         return new Promise((resolve, reject) => {
@@ -394,9 +450,11 @@ module.exports = {
     },
 
     /**
-     * @todo write comment & param information
+     * Truncate the file.
      *
-     * @param {Array} param0
+     * @param {[fullPath: String, size: Number]} param
+     *      fullPath: the full path of the file including file extension
+     *      size: the length of the file to truncate to.
      * @returns {Promise}
      */
     truncate: function ([[fullPath, size]]) {
@@ -416,10 +474,16 @@ module.exports = {
 /** * Helpers ***/
 
 /**
- * @todo write comment & param information
+ * Read the file contents as specified.
  *
- * @param {Array} param0
- * @returns {Promise}
+ * @param {[what: String, fileName: String, enc: String, startPos: number, endPos: number]} param
+ *      what: what to read the file as. accepts 'text', 'dataURL', 'arrayBuffer' and 'binaryString'
+ *      fileName: The fullPath of the file to be read.
+ *      enc: The encoding to use to read the file.
+ *      startPos: The start position from which to begin reading the file.
+ *      endPos: The end position at which to stop reading the file.
+ *
+ * @returns {Promise<String>} The string value within the file.
  */
 function readAs (what, fullPath, encoding, startPos, endPos) {
     return new Promise((resolve, reject) => {
@@ -457,10 +521,14 @@ function readAs (what, fullPath, encoding, startPos, endPos) {
 }
 
 /**
- * @todo write comment & param information
+ * Get the file given the path and fileName.
  *
- * @param {Array} param0
- * @returns {Promise}
+ * @param {[dstDir: String, dstName: String, options: Object]} param
+ *   dstDir: The fullPath to the directory the file is in.
+ *   dstName: The filename including the extension.
+ *   options: fileOptions {create: boolean, exclusive: boolean}.
+ *
+ * @returns {Promise<Object>} The file object that is converted to FileEntry by cordova.
  */
 function getFile ([[dstDir, dstName, options = {}]]) {
     const absolutePath = dstDir + dstName;
@@ -524,10 +592,14 @@ function getFile ([[dstDir, dstName, options = {}]]) {
 }
 
 /**
- * @todo write comment & param information
+ * Get the directory given the path and directory name.
  *
- * @param {Array} param0
- * @returns {Promise}
+ * @param {[dstDir: String, dstName: String, options: Object]} param
+ *   dstDir: The fullPath to the directory the directory is in.
+ *   dstName: The name of the directory.
+ *   options: options {create: boolean, exclusive: boolean}.
+ *
+ * @returns {Promise<Object>} The directory object that is converted to DirectoryEntry by cordova.
  */
 function getDirectory ([[dstDir, dstName, options = {}]]) {
     const absolutePath = dstDir + dstName;
