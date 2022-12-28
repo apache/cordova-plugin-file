@@ -32,6 +32,25 @@ const pathsPrefix = {
     documentsDirectory: app.getPath('documents') + path.sep
 };
 
+const FileError = {
+    // Found in DOMException
+    NOT_FOUND_ERR: 1,
+    SECURITY_ERR: 2,
+    ABORT_ERR: 3,
+
+    // Added by File API specification
+    NOT_READABLE_ERR: 4,
+    ENCODING_ERR: 5,
+    NO_MODIFICATION_ALLOWED_ERR: 6,
+    INVALID_STATE_ERR: 7,
+    SYNTAX_ERR: 8,
+    INVALID_MODIFICATION_ERR: 9,
+    QUOTA_EXCEEDED_ERR: 10,
+    TYPE_MISMATCH_ERR: 11,
+    PATH_EXISTS_ERR: 12
+
+};
+
 /**
  * Returns an an object that's converted by cordova to a FileEntry or a DirectoryEntry.
  * @param {boolean} isFile - is the object a file or a directory. true for file and false for directory.
