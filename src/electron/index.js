@@ -24,8 +24,6 @@ const path = require('path');
 const fs = require('fs-extra');
 const { app } = require('electron');
 
-const FileError = require('../../www/FileError');
-
 const pathsPrefix = {
     applicationDirectory: path.dirname(app.getAppPath()) + path.sep,
     dataDirectory: app.getPath('userData') + path.sep,
