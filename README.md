@@ -67,6 +67,7 @@ Although the object is in the global scope, it is not available to applications 
 - OS X
 - Windows*
 - Browser
+- Electron
 
 \* _These platforms do not support `FileReader.readAsArrayBuffer` nor `FileWriter.write(blob)`._
 
@@ -209,6 +210,19 @@ properties are `null`.
 | &nbsp;&nbsp;&nbsp;`temp/`                             | cacheDirectory              | r/w  |     No      |     Yes\* |   Yes   |
 | &nbsp;&nbsp;&nbsp;`temp/`                             | tempDirectory               | r/w  |     No      |     Yes\* |   Yes   |
 | &nbsp;&nbsp;&nbsp;`roaming/`                          | syncedDataDirectory         | r/w  |     Yes     |     No    |   Yes   |
+
+\* The OS may periodically clear this directory
+
+
+### Electron File System Layout
+Varies according to OS and installation method.
+| Device Path                                           | `cordova.file.*`            | r/w? | persistent? | OS clears | private |
+|:------------------------------------------------------|:----------------------------|:----:|:-----------:|:---------:|:-------:|
+| Windows:`~\AppData\Local\Programs\{appId}`<br />Linux: `@todo`<br /> Mac: `/Applications/{appName.app}/Contents/Resources`         | applicationDirectory        | r    |     N/A     |     N/A   |   Yes   |
+| Windows:`~\AppData\Roaming\{appId}` <br />Linux: `@todo`<br /> Mac: `~/Library/Application Support/{appId}`                           | dataDirectory               | r/w  |     Yes     |     No    |   Yes   |
+| Windows: `~\AppData\Roaming`  <br />Linux: `@todo`<br /> Mac: `~/Library/Caches`                          | cacheDirectory              | r/w  |     No      |     Yes\* |   Yes   |
+| Windows: `~\AppData\Local\Temp`  <br />Linux: `@todo`<br /> Mac: `varies`                          | tempDirectory               | r/w  |     No      |     Yes\* |   Yes   |
+| Windows: `~\Documents`  <br />Linux: `@todo`<br /> Mac: `~/Documents`                           | documentsDirectory         | -  |     -     |     -    |   -   |
 
 \* The OS may periodically clear this directory
 
@@ -358,6 +372,10 @@ should be in the form `filesystem:file:///persistent/somefile.txt` as opposed to
 - INVALID_MODIFICATION_ERR (code: 9) is thrown instead of PATH_EXISTS_ERR(code: 12) on trying to exclusively create a file or directory, which already exists.
 - INVALID_MODIFICATION_ERR (code: 9) is thrown instead of  NO_MODIFICATION_ALLOWED_ERR(code: 6) on trying to call removeRecursively on the root file system.
 - INVALID_MODIFICATION_ERR (code: 9) is thrown instead of NOT_FOUND_ERR(code: 1) on trying to moveTo directory that does not exist.
+
+### Electron quirks
+- When using `cordova run electron`, the applicationDirectory is the electron platforms directory in the cordova project. i.e. `path/to/your/cordova/code/plaforms/electron/`
+- When using a debug version, electron may switch to using the folder `Electron` instead of the folder `{appId}` as your dataDirectory.
 
 ### IndexedDB-based impl quirks (Firefox and IE)
 - `.` and `..` are not supported.
