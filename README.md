@@ -269,6 +269,17 @@ Marshmallow requires the apps to ask for permissions when reading/writing to ext
 for these two directories unless external storage is not mounted. However due to a limitation, when external storage is not mounted, it would ask for
 permission to write to `cordova.file.externalApplicationStorageDirectory`.
 
+### SDK Target less than 29
+
+As the official document [Storage updates in Android 11](https://developer.android.com/about/versions/11/privacy/storage), `WRITE_EXTERNAL_STORAGE` permission no longer provide any additional access. 
+If you need to add this permission, please add followings in your `config.xml`.
+
+```xml
+    <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest/uses-permission" xmlns:android="http://schemas.android.com/apk/res/android">
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    </edit-config>    
+```
+
 ## iOS Quirks
 
 - `cordova.file.applicationStorageDirectory` is read-only; attempting to store
