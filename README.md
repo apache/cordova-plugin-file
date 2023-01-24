@@ -271,13 +271,13 @@ permission to write to `cordova.file.externalApplicationStorageDirectory`.
 
 ### SDK Target less than 29
 
-As the official document [Storage updates in Android 11](https://developer.android.com/about/versions/11/privacy/storage), `WRITE_EXTERNAL_STORAGE` permission no longer provide any additional access. 
-If you need to add this permission, please add followings in your `config.xml`.
-
+From the official [Storage updates in Android 11](https://developer.android.com/about/versions/11/privacy/storage) documentation, the [`WRITE_EXTERNAL_STORAGE`](https://developer.android.com/reference/android/Manifest.permission#WRITE_EXTERNAL_STORAGE) permission is no longer operational and does not provide access.
+> If this permission is not allowlisted for an app that targets an API level before [`Build.VERSION_CODES.Q`](https://developer.android.com/reference/android/os/Build.VERSION_CODES#Q) (SDK 29) this permission cannot be granted to apps.
+If you need to add this permission, please add the following to your `config.xml`.
 ```xml
-    <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest/uses-permission" xmlns:android="http://schemas.android.com/apk/res/android">
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    </edit-config>    
+<config-file target="AndroidManifest.xml" parent="/*" xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+</config-file>
 ```
 
 ## iOS Quirks
