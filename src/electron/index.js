@@ -289,7 +289,24 @@ module.exports = {
      *
      * @returns {Promise<void>} resolves when file or directory is deleted.
      */
-    removeRecursively: this.remove,
+    removeRecursively: function ([[fullPath]]) {
+        return new Promise((resolve, reject) => {
+            fs.stat(fullPath, (err, stats) => {
+                if (err) {
+                    reject(FileError.NOT_FOUND_ERR);
+                    return;
+                }
+
+                fs.remove(fullPath, (err) => {
+                    if (err) {
+                        reject(FileError.NO_MODIFICATION_ALLOWED_ERR);
+                        return;
+                    }
+                    resolve();
+                });
+            });
+        });
+    },
 
     /**
      * Get the directory given the path and directory name.
@@ -485,6 +502,18 @@ module.exports = {
                 resolve(size);
             });
         });
+    },
+
+    requestFileSystem: function ([[type, size]]) {
+        if (type !== 0 && type !== 1) {
+            throw new Error(FileError.INVALID_MODIFICATION_ERR);
+        }
+
+        const name = type === 0 ? 'temporary' : 'persistent';
+        return {
+            name,
+            root: returnEntry(false, name, path.dirname(app.getAppPath()) + path.sep)
+        };
     }
 };
 
