@@ -67,7 +67,7 @@ function returnEntry (isFile, name, fullPath, filesystem = null, nativeURL = nul
         name,
         fullPath,
         filesystem,
-        nativeURL
+        nativeURL: nativeURL ?? fullPath
     };
 }
 

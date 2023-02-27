@@ -943,6 +943,10 @@ exports.defineAutoTests = function () {
             });
 
             it('file.spec.36 removeRecursively on root file system', function (done) {
+                if (cordova.platformId === 'electron') {
+                    pending('The "root.removeRecursively" method is not tested in Electron.');
+                    return;
+                }
                 var remove = function (error) {
                     expect(error).toBeDefined();
                     if (isChrome) {
@@ -1391,6 +1395,10 @@ exports.defineAutoTests = function () {
             });
 
             it('file.spec.56 remove on root file system', function (done) {
+                if (cordova.platformId === 'electron') {
+                    pending('The "remove on root file system" method is not tested in Electron.');
+                    return;
+                }
                 // remove entry that doesn't exist
                 root.remove(succeed.bind(null, done, 'entry.remove - Unexpected success callback, it should not remove entry that it does not exists'), function (error) {
                     expect(error).toBeDefined();
