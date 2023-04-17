@@ -19,7 +19,7 @@
  *
 */
 
-/* global Windows, WinJS, MSApp */
+/* global Windows, WinJS */
 
 var File = require('./File');
 var FileError = require('./FileError');
@@ -650,37 +650,26 @@ module.exports = {
 
         getFileFromPathAsync(wpath).then(
             function (storageFile) {
-                var blob = MSApp.createFileFromStorageFile(storageFile);
-                var url = URL.createObjectURL(blob, { oneTimeOnly: true }); // eslint-disable-line no-undef
-                var xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
-                xhr.open('GET', url, true);
-                xhr.responseType = 'arraybuffer';
-                xhr.onload = function () {
-                    var resultArrayBuffer = xhr.response;
-                    // get start and end position of bytes in buffer to be returned
-                    var startPos = args[1] || 0;
-                    var endPos = args[2] || resultArrayBuffer.length;
-                    // if any of them is specified, we'll slice output array
-                    if (startPos !== 0 || endPos !== resultArrayBuffer.length) {
-                        // slice method supported only on Windows 8.1, so we need to check if it's available
-                        // see http://msdn.microsoft.com/en-us/library/ie/dn641192(v=vs.94).aspx
-                        if (resultArrayBuffer.slice) {
-                            resultArrayBuffer = resultArrayBuffer.slice(startPos, endPos);
-                        } else {
-                            // if slice isn't available, we'll use workaround method
-                            var tempArray = new Uint8Array(resultArrayBuffer);
-                            var resBuffer = new ArrayBuffer(endPos - startPos);
-                            var resArray = new Uint8Array(resBuffer);
 
-                            for (var i = 0; i < resArray.length; i++) {
-                                resArray[i] = tempArray[i + startPos];
-                            }
-                            resultArrayBuffer = resBuffer;
-                        }
-                    }
-                    win(resultArrayBuffer);
-                };
-                xhr.send();
+                storageFile.openSequentialReadAsync().done(function (inputStream) {
+                    var startPos = args[1] || 0;
+                    inputStream.seek(startPos);
+                    var dataReader = new Windows.Storage.Streams.DataReader(inputStream);
+                    var streamSize = inputStream.size;
+                    var endPos = args[2] || (startPos + streamSize);
+                    dataReader.loadAsync(endPos - startPos).done(function (numBytes) {
+                        var bytes = new Uint8Array(numBytes);
+                        dataReader.readBytes(bytes);
+                        dataReader.close();
+                        var buf = bytes.buffer;
+                        buf = buf.slice(0, endPos - startPos);
+                        win(buf);
+                    }, function () {
+                        dataReader.close();
+                        fail(FileError.NOT_READABLE_ERR);
+                    });
+                });
+
             }, function () {
                 fail(FileError.NOT_FOUND_ERR);
             }
