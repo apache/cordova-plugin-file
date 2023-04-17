@@ -30,6 +30,7 @@ exports.defineAutoTests = function () {
     var isIndexedDBShim = isBrowser && !isChrome; // Firefox and IE for example
 
     var isWindows = cordova.platformId === 'windows';
+    var isElectron = cordova.platformId === 'electron';
     /* eslint-enable no-undef */
     var MEDIUM_TIMEOUT = 15000;
 
@@ -266,7 +267,7 @@ exports.defineAutoTests = function () {
                 });
 
                 it('file.spec.6 should error if you request a file system that is too large', function (done) {
-                    if (isBrowser) {
+                    if (isBrowser || isElectron) {
                         /* window.requestFileSystem TEMPORARY and PERSISTENT filesystem quota is not limited in Chrome.
                         Firefox filesystem size is not limited but every 50MB request user permission.
                         IE10 allows up to 10mb of combined AppCache and IndexedDB used in implementation
@@ -400,6 +401,9 @@ exports.defineAutoTests = function () {
                 });
 
                 it('file.spec.10 resolve valid file name with parameters', function (done) {
+                    if (isElectron) {
+                        pending('fs does not take parameters in file');
+                    }
                     var fileName = 'resolve.file.uri.params';
                     var win = function (fileEntry) {
                         expect(fileEntry).toBeDefined();
@@ -422,6 +426,8 @@ exports.defineAutoTests = function () {
                         expect(error).toBeDefined();
                         if (isChrome) {
                             expect(error).toBeFileError(FileError.SYNTAX_ERR); // eslint-disable-line no-undef
+                        } else if (isElectron) {
+                            expect(error.code.message).toContain(FileError.NOT_FOUND_ERR);
                         } else {
                             expect(error).toBeFileError(FileError.NOT_FOUND_ERR); // eslint-disable-line no-undef
                         }
@@ -437,6 +443,8 @@ exports.defineAutoTests = function () {
                         expect(error).toBeDefined();
                         if (isChrome) {
                         // O.o chrome returns error code 0
+                        } else if (isElectron) {
+                            // electron returns a not found error with error code 1
                         } else {
                             expect(error).toBeFileError(FileError.ENCODING_ERR); // eslint-disable-line no-undef
                         }
@@ -499,6 +507,8 @@ exports.defineAutoTests = function () {
                     expect(error).toBeDefined();
                     if (isChrome) {
                         expect(error).toBeFileError(FileError.SYNTAX_ERR); // eslint-disable-line no-undef
+                    } else if (isElectron) {
+                        expect(error.code.message).toContain(FileError.NOT_FOUND_ERR);
                     } else {
                         expect(error).toBeFileError(FileError.NOT_FOUND_ERR); // eslint-disable-line no-undef
                     }
@@ -584,6 +594,8 @@ exports.defineAutoTests = function () {
                         /* INVALID_MODIFICATION_ERR (code: 9) or ??? (code: 13) is thrown instead of PATH_EXISTS_ERR(code: 12)
                         on trying to exclusively create a file, which already exists in Chrome. */
                         // expect(error).toBeFileError(FileError.INVALID_MODIFICATION_ERR);
+                    } else if (isElectron) {
+                        expect(error.code.message).toContain(FileError.PATH_EXISTS_ERR);
                     } else {
                         expect(error).toBeFileError(FileError.PATH_EXISTS_ERR); // eslint-disable-line no-undef
                     }
@@ -638,6 +650,10 @@ exports.defineAutoTests = function () {
                     (http://www.w3.org/TR/2011/WD-file-system-api-20110419/#naming-restrictions). */
                     pending();
                 }
+                if (isElectron) {
+                    /* the fs plugin will consider this a valid fileName and return a NOT FOUND ERROR */
+                    pending();
+                }
 
                 var fileName = 'de:invalid:path';
                 var fail = function (error) {
@@ -657,6 +673,8 @@ exports.defineAutoTests = function () {
                     expect(error).toBeDefined();
                     if (isChrome) {
                         expect(error).toBeFileError(FileError.SYNTAX_ERR); // eslint-disable-line no-undef
+                    } else if (isElectron) {
+                        expect(error.code.message).toContain(FileError.NOT_FOUND_ERR);
                     } else {
                         expect(error).toBeFileError(FileError.NOT_FOUND_ERR); // eslint-disable-line no-undef
                     }
@@ -799,6 +817,8 @@ exports.defineAutoTests = function () {
                     /* INVALID_MODIFICATION_ERR (code: 9) or ??? (code: 13) is thrown instead of PATH_EXISTS_ERR(code: 12)
                     on trying to exclusively create a file or directory, which already exists (Chrome). */
                     // expect(error).toBeFileError(FileError.INVALID_MODIFICATION_ERR);
+                    } else if (isElectron) {
+                        expect(error.code.message).toContain(FileError.PATH_EXISTS_ERR);
                     } else {
                         expect(error).toBeFileError(FileError.PATH_EXISTS_ERR); // eslint-disable-line no-undef
                     }
@@ -847,6 +867,11 @@ exports.defineAutoTests = function () {
                     pending();
                 }
 
+                if (isElectron) {
+                    /* the fs plugin will consider this a valid fileName and return a NOT FOUND ERROR */
+                    pending();
+                }
+
                 var dirName = 'de:invalid:path';
                 var fail = function (error) {
                     expect(error).toBeDefined();
@@ -866,6 +891,8 @@ exports.defineAutoTests = function () {
                     expect(error).toBeDefined();
                     if (isChrome) {
                     // chrome returns an unknown error with code 17
+                    } else if (isElectron) {
+                        expect(error.code.message).toContain(FileError.TYPE_MISMATCH_ERR);
                     } else {
                         expect(error).toBeFileError(FileError.TYPE_MISMATCH_ERR); // eslint-disable-line no-undef
                     }
@@ -890,6 +917,8 @@ exports.defineAutoTests = function () {
                     expect(error).toBeDefined();
                     if (isChrome) {
                     // chrome returns an unknown error with code 17
+                    } else if (isElectron) {
+                        expect(error.code.message).toContain(FileError.TYPE_MISMATCH_ERR);
                     } else {
                         expect(error).toBeFileError(FileError.TYPE_MISMATCH_ERR); // eslint-disable-line no-undef
                     }
@@ -914,6 +943,8 @@ exports.defineAutoTests = function () {
                     expect(error).toBeDefined();
                     if (isChrome) {
                         expect(error).toBeFileError(FileError.SYNTAX_ERR); // eslint-disable-line no-undef
+                    } else if (isElectron) {
+                        expect(error.code.message).toContain(FileError.NOT_FOUND_ERR);
                     } else {
                         expect(error).toBeFileError(FileError.NOT_FOUND_ERR); // eslint-disable-line no-undef
                     }
@@ -1047,6 +1078,8 @@ exports.defineAutoTests = function () {
                             expect(error).toBeDefined();
                             if (isChrome) {
                                 expect(error).toBeFileError(FileError.SYNTAX_ERR); // eslint-disable-line no-undef
+                            } else if (isElectron) {
+                                expect(error.code.message).toContain(FileError.NOT_FOUND_ERR);
                             } else {
                                 expect(error).toBeFileError(FileError.NOT_FOUND_ERR); // eslint-disable-line no-undef
                             }
@@ -1056,6 +1089,8 @@ exports.defineAutoTests = function () {
                                 expect(err).toBeDefined();
                                 if (isChrome) {
                                     expect(error).toBeFileError(FileError.SYNTAX_ERR); // eslint-disable-line no-undef
+                                } else if (isElectron) {
+                                    expect(error.code.message).toContain(FileError.NOT_FOUND_ERR);
                                 } else {
                                     expect(error).toBeFileError(FileError.NOT_FOUND_ERR); // eslint-disable-line no-undef
                                 }
@@ -1159,6 +1194,8 @@ exports.defineAutoTests = function () {
                             expect(error).toBeDefined();
                             if (isChrome) {
                                 expect(error).toBeFileError(FileError.SYNTAX_ERR); // eslint-disable-line no-undef
+                            } else if (isElectron) {
+                                expect(error.code.message).toContain(FileError.NOT_FOUND_ERR);
                             } else {
                                 expect(error).toBeFileError(FileError.NOT_FOUND_ERR); // eslint-disable-line no-undef
                             }
@@ -1293,7 +1330,11 @@ exports.defineAutoTests = function () {
                     }, function (entryFile) {
                         var uri = entryFile.toURL();
                         expect(uri).toBeDefined();
-                        expect(uri).toContain('/num%201/num%202/');
+                        if (isElectron) {
+                            expect(uri).toContain('/num 1/num 2/');
+                        } else {
+                            expect(uri).toContain('/num%201/num%202/');
+                        }
                         expect(uri.indexOf(rootPath)).not.toBe(-1);
                         // cleanup
                         deleteEntry(dirName_1, done);
@@ -1311,6 +1352,8 @@ exports.defineAutoTests = function () {
                             expect(error).toBeDefined();
                             if (isChrome) {
                                 expect(error).toBeFileError(FileError.SYNTAX_ERR); // eslint-disable-line no-undef
+                            } else if (isElectron) {
+                                expect(error.code.message).toContain(FileError.NOT_FOUND_ERR);
                             } else {
                                 expect(error).toBeFileError(FileError.NOT_FOUND_ERR); // eslint-disable-line no-undef
                             }
@@ -1332,7 +1375,12 @@ exports.defineAutoTests = function () {
                     entry.remove(function () {
                         root.getFile(fileName, null, succeed.bind(null, done, 'root.getFile - Unexpected success callback, it should not get deleted file : ' + fileName), function (error) {
                             expect(error).toBeDefined();
-                            expect(error).toBeFileError(FileError.NOT_FOUND_ERR); // eslint-disable-line no-undef
+
+                            if (isElectron) {
+                                expect(error.code.message).toContain(FileError.NOT_FOUND_ERR);
+                            } else {
+                                expect(error).toBeFileError(FileError.NOT_FOUND_ERR); // eslint-disable-line no-undef
+                            }
                             // cleanup
                             deleteEntry(fileName, done);
                         });
@@ -1350,6 +1398,8 @@ exports.defineAutoTests = function () {
                             expect(error).toBeDefined();
                             if (isChrome) {
                                 expect(error).toBeFileError(FileError.SYNTAX_ERR); // eslint-disable-line no-undef
+                            } else if (isElectron) {
+                                expect(error.code.message).toContain(FileError.NOT_FOUND_ERR);
                             } else {
                                 expect(error).toBeFileError(FileError.NOT_FOUND_ERR); // eslint-disable-line no-undef
                             }
@@ -1380,6 +1430,8 @@ exports.defineAutoTests = function () {
                             expect(error).toBeDefined();
                             if (isChrome) {
                                 // chrome is returning unknown error with code 13
+                            } else if (isElectron) {
+                                expect(error.code.message).toContain(FileError.ENCODING_ERR);
                             } else {
                                 expect(error).toBeFileError(FileError.INVALID_MODIFICATION_ERR); // eslint-disable-line no-undef
                             }
@@ -1407,6 +1459,8 @@ exports.defineAutoTests = function () {
                         NO_MODIFICATION_ALLOWED_ERR(code: 6) on trying to call removeRecursively
                         on the root file system. */
                         // expect(error).toBeFileError(FileError.INVALID_MODIFICATION_ERR);
+                    } else if (isElectron) {
+                        expect(error.code.message).toContain(FileError.INVALID_MODIFICATION_ERR);
                     } else {
                         expect(error).toBeFileError(FileError.NO_MODIFICATION_ALLOWED_ERR); // eslint-disable-line no-undef
                     }

@@ -84,7 +84,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
             fs.readdir(fullPath, { withFileTypes: true }, (err, files) => {
                 if (err) {
-                    reject(err);
+                    reject(FileError.NOT_FOUND_ERR);
                     return;
                 }
 
@@ -270,13 +270,13 @@ module.exports = {
                     return;
                 }
 
-                fs.remove(fullPath, (err) => {
-                    if (err) {
-                        reject(FileError.NO_MODIFICATION_ALLOWED_ERR);
-                        return;
-                    }
-                    resolve();
-                });
+                try {
+                    fs.rmSync(fullPath);
+                } catch (error) {
+                    reject(FileError.NO_MODIFICATION_ALLOWED_ERR);
+                    return;
+                }
+                resolve();
             });
         });
     },
@@ -375,7 +375,7 @@ module.exports = {
                 .then(async () => {
                     resolve(await getFile([[dstDir, dstName]]));
                 })
-                .catch(err => reject(err));
+                .catch(() => reject(FileError.ENCODING_ERR));
         });
     },
 
@@ -512,7 +512,7 @@ module.exports = {
         const name = type === 0 ? 'temporary' : 'persistent';
         return {
             name,
-            root: returnEntry(false, name, path.dirname(app.getAppPath()) + path.sep)
+            root: returnEntry(false, name, path.dirname(path.sep))
         };
     }
 };
@@ -576,8 +576,9 @@ function readAs (what, fullPath, encoding, startPos, endPos) {
  *
  * @returns {Promise<Object>} The file object that is converted to FileEntry by cordova.
  */
-function getFile ([[dstDir, dstName, options = {}]]) {
+function getFile ([[dstDir, dstName, options]]) {
     const absolutePath = dstDir + dstName;
+    options = options || {};
     return new Promise((resolve, reject) => {
         fs.stat(absolutePath, (err, stats) => {
             if (err && err.message && err.message.indexOf('ENOENT') !== 0) {
@@ -647,8 +648,9 @@ function getFile ([[dstDir, dstName, options = {}]]) {
  *
  * @returns {Promise<Object>} The directory object that is converted to DirectoryEntry by cordova.
  */
-function getDirectory ([[dstDir, dstName, options = {}]]) {
+function getDirectory ([[dstDir, dstName, options]]) {
     const absolutePath = dstDir + dstName;
+    options = options || {};
     return new Promise((resolve, reject) => {
         fs.stat(absolutePath, (err, stats) => {
             if (err && err.message && err.message.indexOf('ENOENT') !== 0) {
