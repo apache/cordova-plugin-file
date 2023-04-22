@@ -3477,12 +3477,13 @@ exports.defineAutoTests = function () {
             var pathExpect = 'file://';
 
             if (cordova.platformId === 'android') {
-                // Starting from Cordova-Android 10.x, the app content is served from the https scheme
-                pathExpect = 'https://';
-            } else if(isElectron) {
-                pathExpect = '/native';
+                // From Cordova-Android 10.x, app content is served from the "https" scheme by default
+                // The paramedic plugin changes the scheme to http to avoid ssl.
+                pathExpect = 'http://';
             } else if (isChrome) {
                 pathExpect = 'filesystem:http://';
+            } else if (isElectron) {
+                pathExpect = '/native';
             }
 
             it('file.spec.114 fileEntry should have a toNativeURL method', function (done) {
