@@ -84,7 +84,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
             fs.readdir(fullPath, { withFileTypes: true }, (err, files) => {
                 if (err) {
-                    reject(FileError.NOT_FOUND_ERR);
+                    reject(new Error(FileError.NOT_FOUND_ERR));
                     return;
                 }
 
@@ -135,7 +135,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
             fs.stat(fullPath, (err, stats) => {
                 if (err) {
-                    reject(FileError.NOT_FOUND_ERR);
+                    reject(new Error(FileError.NOT_FOUND_ERR));
                     return;
                 }
 
@@ -162,7 +162,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
             fs.stat(url, (err, stats) => {
                 if (err) {
-                    reject(FileError.NOT_FOUND_ERR);
+                    reject(new Error(FileError.NOT_FOUND_ERR));
                     return;
                 }
 
@@ -187,7 +187,7 @@ module.exports = {
             const modificationTime = metadataObject.modificationTime;
             const utimesError = function (err) {
                 if (err) {
-                    reject(FileError.NOT_FOUND_ERR);
+                    reject(new Error(FileError.NOT_FOUND_ERR));
                     return;
                 }
                 resolve();
@@ -266,17 +266,18 @@ module.exports = {
         return new Promise((resolve, reject) => {
             fs.stat(fullPath, (err, stats) => {
                 if (err) {
-                    reject(FileError.NOT_FOUND_ERR);
+                    reject(new Error(FileError.NOT_FOUND_ERR));
                     return;
                 }
-
-                try {
-                    fs.rmSync(fullPath);
-                } catch (error) {
-                    reject(FileError.NO_MODIFICATION_ALLOWED_ERR);
+                if (stats.isDirectory() && fs.readdirSync(fullPath).length !== 0) {
+                    reject(new Error(FileError.INVALID_MODIFICATION_ERR));
                     return;
                 }
-                resolve();
+                fs.remove(fullPath)
+                    .then(() => resolve())
+                    .catch(() => {
+                        reject(new Error(FileError.NO_MODIFICATION_ALLOWED_ERR));
+                    });
             });
         });
     },
@@ -293,13 +294,13 @@ module.exports = {
         return new Promise((resolve, reject) => {
             fs.stat(fullPath, (err, stats) => {
                 if (err) {
-                    reject(FileError.NOT_FOUND_ERR);
+                    reject(new Error(FileError.NOT_FOUND_ERR));
                     return;
                 }
 
                 fs.remove(fullPath, (err) => {
                     if (err) {
-                        reject(FileError.NO_MODIFICATION_ALLOWED_ERR);
+                        reject(new Error(FileError.NO_MODIFICATION_ALLOWED_ERR));
                         return;
                     }
                     resolve();
@@ -348,14 +349,21 @@ module.exports = {
      */
     copyTo: function ([[srcPath, dstDir, dstName]]) {
         return new Promise((resolve, reject) => {
-            fs.copyFile(srcPath, dstDir + dstName, async (err) => {
-                if (err) {
-                    reject(FileError.INVALID_MODIFICATION_ERR);
-                    return;
-                }
-
-                resolve(await getFile([[dstDir, dstName]]));
-            });
+            if (dstName.indexOf('/') !== -1 || path.resolve(srcPath) === path.resolve(dstDir + dstName)) {
+                reject(new Error(FileError.INVALID_MODIFICATION_ERR));
+                return;
+            }
+            if (!dstDir || !dstName) {
+                reject(new Error(FileError.INVALID_MODIFICATION_ERR));
+                return;
+            }
+            fs.stat(srcPath)
+                .then((stats) => {
+                    fs.copy(srcPath, dstDir + dstName, { recursive: stats.isDirectory() })
+                        .then(async () => resolve(await stats.isDirectory() ? getDirectory([[dstDir, dstName]]) : getFile([[dstDir, dstName]])))
+                        .catch(() => reject(new Error(FileError.ENCODING_ERR)));
+                })
+                .catch(() => reject(new Error(FileError.NOT_FOUND_ERR)));
         });
     },
 
@@ -371,11 +379,21 @@ module.exports = {
      */
     moveTo: function ([[srcPath, dstDir, dstName]]) {
         return new Promise((resolve, reject) => {
-            fs.move(srcPath, dstDir + dstName, { overwrite: true })
-                .then(async () => {
-                    resolve(await getFile([[dstDir, dstName]]));
+            if (dstName.indexOf('/') !== -1 || path.resolve(srcPath) === path.resolve(dstDir + dstName)) {
+                reject(new Error(FileError.INVALID_MODIFICATION_ERR));
+                return;
+            }
+            if (!dstDir || !dstName) {
+                reject(new Error(FileError.INVALID_MODIFICATION_ERR));
+                return;
+            }
+            fs.stat(srcPath)
+                .then((stats) => {
+                    fs.move(srcPath, dstDir + dstName)
+                        .then(async () => resolve(await stats.isDirectory() ? getDirectory([[dstDir, dstName]]) : getFile([[dstDir, dstName]])))
+                        .catch(() => reject(new Error(FileError.ENCODING_ERR)));
                 })
-                .catch(() => reject(FileError.ENCODING_ERR));
+                .catch(() => reject(new Error(FileError.NOT_FOUND_ERR)));
         });
     },
 
@@ -396,7 +414,7 @@ module.exports = {
             // support for cdvfile
             if (uri.trim().substr(0, 7) === 'cdvfile') {
                 if (uri.indexOf('cdvfile://localhost') === -1) {
-                    reject(FileError.ENCODING_ERR);
+                    reject(new Error(FileError.ENCODING_ERR));
                     return;
                 }
 
@@ -411,7 +429,7 @@ module.exports = {
                 } else if (indexTemporary !== -1) { // cdvfile://localhost/temporary/path/to/file
                     uri = pathsPrefix.tempDirectory + uri.substr(indexTemporary + 10);
                 } else {
-                    reject(FileError.ENCODING_ERR);
+                    reject(new Error(FileError.ENCODING_ERR));
                     return;
                 }
             }
@@ -463,7 +481,7 @@ module.exports = {
     write: function ([[fileName, data, position]]) {
         return new Promise((resolve, reject) => {
             if (!data) {
-                reject(FileError.INVALID_MODIFICATION_ERR);
+                reject(new Error(FileError.INVALID_MODIFICATION_ERR));
                 return;
             }
 
@@ -473,13 +491,11 @@ module.exports = {
             fs.open(fileName, 'a')
                 .then(fd => {
                     return fs.write(fd, buf, 0, buf.length, position)
-                        .then(bw => { bytesWritten = bw; })
+                        .then(bw => { bytesWritten = bw.bytesWritten; })
                         .finally(() => fs.close(fd));
                 })
                 .then(() => resolve(bytesWritten))
-                .catch(() => {
-                    reject(FileError.INVALID_MODIFICATION_ERR);
-                });
+                .catch(() => reject(new Error(FileError.INVALID_MODIFICATION_ERR)));
         });
     },
 
@@ -495,7 +511,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
             fs.truncate(fullPath, size, err => {
                 if (err) {
-                    reject(FileError.INVALID_STATE_ERR);
+                    reject(new Error(FileError.INVALID_STATE_ERR));
                     return;
                 }
 
@@ -512,7 +528,7 @@ module.exports = {
         const name = type === 0 ? 'temporary' : 'persistent';
         return {
             name,
-            root: returnEntry(false, name, path.dirname(path.sep))
+            root: returnEntry(false, name, '/')
         };
     }
 };
@@ -535,7 +551,7 @@ function readAs (what, fullPath, encoding, startPos, endPos) {
     return new Promise((resolve, reject) => {
         fs.open(fullPath, 'r', (err, fd) => {
             if (err) {
-                reject(FileError.NOT_FOUND_ERR);
+                reject(new Error(FileError.NOT_FOUND_ERR));
                 return;
             }
 
@@ -558,9 +574,7 @@ function readAs (what, fullPath, encoding, startPos, endPos) {
                         break;
                     }
                 })
-                .catch(() => {
-                    reject(FileError.NOT_READABLE_ERR);
-                })
+                .catch(() => reject(new Error(FileError.NOT_READABLE_ERR)))
                 .then(() => fs.close(fd));
         });
     });
@@ -582,7 +596,7 @@ function getFile ([[dstDir, dstName, options]]) {
     return new Promise((resolve, reject) => {
         fs.stat(absolutePath, (err, stats) => {
             if (err && err.message && err.message.indexOf('ENOENT') !== 0) {
-                reject(FileError.INVALID_STATE_ERR);
+                reject(new Error(FileError.INVALID_STATE_ERR));
                 return;
             }
 
@@ -592,13 +606,13 @@ function getFile ([[dstDir, dstName, options]]) {
             function createFile () {
                 fs.open(absolutePath, 'w', (err, fd) => {
                     if (err) {
-                        reject(FileError.INVALID_STATE_ERR);
+                        reject(new Error(FileError.INVALID_STATE_ERR));
                         return;
                     }
 
                     fs.close(fd, (err) => {
                         if (err) {
-                            reject(FileError.INVALID_STATE_ERR);
+                            reject(new Error(FileError.INVALID_STATE_ERR));
                             return;
                         }
                         resolve(returnEntry(true, baseName, absolutePath));
@@ -609,7 +623,7 @@ function getFile ([[dstDir, dstName, options]]) {
             if (options.create === true && options.exclusive === true && exists) {
                 // If create and exclusive are both true, and the path already exists,
                 // getFile must fail.
-                reject(FileError.PATH_EXISTS_ERR);
+                reject(new Error(FileError.PATH_EXISTS_ERR));
             } else if (options.create === true && !exists) {
                 // If create is true, the path doesn't exist, and no other error occurs,
                 // getFile must create it as a zero-length file and return a corresponding
@@ -620,15 +634,15 @@ function getFile ([[dstDir, dstName, options]]) {
                     // Overwrite file, delete then create new.
                     createFile();
                 } else {
-                    reject(FileError.INVALID_MODIFICATION_ERR);
+                    reject(new Error(FileError.INVALID_MODIFICATION_ERR));
                 }
             } else if (!options.create && !exists) {
                 // If create is not true and the path doesn't exist, getFile must fail.
-                reject(FileError.NOT_FOUND_ERR);
+                reject(new Error(FileError.NOT_FOUND_ERR));
             } else if (!options.create && exists && stats.isDirectory()) {
                 // If create is not true and the path exists, but is a directory, getFile
                 // must fail.
-                reject(FileError.TYPE_MISMATCH_ERR);
+                reject(new Error(FileError.TYPE_MISMATCH_ERR));
             } else {
                 // Otherwise, if no other error occurs, getFile must return a FileEntry
                 // corresponding to path.
@@ -654,24 +668,23 @@ function getDirectory ([[dstDir, dstName, options]]) {
     return new Promise((resolve, reject) => {
         fs.stat(absolutePath, (err, stats) => {
             if (err && err.message && err.message.indexOf('ENOENT') !== 0) {
-                reject(FileError.INVALID_STATE_ERR);
+                reject(new Error(FileError.INVALID_STATE_ERR));
                 return;
             }
 
             const exists = !err;
             const baseName = path.basename(absolutePath);
-
             if (options.create === true && options.exclusive === true && exists) {
                 // If create and exclusive are both true, and the path already exists,
                 // getDirectory must fail.
-                reject(FileError.PATH_EXISTS_ERR);
+                reject(new Error(FileError.PATH_EXISTS_ERR));
             } else if (options.create === true && !exists) {
                 // If create is true, the path doesn't exist, and no other error occurs,
                 // getDirectory must create it as a zero-length file and return a corresponding
                 // MyDirectoryEntry.
                 fs.mkdir(absolutePath, (err) => {
                     if (err) {
-                        reject(FileError.PATH_EXISTS_ERR);
+                        reject(new Error(FileError.PATH_EXISTS_ERR));
                         return;
                     }
                     resolve(returnEntry(false, baseName, absolutePath));
@@ -680,15 +693,15 @@ function getDirectory ([[dstDir, dstName, options]]) {
                 if (stats.isDirectory()) {
                     resolve(returnEntry(false, baseName, absolutePath));
                 } else {
-                    reject(FileError.INVALID_MODIFICATION_ERR);
+                    reject(new Error(FileError.INVALID_MODIFICATION_ERR));
                 }
             } else if (!options.create && !exists) {
                 // If create is not true and the path doesn't exist, getDirectory must fail.
-                reject(FileError.NOT_FOUND_ERR);
+                reject(new Error(FileError.NOT_FOUND_ERR));
             } else if (!options.create && exists && stats.isFile()) {
                 // If create is not true and the path exists, but is a file, getDirectory
                 // must fail.
-                reject(FileError.TYPE_MISMATCH_ERR);
+                reject(new Error(FileError.TYPE_MISMATCH_ERR));
             } else {
                 // Otherwise, if no other error occurs, getDirectory must return a
                 // DirectoryEntry corresponding to path.
