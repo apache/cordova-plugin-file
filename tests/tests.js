@@ -60,7 +60,7 @@ exports.defineAutoTests = function () {
                     return {
                         compare: function (error, code) {
                             var pass = error.code === code;
-                            if(isElectron && error && error.code && error.code.message) {                                
+                            if (isElectron && error && error.code && error.code.message) {
                                 pass = error.code.message.indexOf(code) > -1;
                             }
                             return {
@@ -1669,7 +1669,7 @@ exports.defineAutoTests = function () {
             it('file.spec.63 copyTo: directory that does not exist', function (done) {
                 if (isElectron) {
                     // Electron creates the folder if it doesn't exist
-                    pending()
+                    pending();
                 }
                 var file1 = 'entry.copy.dnf.file1';
                 var dirName = 'dir-foo';
@@ -1704,7 +1704,7 @@ exports.defineAutoTests = function () {
                     // copy file1 to file2
                     entry.copyTo(root, file2, succeed.bind(null, done, 'entry.copyTo - Unexpected success callback, it should not copy a file ' + file1 + ' to an invalid file name: ' + file2), function (error) {
                         expect(error).toBeDefined();
-                            expect(error).toBeFileError(FileError.ENCODING_ERR); // eslint-disable-line no-undef
+                        expect(error).toBeFileError(FileError.ENCODING_ERR); // eslint-disable-line no-undef
                         // cleanup
                         deleteEntry(file1, done);
                     });
@@ -2426,7 +2426,7 @@ exports.defineAutoTests = function () {
                 if (isChrome) {
                     pending('chrome freak out about non-existend dir not being a DirectoryEntry');
                 }
-                if(isElectron) {
+                if (isElectron) {
                     pending('Electron creates the directory if it doesn\'t exist');
                 }
                 var file1 = 'entry.move.dnf.file1';
