@@ -2315,7 +2315,7 @@ exports.defineAutoTests = function () {
 
             it('file.spec.77 moveTo: file replace existing file', function (done) {
                 if (isElectron) {
-                    pending('Electron throws an error because of file overwrites')
+                    pending('Electron throws an error because of file overwrites');
                 }
                 var file1 = 'entry.move.frf.file1';
                 var file2 = 'entry.move.frf.file2';
@@ -2366,7 +2366,7 @@ exports.defineAutoTests = function () {
                     pending();
                 }
                 if (isElectron) {
-                    pending('Electron throws an error because of overwrites')
+                    pending('Electron throws an error because of overwrites');
                 }
 
                 var file1 = 'file1';
@@ -2932,7 +2932,7 @@ exports.defineAutoTests = function () {
             });
 
             it('file.spec.98 should be able to seek to the middle of the file and write more data than file.length', function (done) {
-                if(isElectron) {
+                if (isElectron) {
                     pending('Electron implements fs-extra for node. This means writing from a particular seek point doesn\'t remove data from the back');
                     return;
                 }
@@ -2980,7 +2980,7 @@ exports.defineAutoTests = function () {
                        i.e. the length is not being changed from content.length and writer length will be equal 21 */
                     pending();
                 }
-                if(isElectron) {
+                if (isElectron) {
                     pending('Electron implements fs-extra for node. This means writing from a particular seek point doesn\'t remove data from the back');
                     return;
                 }
@@ -3629,8 +3629,8 @@ exports.defineAutoTests = function () {
             });
 
             it('file.spec.123 should resolve native URLs returned by API with query string', function (done) {
-                if(isElectron) {
-                    pending('not supported in Electron')
+                if (isElectron) {
+                    pending('not supported in Electron');
                 }
                 var fileName = 'native.resolve.uri3';
                 // create a new file entry
@@ -3646,8 +3646,8 @@ exports.defineAutoTests = function () {
             });
 
             it('file.spec.124 should resolve native URLs returned by API with localhost and query string', function (done) {
-                if(isElectron) {
-                    pending('not supported in Electron')
+                if (isElectron) {
+                    pending('not supported in Electron');
                 }
                 var fileName = 'native.resolve.uri4';
                 // create a new file entry
