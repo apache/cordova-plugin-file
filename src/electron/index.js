@@ -591,7 +591,7 @@ function readAs (what, fullPath, encoding, startPos, endPos) {
  * @returns {Promise<Object>} The file object that is converted to FileEntry by cordova.
  */
 function getFile ([[dstDir, dstName, options]]) {
-    const absolutePath = dstDir + dstName;
+    const absolutePath = path.join(dstDir, dstName);
     options = options || {};
     return new Promise((resolve, reject) => {
         fs.stat(absolutePath, (err, stats) => {
@@ -615,7 +615,7 @@ function getFile ([[dstDir, dstName, options]]) {
                             reject(new Error(FileError.INVALID_STATE_ERR));
                             return;
                         }
-                        resolve(returnEntry(true, baseName, absolutePath));
+                        resolve(returnEntry(true, baseName, absolutePath.replace('\\', '/')));
                     });
                 });
             }
@@ -646,7 +646,7 @@ function getFile ([[dstDir, dstName, options]]) {
             } else {
                 // Otherwise, if no other error occurs, getFile must return a FileEntry
                 // corresponding to path.
-                resolve(returnEntry(true, baseName, absolutePath));
+                resolve(returnEntry(true, baseName, absolutePath.replace('\\', '/')));
             }
         });
     });
