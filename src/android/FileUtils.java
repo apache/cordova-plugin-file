@@ -118,7 +118,7 @@ public class FileUtils extends CordovaPlugin {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_MEDIA_IMAGES,
             Manifest.permission.READ_MEDIA_VIDEO,
-            Manifest.permisson.READ_MEDIA_AUDIO};
+            Manifest.permission.READ_MEDIA_AUDIO};
 
     // This field exists only to support getEntry, below, which has been deprecated
     private static FileUtils filePlugin;
