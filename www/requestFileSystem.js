@@ -32,11 +32,11 @@
         return;
     }
 
-    var argscheck = require('cordova/argscheck');
-    var FileError = require('./FileError');
-    var FileSystem = require('./FileSystem');
-    var exec = require('cordova/exec');
-    var fileSystems = require('./fileSystems');
+    const argscheck = require('cordova/argscheck');
+    const FileError = require('./FileError');
+    const FileSystem = require('./FileSystem');
+    const exec = require('cordova/exec');
+    const fileSystems = require('./fileSystems');
 
     /**
      * Request a file system in which to store application data.
@@ -45,9 +45,9 @@
      * @param successCallback  invoked with a FileSystem object
      * @param errorCallback  invoked if error occurs retrieving file system
      */
-    var requestFileSystem = function (type, size, successCallback, errorCallback) {
+    const requestFileSystem = function (type, size, successCallback, errorCallback) {
         argscheck.checkArgs('nnFF', 'requestFileSystem', arguments);
-        var fail = function (code) {
+        const fail = function (code) {
             if (errorCallback) {
                 errorCallback(new FileError(code));
             }
@@ -57,7 +57,7 @@
             fail(FileError.SYNTAX_ERR);
         } else {
             // if successful, return a FileSystem object
-            var success = function (file_system) {
+            const success = function (file_system) {
                 if (file_system) {
                     if (successCallback) {
                         fileSystems.getFs(file_system.name, function (fs) {
