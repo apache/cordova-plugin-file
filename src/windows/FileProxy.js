@@ -20,6 +20,7 @@
 */
 
 /* global Windows, WinJS, MSApp */
+/* eslint prefer-regex-literals: 0 */
 
 const File = require('./File');
 const FileError = require('./FileError');
@@ -248,6 +249,7 @@ function pathFromURL (url) {
         }
     }
 
+    // eslint-disable-next-line
     ['file://', 'ms-appdata:///', 'ms-appx://', 'cdvfile://localhost/'].every(function (p) {
         if (path.indexOf(p) !== 0) { return true; }
         const thirdSlash = path.indexOf('/', p.length);
@@ -748,7 +750,7 @@ module.exports = {
                     storageFolder.createFolderAsync(name, Windows.Storage.CreationCollisionOption.failIfExists).done(
                         function (storageFolder) {
                             win(new DirectoryEntry(storageFolder.name, fspath, fs.name, fs.makeNativeURL(fspath)));
-                        }, function (err) { // eslint-disable-line handle-callback-err
+                        }, function (err) { // eslint-disable-line n/handle-callback-err
                             fail(FileError.PATH_EXISTS_ERR);
                         }
                     );

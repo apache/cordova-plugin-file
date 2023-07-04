@@ -113,7 +113,6 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
     const supportsBinary = (typeof window.Blob !== 'undefined' && typeof window.ArrayBuffer !== 'undefined');
     /* eslint-disable no-undef */
     const isProxySupportBlobNatively = cordova.platformId === 'windows';
-    let isBinary;
 
     // Check to see if the incoming data is a blob
     if (data instanceof File || (!isProxySupportBlobNatively && supportsBinary && data instanceof Blob)) {
@@ -153,7 +152,7 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
     }
 
     // Mark data type for safer transport over the binary bridge
-    isBinary = supportsBinary && (data instanceof ArrayBuffer);
+    const isBinary = supportsBinary && (data instanceof ArrayBuffer);
 
     // Throw an exception if we are already writing a file
     if (this.readyState === FileWriter.WRITING && !isPendingBlobReadResult) {

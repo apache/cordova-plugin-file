@@ -592,7 +592,7 @@
                 path = path.substring(pathsPrefix.applicationDirectory.length);
                 // TODO: need to cut out redundant slashes?
 
-                var xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
+                const xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
                 xhr.open('GET', path, true);
                 xhr.onreadystatechange = function () {
                     if (xhr.status === 200 && xhr.readyState === 4) {

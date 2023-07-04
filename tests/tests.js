@@ -81,7 +81,7 @@ exports.defineAutoTests = function () {
                 },
                 toFailWithMessage: function () {
                     return {
-                        compare: function (error, message) { // eslint-disable-line handle-callback-err
+                        compare: function (error, message) { // eslint-disable-line n/handle-callback-err
                             const pass = false;
                             return {
                                 pass,
@@ -963,14 +963,13 @@ exports.defineAutoTests = function () {
         describe('DirectoryReader interface', function () {
             describe('readEntries', function () {
                 it('file.spec.37 should read contents of existing directory', function (done) {
-                    let reader;
                     const win = function (entries) {
                         expect(entries).toBeDefined();
                         expect(entries instanceof Array).toBe(true);
                         done();
                     };
                     // create reader for root directory
-                    reader = root.createReader();
+                    const reader = root.createReader();
                     // read entries
                     reader.readEntries(win, failed.bind(null, done, 'reader.readEntries - Error reading entries'));
                 });
