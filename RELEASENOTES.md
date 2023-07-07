@@ -20,6 +20,20 @@
 -->
 # Release Notes
 
+### 8.0.0 (Jul 07, 2023)
+
+* [GH-534](https://github.com/apache/cordova-plugin-file/pull/534) fix(android): `FileError` on a content `resolveLocalFileSystemURL`
+* [GH-566](https://github.com/apache/cordova-plugin-file/pull/566) feat(android): add `READ_MEDIA_*` permissions for Android 13+
+* [GH-576](https://github.com/apache/cordova-plugin-file/pull/576) feat(android)!: bump `cordova-android@12` requirement
+* [GH-575](https://github.com/apache/cordova-plugin-file/pull/575) ci: sync github workflow with paramedic base configs
+* [GH-574](https://github.com/apache/cordova-plugin-file/pull/574) chore: update `@cordova/eslint-config@5.0.0` w/ fixes
+* [GH-556](https://github.com/apache/cordova-plugin-file/pull/556) feat(android)!: remove `WRITE_EXTERNAL_STORAGE` permission from `plugin.xml`
+* [GH-554](https://github.com/apache/cordova-plugin-file/pull/554) spec(android): fix spec based on testing environment
+* [GH-547](https://github.com/apache/cordova-plugin-file/pull/547) fix(types): Mark `FileWriter.write` to support `ArrayBuffer` data
+* [GH-535](https://github.com/apache/cordova-plugin-file/pull/535) ci: sync workflow with paramedic
+* [GH-531](https://github.com/apache/cordova-plugin-file/pull/531) dep(npm): bump package-lock v2 w/ rebuild
+* [GH-529](https://github.com/apache/cordova-plugin-file/pull/529) ci(android): update java requirement for `cordova-android@11`
+
 ### 7.0.0 (Apr 08, 2022)
 
 * [GH-520](https://github.com/apache/cordova-plugin-file/pull/520) test(android): disable `content` scheme tests
