@@ -600,7 +600,12 @@ public class FileUtils extends CordovaPlugin {
 
     private void getWritePermission(String rawArgs, int action, CallbackContext callbackContext) {
         int requestCode = pendingRequests.createRequest(rawArgs, action, callbackContext);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            PermissionHelper.requestPermissions(this, requestCode,
+            new String[]{Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_AUDIO});
+          } else {
         PermissionHelper.requestPermission(this, requestCode, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+          }
     }
 
     private boolean hasReadPermission() {
