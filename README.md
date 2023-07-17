@@ -355,7 +355,7 @@ Example:
 window.addEventListener('filePluginIsReady', function(){ console.log('File plugin is ready');}, false);
 ```
 You can use `window.isFilePluginReadyRaised` function to check whether event was already raised.
-- window.requestFileSystem TEMPORARY and PERSISTENT filesystem quotas are not limited in Chrome.
+- window.requestFileSystem TEMPORARY and PERSISTENT filesystem quotas are not limited in Chrome. However requestFileSystem is deprecated/removed from many versions of Chrome, see [the MDN entry](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestFileSystem) for details.
 - To increase persistent storage in Chrome you need to call `window.initPersistentFileSystem` method. Persistent storage quota is 5 MB by default.
 - Chrome requires `--allow-file-access-from-files` run argument to support API via `file:///` protocol.
 - `File` object will be not changed if you use flag `{create:true}` when getting an existing `Entry`.
