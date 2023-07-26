@@ -487,23 +487,18 @@ public class FileUtils extends CordovaPlugin {
                     String dirname = args.getString(0);
                     String path = args.getString(1);
 
-                    if (dirname.contains(LocalFilesystemURL.CDVFILE_KEYWORD) == true) {
+                    String nativeURL = resolveLocalFileSystemURI(dirname).getString("nativeURL");
+                    boolean containsCreate = (args.isNull(2)) ? false : args.getJSONObject(2).optBoolean("create", false);
+
+                    if(containsCreate && needPermission(nativeURL, WRITE)) {
+                        getWritePermission(rawArgs, ACTION_GET_FILE, callbackContext);
+                    }
+                    else if(!containsCreate && needPermission(nativeURL, READ)) {
+                        getReadPermission(rawArgs, ACTION_GET_FILE, callbackContext);
+                    }
+                    else {
                         JSONObject obj = getFile(dirname, path, args.optJSONObject(2), false);
                         callbackContext.success(obj);
-                    } else {
-                        String nativeURL = resolveLocalFileSystemURI(dirname).getString("nativeURL");
-                        boolean containsCreate = (args.isNull(2)) ? false : args.getJSONObject(2).optBoolean("create", false);
-
-                        if(containsCreate && needPermission(nativeURL, WRITE)) {
-                            getWritePermission(rawArgs, ACTION_GET_FILE, callbackContext);
-                        }
-                        else if(!containsCreate && needPermission(nativeURL, READ)) {
-                            getReadPermission(rawArgs, ACTION_GET_FILE, callbackContext);
-                        }
-                        else {
-                            JSONObject obj = getFile(dirname, path, args.optJSONObject(2), false);
-                            callbackContext.success(obj);
-                        }
                     }
                 }
             }, rawArgs, callbackContext);
