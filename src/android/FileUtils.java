@@ -1152,7 +1152,7 @@ public class FileUtils extends CordovaPlugin {
             		} catch (IOException e) {
             			LOG.d(LOG_TAG, e.getLocalizedMessage());
             			callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, NOT_READABLE_ERR));
-                    }
+                }
             	}
             });
 
@@ -1218,24 +1218,20 @@ public class FileUtils extends CordovaPlugin {
     /*
      * Handle the response
      */
-
     public void onRequestPermissionResult(int requestCode, String[] permissions,
                                           int[] grantResults) throws JSONException {
 
         final PendingRequests.Request req = pendingRequests.getAndRemove(requestCode);
         if (req != null) {
-            for(int r:grantResults)
-            {
-                if(r == PackageManager.PERMISSION_DENIED)
-                {
+            for(int r:grantResults) {
+                if(r == PackageManager.PERMISSION_DENIED) {
                     req.getCallbackContext().sendPluginResult(new PluginResult(PluginResult.Status.ERROR, SECURITY_ERR));
                     return;
                 }
             }
-            switch(req.getAction())
-            {
+            switch(req.getAction()) {
                 case ACTION_GET_FILE:
-                    threadhelper( new FileOp( ){
+                    threadhelper( new FileOp( ) {
                         public void run(JSONArray args) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
                             String dirname = args.getString(0);
 
@@ -1246,7 +1242,7 @@ public class FileUtils extends CordovaPlugin {
                     }, req.getRawArgs(), req.getCallbackContext());
                     break;
                 case ACTION_GET_DIRECTORY:
-                    threadhelper( new FileOp( ){
+                    threadhelper( new FileOp( ) {
                         public void run(JSONArray args) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
                             String dirname = args.getString(0);
 
@@ -1257,7 +1253,7 @@ public class FileUtils extends CordovaPlugin {
                     }, req.getRawArgs(), req.getCallbackContext());
                     break;
                 case ACTION_WRITE:
-                    threadhelper( new FileOp( ){
+                    threadhelper( new FileOp( ) {
                         public void run(JSONArray args) throws JSONException, FileNotFoundException, IOException, NoModificationAllowedException {
                             String fname=args.getString(0);
                             String data=args.getString(1);
