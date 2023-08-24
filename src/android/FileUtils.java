@@ -625,6 +625,9 @@ public class FileUtils extends CordovaPlugin {
         if(j.has("externalApplicationStorageDirectory")) {
             allowedStorageDirectories.add(j.getString("externalApplicationStorageDirectory"));
         }
+        ArrayList<String> allowedExtraPatternStorageDirectories = new ArrayList<String>();
+        // basic pattern for usual application storage directory, to extend the allowed list to external SD cards for example
+        allowedExtraPatternStorageDirectories.add("/Android/data/" + cordova.getActivity().getPackageName() + "/");
 
         if(permissionType == READ && hasReadPermission()) {
             return false;
@@ -636,6 +639,11 @@ public class FileUtils extends CordovaPlugin {
         // Permission required if the native url lies outside the allowed storage directories
         for(String directory : allowedStorageDirectories) {
             if(nativeURL.startsWith(directory)) {
+                return false;
+            }
+        }
+        for (String extraPatternDirectory : allowedExtraPatternStorageDirectories) {
+            if (nativeURL.contains(extraPatternDirectory)) {
                 return false;
             }
         }
