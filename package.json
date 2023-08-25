@@ -4,7 +4,7 @@
   "description": "Cordova File Plugin",
   "types": "./types/index.d.ts",
   "cordova": {
-    "id": "@ns0m/cordova-plugin-file",
+    "id": "cordova-plugin-file",
     "platforms": [
       "android",
       "browser",
