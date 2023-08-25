@@ -21,8 +21,8 @@ package org.apache.cordova.file;
 import android.net.Uri;
 
 public class LocalFilesystemURL {
-	
-	public static final String FILESYSTEM_PROTOCOL = "cdvfile";
+
+    public static final String FILESYSTEM_PROTOCOL = "cdvfile";
     public static final String CDVFILE_KEYWORD = "__cdvfile_";
 
     public final Uri uri;
@@ -30,15 +30,15 @@ public class LocalFilesystemURL {
     public final String path;
     public final boolean isDirectory;
 
-	private LocalFilesystemURL(Uri uri, String fsName, String fsPath, boolean isDirectory) {
-		this.uri = uri;
+    private LocalFilesystemURL(Uri uri, String fsName, String fsPath, boolean isDirectory) {
+        this.uri = uri;
         this.fsName = fsName;
         this.path = fsPath;
         this.isDirectory = isDirectory;
-	}
+    }
 
     public static LocalFilesystemURL parse(Uri uri) {
-        if(!uri.toString().contains(CDVFILE_KEYWORD)) {
+        if (!uri.toString().contains(CDVFILE_KEYWORD)) {
             return null;
         }
 
@@ -66,7 +66,9 @@ public class LocalFilesystemURL {
         return parse(Uri.parse(uri));
     }
 
-    public static String fsNameToCdvKeyword(String fsName) { return CDVFILE_KEYWORD + fsName + "__"; }
+    public static String fsNameToCdvKeyword(String fsName) {
+        return CDVFILE_KEYWORD + fsName + "__";
+    }
 
     public String toString() {
         return uri.toString();

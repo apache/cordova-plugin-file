@@ -54,8 +54,8 @@ public abstract class Filesystem {
     }
 
     public interface ReadFileCallback {
-		public void handleData(InputStream inputStream, String contentType) throws IOException;
-	}
+        public void handleData(InputStream inputStream, String contentType) throws IOException;
+    }
 
     public static JSONObject makeEntryForURL(LocalFilesystemURL inputURL, Uri nativeURL) {
         try {
@@ -106,13 +106,13 @@ public abstract class Filesystem {
     }
 
     abstract JSONObject getFileForLocalURL(LocalFilesystemURL inputURL, String path,
-			JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException;
+                                           JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException;
 
-	abstract boolean removeFileAtLocalURL(LocalFilesystemURL inputURL) throws InvalidModificationException, NoModificationAllowedException;
+    abstract boolean removeFileAtLocalURL(LocalFilesystemURL inputURL) throws InvalidModificationException, NoModificationAllowedException;
 
-	abstract boolean recursiveRemoveFileAtLocalURL(LocalFilesystemURL inputURL) throws FileExistsException, NoModificationAllowedException;
+    abstract boolean recursiveRemoveFileAtLocalURL(LocalFilesystemURL inputURL) throws FileExistsException, NoModificationAllowedException;
 
-	abstract LocalFilesystemURL[] listChildren(LocalFilesystemURL inputURL) throws FileNotFoundException;
+    abstract LocalFilesystemURL[] listChildren(LocalFilesystemURL inputURL) throws FileNotFoundException;
 
     public final JSONArray readEntriesAtLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException {
         LocalFilesystemURL[] children = listChildren(inputURL);
@@ -125,7 +125,7 @@ public abstract class Filesystem {
         return entries;
     }
 
-	abstract JSONObject getFileMetadataForLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException;
+    abstract JSONObject getFileMetadataForLocalURL(LocalFilesystemURL inputURL) throws FileNotFoundException;
 
     public Uri getRootUri() {
         return rootUri;
@@ -174,13 +174,13 @@ public abstract class Filesystem {
             if (components.get(index).equals("..")) {
                 components.remove(index);
                 if (index > 0) {
-                    components.remove(index-1);
+                    components.remove(index - 1);
                     --index;
                 }
             }
         }
         StringBuilder normalizedPath = new StringBuilder();
-        for(String component: components) {
+        for (String component : components) {
             normalizedPath.append("/");
             normalizedPath.append(component);
         }
@@ -200,6 +200,7 @@ public abstract class Filesystem {
     }
 
     public abstract Uri toNativeUri(LocalFilesystemURL inputURL);
+
     public abstract LocalFilesystemURL toLocalUri(Uri inputURL);
 
     public JSONObject getRootEntry() {
@@ -209,19 +210,19 @@ public abstract class Filesystem {
         return rootEntry;
     }
 
-	public JSONObject getParentForLocalURL(LocalFilesystemURL inputURL) throws IOException {
+    public JSONObject getParentForLocalURL(LocalFilesystemURL inputURL) throws IOException {
         Uri parentUri = inputURL.uri;
         String parentPath = new File(inputURL.uri.getPath()).getParent();
         if (!"/".equals(parentPath)) {
             parentUri = inputURL.uri.buildUpon().path(parentPath + '/').build();
-		}
-		return getEntryForLocalURL(LocalFilesystemURL.parse(parentUri));
-	}
+        }
+        return getEntryForLocalURL(LocalFilesystemURL.parse(parentUri));
+    }
 
     protected LocalFilesystemURL makeDestinationURL(String newName, LocalFilesystemURL srcURL, LocalFilesystemURL destURL, boolean isDirectory) {
         // I know this looks weird but it is to work around a JSON bug.
         if ("null".equals(newName) || "".equals(newName)) {
-            newName = srcURL.uri.getLastPathSegment();;
+            newName = srcURL.uri.getLastPathSegment();
         }
 
         String newDest = destURL.uri.toString();
@@ -236,13 +237,13 @@ public abstract class Filesystem {
         return LocalFilesystemURL.parse(newDest);
     }
 
-	/* Read a source URL (possibly from a different filesystem, srcFs,) and copy it to
-	 * the destination URL on this filesystem, optionally with a new filename.
-	 * If move is true, then this method should either perform an atomic move operation
-	 * or remove the source file when finished.
-	 */
+    /* Read a source URL (possibly from a different filesystem, srcFs,) and copy it to
+     * the destination URL on this filesystem, optionally with a new filename.
+     * If move is true, then this method should either perform an atomic move operation
+     * or remove the source file when finished.
+     */
     public JSONObject copyFileToURL(LocalFilesystemURL destURL, String newName,
-            Filesystem srcFs, LocalFilesystemURL srcURL, boolean move) throws IOException, InvalidModificationException, JSONException, NoModificationAllowedException, FileExistsException {
+                                    Filesystem srcFs, LocalFilesystemURL srcURL, boolean move) throws IOException, InvalidModificationException, JSONException, NoModificationAllowedException, FileExistsException {
         // First, check to see that we can do it
         if (move && !srcFs.canRemoveFileAtLocalURL(srcURL)) {
             throw new NoModificationAllowedException("Cannot move file at source URL");
@@ -293,25 +294,27 @@ public abstract class Filesystem {
         }
     }
 
-	abstract long writeToFileAtURL(LocalFilesystemURL inputURL, String data, int offset,
-			boolean isBinary) throws NoModificationAllowedException, IOException;
+    abstract long writeToFileAtURL(LocalFilesystemURL inputURL, String data, int offset,
+                                   boolean isBinary) throws NoModificationAllowedException, IOException;
 
-	abstract long truncateFileAtURL(LocalFilesystemURL inputURL, long size)
-			throws IOException, NoModificationAllowedException;
+    abstract long truncateFileAtURL(LocalFilesystemURL inputURL, long size)
+            throws IOException, NoModificationAllowedException;
 
-	// This method should return null if filesystem urls cannot be mapped to paths
-	abstract String filesystemPathForURL(LocalFilesystemURL url);
+    // This method should return null if filesystem urls cannot be mapped to paths
+    abstract String filesystemPathForURL(LocalFilesystemURL url);
 
-	abstract LocalFilesystemURL URLforFilesystemPath(String path);
+    abstract LocalFilesystemURL URLforFilesystemPath(String path);
 
-	abstract boolean canRemoveFileAtLocalURL(LocalFilesystemURL inputURL);
+    abstract boolean canRemoveFileAtLocalURL(LocalFilesystemURL inputURL);
 
     protected class LimitedInputStream extends FilterInputStream {
         long numBytesToRead;
+
         public LimitedInputStream(InputStream in, long numBytesToRead) {
             super(in);
             this.numBytesToRead = numBytesToRead;
         }
+
         @Override
         public int read() throws IOException {
             if (numBytesToRead <= 0) {
@@ -320,6 +323,7 @@ public abstract class Filesystem {
             numBytesToRead--;
             return in.read();
         }
+
         @Override
         public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException {
             if (numBytesToRead <= 0) {
@@ -327,7 +331,7 @@ public abstract class Filesystem {
             }
             int bytesToRead = byteCount;
             if (byteCount > numBytesToRead) {
-                bytesToRead = (int)numBytesToRead; // Cast okay; long is less than int here.
+                bytesToRead = (int) numBytesToRead; // Cast okay; long is less than int here.
             }
             int numBytesRead = in.read(buffer, byteOffset, bytesToRead);
             numBytesToRead -= numBytesRead;
@@ -341,8 +345,8 @@ public abstract class Filesystem {
         String path = LocalFilesystemURL.fsNameToCdvKeyword(name);
 
         return new Uri.Builder()
-            .scheme(scheme)
-            .authority(hostname)
-            .path(path);
+                .scheme(scheme)
+                .authority(hostname)
+                .path(path);
     }
 }
