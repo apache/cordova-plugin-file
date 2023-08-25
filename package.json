@@ -1,6 +1,6 @@
 {
   "name": "@ns0m/cordova-plugin-file",
-  "version": "8.0.1-2",
+  "version": "8.0.1-3",
   "description": "Cordova File Plugin",
   "types": "./types/index.d.ts",
   "cordova": {
