@@ -103,6 +103,8 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
 * `cordova.file.externalCacheDirectory` - Application cache on external storage.
   (_Android_)
 
+* `cordova.file.externalMediaDirectory` - Application media directory on external storage. (_Android_)
+
 * `cordova.file.externalRootDirectory` - External storage (SD card) root. (_Android_, _BlackBerry 10_)
 
 * `cordova.file.tempDirectory` - Temp directory that the OS can clear at will. Do not
@@ -116,6 +118,14 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
   to other application (e.g. Office files). Note that for _OSX_ this is the user's `~/Documents` directory. (_iOS_, _OSX_)
 
 * `cordova.file.sharedDirectory` - Files globally available to all applications (_BlackBerry 10_)
+
+* `cordova.file.removableExternalApplicationStorageDirectories` - Application space on removable external storages. (_Android_)
+
+* `cordova.file.removableExternalDataDirectories` - Where to put app-specific data files on removable external storages. (_Android_)
+
+* `cordova.file.removableExternalCacheDirectories` - Application cache on removable external storages. (_Android_)
+
+* `cordova.file.removableExternalMediaDirectories` - Application media directory on removable external storages. (_Android_)
 
 ## File System Layouts
 
@@ -162,8 +172,14 @@ the `cordova.file.*` properties map to physical paths on a real device.
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Documents` |                             | documents                 | r/w  |     Yes     |     No    |   Yes   |
 | `<sdcard>/`                                     | externalRootDirectory       | sdcard                    | r/w\*\*\*  |     Yes     |     No    |   No    |
 | &nbsp;&nbsp;&nbsp;`Android/data/<app-id>/`      | externalApplicationStorageDirectory | -                 | r/w  |     Yes     |     No    |   No    |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`cache`     | externalCacheDirectory       | cache-external            | r/w  |     Yes     |     No\*\*|   No    |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`cache`     | externalCacheDirectory      | cache-external            | r/w  |     Yes     |     No\*\*|   No    |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`files`     | externalDataDirectory       | files-external            | r/w  |     Yes     |     No    |   No    |
+| &nbsp;&nbsp;&nbsp;`Android/media/<app-id>/`     | externalMediaDirectory                         | -      | r/w  |     Yes     |     No    |   No    |
+| `<removable sdcard>/` (0 or more)               |                                                | -      | r/w\*\*\*  |     Yes     |     No    |   No    |
+| &nbsp;&nbsp;&nbsp;`Android/data/<app-id>/`      | removableExternalApplicationStorageDirectories | -      | r/w  |     Yes     |     No    |   No    |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`cache`     | removableExternalCacheDirectories              | -      | r/w  |     Yes     |     No\*\*|   No    |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`files`     | removableExternalDataDirectories               | -      | r/w  |     Yes     |     No    |   No    |
+| &nbsp;&nbsp;&nbsp;`Android/media/<app-id>/`     | removableExternalMediaDirectories              | -      | r/w  |     Yes     |     No    |   No    |
 
 \* The OS may periodically clear this directory, but do not rely on this behavior. Clear
    the contents of this directory as appropriate for your application. Should a user
