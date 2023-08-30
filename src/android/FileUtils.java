@@ -20,14 +20,12 @@ package org.apache.cordova.file;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Base64;
-import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceResponse;
 
@@ -46,17 +44,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1357,9 +1351,9 @@ public class FileUtils extends CordovaPlugin {
 
                             return new WebResourceResponse(fileMimeType, null, fileIS);
                         } catch (FileNotFoundException e) {
-                            Log.e(LOG_TAG, e.getMessage());
+                            LOG.e(LOG_TAG, e.getMessage());
                         } catch (IOException e) {
-                            Log.e(LOG_TAG, e.getMessage());
+                            LOG.e(LOG_TAG, e.getMessage());
                         }
                     }
                 }
