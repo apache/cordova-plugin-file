@@ -95,15 +95,15 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
   in here. (_iOS_, _Android_, _BlackBerry 10_, _OSX_, _windows_)
 
 * `cordova.file.externalApplicationStorageDirectory` - Application space on
-  external storage. (_Android_)
+  external storage. (_Android_). See [Quirks](#androids-external-storage-quirks).
 
 * `cordova.file.externalDataDirectory` - Where to put app-specific data files on
-  external storage. (_Android_)
+  external storage. (_Android_). See [Quirks](#androids-external-storage-quirks).
 
 * `cordova.file.externalCacheDirectory` - Application cache on external storage.
-  (_Android_)
+  (_Android_). See [Quirks](#androids-external-storage-quirks).
 
-* `cordova.file.externalRootDirectory` - External storage (SD card) root. (_Android_, _BlackBerry 10_)
+* `cordova.file.externalRootDirectory` - External storage (SD card) root. (_Android_, _BlackBerry 10_). See [Quirks](#androids-external-storage-quirks).
 
 * `cordova.file.tempDirectory` - Temp directory that the OS can clear at will. Do not
   rely on the OS to clear this directory; your app should always remove files as
@@ -177,6 +177,26 @@ the `cordova.file.*` properties map to physical paths on a real device.
 
 **Note**: If external storage can't be mounted, the `cordova.file.external*`
 properties are `null`.
+
+#### Android's External Storage Quirks
+
+With the introduction of [Scoped Storage](https://source.android.com/docs/core/storage/scoped) access to External Storage is unreliable or limited via File APIs.
+Scoped Storage was introduced in API 29. While existing apps may have the ability to opt out, this option is not available for new apps. On Android API 30 and later, Scoped Storage is fully enforced.
+
+Additionally, Direct File Access **is not** supported on API 29. This means this plugin **cannot** access external storage mediums on API 29 devices.
+
+API 30 introduced [FUSE](https://source.android.com/docs/core/storage/scoped) which allowed limited access to external storage using File APIs, allowing this plugin to
+partially work again.
+
+Limited access includes but isn't limited to:
+- Read only access with appropriate `READ_EXTERNAL` or [READ_MEDIA_*](https://developer.android.com/training/data-storage/shared/media#access-other-apps-files) permissions.
+- Read only access is limited to media files, but not documents.
+- Writes are limited to only files owned by your app. Modifying files owned by a third-party app (including an image file created via the camera plugin for example) is not possible via the File API.
+- Not all paths in external storage is writable.
+
+These limitations only applies to external filesystems (e.g. `cordova.file.external*` paths). Internal filesystems such as `cordova.file.dataDirectory` path are not imposed by these limitations.
+
+If interfacing with the external file system is a requirement for your application, consider using a [MediaStore](https://www.npmjs.com/search?q=ecosystem%3Acordova%20storage%20access%20framework) plugin instead.
 
 ### OS X File System Layout
 
