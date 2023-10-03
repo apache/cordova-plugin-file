@@ -45,7 +45,8 @@ public class ContentFilesystem extends Filesystem {
 
     @Override
     public Uri toNativeUri(LocalFilesystemURL inputURL) {
-        String authorityAndPath = inputURL.uri.getEncodedPath().substring(this.name.length() + 2);
+        String encodedPath = inputURL.uri.getEncodedPath();
+        String authorityAndPath = encodedPath.substring(encodedPath.indexOf(this.name) + 1 + this.name.length() + 2);
         if (authorityAndPath.length() < 2) {
             return null;
         }

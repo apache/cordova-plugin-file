@@ -19,12 +19,12 @@
  *
 */
 
-var exec = require('cordova/exec');
-var modulemapper = require('cordova/modulemapper');
-var utils = require('cordova/utils');
-var FileError = require('./FileError');
-var ProgressEvent = require('./ProgressEvent');
-var origFileReader = modulemapper.getOriginalSymbol(window, 'FileReader');
+const exec = require('cordova/exec');
+const modulemapper = require('cordova/modulemapper');
+const utils = require('cordova/utils');
+const FileError = require('./FileError');
+const ProgressEvent = require('./ProgressEvent');
+const origFileReader = modulemapper.getOriginalSymbol(window, 'FileReader');
 
 /**
  * This class reads the mobile device file system.
@@ -34,7 +34,7 @@ var origFileReader = modulemapper.getOriginalSymbol(window, 'FileReader');
  *      To read from the SD card, the file name is "sdcard/my_file.txt"
  * @constructor
  */
-var FileReader = function () {
+const FileReader = function () {
     this._readyState = 0;
     this._error = null;
     this._result = null;
@@ -133,11 +133,12 @@ function readSuccessCallback (readType, encoding, offset, totalSize, accumulate,
         return;
     }
 
-    var CHUNK_SIZE = FileReader.READ_CHUNK_SIZE;
+    let CHUNK_SIZE = FileReader.READ_CHUNK_SIZE;
     if (readType === 'readAsDataURL') {
         // Windows proxy does not support reading file slices as Data URLs
         // so read the whole file at once.
-        CHUNK_SIZE = cordova.platformId === 'windows' ? totalSize
+        CHUNK_SIZE = cordova.platformId === 'windows'
+            ? totalSize
             : (
                 // Calculate new chunk size for data URLs to be multiply of 3
                 // Otherwise concatenated base64 chunks won't be valid base64 data
@@ -155,7 +156,7 @@ function readSuccessCallback (readType, encoding, offset, totalSize, accumulate,
     }
 
     if (typeof r === 'undefined' || this._progress < totalSize) {
-        var execArgs = [
+        const execArgs = [
             this._localURL,
             offset + this._progress,
             offset + this._progress + Math.min(totalSize - this._progress, CHUNK_SIZE)];
@@ -238,9 +239,9 @@ FileReader.prototype.readAsText = function (file, encoding) {
     }
 
     // Default encoding is UTF-8
-    var enc = encoding || 'UTF-8';
+    const enc = encoding || 'UTF-8';
 
-    var totalSize = file.end - file.start;
+    const totalSize = file.end - file.start;
     readSuccessCallback.bind(this)('readAsText', enc, file.start, totalSize, function (r) {
         if (this._progress === 0) {
             this._result = '';
@@ -261,9 +262,9 @@ FileReader.prototype.readAsDataURL = function (file) {
         return this._realReader.readAsDataURL(file);
     }
 
-    var totalSize = file.end - file.start;
+    const totalSize = file.end - file.start;
     readSuccessCallback.bind(this)('readAsDataURL', null, file.start, totalSize, function (r) {
-        var commaIndex = r.indexOf(',');
+        const commaIndex = r.indexOf(',');
         if (this._progress === 0) {
             this._result = r;
         } else {
@@ -282,7 +283,7 @@ FileReader.prototype.readAsBinaryString = function (file) {
         return this._realReader.readAsBinaryString(file);
     }
 
-    var totalSize = file.end - file.start;
+    const totalSize = file.end - file.start;
     readSuccessCallback.bind(this)('readAsBinaryString', null, file.start, totalSize, function (r) {
         if (this._progress === 0) {
             this._result = '';
@@ -301,9 +302,9 @@ FileReader.prototype.readAsArrayBuffer = function (file) {
         return this._realReader.readAsArrayBuffer(file);
     }
 
-    var totalSize = file.end - file.start;
+    const totalSize = file.end - file.start;
     readSuccessCallback.bind(this)('readAsArrayBuffer', null, file.start, totalSize, function (r) {
-        var resultArray = (this._progress === 0 ? new Uint8Array(totalSize) : new Uint8Array(this._result));
+        const resultArray = (this._progress === 0 ? new Uint8Array(totalSize) : new Uint8Array(this._result));
         resultArray.set(new Uint8Array(r), this._progress);
         this._result = resultArray.buffer;
     }.bind(this));

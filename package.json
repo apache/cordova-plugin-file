@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-file",
-  "version": "7.0.1-dev",
+  "version": "8.0.1-dev",
   "description": "Cordova File Plugin",
   "types": "./types/index.d.ts",
   "cordova": {
@@ -40,11 +40,14 @@
         "cordova-android": ">=10.0.0"
       },
       "8.0.0": {
+        "cordova-android": ">=12.0.0"
+      },
+      "9.0.0": {
         "cordova": ">100"
       }
     }
   },
   "devDependencies": {
-    "@cordova/eslint-config": "^3.0.0"
+    "@cordova/eslint-config": "^5.0.0"
   }
 }

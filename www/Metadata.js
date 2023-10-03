@@ -24,7 +24,7 @@
  *
  * {Date} modificationTime (readonly)
  */
-var Metadata = function (metadata) {
+const Metadata = function (metadata) {
     if (typeof metadata === 'object') {
         this.modificationTime = new Date(metadata.modificationTime);
         this.size = metadata.size || 0;

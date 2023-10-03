@@ -27,14 +27,14 @@
         return;
     }
 
-    var channel = require('cordova/channel');
-    var FileError = require('./FileError');
-    var PERSISTENT_FS_QUOTA = 5 * 1024 * 1024;
-    var filePluginIsReadyEvent = new Event('filePluginIsReady');
+    const channel = require('cordova/channel');
+    const FileError = require('./FileError');
+    const PERSISTENT_FS_QUOTA = 5 * 1024 * 1024;
+    const filePluginIsReadyEvent = new Event('filePluginIsReady');
 
-    var entryFunctionsCreated = false;
-    var quotaWasRequested = false;
-    var eventWasThrown = false;
+    let entryFunctionsCreated = false;
+    let quotaWasRequested = false;
+    let eventWasThrown = false;
 
     if (!window.requestFileSystem) {
         window.requestFileSystem = function (type, size, win, fail) {
@@ -57,7 +57,7 @@
     // Resolves a filesystem entry by its path - which is passed either in standard (filesystem:file://) or
     // Cordova-specific (cdvfile://) universal way.
     // Aligns with specification: http://www.w3.org/TR/2011/WD-file-system-api-20110419/#widl-LocalFileSystem-resolveLocalFileSystemURL
-    var nativeResolveLocalFileSystemURL = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
+    const nativeResolveLocalFileSystemURL = window.resolveLocalFileSystemURL || window.webkitResolveLocalFileSystemURL;
     window.resolveLocalFileSystemURL = function (url, win, fail) {
         /* If url starts with `cdvfile` then we need convert it to Chrome real url first:
           cdvfile://localhost/persistent/path/to/file -> filesystem:file://persistent/path/to/file */
@@ -67,19 +67,19 @@
             I.e. external resources are not supported via cdvfile. */
             if (url.indexOf('cdvfile://localhost') !== -1) {
                 // Browser supports temporary and persistent only
-                var indexPersistent = url.indexOf('persistent');
-                var indexTemporary = url.indexOf('temporary');
+                const indexPersistent = url.indexOf('persistent');
+                const indexTemporary = url.indexOf('temporary');
 
                 /* Chrome urls start with 'filesystem:' prefix. See quirk:
                    toURL function in Chrome returns filesystem:-prefixed path depending on application host.
                    For example, filesystem:file:///persistent/somefile.txt,
                    filesystem:http://localhost:8080/persistent/somefile.txt. */
-                var prefix = 'filesystem:file:///';
+                let prefix = 'filesystem:file:///';
                 if (location.protocol !== 'file:') {
                     prefix = 'filesystem:' + location.origin + '/';
                 }
 
-                var result;
+                let result;
                 if (indexPersistent !== -1) {
                     // cdvfile://localhost/persistent/path/to/file -> filesystem:file://persistent/path/to/file
                     // or filesystem:http://localhost:8080/persistent/path/to/file
@@ -108,13 +108,13 @@
 
     function createFileEntryFunctions (fs) {
         fs.root.getFile('todelete_658674_833_4_cdv', { create: true }, function (fileEntry) {
-            var fileEntryType = Object.getPrototypeOf(fileEntry);
-            var entryType = Object.getPrototypeOf(fileEntryType);
+            const fileEntryType = Object.getPrototypeOf(fileEntry);
+            const entryType = Object.getPrototypeOf(fileEntryType);
 
             // Save the original method
-            var origToURL = entryType.toURL;
+            const origToURL = entryType.toURL;
             entryType.toURL = function () {
-                var origURL = origToURL.call(this);
+                const origURL = origToURL.call(this);
                 if (this.isDirectory && origURL.substr(-1) !== '/') {
                     return origURL + '/';
                 }
@@ -143,13 +143,13 @@
             };
 
             fileEntry.createWriter(function (writer) {
-                var originalWrite = writer.write;
-                var writerProto = Object.getPrototypeOf(writer);
+                const originalWrite = writer.write;
+                const writerProto = Object.getPrototypeOf(writer);
                 writerProto.write = function (blob) {
                     if (blob instanceof Blob) {
                         originalWrite.apply(this, [blob]);
                     } else {
-                        var realBlob = new Blob([blob]);
+                        const realBlob = new Blob([blob]);
                         originalWrite.apply(this, [realBlob]);
                     }
                 };
