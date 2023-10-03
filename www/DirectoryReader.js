@@ -19,8 +19,8 @@
  *
 */
 
-var exec = require('cordova/exec');
-var FileError = require('./FileError');
+const exec = require('cordova/exec');
+const FileError = require('./FileError');
 
 /**
  * An interface that lists the files and directories in a directory.
@@ -42,30 +42,34 @@ DirectoryReader.prototype.readEntries = function (successCallback, errorCallback
         successCallback([]);
         return;
     }
-    var reader = this;
-    var win = typeof successCallback !== 'function' ? null : function (result) {
-        var retVal = [];
-        for (var i = 0; i < result.length; i++) {
-            var entry = null;
-            if (result[i].isDirectory) {
-                entry = new (require('./DirectoryEntry'))();
-            } else if (result[i].isFile) {
-                entry = new (require('./FileEntry'))();
+    const reader = this;
+    const win = typeof successCallback !== 'function'
+        ? null
+        : function (result) {
+            const retVal = [];
+            for (let i = 0; i < result.length; i++) {
+                let entry = null;
+                if (result[i].isDirectory) {
+                    entry = new (require('./DirectoryEntry'))();
+                } else if (result[i].isFile) {
+                    entry = new (require('./FileEntry'))();
+                }
+                entry.isDirectory = result[i].isDirectory;
+                entry.isFile = result[i].isFile;
+                entry.name = result[i].name;
+                entry.fullPath = result[i].fullPath;
+                entry.filesystem = new (require('./FileSystem'))(result[i].filesystemName);
+                entry.nativeURL = result[i].nativeURL;
+                retVal.push(entry);
             }
-            entry.isDirectory = result[i].isDirectory;
-            entry.isFile = result[i].isFile;
-            entry.name = result[i].name;
-            entry.fullPath = result[i].fullPath;
-            entry.filesystem = new (require('./FileSystem'))(result[i].filesystemName);
-            entry.nativeURL = result[i].nativeURL;
-            retVal.push(entry);
-        }
-        reader.hasReadEntries = true;
-        successCallback(retVal);
-    };
-    var fail = typeof errorCallback !== 'function' ? null : function (code) {
-        errorCallback(new FileError(code));
-    };
+            reader.hasReadEntries = true;
+            successCallback(retVal);
+        };
+    const fail = typeof errorCallback !== 'function'
+        ? null
+        : function (code) {
+            errorCallback(new FileError(code));
+        };
     exec(win, fail, 'File', 'readEntries', [this.localURL]);
 };
 

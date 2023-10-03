@@ -19,10 +19,10 @@
  *
 */
 
-var exec = require('cordova/exec');
-var FileError = require('./FileError');
-var FileReader = require('./FileReader');
-var ProgressEvent = require('./ProgressEvent');
+const exec = require('cordova/exec');
+const FileError = require('./FileError');
+const FileReader = require('./FileReader');
+const ProgressEvent = require('./ProgressEvent');
 
 /**
  * This class writes to the mobile device file system.
@@ -35,7 +35,7 @@ var ProgressEvent = require('./ProgressEvent');
  * @param file {File} File object containing file properties
  * @param append if true write to the end of the file, otherwise overwrite the file
  */
-var FileWriter = function (file) {
+const FileWriter = function (file) {
     this.fileName = '';
     this.length = 0;
     if (file) {
@@ -109,15 +109,14 @@ FileWriter.prototype.abort = function () {
  * @param isPendingBlobReadResult {Boolean} true if the data is the pending blob read operation result
  */
 FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
-    var that = this;
-    var supportsBinary = (typeof window.Blob !== 'undefined' && typeof window.ArrayBuffer !== 'undefined');
+    const that = this;
+    const supportsBinary = (typeof window.Blob !== 'undefined' && typeof window.ArrayBuffer !== 'undefined');
     /* eslint-disable no-undef */
-    var isProxySupportBlobNatively = cordova.platformId === 'windows';
-    var isBinary;
+    const isProxySupportBlobNatively = cordova.platformId === 'windows';
 
     // Check to see if the incoming data is a blob
     if (data instanceof File || (!isProxySupportBlobNatively && supportsBinary && data instanceof Blob)) {
-        var fileReader = new FileReader();
+        const fileReader = new FileReader();
         /* eslint-enable no-undef */
         fileReader.onload = function () {
             // Call this method again, with the arraybuffer as argument
@@ -153,7 +152,7 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
     }
 
     // Mark data type for safer transport over the binary bridge
-    isBinary = supportsBinary && (data instanceof ArrayBuffer);
+    const isBinary = supportsBinary && (data instanceof ArrayBuffer);
 
     // Throw an exception if we are already writing a file
     if (this.readyState === FileWriter.WRITING && !isPendingBlobReadResult) {
@@ -163,7 +162,7 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
     // WRITING state
     this.readyState = FileWriter.WRITING;
 
-    var me = this;
+    const me = this;
 
     // If onwritestart callback
     if (typeof me.onwritestart === 'function') {
@@ -270,7 +269,7 @@ FileWriter.prototype.truncate = function (size) {
     // WRITING state
     this.readyState = FileWriter.WRITING;
 
-    var me = this;
+    const me = this;
 
     // If onwritestart callback
     if (typeof me.onwritestart === 'function') {
