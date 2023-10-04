@@ -21,7 +21,7 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
 xmlns:android="http://schemas.android.com/apk/res/android"
            id="cordova-plugin-file"
-      version="7.0.1-dev">
+      version="8.0.1-dev">
     <name>File</name>
     <description>Cordova File Plugin</description>
     <license>Apache 2.0</license>
@@ -30,7 +30,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
     <issue>https://github.com/apache/cordova-plugin-file/issues</issue>
 
     <engines>
-        <engine name="cordova-android" version=">=10.0.0" />
+        <engine name="cordova-android" version=">=12.0.0" />
     </engines>
 
     <js-module src="www/DirectoryEntry.js" name="DirectoryEntry">
@@ -131,9 +131,6 @@ to config.xml in order for the application to find previously stored files.
                 <param name="onload" value="true" />
             </feature>
             <allow-navigation href="cdvfile:*" />
-        </config-file>
-        <config-file target="AndroidManifest.xml" parent="/*">
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
         </config-file>
 
         <source-file src="src/android/EncodingException.java" target-dir="src/org/apache/cordova/file" />
