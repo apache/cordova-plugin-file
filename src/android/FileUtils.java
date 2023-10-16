@@ -691,8 +691,6 @@ public class FileUtils extends CordovaPlugin {
                         callbackContext.error(FileUtils.ENCODING_ERR);
                     } else if (e instanceof IOException) {
                         callbackContext.error(FileUtils.INVALID_MODIFICATION_ERR);
-                    } else if (e instanceof EncodingException) {
-                        callbackContext.error(FileUtils.ENCODING_ERR);
                     } else if (e instanceof TypeMismatchException) {
                         callbackContext.error(FileUtils.TYPE_MISMATCH_ERR);
                     } else if (e instanceof JSONException) {
