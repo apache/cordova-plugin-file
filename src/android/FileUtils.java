@@ -543,8 +543,10 @@ public class FileUtils extends CordovaPlugin {
     }
 
     private void getWritePermission(String rawArgs, int action, CallbackContext callbackContext) {
-        int requestCode = pendingRequests.createRequest(rawArgs, action, callbackContext);
-        PermissionHelper.requestPermission(this, requestCode, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            int requestCode = pendingRequests.createRequest(rawArgs, action, callbackContext);
+            PermissionHelper.requestPermission(this, requestCode, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
     }
 
     /**
@@ -567,7 +569,10 @@ public class FileUtils extends CordovaPlugin {
     }
 
     private boolean hasWritePermission() {
-        return PermissionHelper.hasPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        // Starting with API 33, requesting WRITE_EXTERNAL_STORAGE is an auto permission rejection
+        return android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                ? true
+                : PermissionHelper.hasPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
 
     private boolean needPermission(String nativeURL, int permissionType) throws JSONException {
