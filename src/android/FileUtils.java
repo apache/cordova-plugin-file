@@ -569,8 +569,8 @@ public class FileUtils extends CordovaPlugin {
     private boolean hasWritePermission() {
         // Starting with API 33, requesting WRITE_EXTERNAL_STORAGE is an auto permission rejection
         return android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-            ? true
-            : PermissionHelper.hasPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                ? true
+                : PermissionHelper.hasPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
 
     private boolean needPermission(String nativeURL, int permissionType) throws JSONException {
