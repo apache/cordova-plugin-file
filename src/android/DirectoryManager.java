@@ -58,7 +58,7 @@ public class DirectoryManager {
     /**
      * Get the free space in external storage
      *
-     * @return 		Size in KB or -1 if not available
+     * @return 		Size in Bytes or -1 if not available
      */
     public static long getFreeExternalStorageSpace() {
         String status = Environment.getExternalStorageState();
@@ -72,7 +72,7 @@ public class DirectoryManager {
             return -1;
         }
 
-        return freeSpaceInBytes / 1024;
+        return freeSpaceInBytes;
     }
 
     /**
