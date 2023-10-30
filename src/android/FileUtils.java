@@ -547,6 +547,14 @@ public class FileUtils extends CordovaPlugin {
             int requestCode = pendingRequests.createRequest(rawArgs, action, callbackContext);
             PermissionHelper.requestPermission(this, requestCode, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
+        else {
+            PermissionHelper.requestPermissions(this, requestCode, 
+            new String[] {
+                Manifest.permission.READ_MEDIA_IMAGES,
+                Manifest.permission.READ_MEDIA_VIDEO,
+                Manifest.permission.READ_MEDIA_AUDIO
+            });
+        }
     }
 
     /**
