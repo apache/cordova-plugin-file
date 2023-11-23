@@ -68,7 +68,7 @@ utils.defineGetter(FileReader.prototype, 'result', function () {
     return this._localURL ? this._result : this._realReader.result;
 });
 
-function defineEvent (eventName) {
+function defineEvent(eventName) {
     utils.defineGetterSetter(FileReader.prototype, eventName, function () {
         return this._realReader[eventName] || null;
     }, function (value) {
@@ -94,7 +94,7 @@ defineEvent('onloadend');
 // When the read has been aborted. For instance, by invoking the abort() method.
 defineEvent('onabort');
 
-function initRead (reader, file) {
+function initRead(reader, file) {
     // Already loading something
     if (reader.readyState === FileReader.LOADING) {
         throw new FileError(FileError.INVALID_STATE_ERR);
@@ -128,7 +128,7 @@ function initRead (reader, file) {
  * @param accumulate A function that takes the callback result and accumulates it in this._result.
  * @param r Callback result returned by the last read exec() call, or null to begin reading.
  */
-function readSuccessCallback (readType, encoding, offset, totalSize, accumulate, r) {
+function readSuccessCallback(readType, encoding, offset, totalSize, accumulate, r) {
     if (this._readyState === FileReader.DONE) {
         return;
     }
@@ -184,7 +184,7 @@ function readSuccessCallback (readType, encoding, offset, totalSize, accumulate,
  * Callback used by the following read* functions to handle errors.
  * Must be bound to the FileReader's this, e.g. readFailureCallback.bind(this)
  */
-function readFailureCallback (e) {
+function readFailureCallback(e) {
     if (this._readyState === FileReader.DONE) {
         return;
     }
@@ -299,6 +299,9 @@ FileReader.prototype.readAsBinaryString = function (file) {
  */
 FileReader.prototype.readAsArrayBuffer = function (file) {
     if (initRead(this, file)) {
+        if (file.type === 'text/plain') {
+            file = new Blob([file], { type: 'text/plain' });
+        }
         return this._realReader.readAsArrayBuffer(file);
     }
 
