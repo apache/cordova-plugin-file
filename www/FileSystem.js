@@ -19,7 +19,7 @@
  *
 */
 
-var DirectoryEntry = require('./DirectoryEntry');
+const DirectoryEntry = require('./DirectoryEntry');
 
 /**
  * An interface representing a file system
@@ -28,7 +28,7 @@ var DirectoryEntry = require('./DirectoryEntry');
  * {DOMString} name the unique name of the file system (readonly)
  * {DirectoryEntry} root directory of the file system (readonly)
  */
-var FileSystem = function (name, root) {
+const FileSystem = function (name, root) {
     this.name = name;
     if (root) {
         this.root = new DirectoryEntry(root.name, root.fullPath, this, root.nativeURL);
