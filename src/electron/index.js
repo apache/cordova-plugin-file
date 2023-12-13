@@ -319,7 +319,7 @@ module.exports = {
      *
      * @returns {Promise<Object>} The directory object that is converted to DirectoryEntry by cordova.
      */
-    getDirectory: getDirectory,
+    getDirectory,
 
     /**
      * Get the Parent directory

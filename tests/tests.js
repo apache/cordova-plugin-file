@@ -59,7 +59,7 @@ exports.defineAutoTests = function () {
                 toBeFileError: function () {
                     return {
                         compare: function (error, code) {
-                            const pass = error.code === code;
+                            let pass = error.code === code;
                             if (isElectron && error && error.code && error.code.message) {
                                 pass = error.code.message.indexOf(code) > -1;
                             }
