@@ -553,7 +553,7 @@ public class FileUtils extends CordovaPlugin {
      * If your app targets Android 13 (SDK 33) or higher and needs to access media files that other apps have created,
      * you must request one or more of the following granular media permissions READ_MEDIA_*
      * instead of the READ_EXTERNAL_STORAGE permission:
-     *
+     * <p>
      * Refer to: https://developer.android.com/about/versions/13/behavior-changes-13
      *
      * @return
@@ -658,7 +658,6 @@ public class FileUtils extends CordovaPlugin {
         }
         return localURL;
     }
-
 
     /* helper to execute functions async and handle the result codes
      *
@@ -833,7 +832,6 @@ public class FileUtils extends CordovaPlugin {
             throw mue;
         }
     }
-
 
     /**
      * Deletes a file or directory. It is an error to attempt to delete a directory that is not empty.
@@ -1123,7 +1121,6 @@ public class FileUtils extends CordovaPlugin {
         }
     }
 
-
     /**
      * Write contents of file.
      *
@@ -1167,7 +1164,6 @@ public class FileUtils extends CordovaPlugin {
             throw mue;
         }
     }
-
 
     /*
      * Handle the response
