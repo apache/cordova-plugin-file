@@ -25,6 +25,7 @@ import android.net.Uri;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -78,14 +79,14 @@ public class ContentFilesystem extends Filesystem {
             b.appendEncodedPath(subPath);
         }
         Uri localUri = b.encodedQuery(inputURL.getEncodedQuery())
-            .encodedFragment(inputURL.getEncodedFragment())
-            .build();
+                .encodedFragment(inputURL.getEncodedFragment())
+                .build();
         return LocalFilesystemURL.parse(localUri);
     }
 
     @Override
     public JSONObject getFileForLocalURL(LocalFilesystemURL inputURL,
-            String fileName, JSONObject options, boolean directory) throws IOException, TypeMismatchException, JSONException {
+                                         String fileName, JSONObject options, boolean directory) throws IOException, TypeMismatchException, JSONException {
         throw new UnsupportedOperationException("getFile() not supported for content:. Use resolveLocalFileSystemURL instead.");
     }
 
@@ -162,9 +163,10 @@ public class ContentFilesystem extends Filesystem {
 
     @Override
     public long writeToFileAtURL(LocalFilesystemURL inputURL, String data,
-            int offset, boolean isBinary) throws NoModificationAllowedException {
+                                 int offset, boolean isBinary) throws NoModificationAllowedException {
         throw new NoModificationAllowedException("Couldn't write to file given its content URI");
     }
+
     @Override
     public long truncateFileAtURL(LocalFilesystemURL inputURL, long size)
             throws NoModificationAllowedException {
