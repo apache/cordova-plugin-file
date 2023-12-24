@@ -26,6 +26,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Base64;
+import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceResponse;
 
@@ -1354,9 +1355,9 @@ public class FileUtils extends CordovaPlugin {
 
                             return new WebResourceResponse(fileMimeType, null, fileIS);
                         } catch (FileNotFoundException e) {
-                            LOG.e(LOG_TAG, e.getMessage());
+                            Log.e(LOG_TAG, e.getMessage());
                         } catch (IOException e) {
-                            LOG.e(LOG_TAG, e.getMessage());
+                            Log.e(LOG_TAG, e.getMessage());
                         }
                     }
                 }
