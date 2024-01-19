@@ -235,14 +235,16 @@ If interfacing with the external file system is a requirement for your applicati
 
 
 ### Electron File System Layout
-Varies according to OS and installation method.
+Varies according to the Operating System. The installation method also has an impact on the file path and where it is installed. The file path will be different if you're running it using the command `cordova run electron --nobuild` (debug) or if you've published to a store and running the program through the app installed from the store. The list can be expanded.
+
+_Note: The current Linux file paths are tested in Ubuntu and might be different depending on the distribution of linux_
 | Device Path                                           | `cordova.file.*`            | r/w? | persistent? | OS clears | private |
 |:------------------------------------------------------|:----------------------------|:----:|:-----------:|:---------:|:-------:|
-| Windows:`~\AppData\Local\Programs\{appId}`<br />Linux: `@todo`<br /> Mac: `/Applications/{appName.app}/Contents/Resources`         | applicationDirectory        | r    |     N/A     |     N/A   |   Yes   |
-| Windows:`~\AppData\Roaming\{appId}` <br />Linux: `@todo`<br /> Mac: `~/Library/Application Support/{appId}`                           | dataDirectory               | r/w  |     Yes     |     No    |   Yes   |
-| Windows: `~\AppData\Roaming`  <br />Linux: `@todo`<br /> Mac: `~/Library/Caches`                          | cacheDirectory              | r/w  |     No      |     Yes\* |   Yes   |
-| Windows: `~\AppData\Local\Temp`  <br />Linux: `@todo`<br /> Mac: `varies`                          | tempDirectory               | r/w  |     No      |     Yes\* |   Yes   |
-| Windows: `~\Documents`  <br />Linux: `@todo`<br /> Mac: `~/Documents`                           | documentsDirectory         | -  |     -     |     -    |   -   |
+| __Windows:__<br />_Debug:_ `{cwd}\\platforms\\electron`<br />_Installer:_`~\\AppData\\Local\\Programs\\{appId}`<br />__Linux:__ <br>_Debug:_ `{cwd}/platforms/electron`<br />_Package Installer:_ `/opt/{appName}/resources`<br /> __Mac:__<br />_Debug:_ `{cwd}/platforms/electron`<br />_Installer:_`/Applications/{appName.app}/Contents/Resources`         | applicationDirectory        | r    |     N/A     |     N/A   |   Yes   |
+| __Windows__: <br />_Debug:_ `~\\AppData\\Roaming\\Electron\\`<br />_Installer:_`~\\AppData\\Local\\Programs\\{appId}`<br />__Linux:__<br>_Debug:_ `~/.config/Electron/`<br />_Package Installer:_ `~/.config/{appId}/`<br /> __Mac:__ `~/Library/Application Support/{appId}`                           | dataDirectory               | r/w  |     Yes     |     No    |   Yes   |
+| __Windows__: <br />_Debug:_ `~\\AppData\\Roaming\\`<br />_Installer:_`~\\AppData\\Roaming\\`<br />  __Linux:__<br> _Debug:_ `~/.cache/`<br />_Installer:_`~/.cache/`<br /> __Mac:__ `~/Library/Caches`                          | cacheDirectory              | r/w  |     No      |     Yes\* |   Yes   |
+| __Windows__: <br />_Debug:_ `~\\AppData\\Local\\Temp\\`<br />_Installer:_`~\AppData\\Local\\Temp\\`<br />__Linux:__<br>_Debug:_ `/tmp/`<br />_Package Installer:_ `/tmp/`<br /> __Mac:__ `varies`                          | tempDirectory               | r/w  |     No      |     Yes\* |   Yes   |
+| Windows: `~\\Documents`  <br />Linux: `~/Documents/`<br /> Mac: `~/Documents`                           | documentsDirectory         | -  |     -     |     -    |   -   |
 
 \* The OS may periodically clear this directory
 
