@@ -80,7 +80,7 @@ module.exports = {
      * @returns {Promise<Array>} - An array of Entries in that directory
      *
      */
-    readEntries: function ([[fullPath]]) {
+    readEntries: function ([fullPath]) {
         return new Promise((resolve, reject) => {
             fs.readdir(fullPath, { withFileTypes: true }, (err, files) => {
                 if (err) {
@@ -131,7 +131,7 @@ module.exports = {
      *  fullPath: the full path of the file including the extension.
      * @returns {Promise<Object>} - An Object containing the file metadata.
      */
-    getFileMetadata: function ([[fullPath]]) {
+    getFileMetadata: function ([fullPath]) {
         return new Promise((resolve, reject) => {
             fs.stat(fullPath, (err, stats) => {
                 if (err) {
@@ -158,7 +158,7 @@ module.exports = {
      *      fullPath: the full path of the file or directory.
      * @returns {Promise<Object>} - An Object containing the metadata.
      */
-    getMetadata: function ([[url]]) {
+    getMetadata: function ([url]) {
         return new Promise((resolve, reject) => {
             fs.stat(url, (err, stats) => {
                 if (err) {
@@ -182,7 +182,7 @@ module.exports = {
      *      metadataObject: the object containing metadataValues (currently only supports modificationTime)
      * @returns {Promise<Object>} - An Object containing the file metadata.
      */
-    setMetadata: function ([[fullPath, metadataObject]]) {
+    setMetadata: function ([fullPath, metadataObject]) {
         return new Promise((resolve, reject) => {
             const modificationTime = metadataObject.modificationTime;
             const utimesError = function (err) {
@@ -208,7 +208,7 @@ module.exports = {
      *
      * @returns {Promise<String>} The string value within the file.
      */
-    readAsText: function ([[fileName, enc, startPos, endPos]]) {
+    readAsText: function ([fileName, enc, startPos, endPos]) {
         return readAs('text', fileName, enc, startPos, endPos);
     },
 
@@ -222,7 +222,7 @@ module.exports = {
      *
      * @returns {Promise<String>} the file as a dataUrl.
      */
-    readAsDataURL: function ([[fileName, startPos, endPos]]) {
+    readAsDataURL: function ([fileName, startPos, endPos]) {
         return readAs('dataURL', fileName, null, startPos, endPos);
     },
 
@@ -236,7 +236,7 @@ module.exports = {
      *
      * @returns {Promise<String>} The file as a binary string.
      */
-    readAsBinaryString: function ([[fileName, startPos, endPos]]) {
+    readAsBinaryString: function ([fileName, startPos, endPos]) {
         return readAs('binaryString', fileName, null, startPos, endPos);
     },
 
@@ -250,7 +250,7 @@ module.exports = {
      *
      * @returns {Promise<Array>} The file as an arrayBuffer.
      */
-    readAsArrayBuffer: function ([[fileName, startPos, endPos]]) {
+    readAsArrayBuffer: function ([fileName, startPos, endPos]) {
         return readAs('arrayBuffer', fileName, null, startPos, endPos);
     },
 
@@ -262,7 +262,7 @@ module.exports = {
      *
      * @returns {Promise<void>} resolves when file or directory is deleted.
      */
-    remove: function ([[fullPath]]) {
+    remove: function ([fullPath]) {
         return new Promise((resolve, reject) => {
             fs.stat(fullPath, (err, stats) => {
                 if (err) {
@@ -290,7 +290,7 @@ module.exports = {
      *
      * @returns {Promise<void>} resolves when file or directory is deleted.
      */
-    removeRecursively: function ([[fullPath]]) {
+    removeRecursively: function ([fullPath]) {
         return new Promise((resolve, reject) => {
             fs.stat(fullPath, (err, stats) => {
                 if (err) {
@@ -329,7 +329,7 @@ module.exports = {
      *
      * @returns {Promise<Object>} The parent directory object that is converted to DirectoryEntry by cordova.
      */
-    getParent: function ([[url]]) {
+    getParent: function ([url]) {
         const parentPath = path.dirname(url);
         const parentName = path.basename(parentPath);
         const fullPath = path.dirname(parentPath) + path.sep;
@@ -347,7 +347,7 @@ module.exports = {
      *
      * @returns {Promise<Object>} The copied file.
      */
-    copyTo: function ([[srcPath, dstDir, dstName]]) {
+    copyTo: function ([srcPath, dstDir, dstName]) {
         return new Promise((resolve, reject) => {
             if (dstName.indexOf('/') !== -1 || path.resolve(srcPath) === path.resolve(dstDir + dstName)) {
                 reject(new Error(FileError.INVALID_MODIFICATION_ERR));
@@ -360,7 +360,7 @@ module.exports = {
             fs.stat(srcPath)
                 .then((stats) => {
                     fs.copy(srcPath, dstDir + dstName, { recursive: stats.isDirectory() })
-                        .then(async () => resolve(await stats.isDirectory() ? getDirectory([[dstDir, dstName]]) : getFile([[dstDir, dstName]])))
+                        .then(async () => resolve(await stats.isDirectory() ? getDirectory([dstDir, dstName]) : getFile([dstDir, dstName])))
                         .catch(() => reject(new Error(FileError.ENCODING_ERR)));
                 })
                 .catch(() => reject(new Error(FileError.NOT_FOUND_ERR)));
@@ -377,7 +377,7 @@ module.exports = {
      *
      * @returns {Promise<Object>} The moved file.
      */
-    moveTo: function ([[srcPath, dstDir, dstName]]) {
+    moveTo: function ([srcPath, dstDir, dstName]) {
         return new Promise((resolve, reject) => {
             if (dstName.indexOf('/') !== -1 || path.resolve(srcPath) === path.resolve(dstDir + dstName)) {
                 reject(new Error(FileError.INVALID_MODIFICATION_ERR));
@@ -390,7 +390,7 @@ module.exports = {
             fs.stat(srcPath)
                 .then((stats) => {
                     fs.move(srcPath, dstDir + dstName)
-                        .then(async () => resolve(await stats.isDirectory() ? getDirectory([[dstDir, dstName]]) : getFile([[dstDir, dstName]])))
+                        .then(async () => resolve(await stats.isDirectory() ? getDirectory([dstDir, dstName]) : getFile([dstDir, dstName])))
                         .catch(() => reject(new Error(FileError.ENCODING_ERR)));
                 })
                 .catch(() => reject(new Error(FileError.NOT_FOUND_ERR)));
@@ -404,7 +404,7 @@ module.exports = {
      *      uri: The full path for the file.
      * @returns {Promise<Object>} The entry for the file or directory.
      */
-    resolveLocalFileSystemURI: function ([[uri]]) {
+    resolveLocalFileSystemURI: function ([uri]) {
         return new Promise((resolve, reject) => {
             // support for encodeURI
             if (/\%5/g.test(uri) || /\%20/g.test(uri)) { // eslint-disable-line no-useless-escape
@@ -478,7 +478,7 @@ module.exports = {
      *      position: the position offset to start writing from.
      * @returns {Promise<Object>} An object with information about the amount of bytes written.
      */
-    write: function ([[fileName, data, position]]) {
+    write: function ([fileName, data, position]) {
         return new Promise((resolve, reject) => {
             if (!data) {
                 reject(new Error(FileError.INVALID_MODIFICATION_ERR));
@@ -507,7 +507,7 @@ module.exports = {
      *      size: the length of the file to truncate to.
      * @returns {Promise}
      */
-    truncate: function ([[fullPath, size]]) {
+    truncate: function ([fullPath, size]) {
         return new Promise((resolve, reject) => {
             fs.truncate(fullPath, size, err => {
                 if (err) {
@@ -520,7 +520,7 @@ module.exports = {
         });
     },
 
-    requestFileSystem: function ([[type, size]]) {
+    requestFileSystem: function ([type, size]) {
         if (type !== 0 && type !== 1) {
             throw new Error(FileError.INVALID_MODIFICATION_ERR);
         }
@@ -590,7 +590,7 @@ function readAs (what, fullPath, encoding, startPos, endPos) {
  *
  * @returns {Promise<Object>} The file object that is converted to FileEntry by cordova.
  */
-function getFile ([[dstDir, dstName, options]]) {
+function getFile ([dstDir, dstName, options]) {
     const absolutePath = path.join(dstDir, dstName);
     options = options || {};
     return new Promise((resolve, reject) => {
@@ -662,7 +662,7 @@ function getFile ([[dstDir, dstName, options]]) {
  *
  * @returns {Promise<Object>} The directory object that is converted to DirectoryEntry by cordova.
  */
-function getDirectory ([[dstDir, dstName, options]]) {
+function getDirectory ([dstDir, dstName, options]) {
     const absolutePath = dstDir + dstName;
     options = options || {};
     return new Promise((resolve, reject) => {
