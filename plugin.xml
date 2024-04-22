@@ -197,6 +197,8 @@ to config.xml in order for the application to find previously stored files.
 
         <framework src="AssetsLibrary.framework" />
         <framework src="MobileCoreServices.framework" />
+
+        <resource-file src="src/ios/CDVFile.bundle" target="CDVFile.bundle" />
     </platform>
 
     <!-- osx -->
