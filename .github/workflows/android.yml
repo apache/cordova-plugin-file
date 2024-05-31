@@ -46,7 +46,7 @@ jobs:
       # These are the default Java configurations used by most tests.
       # To customize these options, add "java-distro" or "java-version" to the strategy matrix with its overriding value.
       default_java-distro: temurin
-      default_java-version: 11
+      default_java-version: 17
 
       # These are the default Android System Image configurations used by most tests.
       # To customize these options, add "system-image-arch" or "system-image-target" to the strategy matrix with its overriding value.
