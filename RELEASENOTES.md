@@ -20,6 +20,17 @@
 -->
 # Release Notes
 
+### 8.1.0 (May 31, 2024)
+
+**Features:**
+
+* [GH-621](https://github.com/apache/cordova-plugin-file/pull/621) feat(ios): add bundled resources for privacy manifest
+
+**Chores & CI:**
+
+* [GH-625](https://github.com/apache/cordova-plugin-file/pull/625) chore: rebuilt package-lock.json w/ version 3
+* [GH-624](https://github.com/apache/cordova-plugin-file/pull/624) ci: sync workflow with paramedic
+
 ### 8.0.1 (Oct 27, 2023)
 
 **Fixes:**
