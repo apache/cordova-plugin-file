@@ -17,7 +17,7 @@ interface Window {
     requestFileSystem(
         type: LocalFileSystem,
         size: number,
-        successCallback: (fileSystem: FileSystem) => void,
+        successCallback: (fileSystem: CDVFileSystem) => void,
         errorCallback?: (fileError: FileError) => void): void;
     /**
      * Look up file system Entry referred to by local URL.
@@ -42,7 +42,7 @@ interface Window {
 }
 
 /** This interface represents a file system. */
-interface FileSystem {
+interface CDVFileSystem {
     /* The name of the file system, unique across the list of exposed file systems. */
     name: string;
     /** The root directory of the file system. */
@@ -63,7 +63,7 @@ interface Entry {
     /** The full absolute path from the root to the entry. */
     fullPath: string;
     /** The file system on which the entry resides. */
-    filesystem: FileSystem;
+    filesystem: CDVFileSystem;
     nativeURL: string;
     /**
      * Look up metadata about this entry.
