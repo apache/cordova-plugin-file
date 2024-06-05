@@ -14,3 +14,6 @@ Thumbs.db
 
 /.project
 node_modules
+
+src/electron/node_modules
+src/electron/package-lock.json
