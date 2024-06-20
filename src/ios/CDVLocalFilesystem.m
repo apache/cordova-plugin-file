@@ -279,31 +279,44 @@
 
 - (CDVPluginResult*)setMetadataForURL:(CDVFilesystemURL *)localURI withObject:(NSDictionary *)options
 {
-    BOOL ok = NO;
-
+    NSNumber* ok = nil;
     NSString* filePath = [self filesystemPathForURL:localURI];
-    // we only care about this iCloud key for now.
+
     // set to 1/true to skip backup, set to 0/false to back it up (effectively removing the attribute)
     NSString* iCloudBackupExtendedAttributeKey = @"com.apple.MobileBackup";
     id iCloudBackupExtendedAttributeValue = [options objectForKey:iCloudBackupExtendedAttributeKey];
 
-    if ((iCloudBackupExtendedAttributeValue != nil) && [iCloudBackupExtendedAttributeValue isKindOfClass:[NSNumber class]]) {
+    if ((ok == nil || [ok boolValue]) && (iCloudBackupExtendedAttributeValue != nil) && [iCloudBackupExtendedAttributeValue isKindOfClass:[NSNumber class]]) {
+        BOOL iCloudBackupOK = NO;
+        
         if (IsAtLeastiOSVersion(@"5.1")) {
             NSURL* url = [NSURL fileURLWithPath:filePath];
             NSError* __autoreleasing error = nil;
 
-            ok = [url setResourceValue:[NSNumber numberWithBool:[iCloudBackupExtendedAttributeValue boolValue]] forKey:NSURLIsExcludedFromBackupKey error:&error];
+            iCloudBackupOK = [url setResourceValue:[NSNumber numberWithBool:[iCloudBackupExtendedAttributeValue boolValue]] forKey:NSURLIsExcludedFromBackupKey error:&error];
         } else { // below 5.1 (deprecated - only really supported in 5.01)
             u_int8_t value = [iCloudBackupExtendedAttributeValue intValue];
             if (value == 0) { // remove the attribute (allow backup, the default)
-                ok = (removexattr([filePath fileSystemRepresentation], [iCloudBackupExtendedAttributeKey cStringUsingEncoding:NSUTF8StringEncoding], 0) == 0);
+                iCloudBackupOK = (removexattr([filePath fileSystemRepresentation], [iCloudBackupExtendedAttributeKey cStringUsingEncoding:NSUTF8StringEncoding], 0) == 0);
             } else { // set the attribute (skip backup)
-                ok = (setxattr([filePath fileSystemRepresentation], [iCloudBackupExtendedAttributeKey cStringUsingEncoding:NSUTF8StringEncoding], &value, sizeof(value), 0, 0) == 0);
+                iCloudBackupOK = (setxattr([filePath fileSystemRepresentation], [iCloudBackupExtendedAttributeKey cStringUsingEncoding:NSUTF8StringEncoding], &value, sizeof(value), 0, 0) == 0);
             }
         }
+        
+        ok = [NSNumber numberWithBool:iCloudBackupOK];
     }
-
-    if (ok) {
+    
+    // see https://developer.apple.com/library/prerelease/ios/documentation/Cocoa/Reference/Foundation/Classes/NSFileManager_Class/index.html#//apple_ref/c/data/NSFileProtectionKey for possible options
+    NSString* fileProtectionAttributeKey = @"NSFileProtectionKey";
+    id fileProtectionAttributeValue = [options objectForKey:fileProtectionAttributeKey];
+    
+    if ((ok == nil || [ok boolValue]) && (fileProtectionAttributeValue != nil) && [fileProtectionAttributeValue isKindOfClass:[NSString class]]) {
+        NSURL* url = [NSURL fileURLWithPath:filePath];
+        NSError* __autoreleasing error = nil;
+        ok = [NSNumber numberWithBool:[[NSFileManager defaultManager] setAttributes:@{NSFileProtectionKey: fileProtectionAttributeValue} ofItemAtPath:[url path] error:&error]];
+    }
+    
+    if ([ok boolValue]) {
         return [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     } else {
         return [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
