@@ -25,7 +25,7 @@
 
 static NSString* toBase64(NSData* data) {
     SEL s1 = NSSelectorFromString(@"cdv_base64EncodedString");
-    SEL s2 = NSSelectorFromString(@"base64EncodedString");
+    SEL s2 = NSSelectorFromString(@"base64EncodedStringWithSeparateLines:false");
     SEL s3 = NSSelectorFromString(@"base64EncodedStringWithOptions:");
     
     if ([data respondsToSelector:s1]) {
