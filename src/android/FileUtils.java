@@ -1240,6 +1240,8 @@ public class FileUtils extends CordovaPlugin {
     }
 
     public CordovaPluginPathHandler getPathHandler() {
+        final CordovaResourceApi resourceApi = webView.getResourceApi();
+
         WebViewAssetLoader.PathHandler pathHandler = path -> {
             String targetFileSystem = null;
 
@@ -1263,9 +1265,11 @@ public class FileUtils extends CordovaPlugin {
                 targetFileSystem = "cache-external";
             } else if (path.startsWith(LocalFilesystemURL.fsNameToCdvKeyword("assets"))) {
                 targetFileSystem = "assets";
+            } else if (path.startsWith(LocalFilesystemURL.fsNameToCdvKeyword("content"))) {
+                targetFileSystem = "content";
             }
 
-            boolean isAssetsFS = targetFileSystem == "assets";
+            boolean isAssetsFS = "assets".equals(targetFileSystem);
 
             if (targetFileSystem != null) {
                 // Loop the registered file systems to find the target.
@@ -1279,26 +1283,36 @@ public class FileUtils extends CordovaPlugin {
                      */
                     if (fileSystem.name.equals(targetFileSystem)) {
                         // E.g. replace __cdvfile_persistent__ with native path "/data/user/0/com.example.file/files/files/"
+
+                        if ("content".equals(targetFileSystem)) {
+                            // The WebviewAssetLoader uses getPath API, which gives us a decoded path
+                            // For content paths however, we need it to remain encoded.
+                            // The Uri.encode API will encode forward slashes, therefore we must
+                            // split the path, encode each segment, and rebuild the path
+                            String[] pathParts = path.split("/");
+                            path = "";
+                            for (String part : pathParts) {
+                                if ("".equals(path)) {
+                                    path = Uri.encode(part);
+                                }
+                                else {
+                                    path += "/" + Uri.encode(part);
+                                }
+                            }
+                        }
+
                         String fileSystemNativeUri = fileSystem.rootUri.toString().replace("file://", "");
                         String fileTarget = path.replace(LocalFilesystemURL.fsNameToCdvKeyword(targetFileSystem) + "/", fileSystemNativeUri);
-                        File file = null;
 
                         if (isAssetsFS) {
                             fileTarget = fileTarget.replace("/android_asset/", "");
-                        } else {
-                            file = new File(fileTarget);
                         }
 
+                        Uri fileUri = Uri.parse(fileTarget);
+
                         try {
-                            InputStream fileIS = !isAssetsFS ?
-                                    new FileInputStream(file) :
-                                    webView.getContext().getAssets().open(fileTarget);
-
-                            String filePath = !isAssetsFS ? file.toString() : fileTarget;
-                            Uri fileUri = Uri.parse(filePath);
-                            String fileMimeType = getMimeType(fileUri);
-
-                            return new WebResourceResponse(fileMimeType, null, fileIS);
+                            CordovaResourceApi.OpenForReadResult resource = resourceApi.openForRead(fileUri);
+                            return new WebResourceResponse(resource.mimeType, null, resource.inputStream);
                         } catch (FileNotFoundException e) {
                             Log.e(LOG_TAG, e.getMessage());
                         } catch (IOException e) {
