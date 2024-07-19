@@ -1310,10 +1310,20 @@ public class FileUtils extends CordovaPlugin {
                         }
 
                         Uri fileUri = Uri.parse(fileTarget);
+                        String mimeType = null;
 
                         try {
-                            CordovaResourceApi.OpenForReadResult resource = resourceApi.openForRead(fileUri);
-                            return new WebResourceResponse(resource.mimeType, null, resource.inputStream);
+                            InputStream io = null;
+                            if (isAssetsFS) {
+                                io = webView.getContext().getAssets().open(fileTarget);
+                                mimeType = getMimeType(fileUri);
+                            } else {
+                                CordovaResourceApi.OpenForReadResult resource = resourceApi.openForRead(fileUri);
+                                io = resource.inputStream;
+                                mimeType = resource.mimeType;
+                            }
+
+                            return new WebResourceResponse(mimeType, null, io);
                         } catch (FileNotFoundException e) {
                             Log.e(LOG_TAG, e.getMessage());
                         } catch (IOException e) {
