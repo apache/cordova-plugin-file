@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "noEmit": true
+    },
+    "files": [
+        "../index.d.ts"
+    ],
+    "include": [
+        "./*.ts"
+    ]
+}
