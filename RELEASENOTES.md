@@ -20,6 +20,29 @@
 -->
 # Release Notes
 
+### 8.1.0 (May 31, 2024)
+
+**Features:**
+
+* [GH-621](https://github.com/apache/cordova-plugin-file/pull/621) feat(ios): add bundled resources for privacy manifest
+
+**Chores & CI:**
+
+* [GH-625](https://github.com/apache/cordova-plugin-file/pull/625) chore: rebuilt package-lock.json w/ version 3
+* [GH-624](https://github.com/apache/cordova-plugin-file/pull/624) ci: sync workflow with paramedic
+
+### 8.0.1 (Oct 27, 2023)
+
+**Fixes:**
+
+* [GH-608](https://github.com/apache/cordova-plugin-file/pull/608) fix(android): `hasWritePermission` for SDK 33
+
+**Others:**
+
+* [GH-609](https://github.com/apache/cordova-plugin-file/pull/609) chore: update asf config
+* [GH-607](https://github.com/apache/cordova-plugin-file/pull/607) refactor(android): various cleanup
+* [GH-593](https://github.com/apache/cordova-plugin-file/pull/593) doc(android): expanded on external filesystems limitations
+
 ### 8.0.0 (Jul 07, 2023)
 
 * [GH-534](https://github.com/apache/cordova-plugin-file/pull/534) fix(android): `FileError` on a content `resolveLocalFileSystemURL`
