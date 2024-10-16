@@ -25,20 +25,13 @@ description: Read/write files on the device.
 
 [![Android Testsuite](https://github.com/apache/cordova-plugin-file/actions/workflows/android.yml/badge.svg)](https://github.com/apache/cordova-plugin-file/actions/workflows/android.yml) [![Chrome Testsuite](https://github.com/apache/cordova-plugin-file/actions/workflows/chrome.yml/badge.svg)](https://github.com/apache/cordova-plugin-file/actions/workflows/chrome.yml) [![iOS Testsuite](https://github.com/apache/cordova-plugin-file/actions/workflows/ios.yml/badge.svg)](https://github.com/apache/cordova-plugin-file/actions/workflows/ios.yml) [![Lint Test](https://github.com/apache/cordova-plugin-file/actions/workflows/lint.yml/badge.svg)](https://github.com/apache/cordova-plugin-file/actions/workflows/lint.yml)
 
-This plugin implements a File API allowing read/write access to files residing on the device.
+This plugin implements a File API allowing read/write access to files residing on the device, based on the following W3C specifications:
 
-This plugin is based on several specs, including :
-The HTML5 File API
-[http://www.w3.org/TR/FileAPI/](http://www.w3.org/TR/FileAPI/)
+- [HTML5 File API](http://www.w3.org/TR/FileAPI)
+- [File API: Directories and System](http://www.w3.org/TR/2012/WD-file-system-api-20120417)<sup>1</sup>
+- [File API: Writer](https://www.w3.org/TR/2012/WD-file-writer-api-20120417/)<sup>1</sup>
 
-The Directories and System extensions
-Latest:
-[http://www.w3.org/TR/2012/WD-file-system-api-20120417/](http://www.w3.org/TR/2012/WD-file-system-api-20120417/)
-Although most of the plugin code was written when an earlier spec was current:
-[http://www.w3.org/TR/2011/WD-file-system-api-20110419/](http://www.w3.org/TR/2011/WD-file-system-api-20110419/)
-
-It also implements the FileWriter spec :
-[http://dev.w3.org/2009/dap/file-system/file-writer.html](http://dev.w3.org/2009/dap/file-system/file-writer.html)
+<sup>1</sup> These specifications are discontinued and the file plugin may not have the entire specification implemented.
 
 >*Note* While the W3C FileSystem spec is deprecated for web browsers, the FileSystem APIs are supported in Cordova applications with this plugin for the platforms listed in the _Supported Platforms_ list, with the exception of the Browser platform.
 
