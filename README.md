@@ -639,7 +639,7 @@ function writeFile(fileEntry, dataObj) {
     // Create a FileWriter object for our FileEntry (log.txt).
     fileEntry.createWriter(function (fileWriter) {
 
-        fileWriter.onwriteend = function() {
+        fileWriter.onwrite = function() {
             console.log("Successful file write...");
             readFile(fileEntry);
         };
@@ -703,13 +703,13 @@ function writeFile(fileEntry, dataObj, isAppend) {
     // Create a FileWriter object for our FileEntry (log.txt).
     fileEntry.createWriter(function (fileWriter) {
 
-        fileWriter.onwriteend = function() {
-            console.log("Successful file read...");
+        fileWriter.onwrite = function() {
+            console.log("Successful file write...");
             readFile(fileEntry);
         };
 
         fileWriter.onerror = function (e) {
-            console.log("Failed file read: " + e.toString());
+            console.log("Failed file write: " + e.toString());
         };
 
         // If we are appending data to file, go to the end of the file.
@@ -783,7 +783,7 @@ function writeFile(fileEntry, dataObj, isAppend) {
     // Create a FileWriter object for our FileEntry (log.txt).
     fileEntry.createWriter(function (fileWriter) {
 
-        fileWriter.onwriteend = function() {
+        fileWriter.onwrite = function() {
             console.log("Successful file write...");
             if (dataObj.type == "image/png") {
                 readBinaryFile(fileEntry);
