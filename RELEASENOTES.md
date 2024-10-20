@@ -20,6 +20,15 @@
 -->
 # Release Notes
 
+### 8.1.1 (Oct 20, 2024)
+
+**Fixes:**
+* [GH-629](https://github.com/apache/cordova-plugin-file/pull/629) fix(android): Content FS support in PathHandler (#629)
+
+**Documentation:**
+* [GH-639](https://github.com/apache/cordova-plugin-file/pull/639) docs: Correct onwriteend to onwrite (#639)
+* [GH-628](https://github.com/apache/cordova-plugin-file/pull/638) docs: Reformatting specs (#638)
+
 ### 8.1.0 (May 31, 2024)
 
 **Features:**
