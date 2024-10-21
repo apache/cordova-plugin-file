@@ -38,7 +38,7 @@ public class LocalFilesystemURL {
     }
 
     public static LocalFilesystemURL parse(Uri uri) {
-        if(!uri.toString().contains(CDVFILE_KEYWORD)) {
+        if (!uri.toString().contains(CDVFILE_KEYWORD)) {
             return null;
         }
 
@@ -66,7 +66,9 @@ public class LocalFilesystemURL {
         return parse(Uri.parse(uri));
     }
 
-    public static String fsNameToCdvKeyword(String fsName) { return CDVFILE_KEYWORD + fsName + "__"; }
+    public static String fsNameToCdvKeyword(String fsName) {
+        return CDVFILE_KEYWORD + fsName + "__";
+    }
 
     public String toString() {
         return uri.toString();
