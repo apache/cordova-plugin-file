@@ -1318,6 +1318,9 @@ public class FileUtils extends CordovaPlugin {
                                 io = webView.getContext().getAssets().open(fileTarget);
                                 mimeType = getMimeType(fileUri);
                             } else {
+                                if (fileUri.getScheme() == null) {
+                                    fileUri = Uri.parse(fileSystem.rootUri.getScheme() + "://" + fileUri.getPath());
+                                }
                                 CordovaResourceApi.OpenForReadResult resource = resourceApi.openForRead(fileUri);
                                 io = resource.inputStream;
                                 mimeType = resource.mimeType;
