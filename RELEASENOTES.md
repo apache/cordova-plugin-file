@@ -20,7 +20,14 @@
 -->
 # Release Notes
 
+### 8.1.2 (Oct 27, 2024)
+
+**Fixes:**
+* [GH-640](https://github.com/apache/cordova-plugin-file/pull/640) fix(android): Regression breaking resolved DOM-usable file:// paths (#640)
+
 ### 8.1.1 (Oct 20, 2024)
+
+Warning: Contains a regression! Use 8.1.2 instead
 
 **Fixes:**
 * [GH-629](https://github.com/apache/cordova-plugin-file/pull/629) fix(android): Content FS support in PathHandler (#629)
