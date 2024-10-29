@@ -60,6 +60,7 @@ Although the object is in the global scope, it is not available to applications 
 - OS X
 - Windows*
 - Browser
+- Electron
 
 \* _These platforms do not support `FileReader.readAsArrayBuffer` nor `FileWriter.write(blob)`._
 
@@ -226,6 +227,21 @@ If interfacing with the external file system is a requirement for your applicati
 \* The OS may periodically clear this directory
 
 
+### Electron File System Layout
+Varies according to the Operating System. The installation method also has an impact on the file path and where it is installed. The file path will be different if you're running it using the command `cordova run electron --nobuild` (debug) or if you've published to a store and running the program through the app installed from the store. The list can be expanded.
+
+_Note: The current Linux file paths are tested in Ubuntu and might be different depending on the distribution of linux_
+| Device Path                                           | `cordova.file.*`            | r/w? | persistent? | OS clears | private |
+|:------------------------------------------------------|:----------------------------|:----:|:-----------:|:---------:|:-------:|
+| __Windows:__<br />_Debug:_ `{cwd}\\platforms\\electron`<br />_Installer:_`~\\AppData\\Local\\Programs\\{appId}`<br />__Linux:__ <br>_Debug:_ `{cwd}/platforms/electron`<br />_Package Installer:_ `/opt/{appName}/resources`<br /> __Mac:__<br />_Debug:_ `{cwd}/platforms/electron`<br />_Installer:_`/Applications/{appName.app}/Contents/Resources`         | applicationDirectory        | r    |     N/A     |     N/A   |   Yes   |
+| __Windows__: <br />_Debug:_ `~\\AppData\\Roaming\\Electron\\`<br />_Installer:_`~\\AppData\\Local\\Programs\\{appId}`<br />__Linux:__<br>_Debug:_ `~/.config/Electron/`<br />_Package Installer:_ `~/.config/{appId}/`<br /> __Mac:__ `~/Library/Application Support/{appId}`                           | dataDirectory               | r/w  |     Yes     |     No    |   Yes   |
+| __Windows__: <br />_Debug:_ `~\\AppData\\Roaming\\`<br />_Installer:_`~\\AppData\\Roaming\\`<br />  __Linux:__<br> _Debug:_ `~/.cache/`<br />_Installer:_`~/.cache/`<br /> __Mac:__ `~/Library/Caches`                          | cacheDirectory              | r/w  |     No      |     Yes\* |   Yes   |
+| __Windows__: <br />_Debug:_ `~\\AppData\\Local\\Temp\\`<br />_Installer:_`~\AppData\\Local\\Temp\\`<br />__Linux:__<br>_Debug:_ `/tmp/`<br />_Package Installer:_ `/tmp/`<br /> __Mac:__ `varies`                          | tempDirectory               | r/w  |     No      |     Yes\* |   Yes   |
+| Windows: `~\\Documents`  <br />Linux: `~/Documents/`<br /> Mac: `~/Documents`                           | documentsDirectory         | -  |     -     |     -    |   -   |
+
+\* The OS may periodically clear this directory
+
+
 ## Android Quirks
 
 ### Android Persistent storage location
@@ -385,6 +401,10 @@ should be in the form `filesystem:file:///persistent/somefile.txt` as opposed to
 - INVALID_MODIFICATION_ERR (code: 9) is thrown instead of PATH_EXISTS_ERR(code: 12) on trying to exclusively create a file or directory, which already exists.
 - INVALID_MODIFICATION_ERR (code: 9) is thrown instead of  NO_MODIFICATION_ALLOWED_ERR(code: 6) on trying to call removeRecursively on the root file system.
 - INVALID_MODIFICATION_ERR (code: 9) is thrown instead of NOT_FOUND_ERR(code: 1) on trying to moveTo directory that does not exist.
+
+### Electron quirks
+- When using `cordova run electron`, the applicationDirectory is the electron platforms directory in the cordova project. i.e. `path/to/your/cordova/code/plaforms/electron/`
+- When using a debug version, electron may switch to using the folder `Electron` instead of the folder `{appId}` as your dataDirectory.
 
 ### IndexedDB-based impl quirks (Firefox and IE)
 - `.` and `..` are not supported.
