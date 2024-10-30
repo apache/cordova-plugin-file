@@ -1941,8 +1941,12 @@ exports.defineAutoTests = function () {
                                     directoryReader.readEntries(function successRead (entries) {
                                         expect(entries.length).toBe(2);
                                         if (!isChrome) {
-                                            expect(entries[0].name).toBe(srcDirNestedFirst);
-                                            expect(entries[1].name).toBe(srcDirNestedSecond);
+                                            // Directory read order is undefined on some platforms, therefore we cannot assume order
+                                            // So we will start with an expected list and iterate over the entries and test to see if they
+                                            // are in our expectation list. When found we will remove them. At the end, our expectation list
+                                            // should be empty.
+                                            const expected = [srcDirNestedFirst, srcDirNestedSecond];
+                                            expect(entries.map((entry) => entry.name)).toEqual(jasmine.arrayWithExactContents(expected));
                                         }
                                         deleteEntry(dstDir, done);
                                     }, failed.bind(null, done, 'Error getting entries from: ' + transferredDirectory));
