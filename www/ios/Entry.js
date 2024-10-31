@@ -26,8 +26,8 @@ module.exports = {
    * <audio> tag. If that is not possible, construct a http(s)://(localhost) URL.
    */
     toURL: function () {
-        return window.location.origin.includes('file://')
-            ? this.nativeURL
-            : window.WkWebView.convertFilePath(this.nativeURL);
+        return (window.WkWebView && window.WkWebView.convertFilePath)
+            ? window.WkWebView.convertFilePath(this.nativeURL)
+            : this.nativeURL;
     }
 };
