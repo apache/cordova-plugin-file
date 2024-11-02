@@ -29,7 +29,6 @@ exports.defineAutoTests = function () {
     const isIE = isBrowser && (window.msIndexedDB);
     const isIndexedDBShim = isBrowser && !isChrome; // Firefox and IE for example
 
-    const isWindows = cordova.platformId === 'windows';
     /* eslint-enable no-undef */
     const MEDIUM_TIMEOUT = 15000;
 
@@ -3448,10 +3447,6 @@ exports.defineAutoTests = function () {
 
             it('file.spec.114 fileEntry should have a toNativeURL method', function (done) {
                 const fileName = 'native.file.uri';
-                if (isWindows) {
-                    const rootPath = root.fullPath;
-                    pathExpect = rootPath.substr(0, rootPath.indexOf(':'));
-                }
                 // create a new file entry
                 createFile(fileName, function (entry) {
                     expect(entry.toNativeURL).toBeDefined();
@@ -3796,8 +3791,6 @@ exports.defineAutoTests = function () {
                     }
                 } else if (cordova.platformId === 'ios') {
                     expectedPaths.push('syncedDataDirectory', 'documentsDirectory', 'tempDirectory');
-                } else if (cordova.platformId === 'osx') {
-                    expectedPaths.push('documentsDirectory', 'tempDirectory', 'rootDirectory');
                 } else {
                     console.log('Skipping test due on unsupported platform.');
                     return;
@@ -4207,9 +4200,7 @@ exports.defineManualTests = function (contentEl, createActionButton) {
 
     const fsRoots = {
         ios: 'library,library-nosync,documents,documents-nosync,cache,bundle,root,private',
-        osx: 'library,library-nosync,documents,documents-nosync,cache,bundle,root,private',
-        android: 'files,files-external,documents,sdcard,cache,cache-external,assets,root',
-        windows: 'temporary,persistent'
+        android: 'files,files-external,documents,sdcard,cache,cache-external,assets,root'
     };
 
     // Add title and align to content

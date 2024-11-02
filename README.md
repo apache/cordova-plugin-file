@@ -57,8 +57,6 @@ Although the object is in the global scope, it is not available to applications 
 
 - Android
 - iOS
-- OS X
-- Windows*
 - Browser
 
 \* _These platforms do not support `FileReader.readAsArrayBuffer` nor `FileWriter.write(blob)`._
@@ -70,22 +68,22 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
 `DirectoryEntry` using `window.resolveLocalFileSystemURL()`.
 
 * `cordova.file.applicationDirectory` - Read-only directory where the application
-  is installed. (_iOS_, _Android_, _BlackBerry 10_, _OSX_, _windows_)
+  is installed. (_iOS_, _Android_)
 
 * `cordova.file.applicationStorageDirectory` - Root directory of the application's
-  sandbox; on iOS & windows this location is read-only (but specific subdirectories [like
-  `/Documents` on iOS or `/localState` on windows] are read-write). All data contained within
-  is private to the app. (_iOS_, _Android_, _BlackBerry 10_, _OSX_)
+  sandbox; on iOS this location is read-only (but specific subdirectories [like
+  `/Documents` on iOS] is read-write). All data contained within
+  is private to the app. (_iOS_, _Android_)
 
 * `cordova.file.dataDirectory` - Persistent and private data storage within the
   application's sandbox using internal memory (on Android, if you need to use
   external memory, use `.externalDataDirectory`). On iOS, this directory is not
-  synced with iCloud (use `.syncedDataDirectory`). (_iOS_, _Android_, _BlackBerry 10_, _windows_)
+  synced with iCloud (use `.syncedDataDirectory`). (_iOS_, _Android_)
 
 * `cordova.file.cacheDirectory` -  Directory for cached data files or any files
   that your app can re-create easily. The OS may delete these files when the device
   runs low on storage, nevertheless, apps should not rely on the OS to delete files
-  in here. (_iOS_, _Android_, _BlackBerry 10_, _OSX_, _windows_)
+  in here. (_iOS_, _Android_)
 
 * `cordova.file.externalApplicationStorageDirectory` - Application space on
   external storage. (_Android_). See [Quirks](#androids-external-storage-quirks).
@@ -96,19 +94,17 @@ Each URL is in the form _file:///path/to/spot/_, and can be converted to a
 * `cordova.file.externalCacheDirectory` - Application cache on external storage.
   (_Android_). See [Quirks](#androids-external-storage-quirks).
 
-* `cordova.file.externalRootDirectory` - External storage (SD card) root. (_Android_, _BlackBerry 10_). See [Quirks](#androids-external-storage-quirks).
+* `cordova.file.externalRootDirectory` - External storage (SD card) root. (_Android_). See [Quirks](#androids-external-storage-quirks).
 
 * `cordova.file.tempDirectory` - Temp directory that the OS can clear at will. Do not
   rely on the OS to clear this directory; your app should always remove files as
-  applicable. (_iOS_, _OSX_, _windows_)
+  applicable. (_iOS_)
 
 * `cordova.file.syncedDataDirectory` - Holds app-specific files that should be synced
-  (e.g. to iCloud). (_iOS_, _windows_)
+  (e.g. to iCloud). (_iOS_)
 
 * `cordova.file.documentsDirectory` - Files private to the app, but that are meaningful
-  to other application (e.g. Office files). Note that for _OSX_ this is the user's `~/Documents` directory. (_iOS_, _OSX_)
-
-* `cordova.file.sharedDirectory` - Files globally available to all applications (_BlackBerry 10_)
+  to other application (e.g. Office files). (_iOS_)
 
 ## File System Layouts
 
@@ -190,41 +186,6 @@ Limited access includes but isn't limited to:
 These limitations only applies to external filesystems (e.g. `cordova.file.external*` paths). Internal filesystems such as `cordova.file.dataDirectory` path are not imposed by these limitations.
 
 If interfacing with the external file system is a requirement for your application, consider using a [MediaStore](https://www.npmjs.com/search?q=ecosystem%3Acordova%20storage%20access%20framework) plugin instead.
-
-### OS X File System Layout
-
-| Device Path                                      | `cordova.file.*`            | `iosExtraFileSystems` | r/w? |  OS clears | private |
-|:-------------------------------------------------|:----------------------------|:----------------------|:----:|:---------:|:-------:|
-| `/Applications/<appname>.app/`                   | -                           | bundle                | r    |     N/A   |   Yes   |
-| &nbsp;&nbsp;&nbsp;&nbsp;`Content/Resources/`     | applicationDirectory        | -                     | r    |     N/A   |   Yes   |
-| `~/Library/Application Support/<bundle-id>/`     | applicationStorageDirectory | -                     | r/w  |     No    |   Yes   |
-| &nbsp;&nbsp;&nbsp;&nbsp;`files/`                 | dataDirectory               | -                     | r/w  |     No    |   Yes   |
-| `~/Documents/`                                   | documentsDirectory          | documents             | r/w  |     No    |    No   |
-| `~/Library/Caches/<bundle-id>/`                  | cacheDirectory              | cache                 | r/w  |     No    |   Yes   |
-| `/tmp/`                                          | tempDirectory               | -                     | r/w  |    Yes\*  |   Yes   |
-| `/`                                              | rootDirectory               | root                  | r/w  |    No\*\* |    No   |
-
-**Note**: This is the layout for non sandboxed applications. I you enable sandboxing, the `applicationStorageDirectory` will be below ` ~/Library/Containers/<bundle-id>/Data/Library/Application Support`.
-
-\* Files persist across app restarts and upgrades, but this directory can
-     be cleared whenever the OS desires. Your app should be able to recreate any
-     content that might be deleted. You should clear this directory as
-     appropriate for your application.
-
-\*\* Allows access to the entire file system. This is only available for non sandboxed apps.
-
-### Windows File System Layout
-
-| Device Path                                           | `cordova.file.*`            | r/w? | persistent? | OS clears | private |
-|:------------------------------------------------------|:----------------------------|:----:|:-----------:|:---------:|:-------:|
-| `ms-appdata:///`                                      | applicationDirectory        | r    |     N/A     |     N/A   |   Yes   |
-| &nbsp;&nbsp;&nbsp;`local/`                            | dataDirectory               | r/w  |     Yes     |     No    |   Yes   |
-| &nbsp;&nbsp;&nbsp;`temp/`                             | cacheDirectory              | r/w  |     No      |     Yes\* |   Yes   |
-| &nbsp;&nbsp;&nbsp;`temp/`                             | tempDirectory               | r/w  |     No      |     Yes\* |   Yes   |
-| &nbsp;&nbsp;&nbsp;`roaming/`                          | syncedDataDirectory         | r/w  |     Yes     |     No    |   Yes   |
-
-\* The OS may periodically clear this directory
-
 
 ## Android Quirks
 
@@ -510,10 +471,6 @@ var my_media = new Media('cdvfile://localhost/temporary/path/to/file.mp3', ...);
 my_media.play();
 ```
 
-#### cdvfile quirks
-- Using `cdvfile://` paths in the DOM is not supported on Windows platform (a path can be converted to native instead).
-
-
 ## List of Error Codes and Meanings
 When an error is thrown, one of the following codes will be used.
 
@@ -582,7 +539,7 @@ When you get file system access using `requestFileSystem`, access is granted for
 
 Here is a request for persistent storage.
 
->*Note* When targeting WebView clients (instead of a browser) or native apps (Windows), you dont need to use `requestQuota` before using persistent storage.
+>*Note* When targeting WebView clients (instead of a browser), you dont need to use `requestQuota` before using persistent storage.
 
 ```js
 window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
@@ -846,12 +803,6 @@ function displayImageByFileURL(fileEntry) {
     var elem = document.getElementById('imageFile');
     elem.src = fileEntry.toURL();
 }
-```
-
-If you are using some platform-specific URIs instead of a FileEntry and you want to display an image, you may need to include the main part of the URI in the Content-Security-Policy <meta> element in index.html. For example, on Windows 10, you can include `ms-appdata:` in your <meta> element. Here is an example.
-
-```html
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: ms-appdata: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">
 ```
 
 ## Create Directories <a name="createDir"></a>

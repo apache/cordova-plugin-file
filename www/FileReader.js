@@ -135,11 +135,7 @@ function readSuccessCallback (readType, encoding, offset, totalSize, accumulate,
 
     let CHUNK_SIZE = FileReader.READ_CHUNK_SIZE;
     if (readType === 'readAsDataURL') {
-        // Windows proxy does not support reading file slices as Data URLs
-        // so read the whole file at once.
-        CHUNK_SIZE = cordova.platformId === 'windows'
-            ? totalSize
-            : (
+        CHUNK_SIZE = (
                 // Calculate new chunk size for data URLs to be multiply of 3
                 // Otherwise concatenated base64 chunks won't be valid base64 data
                 FileReader.READ_CHUNK_SIZE - (FileReader.READ_CHUNK_SIZE % 3) + 3
