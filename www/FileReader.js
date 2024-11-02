@@ -136,10 +136,10 @@ function readSuccessCallback (readType, encoding, offset, totalSize, accumulate,
     let CHUNK_SIZE = FileReader.READ_CHUNK_SIZE;
     if (readType === 'readAsDataURL') {
         CHUNK_SIZE = (
-                // Calculate new chunk size for data URLs to be multiply of 3
-                // Otherwise concatenated base64 chunks won't be valid base64 data
-                FileReader.READ_CHUNK_SIZE - (FileReader.READ_CHUNK_SIZE % 3) + 3
-            );
+            // Calculate new chunk size for data URLs to be multiply of 3
+            // Otherwise concatenated base64 chunks won't be valid base64 data
+            FileReader.READ_CHUNK_SIZE - (FileReader.READ_CHUNK_SIZE % 3) + 3
+        );
     }
 
     if (typeof r !== 'undefined') {

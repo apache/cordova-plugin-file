@@ -34,7 +34,6 @@
 
     const argscheck = require('cordova/argscheck');
     const FileError = require('./FileError');
-    const FileSystem = require('./FileSystem');
     const exec = require('cordova/exec');
     const fileSystems = require('./fileSystems');
 
