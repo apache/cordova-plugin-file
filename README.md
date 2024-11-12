@@ -411,10 +411,12 @@ writer.onprogress = function() { /*commands*/ };
 
 ## Upgrading Notes
 
+### v1.0.0
+
 In v1.0.0 of this plugin, the `FileEntry` and `DirectoryEntry` structures have changed,
 to be more in line with the published specification.
 
-Previous (pre-1.0.0) versions of the plugin stored the device-absolute-file-location
+Previous versions of the plugin stored the device-absolute-file-location
 in the `fullPath` property of `Entry` objects. These paths would typically look like
 
     /var/mobile/Applications/<application UUID>/Documents/path/to/file  (iOS)
@@ -422,9 +424,7 @@ in the `fullPath` property of `Entry` objects. These paths would typically look 
 
 These paths were also returned by the `toURL()` method of the `Entry` objects.
 
-With v1.0.0, the `fullPath` attribute is the path to the file, _relative to the root of
-the HTML filesystem_. So, the above paths would now both be represented by a `FileEntry`
-object with a `fullPath` of
+Starting with v1.0.0, the `fullPath` attribute is the path to the file, _relative to the root of the HTML filesystem_. So, the above paths would now both be represented by a `FileEntry` object with a `fullPath` of
 
     /path/to/file
 
@@ -433,23 +433,24 @@ paths through the `fullPath` property of `Entry` objects, then you should update
 to use `entry.toURL()` instead.
 
 For backwards compatibility, the `resolveLocalFileSystemURL()` method will accept a
-device-absolute-path, and will return an `Entry` object corresponding to it, as long as that
-file exists within either the `TEMPORARY` or `PERSISTENT` filesystems.
+device-absolute-path, and will return an `Entry` object corresponding to it, as long as that file exists within either the `TEMPORARY` or `PERSISTENT` filesystems.
 
 This has particularly been an issue with the File-Transfer plugin, which previously used
 device-absolute-paths (and can still accept them). It has been updated to work correctly
-with FileSystem URLs, so replacing `entry.fullPath` with `entry.toURL()` should resolve any
-issues getting that plugin to work with files on the device.
+with FileSystem URLs, so replacing `entry.fullPath` with `entry.toURL()` should resolve any issues getting that plugin to work with files on the device.
 
-In v1.1.0 the return value of `toURL()` was changed (see [CB-6394](https://issues.apache.org/jira/browse/CB-6394))
-to return an absolute 'file://' URL. wherever possible. To ensure a 'cdvfile:'-URL you can use `toInternalURL()` now.
-This method will now return filesystem URLs of the form
+### v1.1.0
+
+Starting with v1.1.0, the return value of `toURL()` was changed (see [CB-6394](https://issues.apache.org/jira/browse/CB-6394))
+to return an absolute 'file://' URL. wherever possible. To ensure a 'cdvfile:'-URL you can use `toInternalURL()` now. This method will now return filesystem URLs of the form
 
     cdvfile://localhost/persistent/path/to/file
 
 which can be used to identify the file uniquely.
 
-In v7.0.0 the return value of `toURL()` for Android was updated to return the absolute `file://` URL when app content is served from the `file://` scheme.
+### v7.0.0
+
+Starting in v7.0.0 the return value of `toURL()` for Android was updated to return the absolute `file://` URL when app content is served from the `file://` scheme.
 
 If app content is served from the `http(s)://` scheme, a `cdvfile` formatted URL will be returned instead. The `cdvfile` formatted URL is created from the internal method `toInternalURL()`.
 
@@ -460,6 +461,13 @@ An example `toInternalURL()` return filesystem URL:
 [![toURL flow](https://sketchviz.com/@erisu/7b05499842275be93a0581e8e3576798/6dc71d8302cafd05b443d874a592d10fa415b8e3.sketchy.png)](//sketchviz.com/@erisu/7b05499842275be93a0581e8e3576798)
 
 It is recommended to always use the `toURL()` to ensure that the correct URL is returned.
+
+### v8.0.0
+
+Starting in v8.0.0 the return value of `.toURL()` was changed for iOS to bring
+the behaviour more closely to Android. If the webview is hosted on `file://` scheme,
+then `.toURL` return will not change and will continue to return a `file://` URI.
+Otherwise it will return the app's scheme path.
 
 ## cdvfile protocol
 
