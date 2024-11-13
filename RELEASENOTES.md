@@ -20,6 +20,17 @@
 -->
 # Release Notes
 
+### 8.1.3 (Nov 13, 2024)
+
+**Fixes:**
+* [GH-642](https://github.com/apache/cordova-plugin-file/pull/642) fix(ios): Entry.toURL() to produce DOM-usable uri when using scheme-hosted webview (#642)
+
+**Tests:**
+* [GH-643](https://github.com/apache/cordova-plugin-file/pull/643) fix(test): file.spec.131 moveTo may fail due to read order assumption (#643)
+
+**Docs:**
+* [GH-645](https://github.com/apache/cordova-plugin-file/pull/645) docs: Added upgrade notes to `README` for v8 (#645)
+
 ### 8.1.2 (Oct 27, 2024)
 
 **Fixes:**
