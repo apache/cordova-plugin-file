@@ -366,8 +366,6 @@ interface Cordova {
         syncedDataDirectory: string;
         /* iOS: Files private to the app, but that are meaningful to other applciations (e.g. Office files) */
         documentsDirectory: string;
-        /* BlackBerry10: Files globally available to all apps */
-        sharedDirectory: string
     }
 }
 

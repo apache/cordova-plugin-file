@@ -107,7 +107,7 @@
             }, errorCallback);
         };
 
-        // Overridden by Android, BlackBerry 10 and iOS to populate fsMap
+        // Overridden by Android and iOS to populate fsMap
         require('./fileSystems').getFs = function (name, callback) {
             callback(new FileSystem(name, fs_.root));
         };
