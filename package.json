@@ -26,8 +26,9 @@
     "cordova-windows"
   ],
   "scripts": {
-    "test": "npm run lint",
-    "lint": "eslint ."
+    "test": "npm run lint && npm run test:types",
+    "lint": "eslint .",
+    "test:types": "tsc --project ./types/tests/tsconfig.json"
   },
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",
@@ -48,6 +49,7 @@
     }
   },
   "devDependencies": {
-    "@cordova/eslint-config": "^5.0.0"
+    "@cordova/eslint-config": "^5.0.0",
+    "typescript": "^5.1.6"
   }
 }
