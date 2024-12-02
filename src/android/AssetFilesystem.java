@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -90,7 +91,7 @@ public class AssetFilesystem extends Filesystem {
             if (listCacheFromFile) {
                 ret = new String[0];
             } else {
-                ret = assetManager.list(assetPath);
+                ret = assetManager.list(URLDecoder.decode(assetPath, "utf-8"));
                 listCache.put(assetPath, ret);
             }
         }
