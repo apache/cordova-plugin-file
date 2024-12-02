@@ -24,12 +24,22 @@ ext.postBuildExtras = {
     def newTask = task("cdvCreateAssetManifest") << {
         def contents = new HashMap()
         def sizes = new HashMap()
-        contents[""] = inAssetsDir.list()
+        contents[""] = inAssetsDir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return !name.equals(".DS_Store");
+            }
+        })
         def tree = fileTree(dir: inAssetsDir)
         tree.visit { fileDetails ->
             if (fileDetails.isDirectory()) {
-                contents[fileDetails.relativePath.toString()] = fileDetails.file.list()
-            } else {
+                contents[fileDetails.relativePath.toString()] = fileDetails.file.list(new FilenameFilter() {
+                    @Override
+                    public boolean accept(File dir, String name) {
+                        return !name.equals(".DS_Store");
+                    }
+                })
+            } else if (fileDetails.name) {
                 sizes[fileDetails.relativePath.toString()] = fileDetails.file.length()
             }
         }
