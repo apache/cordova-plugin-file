@@ -49,6 +49,49 @@ Although the object is in the global scope, it is not available to applications 
         console.log(cordova.file);
     }
 
+## Table Of Contents
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Installation](#installation)
+- [Supported Platforms](#supported-platforms)
+- [Where to Store Files](#where-to-store-files)
+- [File System Layouts](#file-system-layouts)
+  - [iOS File System Layout](#ios-file-system-layout)
+  - [Android File System Layout](#android-file-system-layout)
+  - [OS X File System Layout](#os-x-file-system-layout)
+  - [Windows File System Layout](#windows-file-system-layout)
+- [Android Quirks](#android-quirks)
+  - [Android Persistent storage location](#android-persistent-storage-location)
+  - [Slow recursive operations for /android_asset](#slow-recursive-operations-for-android_asset)
+  - [Permisson to write to external storage when it's not mounted on Marshmallow](#permisson-to-write-to-external-storage-when-its-not-mounted-on-marshmallow)
+- [iOS Quirks](#ios-quirks)
+  - [iOS Persistent storage location](#ios-persistent-storage-location)
+- [Browser Quirks](#browser-quirks)
+  - [Common quirks and remarks](#common-quirks-and-remarks)
+  - [Chrome quirks](#chrome-quirks)
+  - [IndexedDB-based impl quirks (Firefox and IE)](#indexeddb-based-impl-quirks-firefox-and-ie)
+- [Upgrading Notes](#upgrading-notes)
+- [cdvfile protocol](#cdvfile-protocol)
+    - [cdvfile quirks](#cdvfile-quirks)
+- [List of Error Codes and Meanings](#list-of-error-codes-and-meanings)
+- [Configuring the Plugin (Optional)](#configuring-the-plugin-optional)
+  - [Android](#android)
+  - [iOS](#ios)
+- [Sample: Create Files and Directories, Write, Read, and Append files](#sample-create-files-and-directories-write-read-and-append-files)
+- [Create a persistent file](#create-a-persistent-file)
+- [Create a temporary file](#create-a-temporary-file)
+- [Write to a file](#write-to-a-file)
+- [Read a file](#read-a-file)
+- [Append a file using alternative methods](#append-a-file-using-alternative-methods)
+- [Store an existing binary file](#store-an-existing-binary-file)
+- [Display an image file](#display-an-image-file)
+- [Create Directories](#create-directories)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Installation
 
     cordova plugin add cordova-plugin-file
@@ -131,18 +174,18 @@ the `cordova.file.*` properties map to physical paths on a real device.
 | &nbsp;&nbsp;&nbsp;`tmp/`                       | tempDirectory               | -                     | r/w  |     No\*\*  |  Yes\*\*\*| No   |   Yes   |
 
 
-  \* Files persist across app restarts and upgrades, but this directory can
-     be cleared whenever the OS desires. Your app should be able to recreate any
-     content that might be deleted.
+\* Files persist across app restarts and upgrades, but this directory can
+be cleared whenever the OS desires. Your app should be able to recreate any
+content that might be deleted.
 
 \*\* Files may persist across app restarts, but do not rely on this behavior. Files
-     are not guaranteed to persist across updates. Your app should remove files from
-     this directory when it is applicable, as the OS does not guarantee when (or even
-     if) these files are removed.
+are not guaranteed to persist across updates. Your app should remove files from
+this directory when it is applicable, as the OS does not guarantee when (or even
+if) these files are removed.
 
 \*\*\* The OS may clear the contents of this directory whenever it feels it is
-     necessary, but do not rely on this. You should clear this directory as
-     appropriate for your application.
+necessary, but do not rely on this. You should clear this directory as
+appropriate for your application.
 
 ### Android File System Layout
 
@@ -159,12 +202,12 @@ the `cordova.file.*` properties map to physical paths on a real device.
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`files`     | externalDataDirectory       | files-external            | r/w  |     Yes     |     No    |   No    |
 
 \* The OS may periodically clear this directory, but do not rely on this behavior. Clear
-   the contents of this directory as appropriate for your application. Should a user
-   purge the cache manually, the contents of this directory are removed.
+the contents of this directory as appropriate for your application. Should a user
+purge the cache manually, the contents of this directory are removed.
 
 \*\* The OS does not clear this directory automatically; you are responsible for managing
-     the contents yourself. Should the user purge the cache manually, the contents of the
-     directory are removed.
+the contents yourself. Should the user purge the cache manually, the contents of the
+directory are removed.
 
 \*\*\* As of API 30, these directories are no longer writable.
 
@@ -207,9 +250,9 @@ If interfacing with the external file system is a requirement for your applicati
 **Note**: This is the layout for non sandboxed applications. I you enable sandboxing, the `applicationStorageDirectory` will be below ` ~/Library/Containers/<bundle-id>/Data/Library/Application Support`.
 
 \* Files persist across app restarts and upgrades, but this directory can
-     be cleared whenever the OS desires. Your app should be able to recreate any
-     content that might be deleted. You should clear this directory as
-     appropriate for your application.
+be cleared whenever the OS desires. Your app should be able to recreate any
+content that might be deleted. You should clear this directory as
+appropriate for your application.
 
 \*\* Allows access to the entire file system. This is only available for non sandboxed apps.
 
@@ -303,7 +346,7 @@ If you need to add this permission, please add the following to your `config.xml
   properties defined for iOS (only `applicationDirectory` and `applicationStorageDirectory` are
   read-only).
 - `FileReader.readAsText(blob, encoding)`
-  - The `encoding` parameter is not supported, and UTF-8 encoding is always in effect.
+    - The `encoding` parameter is not supported, and UTF-8 encoding is always in effect.
 
 ### iOS Persistent storage location
 
@@ -340,10 +383,10 @@ persistent filesystem, then the `Library` setting is generally recommended.
 
 ### Common quirks and remarks
 - Each browser uses its own sandboxed filesystem. IE and Firefox use IndexedDB as a base.
-All browsers use forward slash as directory separator in a path.
+  All browsers use forward slash as directory separator in a path.
 - Directory entries have to be created successively.
-For example, the call `fs.root.getDirectory('dir1/dir2', {create:true}, successCallback, errorCallback)`
-will fail if dir1 did not exist.
+  For example, the call `fs.root.getDirectory('dir1/dir2', {create:true}, successCallback, errorCallback)`
+  will fail if dir1 did not exist.
 - The plugin requests user permission to use persistent storage at the application first start.
 - Plugin supports `cdvfile://localhost` (local resources) only. I.e. external resources are not supported via `cdvfile`.
 - The plugin does not follow ["File System API 8.3 Naming restrictions"](http://www.w3.org/TR/2011/WD-file-system-api-20110419/#naming-restrictions).
@@ -354,16 +397,16 @@ will fail if dir1 did not exist.
 - Files created via constructor are not supported. You should use entry.file method instead.
 - Each browser uses its own form for blob URL references.
 - `readAsDataURL` function is supported, but the mediatype in Chrome depends on entry name extension,
-mediatype in IE is always empty (which is the same as `text-plain` according the specification),
-the mediatype in Firefox is always `application/octet-stream`.
-For example, if the content is `abcdefg` then Firefox returns `data:application/octet-stream;base64,YWJjZGVmZw==`,
-IE returns `data:;base64,YWJjZGVmZw==`, Chrome returns `data:<mediatype depending on extension of entry name>;base64,YWJjZGVmZw==`.
+  mediatype in IE is always empty (which is the same as `text-plain` according the specification),
+  the mediatype in Firefox is always `application/octet-stream`.
+  For example, if the content is `abcdefg` then Firefox returns `data:application/octet-stream;base64,YWJjZGVmZw==`,
+  IE returns `data:;base64,YWJjZGVmZw==`, Chrome returns `data:<mediatype depending on extension of entry name>;base64,YWJjZGVmZw==`.
 - `toInternalURL` returns the path in the form `file:///persistent/path/to/entry` (Firefox, IE).
-Chrome returns the path in the form `cdvfile://localhost/persistent/file`.
+  Chrome returns the path in the form `cdvfile://localhost/persistent/file`.
 
 ### Chrome quirks
 - Chrome filesystem is not immediately ready after device ready event. As a workaround you can subscribe to `filePluginIsReady` event.
-Example:
+  Example:
 ```javascript
 window.addEventListener('filePluginIsReady', function(){ console.log('File plugin is ready');}, false);
 ```
@@ -374,11 +417,11 @@ You can use `window.isFilePluginReadyRaised` function to check whether event was
 - `File` object will be not changed if you use flag `{create:true}` when getting an existing `Entry`.
 - events `cancelable` property is set to true in Chrome. This is contrary to the [specification](http://dev.w3.org/2009/dap/file-system/file-writer.html).
 - `toURL` function in Chrome returns `filesystem:`-prefixed path depending on application host.
-For example, `filesystem:file:///persistent/somefile.txt`, `filesystem:http://localhost:8080/persistent/somefile.txt`.
+  For example, `filesystem:file:///persistent/somefile.txt`, `filesystem:http://localhost:8080/persistent/somefile.txt`.
 - `toURL` function result does not contain trailing slash in case of directory entry.
-Chrome resolves directories with slash-trailed urls correctly though.
+  Chrome resolves directories with slash-trailed urls correctly though.
 - `resolveLocalFileSystemURL` method requires the inbound `url` to have `filesystem` prefix. For example, `url` parameter for `resolveLocalFileSystemURL`
-should be in the form `filesystem:file:///persistent/somefile.txt` as opposed to the form `file:///persistent/somefile.txt` in Android.
+  should be in the form `filesystem:file:///persistent/somefile.txt` as opposed to the form `file:///persistent/somefile.txt` in Android.
 - Deprecated `toNativeURL` function is not supported and does not have a stub.
 - `setMetadata` function is not stated in the specifications and not supported.
 - INVALID_MODIFICATION_ERR (code: 9) is thrown instead of SYNTAX_ERR(code: 8) on requesting of a non-existant filesystem.
@@ -390,19 +433,19 @@ should be in the form `filesystem:file:///persistent/somefile.txt` as opposed to
 - `.` and `..` are not supported.
 - IE does not support `file:///`-mode; only hosted mode is supported (http://localhost:xxxx).
 - Firefox filesystem size is not limited but each 50MB extension will request a user permission.
-IE10 allows up to 10mb of combined AppCache and IndexedDB used in implementation of filesystem without prompting,
-once you hit that level you will be asked if you want to allow it to be increased up to a max of 250mb per site.
-So `size` parameter for `requestFileSystem` function does not affect filesystem in Firefox and IE.
+  IE10 allows up to 10mb of combined AppCache and IndexedDB used in implementation of filesystem without prompting,
+  once you hit that level you will be asked if you want to allow it to be increased up to a max of 250mb per site.
+  So `size` parameter for `requestFileSystem` function does not affect filesystem in Firefox and IE.
 - `readAsBinaryString` function is not stated in the Specs and not supported in IE and does not have a stub.
 - `file.type` is always null.
 - You should not create entry using DirectoryEntry instance callback result which was deleted.
-Otherwise, you will get a 'hanging entry'.
+  Otherwise, you will get a 'hanging entry'.
 - Before you can read a file, which was just written you need to get a new instance of this file.
 - `setMetadata` function, which is not stated in the Specs supports `modificationTime` field change only.
 - `copyTo` and `moveTo` functions do not support directories.
 - Directories metadata is not supported.
 - Both Entry.remove and directoryEntry.removeRecursively don't fail when removing
-non-empty directories - directories being removed are cleaned along with contents instead.
+  non-empty directories - directories being removed are cleaned along with contents instead.
 - `abort` and `truncate` functions are not supported.
 - progress events are not fired. For example, this handler will be not executed:
 ```javascript
@@ -489,7 +532,7 @@ You can also use `cdvfile://` paths directly in the DOM, for example:
 
 __Note__: This method requires following Content Security rules updates:
 * Add `cdvfile:` scheme to `Content-Security-Policy` meta tag of the index page, e.g.:
-  - `<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: `**cdvfile:**` https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">`
+    - `<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: `**cdvfile:**` https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">`
 * Add `<access origin="cdvfile://*" />` to `config.xml`.
 
 **Converting cdvfile:// to native path**
@@ -559,7 +602,7 @@ filesystems to be installed. By default, all file-system roots are enabled.
 * `assets`: The application's bundle (read-only)
 * `root`: The entire device filesystem
 * `applicationDirectory`: ReadOnly with restricted access. Copying files in this directory is possible, but reading it directly results in 'file not found'.
-Android also supports a special filesystem named "documents", which represents a "/Documents/" subdirectory within the "files" filesystem.
+  Android also supports a special filesystem named "documents", which represents a "/Documents/" subdirectory within the "files" filesystem.
 
 ### iOS
 
@@ -571,7 +614,7 @@ Android also supports a special filesystem named "documents", which represents a
 
 By default, the library and documents directories can be synced to iCloud. You can also request two additional filesystems, `library-nosync` and `documents-nosync`, which represent a special non-synced directory within the `/Library` or `/Documents` filesystem.
 
-## Sample: Create Files and Directories, Write, Read, and Append files <a name="sample"></a>
+## Sample: Create Files and Directories, Write, Read, and Append files
 
 The File plugin allows you to do things like store files in a temporary or persistent storage location for your app (sandboxed storage) and to store files in other platform-dependent locations. The code snippets in this section demonstrate different tasks including:
 * [Accessing the file system](#persistent)
@@ -582,7 +625,7 @@ The File plugin allows you to do things like store files in a temporary or persi
 * [Appending files](#appendFile)
 * [Display an image file](#displayImage)
 
-## Create a persistent file <a name="persistent"></a>
+## Create a persistent file
 
 Before you use the File plugin APIs, you can get access to the file system using `requestFileSystem`. When you do this, you can request either persistent or temporary storage. Persistent storage will not be removed unless permission is granted by the user.
 
@@ -638,7 +681,7 @@ function createFile(dirEntry, fileName, isAppend) {
 }
 ```
 
-## Write to a file <a name="writeFile"></a>
+## Write to a file
 
 Once you have a FileEntry object, you can write to the file by calling `createWriter`, which returns a FileWriter object in the success callback. Call the `write` method of FileWriter to write to the file.
 
@@ -667,7 +710,7 @@ function writeFile(fileEntry, dataObj) {
 }
 ```
 
-## Read a file <a name="readFile"></a>
+## Read a file
 
 You also need a FileEntry object to read an existing file. Use the file property of FileEntry to get the file reference, and then create a new FileReader object. You can use methods like `readAsText` to start the read operation. When the read operation is complete, `this.result` stores the result of the read operation.
 
@@ -688,7 +731,7 @@ function readFile(fileEntry) {
 }
 ```
 
-## Append a file using alternative methods <a name="appendFile"></a>
+## Append a file using alternative methods
 
 Of course, you will often want to append existing files instead of creating new ones. Here is an example of that. This example shows another way that you can access the file system using window.resolveLocalFileSystemURL. In this example, pass the cross-platform Cordova file URL, cordova.file.dataDirectory, to the function. The success callback receives a DirectoryEntry object, which you can use to do things like create a file.
 
@@ -734,7 +777,7 @@ function writeFile(fileEntry, dataObj, isAppend) {
 }
 ```
 
-## Store an existing binary file <a name="binaryFile"></a>
+## Store an existing binary file
 
 We already showed how to write to a file that you just created in the sandboxed file system. What if you need to get access to an existing file and convert that to something you can store on your device? In this example, you obtain a file using an xhr request, and then save it to the cache in the sandboxed file system.
 
@@ -845,7 +888,7 @@ function displayImage(blob) {
 }
 ```
 
-## Display an image file <a name="displayImage"></a>
+## Display an image file
 
 To display an image using a FileEntry, you can call the `toURL` method.
 
@@ -862,7 +905,7 @@ If you are using some platform-specific URIs instead of a FileEntry and you want
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: ms-appdata: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">
 ```
 
-## Create Directories <a name="createDir"></a>
+## Create Directories
 
 In the code here, you create directories in the root of the app storage location. You could use this code with any writable storage location (that is, any DirectoryEntry). Here, you write to the application cache (assuming that you used window.TEMPORARY to get your FileSystem object) by passing fs.root into this function.
 
