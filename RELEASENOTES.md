@@ -20,6 +20,44 @@
 -->
 # Release Notes
 
+### 8.1.3 (Nov 13, 2024)
+
+**Fixes:**
+* [GH-642](https://github.com/apache/cordova-plugin-file/pull/642) fix(ios): Entry.toURL() to produce DOM-usable uri when using scheme-hosted webview (#642)
+
+**Tests:**
+* [GH-643](https://github.com/apache/cordova-plugin-file/pull/643) fix(test): file.spec.131 moveTo may fail due to read order assumption (#643)
+
+**Docs:**
+* [GH-645](https://github.com/apache/cordova-plugin-file/pull/645) docs: Added upgrade notes to `README` for v8 (#645)
+
+### 8.1.2 (Oct 27, 2024)
+
+**Fixes:**
+* [GH-640](https://github.com/apache/cordova-plugin-file/pull/640) fix(android): Regression breaking resolved DOM-usable file:// paths (#640)
+
+### 8.1.1 (Oct 20, 2024)
+
+Warning: Contains a regression! Use 8.1.2 instead
+
+**Fixes:**
+* [GH-629](https://github.com/apache/cordova-plugin-file/pull/629) fix(android): Content FS support in PathHandler (#629)
+
+**Documentation:**
+* [GH-639](https://github.com/apache/cordova-plugin-file/pull/639) docs: Correct onwriteend to onwrite (#639)
+* [GH-628](https://github.com/apache/cordova-plugin-file/pull/638) docs: Reformatting specs (#638)
+
+### 8.1.0 (May 31, 2024)
+
+**Features:**
+
+* [GH-621](https://github.com/apache/cordova-plugin-file/pull/621) feat(ios): add bundled resources for privacy manifest
+
+**Chores & CI:**
+
+* [GH-625](https://github.com/apache/cordova-plugin-file/pull/625) chore: rebuilt package-lock.json w/ version 3
+* [GH-624](https://github.com/apache/cordova-plugin-file/pull/624) ci: sync workflow with paramedic
+
 ### 8.0.1 (Oct 27, 2023)
 
 **Fixes:**

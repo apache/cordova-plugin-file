@@ -25,20 +25,13 @@ description: Read/write files on the device.
 
 [![Android Testsuite](https://github.com/apache/cordova-plugin-file/actions/workflows/android.yml/badge.svg)](https://github.com/apache/cordova-plugin-file/actions/workflows/android.yml) [![Chrome Testsuite](https://github.com/apache/cordova-plugin-file/actions/workflows/chrome.yml/badge.svg)](https://github.com/apache/cordova-plugin-file/actions/workflows/chrome.yml) [![iOS Testsuite](https://github.com/apache/cordova-plugin-file/actions/workflows/ios.yml/badge.svg)](https://github.com/apache/cordova-plugin-file/actions/workflows/ios.yml) [![Lint Test](https://github.com/apache/cordova-plugin-file/actions/workflows/lint.yml/badge.svg)](https://github.com/apache/cordova-plugin-file/actions/workflows/lint.yml)
 
-This plugin implements a File API allowing read/write access to files residing on the device.
+This plugin implements a File API allowing read/write access to files residing on the device, based on the following W3C specifications:
 
-This plugin is based on several specs, including :
-The HTML5 File API
-[http://www.w3.org/TR/FileAPI/](http://www.w3.org/TR/FileAPI/)
+- [HTML5 File API](http://www.w3.org/TR/FileAPI)
+- [File API: Directories and System](http://www.w3.org/TR/2012/WD-file-system-api-20120417)<sup>1</sup>
+- [File API: Writer](https://www.w3.org/TR/2012/WD-file-writer-api-20120417/)<sup>1</sup>
 
-The Directories and System extensions
-Latest:
-[http://www.w3.org/TR/2012/WD-file-system-api-20120417/](http://www.w3.org/TR/2012/WD-file-system-api-20120417/)
-Although most of the plugin code was written when an earlier spec was current:
-[http://www.w3.org/TR/2011/WD-file-system-api-20110419/](http://www.w3.org/TR/2011/WD-file-system-api-20110419/)
-
-It also implements the FileWriter spec :
-[http://dev.w3.org/2009/dap/file-system/file-writer.html](http://dev.w3.org/2009/dap/file-system/file-writer.html)
+<sup>1</sup> These specifications are discontinued and the file plugin may not have the entire specification implemented.
 
 >*Note* While the W3C FileSystem spec is deprecated for web browsers, the FileSystem APIs are supported in Cordova applications with this plugin for the platforms listed in the _Supported Platforms_ list, with the exception of the Browser platform.
 
@@ -438,10 +431,12 @@ writer.onprogress = function() { /*commands*/ };
 
 ## Upgrading Notes
 
+### v1.0.0
+
 In v1.0.0 of this plugin, the `FileEntry` and `DirectoryEntry` structures have changed,
 to be more in line with the published specification.
 
-Previous (pre-1.0.0) versions of the plugin stored the device-absolute-file-location
+Previous versions of the plugin stored the device-absolute-file-location
 in the `fullPath` property of `Entry` objects. These paths would typically look like
 
     /var/mobile/Applications/<application UUID>/Documents/path/to/file  (iOS)
@@ -449,9 +444,7 @@ in the `fullPath` property of `Entry` objects. These paths would typically look 
 
 These paths were also returned by the `toURL()` method of the `Entry` objects.
 
-With v1.0.0, the `fullPath` attribute is the path to the file, _relative to the root of
-the HTML filesystem_. So, the above paths would now both be represented by a `FileEntry`
-object with a `fullPath` of
+Starting with v1.0.0, the `fullPath` attribute is the path to the file, _relative to the root of the HTML filesystem_. So, the above paths would now both be represented by a `FileEntry` object with a `fullPath` of
 
     /path/to/file
 
@@ -460,23 +453,24 @@ paths through the `fullPath` property of `Entry` objects, then you should update
 to use `entry.toURL()` instead.
 
 For backwards compatibility, the `resolveLocalFileSystemURL()` method will accept a
-device-absolute-path, and will return an `Entry` object corresponding to it, as long as that
-file exists within either the `TEMPORARY` or `PERSISTENT` filesystems.
+device-absolute-path, and will return an `Entry` object corresponding to it, as long as that file exists within either the `TEMPORARY` or `PERSISTENT` filesystems.
 
 This has particularly been an issue with the File-Transfer plugin, which previously used
 device-absolute-paths (and can still accept them). It has been updated to work correctly
-with FileSystem URLs, so replacing `entry.fullPath` with `entry.toURL()` should resolve any
-issues getting that plugin to work with files on the device.
+with FileSystem URLs, so replacing `entry.fullPath` with `entry.toURL()` should resolve any issues getting that plugin to work with files on the device.
 
-In v1.1.0 the return value of `toURL()` was changed (see [CB-6394](https://issues.apache.org/jira/browse/CB-6394))
-to return an absolute 'file://' URL. wherever possible. To ensure a 'cdvfile:'-URL you can use `toInternalURL()` now.
-This method will now return filesystem URLs of the form
+### v1.1.0
+
+Starting with v1.1.0, the return value of `toURL()` was changed (see [CB-6394](https://issues.apache.org/jira/browse/CB-6394))
+to return an absolute 'file://' URL. wherever possible. To ensure a 'cdvfile:'-URL you can use `toInternalURL()` now. This method will now return filesystem URLs of the form
 
     cdvfile://localhost/persistent/path/to/file
 
 which can be used to identify the file uniquely.
 
-In v7.0.0 the return value of `toURL()` for Android was updated to return the absolute `file://` URL when app content is served from the `file://` scheme.
+### v7.0.0
+
+Starting in v7.0.0 the return value of `toURL()` for Android was updated to return the absolute `file://` URL when app content is served from the `file://` scheme.
 
 If app content is served from the `http(s)://` scheme, a `cdvfile` formatted URL will be returned instead. The `cdvfile` formatted URL is created from the internal method `toInternalURL()`.
 
@@ -487,6 +481,13 @@ An example `toInternalURL()` return filesystem URL:
 [![toURL flow](https://sketchviz.com/@erisu/7b05499842275be93a0581e8e3576798/6dc71d8302cafd05b443d874a592d10fa415b8e3.sketchy.png)](//sketchviz.com/@erisu/7b05499842275be93a0581e8e3576798)
 
 It is recommended to always use the `toURL()` to ensure that the correct URL is returned.
+
+### v8.0.0
+
+Starting in v8.0.0 the return value of `.toURL()` was changed for iOS to bring
+the behaviour more closely to Android. If the webview is hosted on `file://` scheme,
+then `.toURL` return will not change and will continue to return a `file://` URI.
+Otherwise it will return the app's scheme path.
 
 ## cdvfile protocol
 
@@ -666,7 +667,7 @@ function writeFile(fileEntry, dataObj) {
     // Create a FileWriter object for our FileEntry (log.txt).
     fileEntry.createWriter(function (fileWriter) {
 
-        fileWriter.onwriteend = function() {
+        fileWriter.onwrite = function() {
             console.log("Successful file write...");
             readFile(fileEntry);
         };
@@ -730,13 +731,13 @@ function writeFile(fileEntry, dataObj, isAppend) {
     // Create a FileWriter object for our FileEntry (log.txt).
     fileEntry.createWriter(function (fileWriter) {
 
-        fileWriter.onwriteend = function() {
-            console.log("Successful file read...");
+        fileWriter.onwrite = function() {
+            console.log("Successful file write...");
             readFile(fileEntry);
         };
 
         fileWriter.onerror = function (e) {
-            console.log("Failed file read: " + e.toString());
+            console.log("Failed file write: " + e.toString());
         };
 
         // If we are appending data to file, go to the end of the file.
@@ -810,7 +811,7 @@ function writeFile(fileEntry, dataObj, isAppend) {
     // Create a FileWriter object for our FileEntry (log.txt).
     fileEntry.createWriter(function (fileWriter) {
 
-        fileWriter.onwriteend = function() {
+        fileWriter.onwrite = function() {
             console.log("Successful file write...");
             if (dataObj.type == "image/png") {
                 readBinaryFile(fileEntry);
@@ -900,3 +901,17 @@ function createDirectory(rootDirEntry) {
 ```
 
 When creating subfolders, you need to create each folder separately as shown in the preceding code.
+
+---
+
+## iOS Privacy Manifest
+
+As of May 1, 2024, Apple requires a privacy manifest file to be created for apps and third-party SDKs. The purpose of the privacy manifest file is to explain the data being collected and the reasons for the required APIs it uses. Starting with `cordova-ios@7.1.0`, APIs are available for configuring the privacy manifest file from `config.xml`.
+
+This plugin comes pre-bundled with a `PrivacyInfo.xcprivacy` file that contains the list of APIs it uses and the reasons for using them.
+
+However, as an app developer, it will be your responsibility to identify additional information explaining what your app does with that data.
+
+In this case, you will need to review the "[Describing data use in privacy manifests](https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests)" to understand the list of known `NSPrivacyCollectedDataTypes` and `NSPrivacyCollectedDataTypePurposes`.
+
+Also, ensure all four keys—`NSPrivacyTracking`, `NSPrivacyTrackingDomains`, `NSPrivacyAccessedAPITypes`, and `NSPrivacyCollectedDataTypes`—are defined, even if you are not making an addition to the other items. Apple requires all to be defined.

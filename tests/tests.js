@@ -139,7 +139,7 @@ exports.defineAutoTests = function () {
             success = success || function () {};
             error = error || failed.bind(null, success, 'deleteEntry failed.');
 
-            window.resolveLocalFileSystemURL(root.toURL() + '/' + name, function (entry) {
+            window.resolveLocalFileSystemURL(root.nativeURL + '/' + name, function (entry) {
                 if (entry.isDirectory === true) {
                     entry.removeRecursively(success, error);
                 } else {
@@ -325,7 +325,7 @@ exports.defineAutoTests = function () {
                         deleteEntry(fileName, done);
                     };
                     createFile(fileName, function (entry) {
-                        window.resolveLocalFileSystemURL(entry.toURL(), win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving file URL: ' + entry.toURL()));
+                        window.resolveLocalFileSystemURL(entry.nativeURL, win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving file URL: ' + entry.nativeURL));
                     }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName), failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
                 });
 
@@ -342,7 +342,7 @@ exports.defineAutoTests = function () {
                         deleteEntry(fileName, done);
                     };
                     createFile(fileName, function (entry) {
-                        const entryURL = entry.toURL() + '/';
+                        const entryURL = entry.nativeURL + '/';
                         window.resolveLocalFileSystemURL(entryURL, win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving file URL: ' + entryURL));
                     }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName), failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
                 });
@@ -361,7 +361,7 @@ exports.defineAutoTests = function () {
                     };
                     function gotDirectory (entry) {
                         // lookup file system entry
-                        window.resolveLocalFileSystemURL(entry.toURL(), win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving directory URL: ' + entry.toURL()));
+                        window.resolveLocalFileSystemURL(entry.nativeURL, win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving directory URL: ' + entry.nativeURL));
                     }
                     createDirectory(fileName, gotDirectory, failed.bind(null, done, 'createDirectory - Error creating directory: ' + fileName), failed.bind(null, done, 'createDirectory - Error creating directory: ' + fileName));
                 });
@@ -380,7 +380,7 @@ exports.defineAutoTests = function () {
                     };
                     function gotDirectory (entry) {
                         // lookup file system entry
-                        let entryURL = entry.toURL();
+                        let entryURL = entry.nativeURL;
                         entryURL = entryURL.substring(0, entryURL.length - 1);
                         window.resolveLocalFileSystemURL(entryURL, win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving directory URL: ' + entryURL));
                     }
@@ -419,12 +419,12 @@ exports.defineAutoTests = function () {
                     };
                     // create a new file entry
                     createFile(fileName, function (entry) {
-                        window.resolveLocalFileSystemURL(entry.toURL() + '?1234567890', win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving file URI: ' + entry.toURL()));
+                        window.resolveLocalFileSystemURL(entry.nativeURL + '?1234567890', win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving file URI: ' + entry.nativeURL));
                     }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
                 });
 
                 it('file.spec.11 should error (NOT_FOUND_ERR) when resolving (non-existent) invalid file name', function (done) {
-                    const fileName = joinURL(root.toURL(), 'this.is.not.a.valid.file.txt');
+                    const fileName = joinURL(root.nativeURL, 'this.is.not.a.valid.file.txt');
                     const fail = function (error) {
                         expect(error).toBeDefined();
                         if (isChrome) {
@@ -497,7 +497,7 @@ exports.defineAutoTests = function () {
                     expect(entry.removeRecursively).toBeDefined();
                     done();
                 };
-                window.resolveLocalFileSystemURL(root.toURL(), win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving file URI: ' + root.toURL()));
+                window.resolveLocalFileSystemURL(root.nativeURL, win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving file URI: ' + root.nativeURL));
             });
         });
 
@@ -697,7 +697,7 @@ exports.defineAutoTests = function () {
                 function getDir (dirEntry) {
                     expect(dirEntry.filesystem).toBeDefined();
                     expect(dirEntry.filesystem).toBe(root.filesystem);
-                    const dirURI = dirEntry.toURL();
+                    const dirURI = dirEntry.nativeURL;
                     // now encode URI and try to resolve
                     window.resolveLocalFileSystemURL(dirURI, win, failed.bind(null, done, 'window.resolveLocalFileSystemURL - getDir function - Error resolving directory: ' + dirURI));
                 }
@@ -1971,8 +1971,12 @@ exports.defineAutoTests = function () {
                                     directoryReader.readEntries(function successRead (entries) {
                                         expect(entries.length).toBe(2);
                                         if (!isChrome) {
-                                            expect(entries[0].name).toBe(srcDirNestedFirst);
-                                            expect(entries[1].name).toBe(srcDirNestedSecond);
+                                            // Directory read order is undefined on some platforms, therefore we cannot assume order
+                                            // So we will start with an expected list and iterate over the entries and test to see if they
+                                            // are in our expectation list. When found we will remove them. At the end, our expectation list
+                                            // should be empty.
+                                            const expected = [srcDirNestedFirst, srcDirNestedSecond];
+                                            expect(entries.map((entry) => entry.name)).toEqual(jasmine.arrayWithExactContents(expected));
                                         }
                                         deleteEntry(dstDir, done);
                                     }, failed.bind(null, done, 'Error getting entries from: ' + transferredDirectory));
@@ -3402,7 +3406,7 @@ exports.defineAutoTests = function () {
             /* These specs verify that paths with parent references i("..") in them
              * work correctly, and do not cause the application to crash.
              */
-            it('file.spec.110 should not throw exception resolving parent refefences', function (done) {
+            it('file.spec.110 should not throw exception resolving parent references', function (done) {
                 /* This is a direct copy of file.spec.9, with the filename changed, * as reported in CB-5721.
                  */
                 const fileName = 'resolve.file.uri';
@@ -3411,12 +3415,12 @@ exports.defineAutoTests = function () {
                 createDirectory(dirName, function () {
                     createFile(dirName + '/../' + fileName, function (entry) {
                         // lookup file system entry
-                        window.resolveLocalFileSystemURL(entry.toURL(), function (fileEntry) {
+                        window.resolveLocalFileSystemURL(entry.nativeURL, function (fileEntry) {
                             expect(fileEntry).toBeDefined();
                             expect(fileEntry.name).toCanonicallyMatch(fileName);
                             // cleanup
                             deleteEntry(fileName, done);
-                        }, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving URI: ' + entry.toURL()));
+                        }, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving URI: ' + entry.nativeURL));
                     }, failed.bind(null, done, 'createFile - Error creating file: ../' + fileName));
                 }, failed.bind(null, done, 'createDirectory - Error creating directory: ' + dirName));
             });
@@ -3489,6 +3493,8 @@ exports.defineAutoTests = function () {
                 // From Cordova-Android 10.x, app content is served from the "https" scheme by default
                 // The paramedic plugin changes the scheme to http to avoid ssl.
                 pathExpect = 'http://';
+            } else if (cordova.platformId === 'ios') {
+                pathExpect = 'app://';
             } else if (isChrome) {
                 pathExpect = 'filesystem:http://';
             } else if (isElectron) {
@@ -3551,7 +3557,7 @@ exports.defineAutoTests = function () {
                 const fileName = 'native.resolve.uri';
                 // create a new file entry
                 createFile(fileName, function (entry) {
-                    resolveLocalFileSystemURL(entry.toURL(), function (entry) { // eslint-disable-line no-undef
+                    resolveLocalFileSystemURL(entry.nativeURL, function (entry) { // eslint-disable-line no-undef
                         expect(entry.toNativeURL).toBeDefined();
                         expect(entry.name).toCanonicallyMatch(fileName);
                         expect(typeof entry.toNativeURL).toBe('function');
@@ -3561,7 +3567,7 @@ exports.defineAutoTests = function () {
                         expect(nativeURL.substring(nativeURL.length - fileName.length)).toEqual(fileName);
                         // cleanup
                         deleteEntry(fileName, done);
-                    }, failed.bind(null, done, 'resolveLocalFileSystemURL - Error resolving file URL: ' + entry.toURL()));
+                    }, failed.bind(null, done, 'resolveLocalFileSystemURL - Error resolving file URL: ' + entry.nativeURL));
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
         });
@@ -3602,7 +3608,10 @@ exports.defineAutoTests = function () {
                 });
             });
 
-            it('file.spec.121 should resolve native URLs returned by API', function (done) {
+            // TODO: .toNativeURL() / .toURL() were repurposed at some point so return a DOM-usable url
+            // these urls are not resolvable as they expect file:// or content://schemes
+            // I think these tests can simply be removed.
+            xit('file.spec.121 should resolve native URLs returned by API', function (done) {
                 const fileName = 'native.resolve.uri1';
                 // create a new file entry
                 createFile(fileName, function (entry) {
@@ -3615,7 +3624,10 @@ exports.defineAutoTests = function () {
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
 
-            it('file.spec.122 should resolve native URLs returned by API with localhost', function (done) {
+            // TODO: .toNativeURL() / .toURL() were repurposed at some point so return a DOM-usable url
+            // these urls are not resolvable as they expect file:// or content://schemes
+            // I think these tests can simply be removed.
+            xit('file.spec.122 should resolve native URLs returned by API with localhost', function (done) {
                 const fileName = 'native.resolve.uri2';
                 // create a new file entry
                 createFile(fileName, function (entry) {
@@ -3629,10 +3641,10 @@ exports.defineAutoTests = function () {
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
 
-            it('file.spec.123 should resolve native URLs returned by API with query string', function (done) {
-                if (isElectron) {
-                    pending('not supported in Electron');
-                }
+            // TODO: .toNativeURL() / .toURL() were repurposed at some point so return a DOM-usable url
+            // these urls are not resolvable as they expect file:// or content://schemes
+            // I think these tests can simply be removed.
+            xit('file.spec.123 should resolve native URLs returned by API with query string', function (done) {
                 const fileName = 'native.resolve.uri3';
                 // create a new file entry
                 createFile(fileName, function (entry) {
@@ -3646,10 +3658,10 @@ exports.defineAutoTests = function () {
                 }, failed.bind(null, done, 'createFile - Error creating file: ' + fileName));
             });
 
-            it('file.spec.124 should resolve native URLs returned by API with localhost and query string', function (done) {
-                if (isElectron) {
-                    pending('not supported in Electron');
-                }
+            // TODO: .toNativeURL() / .toURL() were repurposed at some point so return a DOM-usable url
+            // these urls are not resolvable as they expect file:// or content://schemes
+            // I think these tests can simply be removed.
+            xit('file.spec.124 should resolve native URLs returned by API with localhost and query string', function (done) {
                 const fileName = 'native.resolve.uri4';
                 // create a new file entry
                 createFile(fileName, function (entry) {
