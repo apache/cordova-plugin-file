@@ -15,4 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-This file is here for testing purposes
+.git/
+coverage/
+node_modules/
+.jshintrc
+types/index.d.ts

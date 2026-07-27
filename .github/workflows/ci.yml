@@ -15,29 +15,24 @@
 # specific language governing permissions and limitations
 # under the License.
 
-name: Lint Test
+name: Node CI
 
 on:
   push:
-    paths:
-      - '**.js'
-      - '.eslint*'
-      - '.github/workflow/lint.yml'
+    branches-ignore:
+      - 'dependabot/**'
   pull_request:
-    paths:
-      - '**.js'
-      - '.eslint*'
-      - '.github/workflow/lint.yml'
-
-permissions:
-  contents: read
+    branches:
+      - '*'
 
 jobs:
-  test:
-    name: Lint Test
+  codeql:
+    name: CodeQL Analysis
     runs-on: ubuntu-latest
-    env:
-      node-version: 24
+
+    permissions:
+      contents: read
+      security-events: write
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -47,17 +42,20 @@ jobs:
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: ${{ env.node-version }}
+          node-version: 24.x
 
-      - name: Run Environment Information
-        run: |
-          node --version
-          npm --version
+      - uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        with:
+          tools: linked
+          languages: javascript, actions
+          queries: security-and-quality
+          config: |
+            paths-ignore:
+              - node_modules
 
       - name: Run npm install
-        run: |
-          npm ci
+        run: npm ci
+        env:
+          CI: true
 
-      - name: Run lint test
-        run: |
-          npm run lint
+      - uses: github/codeql-action/analyze@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
