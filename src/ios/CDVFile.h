@@ -20,6 +20,16 @@
 #import <Foundation/Foundation.h>
 #import <Cordova/CDVPlugin.h>
 
+
+#ifndef __CORDOVA_8_0_0
+#import <Cordova/NSDictionary+CordovaPreferences.h>
+// cordova-ios 8 introduced CDVSettingsDictionary, which should be used
+// instead of NSDictionary+CordovaPreferences
+// For cordova-ios 7 and earlier, we create a type alias for NSDictionary to CDVSettingsDictionary,
+// so that a symbolic "CDVSettingsDictionary" can be used in these older cordova-ios versions.
+typedef NSDictionary CDVSettingsDictionary;
+#endif
+
 extern NSString* const kCDVAssetsLibraryPrefix;
 extern NSString* const kCDVFilesystemURLPrefix;
 

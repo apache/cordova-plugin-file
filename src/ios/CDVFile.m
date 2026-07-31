@@ -238,18 +238,15 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     }
 }
 
-- (NSArray *)getExtraFileSystemsPreference:(UIViewController *)vc
+- (NSArray *)getExtraFileSystemsPreference
 {
-    NSString *filesystemsStr = nil;
-    if([self.viewController isKindOfClass:[CDVViewController class]]) {
-        CDVViewController *vc = (CDVViewController *)self.viewController;
-        NSDictionary *settings = [vc settings];
-        filesystemsStr = [settings[@"iosextrafilesystems"] lowercaseString];
+    NSString *extraFileSystems = [[self.viewController.settings objectForKey:@"iosextrafilesystems"] lowercaseString];
+
+    if (!extraFileSystems) {
+        extraFileSystems = @"library,library-nosync,documents,documents-nosync,cache,bundle,root";
     }
-    if (!filesystemsStr) {
-        filesystemsStr = @"library,library-nosync,documents,documents-nosync,cache,bundle,root";
-    }
-    return [filesystemsStr componentsSeparatedByString:@","];
+
+    return [extraFileSystems componentsSeparatedByString:@","];
 }
 
 - (void)makeNonSyncable:(NSString*)path {
@@ -322,17 +319,11 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     self.rootDocsPath = [paths objectAtIndex:0];
     self.appDocsPath = [self.rootDocsPath stringByAppendingPathComponent:@"files"];
 
+    NSString *persistentFileLocation = [[self.viewController.settings objectForKey:@"iospersistentfilelocation"] lowercaseString];
 
-    NSString *location = nil;
-    if([self.viewController isKindOfClass:[CDVViewController class]]) {
-        CDVViewController *vc = (CDVViewController *)self.viewController;
-        NSMutableDictionary *settings = vc.settings;
-        location = [[settings objectForKey:@"iospersistentfilelocation"] lowercaseString];
-    }
-    if (location == nil) {
-        // Compatibilty by default (if the config preference is not set, or
-        // if we're not embedded in a CDVViewController somehow.)
-        location = @"compatibility";
+    // Compatibilty by default (if the config preference is not set)
+    if (persistentFileLocation == nil) {
+        persistentFileLocation = @"compatibility";
     }
 
     NSError *error;
@@ -344,7 +335,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     } else {
         NSLog(@"Unable to create temporary directory: %@", error);
     }
-    if ([location isEqualToString:@"library"]) {
+    if ([persistentFileLocation isEqualToString:@"library"]) {
         if ([[NSFileManager defaultManager] createDirectoryAtPath:self.appLibraryPath
                                       withIntermediateDirectories:YES
                                                        attributes:nil
@@ -353,7 +344,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         } else {
             NSLog(@"Unable to create library directory: %@", error);
         }
-    } else if ([location isEqualToString:@"compatibility"]) {
+    } else if ([persistentFileLocation isEqualToString:@"compatibility"]) {
         /*
          *  Fall-back to compatibility mode -- this is the logic implemented in
          *  earlier versions of this plugin, and should be maintained here so
@@ -368,7 +359,7 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     }
     [self registerFilesystem:[[CDVAssetLibraryFilesystem alloc] initWithName:@"assets-library"]];
 
-    [self registerExtraFileSystems:[self getExtraFileSystemsPreference:self.viewController]
+    [self registerExtraFileSystems:[self getExtraFileSystemsPreference]
                   fromAvailableSet:[self getAvailableFileSystems]];
 
 }
