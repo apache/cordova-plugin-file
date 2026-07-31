@@ -863,11 +863,10 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         [fs readFileAtURL:localURI start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
             CDVPluginResult* result = nil;
             if (data != nil) {
-                NSString* str = [[NSString alloc] initWithBytesNoCopy:(void*)[data bytes] length:[data length] encoding:NSUTF8StringEncoding freeWhenDone:NO];
+                NSString* str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
                 // Check that UTF8 conversion did not fail.
                 if (str != nil) {
                     result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:str];
-                    result.associatedObject = data;
                 } else {
                     errorCode = ENCODING_ERR;
                 }
@@ -962,9 +961,8 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         [fs readFileAtURL:localURI start:start end:end callback:^(NSData* data, NSString* mimeType, CDVFileError errorCode) {
             CDVPluginResult* result = nil;
             if (data != nil) {
-                NSString* payload = [[NSString alloc] initWithBytesNoCopy:(void*)[data bytes] length:[data length] encoding:NSASCIIStringEncoding freeWhenDone:NO];
+                NSString* payload = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
                 result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:payload];
-                result.associatedObject = data;
             } else {
                 result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsInt:errorCode];
             }
