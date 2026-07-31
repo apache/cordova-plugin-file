@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-file-tests",
-  "version": "8.1.4-dev",
+  "version": "9.0.0-dev",
   "description": "",
   "cordova": {
     "id": "cordova-plugin-file-tests",
