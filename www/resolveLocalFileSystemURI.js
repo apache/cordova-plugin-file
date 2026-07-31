@@ -67,10 +67,6 @@
                     // create appropriate Entry object
                     const fsName = entry.filesystemName || (entry.filesystem && entry.filesystem.name) || (entry.filesystem === window.PERSISTENT ? 'persistent' : 'temporary');
                     fileSystems.getFs(fsName, function (fs) {
-                        // This should happen only on platforms that haven't implemented requestAllFileSystems (windows)
-                        if (!fs) {
-                            fs = new FileSystem(fsName, { name: '', fullPath: '/' });
-                        }
                         const result = (entry.isDirectory) ? new DirectoryEntry(entry.name, entry.fullPath, fs, entry.nativeURL) : new FileEntry(entry.name, entry.fullPath, fs, entry.nativeURL);
                         successCallback(result);
                     });

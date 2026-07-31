@@ -45,9 +45,7 @@ exports.file = {
     // iOS: Holds app-specific files that should be synced (e.g. to iCloud).
     syncedDataDirectory: null,
     // iOS: Files private to the app, but that are meaningful to other applications (e.g. Office files)
-    documentsDirectory: null,
-    // BlackBerry10: Files globally available to all apps
-    sharedDirectory: null
+    documentsDirectory: null
 };
 
 channel.waitForInitialization('onFileSystemPathsReady');
