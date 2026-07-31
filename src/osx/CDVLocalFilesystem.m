@@ -123,7 +123,7 @@
 - (CDVFilesystemURL *)URLforFullPath:(NSString *)fullPath
 {
     if (fullPath) {
-        NSString* escapedPath = [fullPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        NSString* escapedPath = [fullPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]];
         if ([fullPath hasPrefix:@"/"]) {
             return [CDVFilesystemURL fileSystemURLWithString:[NSString stringWithFormat:@"%@://localhost/%@%@", kCDVFilesystemURLPrefix, self.name, escapedPath]];
         }
