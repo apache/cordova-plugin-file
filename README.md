@@ -144,6 +144,19 @@ the `cordova.file.*` properties map to physical paths on a real device.
      necessary, but do not rely on this. You should clear this directory as
      appropriate for your application.
 
+#### iOS `assets-library` compatibility root
+
+On iOS, this plugin also registers a read-only `assets-library` filesystem root. It maps native `asset-library://...` URLs to internal `cdvfile://localhost/assets-library/...` URLs so they can be resolved through the File plugin APIs. This behavior is implemented by the iOS class `CDVAssetLibraryFilesystem`.
+
+These URLs are legacy identifiers from Apple's deprecated [AssetsLibrary API](https://developer.apple.com/documentation/assetslibrary). The AssetsLibrary API is for accessing pictures and videos managed by the Photos application.
+They typically appear when another plugin, custom native code, or older application code passes an `asset-library://` URL for an item in the user's photo library into the File plugin.
+
+This compatibility root is limited to reading metadata and file contents for an existing asset. Operations that would create, modify, remove, list, or otherwise manage directories are not supported for `assets-library` URLs.
+
+Apple has deprecated `AssetsLibrary` in favor of the Photos framework. New code should not introduce dependencies on `asset-library://` URLs. This plugin currently preserves support only as a compatibility layer for existing integrations that still provide those legacy URLs.
+
+When building an app with an iOS deployment target of 26.0 or later, Apple obsoletes the underlying `AssetsLibrary` APIs. In that configuration this compatibility layer is not registered and `asset-library://` URLs are not supported by this plugin.
+
 ### Android File System Layout
 
 | Device Path                                     | `cordova.file.*`            | `AndroidExtraFileSystems` | r/w? | persistent? | OS clears | private |
@@ -477,6 +490,8 @@ Otherwise it will return the app's scheme path.
 
 `cdvfile://localhost/persistent|temporary|another-fs-root*/path/to/file` can be used for platform-independent file paths.
 cdvfile paths are supported by core plugins - for example you can download an mp3 file to cdvfile-path via `cordova-plugin-file-transfer` and play it via `cordova-plugin-media`.
+
+On iOS, `cdvfile://localhost/assets-library/...` is also recognized as a legacy compatibility form for native `asset-library://...` photo-library URLs. This root is read-only and exists only for older integrations that still surface `asset-library://` identifiers.
 
 __*Note__: See [Where to Store Files](#where-to-store-files), [File System Layouts](#file-system-layouts) and [Configuring the Plugin](#configuring-the-plugin-optional) for more details about available fs roots.
 

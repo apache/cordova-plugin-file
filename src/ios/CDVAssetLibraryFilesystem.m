@@ -20,10 +20,15 @@
 #import "CDVFile.h"
 #import "CDVAssetLibraryFilesystem.h"
 #import <Cordova/CDV.h>
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < 260000
 #import <AssetsLibrary/ALAsset.h>
 #import <AssetsLibrary/ALAssetRepresentation.h>
 #import <AssetsLibrary/ALAssetsLibrary.h>
+#endif
 #import <MobileCoreServices/MobileCoreServices.h>
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 NSString* const kCDVAssetsLibraryPrefix = @"assets-library://";
 NSString* const kCDVAssetsLibraryScheme = @"assets-library";
@@ -190,6 +195,7 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
 
 - (void)readFileAtURL:(CDVFilesystemURL *)localURL start:(NSInteger)start end:(NSInteger)end callback:(void (^)(NSData*, NSString* mimeType, CDVFileError))callback
 {
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < 260000
     ALAssetsLibraryAssetForURLResultBlock resultBlock = ^(ALAsset* asset) {
         if (asset) {
             // We have the asset!  Get the data and send it off.
@@ -214,10 +220,14 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
 
     ALAssetsLibrary* assetsLibrary = [[ALAssetsLibrary alloc] init];
     [assetsLibrary assetForURL:[self assetLibraryURLForLocalURL:localURL] resultBlock:resultBlock failureBlock:failureBlock];
+#else
+    callback(nil, nil, NOT_FOUND_ERR);
+#endif
 }
 
 - (void)getFileMetadataForURL:(CDVFilesystemURL *)localURL callback:(void (^)(CDVPluginResult *))callback
 {
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < 260000
     // In this case, we need to use an asynchronous method to retrieve the file.
     // Because of this, we can't just assign to `result` and send it at the end of the method.
     // Instead, we return after calling the asynchronous method and send `result` in each of the blocks.
@@ -249,5 +259,10 @@ NSString* const kCDVAssetsLibraryScheme = @"assets-library";
     ALAssetsLibrary* assetsLibrary = [[ALAssetsLibrary alloc] init];
     [assetsLibrary assetForURL:[self assetLibraryURLForLocalURL:localURL] resultBlock:resultBlock failureBlock:failureBlock];
     return;
+#else
+    callback([CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsString:@"assets-library URLs are not supported when the iOS deployment target is 26.0 or later."]);
+#endif
 }
 @end
+
+#pragma clang diagnostic pop

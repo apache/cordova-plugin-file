@@ -22,6 +22,24 @@
 extern NSString* const kCDVAssetsLibraryPrefix;
 extern NSString* const kCDVAssetsLibraryScheme;
 
+/*
+ Compatibility filesystem for legacy iOS photo-library URLs.
+
+ This filesystem maps native `asset-library://...` resources to the internal
+ `cdvfile://localhost/assets-library/...` namespace so they can be resolved by
+ Cordova's File plugin APIs.
+
+ This legacy API provides access to pictures and videos managed by the
+ Photos application, not arbitrary document files.
+
+ It is intentionally read-only. Write and directory-management operations are
+ unsupported for this filesystem root.
+
+ The implementation is based on Apple's AssetsLibrary API, which was
+ deprecated in iOS 9.0, and exists to preserve behavior for older
+ integrations. For apps with a deployment target of 26.0 or later,
+ AssetsLibrary is removed and this filesystem is not registered.
+ */
 @interface CDVAssetLibraryFilesystem : NSObject<CDVFileSystem> {
 }
 
