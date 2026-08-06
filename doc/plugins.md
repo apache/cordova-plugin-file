@@ -27,7 +27,7 @@ Working with Cordova file system URLs
 
 Since version 1.0.0, this plugin has used URLs with a `cdvfile` scheme for all communication over the bridge, rather than exposing raw device file system paths to JavaScript. 
 
-On the JavaScript side, this means that FileEntry and DirectoryEntry objects have a fullPath attribute which is relative to the root of the HTML file system. If your plugin's JavaScript API accepts a FileEntry or DirectoryEntry object, you should call `.toURL()` on that object before passing it across the bridge to native code.
+On the JavaScript side, this means that FileSystemFileEntry and FileSystemDirectoryEntry objects have a fullPath attribute which is relative to the root of the HTML file system. If your plugin's JavaScript API accepts a FileSystemFileEntry or FileSystemDirectoryEntry object, you should call `.toURL()` on that object before passing it across the bridge to native code.
 
 ### Converting cdvfile:// URLs to fileystem paths
 
@@ -104,7 +104,7 @@ If your plugin creates a file, and you want to return a FileEntry object for it,
 
 #### JavaScript
 
-In JavaScript, to get a `cdvfile://` URL from a FileEntry or DirectoryEntry object, simply call `.toURL()` on it:
+In JavaScript, to get a `cdvfile://` URL from a FileSystemFileEntry or FileSystemDirectoryEntry object, simply call `.toURL()` on it:
 
     var cdvfileURL = entry.toURL();
 
