@@ -125,7 +125,7 @@ public class LocalFilesystem extends Filesystem {
         LocalFilesystemURL requestedURL;
 
         // Check whether the supplied path is absolute or relative
-        if (directory && !path.endsWith("/")) {
+        if (directory && !path.endsWith("/") && !"".equals(path)) {
             path += "/";
         }
         if (path.startsWith("/")) {
