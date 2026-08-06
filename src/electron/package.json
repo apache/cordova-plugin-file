@@ -1,0 +1,20 @@
+{
+  "name": "cordova-plugin-file-electron",
+  "version": "1.0.0",
+  "description": "Electron Native Support for Cordova File Plugin",
+  "main": "index.js",
+  "keywords": [
+    "cordova",
+    "electron",
+    "file",
+    "native"
+  ],
+  "author": "Apache Software Foundation",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "fs-extra": "^11.1.0"
+  },
+  "cordova": {
+    "serviceName": "File"
+  }
+}
