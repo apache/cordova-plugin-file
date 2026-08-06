@@ -244,6 +244,7 @@ to config.xml in order for the application to find previously stored files.
         </js-module>
     </platform>
 
+    <!-- browser -->
     <platform name="browser">
         <!-- File for Chrome -->
         <js-module src="www/browser/Preparing.js" name="Preparing">
@@ -261,6 +262,22 @@ to config.xml in order for the application to find previously stored files.
 
         <js-module src="www/browser/FileSystem.js" name="firefoxFileSystem">
             <merges target="window.FileSystem" />
+        </js-module>
+    </platform>
+
+    <!-- electron -->
+    <platform name="electron">
+        <hook type="after_plugin_install" src="scripts/electron/addNodeIntegration.js" />
+
+        <js-module src="src/electron/FileProxy.js" name="FileProxy">
+            <runs />
+        </js-module>
+
+        <js-module src="src/electron/rimraf.js" name="rimraf" />
+
+        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
+            <merges target="cordova" />
+            <runs />
         </js-module>
     </platform>
 
