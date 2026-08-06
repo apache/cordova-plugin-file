@@ -584,6 +584,21 @@ public class FileUtils extends CordovaPlugin {
         if (j.has("externalApplicationStorageDirectory")) {
             allowedStorageDirectories.add(j.getString("externalApplicationStorageDirectory"));
         }
+        if (j.has("removableExternalApplicationStorageDirectories")) {
+            JSONArray array = j.getJSONArray("removableExternalApplicationStorageDirectories");
+            for (int i = 0; i < array.length(); i++) {
+                allowedStorageDirectories.add(array.getString(i));
+            }
+        }
+        if (j.has("removableExternalMediaDirectories")) {
+            JSONArray array = j.getJSONArray("removableExternalMediaDirectories");
+            for (int i = 0; i < array.length(); i++) {
+                allowedStorageDirectories.add(array.getString(i));
+            }
+        }
+        if (j.has("externalMediaDirectory")) {
+            allowedStorageDirectories.add(j.getString("externalMediaDirectory"));
+        }
 
         if (permissionType == READ && hasReadPermission()) {
             return false;
@@ -999,16 +1014,56 @@ public class FileUtils extends CordovaPlugin {
         ret.put("applicationStorageDirectory", toDirUrl(context.getFilesDir().getParentFile()));
         ret.put("dataDirectory", toDirUrl(context.getFilesDir()));
         ret.put("cacheDirectory", toDirUrl(context.getCacheDir()));
-        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            try {
+        try {
+            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
                 ret.put("externalApplicationStorageDirectory", toDirUrl(context.getExternalFilesDir(null).getParentFile()));
                 ret.put("externalDataDirectory", toDirUrl(context.getExternalFilesDir(null)));
                 ret.put("externalCacheDirectory", toDirUrl(context.getExternalCacheDir()));
                 ret.put("externalRootDirectory", toDirUrl(Environment.getExternalStorageDirectory()));
-            } catch (NullPointerException e) {
-                /* If external storage is unavailable, context.getExternal* returns null */
-                LOG.d(LOG_TAG, "Unable to access these paths, most liklely due to USB storage");
             }
+
+            JSONArray removableExternalApplicationStorageDirs = new JSONArray();
+            JSONArray removableExternalDataDirs = new JSONArray();
+            JSONArray removableExternalCacheDirs = new JSONArray();
+            JSONArray removableExternalMediaDirs = new JSONArray();
+            String externalMediaDir = null;
+            for (File filesDir : context.getExternalFilesDirs(null)) {
+                if (filesDir != null) {
+                    if (Environment.isExternalStorageRemovable(filesDir)) {
+                        removableExternalApplicationStorageDirs.put(toDirUrl(filesDir.getParentFile()));
+                        removableExternalDataDirs.put(toDirUrl(filesDir));
+                    }
+                }
+            }
+            for (File cacheDir : context.getExternalCacheDirs()) {
+                if (cacheDir != null) {
+                    if (Environment.isExternalStorageRemovable(cacheDir)) {
+                        removableExternalCacheDirs.put(toDirUrl(cacheDir));
+                    }
+                }
+            }
+            for (File mediaDir : context.getExternalMediaDirs()) {
+                if (mediaDir != null) {
+                    String dirUrl = toDirUrl(mediaDir);
+                    if (Environment.isExternalStorageRemovable(mediaDir)) {
+                        removableExternalMediaDirs.put(dirUrl);
+                    } else {
+                        if (externalMediaDir != null) {
+                            LOG.w(LOG_TAG, "External media directory already found ; skip other value " + dirUrl);
+                            continue;
+                        }
+                        externalMediaDir = dirUrl;
+                    }
+                }
+            }
+            ret.put("removableExternalApplicationStorageDirectories", removableExternalApplicationStorageDirs);
+            ret.put("removableExternalDataDirectories", removableExternalDataDirs);
+            ret.put("removableExternalCacheDirectories", removableExternalCacheDirs);
+            ret.put("removableExternalMediaDirectories", removableExternalMediaDirs);
+            ret.put("externalMediaDirectory", externalMediaDir);
+        } catch (NullPointerException e) {
+            /* If external storage is unavailable, context.getExternal* returns null */
+            LOG.d(LOG_TAG, "Unable to access these paths, most likely due to USB storage");
         }
         return ret;
     }
