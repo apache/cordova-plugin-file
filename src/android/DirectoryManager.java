@@ -26,7 +26,7 @@ import java.io.File;
 /**
  * This class provides file directory utilities.
  * All file operations are performed on the SD card.
- *
+ * <p>
  * It is used by the FileUtils class.
  */
 public class DirectoryManager {
@@ -36,8 +36,9 @@ public class DirectoryManager {
 
     /**
      * Determine if a file or directory exists.
-     * @param name				The name of the file to check.
-     * @return					T=exists, F=not found
+     *
+     * @param name The name of the file to check.
+     * @return T=exists, F=not found
      */
     public static boolean testFileExists(String name) {
         boolean status;
@@ -58,7 +59,7 @@ public class DirectoryManager {
     /**
      * Get the free space in external storage
      *
-     * @return 		Size in KB or -1 if not available
+     * @return Size in KB or -1 if not available
      */
     public static long getFreeExternalStorageSpace() {
         String status = Environment.getExternalStorageState();
@@ -96,7 +97,7 @@ public class DirectoryManager {
     /**
      * Determine if SD card exists.
      *
-     * @return				T=exists, F=not found
+     * @return T=exists, F=not found
      */
     public static boolean testSaveLocationExists() {
         String sDCardStatus = Environment.getExternalStorageState();
@@ -117,16 +118,15 @@ public class DirectoryManager {
     /**
      * Create a new file object from two file paths.
      *
-     * @param file1			Base file path
-     * @param file2			Remaining file path
-     * @return				File object
+     * @param file1 Base file path
+     * @param file2 Remaining file path
+     * @return File object
      */
-    private static File constructFilePaths (String file1, String file2) {
+    private static File constructFilePaths(String file1, String file2) {
         File newPath;
         if (file2.startsWith(file1)) {
             newPath = new File(file2);
-        }
-        else {
+        } else {
             newPath = new File(file1 + "/" + file2);
         }
         return newPath;

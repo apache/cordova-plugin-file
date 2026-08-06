@@ -26,7 +26,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Base64;
-import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceResponse;
 
@@ -535,7 +534,7 @@ public class FileUtils extends CordovaPlugin {
 
     private void getReadPermission(String rawArgs, int action, CallbackContext callbackContext) {
         int requestCode = pendingRequests.createRequest(rawArgs, action, callbackContext);
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             PermissionHelper.requestPermissions(this, requestCode,
                     new String[]{Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_AUDIO});
         } else {
@@ -544,7 +543,7 @@ public class FileUtils extends CordovaPlugin {
     }
 
     private void getWritePermission(String rawArgs, int action, CallbackContext callbackContext) {
-        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             int requestCode = pendingRequests.createRequest(rawArgs, action, callbackContext);
             PermissionHelper.requestPermission(this, requestCode, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
@@ -554,13 +553,13 @@ public class FileUtils extends CordovaPlugin {
      * If your app targets Android 13 (SDK 33) or higher and needs to access media files that other apps have created,
      * you must request one or more of the following granular media permissions READ_MEDIA_*
      * instead of the READ_EXTERNAL_STORAGE permission:
-     *
+     * <p>
      * Refer to: https://developer.android.com/about/versions/13/behavior-changes-13
      *
      * @return
      */
     private boolean hasReadPermission() {
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             return PermissionHelper.hasPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
                     && PermissionHelper.hasPermission(this, Manifest.permission.READ_MEDIA_VIDEO)
                     && PermissionHelper.hasPermission(this, Manifest.permission.READ_MEDIA_AUDIO);
@@ -571,7 +570,7 @@ public class FileUtils extends CordovaPlugin {
 
     private boolean hasWritePermission() {
         // Starting with API 33, requesting WRITE_EXTERNAL_STORAGE is an auto permission rejection
-        return android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                 ? true
                 : PermissionHelper.hasPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
@@ -659,7 +658,6 @@ public class FileUtils extends CordovaPlugin {
         }
         return localURL;
     }
-
 
     /* helper to execute functions async and handle the result codes
      *
@@ -834,7 +832,6 @@ public class FileUtils extends CordovaPlugin {
             throw mue;
         }
     }
-
 
     /**
      * Deletes a file or directory. It is an error to attempt to delete a directory that is not empty.
@@ -1124,7 +1121,6 @@ public class FileUtils extends CordovaPlugin {
         }
     }
 
-
     /**
      * Write contents of file.
      *
@@ -1168,7 +1164,6 @@ public class FileUtils extends CordovaPlugin {
             throw mue;
         }
     }
-
 
     /*
      * Handle the response
@@ -1328,9 +1323,9 @@ public class FileUtils extends CordovaPlugin {
 
                             return new WebResourceResponse(mimeType, null, io);
                         } catch (FileNotFoundException e) {
-                            Log.e(LOG_TAG, e.getMessage());
+                            LOG.e(LOG_TAG, e.getMessage());
                         } catch (IOException e) {
-                            Log.e(LOG_TAG, e.getMessage());
+                            LOG.e(LOG_TAG, e.getMessage());
                         }
                     }
                 }
