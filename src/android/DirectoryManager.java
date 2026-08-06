@@ -84,9 +84,7 @@ public class DirectoryManager {
     public static long getFreeSpaceInBytes(String path) {
         try {
             StatFs stat = new StatFs(path);
-            long blockSize = stat.getBlockSize();
-            long availableBlocks = stat.getAvailableBlocks();
-            return availableBlocks * blockSize;
+            return stat.getAvailableBytes();
         } catch (IllegalArgumentException e) {
             // The path was invalid. Just return 0 free bytes.
             return 0;
