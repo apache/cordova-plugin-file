@@ -132,6 +132,7 @@ exports.defineAutoTests = function () {
         const deleteEntry = function (name, success, error) {
             // deletes entry, if it exists
             // entry.remove success callback is required: http://www.w3.org/TR/2011/WD-file-system-api-20110419/#the-entry-interface
+            // Cordova success callbacks may receive a value such as "OK", which Jasmine treats as an error for done().
             const successCallback = success || function () {};
             success = function () {
                 successCallback();
@@ -149,6 +150,7 @@ exports.defineAutoTests = function () {
         // deletes file, if it exists, then invokes callback
         const deleteFile = function (fileName, callback) {
             // entry.remove success callback is required: http://www.w3.org/TR/2011/WD-file-system-api-20110419/#the-entry-interface
+            // Cordova success callbacks may receive a value such as "OK", which Jasmine treats as an error for done().
             const successCallback = callback || function () {};
             callback = function () {
                 successCallback();
@@ -3894,6 +3896,7 @@ exports.defineAutoTests = function () {
                             parent.removeRecursively(function () {
                                 root.getDirectory(parentDirName, { create: false }, failed.bind(this, done, 'root.getDirectory - unexpected success callback : ' + parentDirName), function () {
                                     parent.getFile(nestedFileName, { create: false }, failed.bind(this, done, 'getFile - unexpected success callback : ' + nestedFileName), function () {
+                                        // Ignore the expected FileError; passing it to Jasmine's done() would mark the spec as failed.
                                         parent.getDirectory(nestedDirName, { create: false }, failed.bind(this, done, 'getDirectory - unexpected success callback : ' + nestedDirName), function () {
                                             done();
                                         });
