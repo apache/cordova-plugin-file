@@ -132,7 +132,10 @@ exports.defineAutoTests = function () {
         const deleteEntry = function (name, success, error) {
             // deletes entry, if it exists
             // entry.remove success callback is required: http://www.w3.org/TR/2011/WD-file-system-api-20110419/#the-entry-interface
-            success = success || function () {};
+            const successCallback = success || function () {};
+            success = function () {
+                successCallback();
+            };
             error = error || failed.bind(null, success, 'deleteEntry failed.');
 
             window.resolveLocalFileSystemURL(root.nativeURL + '/' + name, function (entry) {
@@ -146,7 +149,10 @@ exports.defineAutoTests = function () {
         // deletes file, if it exists, then invokes callback
         const deleteFile = function (fileName, callback) {
             // entry.remove success callback is required: http://www.w3.org/TR/2011/WD-file-system-api-20110419/#the-entry-interface
-            callback = callback || function () {};
+            const successCallback = callback || function () {};
+            callback = function () {
+                successCallback();
+            };
 
             root.getFile(fileName, null, // remove file system entry
                 function (entry) {
@@ -3886,7 +3892,9 @@ exports.defineAutoTests = function () {
                             parent.removeRecursively(function () {
                                 root.getDirectory(parentDirName, { create: false }, failed.bind(this, done, 'root.getDirectory - unexpected success callback : ' + parentDirName), function () {
                                     parent.getFile(nestedFileName, { create: false }, failed.bind(this, done, 'getFile - unexpected success callback : ' + nestedFileName), function () {
-                                        parent.getDirectory(nestedDirName, { create: false }, failed.bind(this, done, 'getDirectory - unexpected success callback : ' + nestedDirName), done);
+                                        parent.getDirectory(nestedDirName, { create: false }, failed.bind(this, done, 'getDirectory - unexpected success callback : ' + nestedDirName), function () {
+                                            done();
+                                        });
                                     });
                                 });
                             }, failed.bind(this, done, 'removeRecursively - Error removing directory : ' + parentDirName));
