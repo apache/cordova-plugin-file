@@ -3355,7 +3355,7 @@ exports.defineAutoTests = function () {
                             deleteFile(localFilename);
                             done();
                         }, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving URI: file://' + encodeURI(localPath)));
-                    }, done, 'File', '_getLocalFilesystemPath', [entry.toURL()]);
+                    }, done, 'File', '_getLocalFilesystemPath', [entry.nativeURL]);
                 }, failed.bind(null, done, 'root.getFile - Error creating file: ' + localFilename));
             });
         });
