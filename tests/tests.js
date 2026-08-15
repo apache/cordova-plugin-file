@@ -3348,6 +3348,8 @@ exports.defineAutoTests = function () {
                      * location, we can pass that to ft.download() to make sure that previously-stored
                      * paths are still valid.
                      */
+                    // On iOS, toURL() may return an app:// URL for the WebView, but this legacy API needs file://.
+                    const pathURL = cordova.platformId === 'ios' ? entry.nativeURL : entry.toURL();
                     cordova.exec(function (localPath) { // eslint-disable-line no-undef
                         window.resolveLocalFileSystemURL('file://' + encodeURI(localPath), function (fileEntry) {
                             expect(fileEntry.toURL()).toEqual(originalEntry.toURL());
@@ -3355,7 +3357,7 @@ exports.defineAutoTests = function () {
                             deleteFile(localFilename);
                             done();
                         }, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving URI: file://' + encodeURI(localPath)));
-                    }, done, 'File', '_getLocalFilesystemPath', [entry.nativeURL]);
+                    }, done, 'File', '_getLocalFilesystemPath', [pathURL]);
                 }, failed.bind(null, done, 'root.getFile - Error creating file: ' + localFilename));
             });
         });
