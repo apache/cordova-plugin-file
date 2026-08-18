@@ -34,7 +34,6 @@
 
     const argscheck = require('cordova/argscheck');
     const FileError = require('./FileError');
-    const FileSystem = require('./FileSystem');
     const exec = require('cordova/exec');
     const fileSystems = require('./fileSystems');
 
@@ -61,10 +60,6 @@
                 if (file_system) {
                     if (successCallback) {
                         fileSystems.getFs(file_system.name, function (fs) {
-                            // This should happen only on platforms that haven't implemented requestAllFileSystems (windows)
-                            if (!fs) {
-                                fs = new FileSystem(file_system.name, file_system.root);
-                            }
                             successCallback(fs);
                         });
                     }

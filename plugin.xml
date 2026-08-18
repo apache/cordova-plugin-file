@@ -21,7 +21,7 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
 xmlns:android="http://schemas.android.com/apk/res/android"
            id="cordova-plugin-file"
-      version="8.1.4-dev">
+      version="9.0.0-dev">
     <name>File</name>
     <description>Cordova File Plugin</description>
     <license>Apache 2.0</license>
@@ -202,46 +202,6 @@ to config.xml in order for the application to find previously stored files.
         <framework src="MobileCoreServices.framework" />
 
         <resource-file src="src/ios/CDVFile.bundle" target="CDVFile.bundle" />
-    </platform>
-
-    <!-- osx -->
-    <platform name="osx">
-        <config-file target="config.xml" parent="/*">
-            <feature name="File">
-                <param name="ios-package" value="CDVFile" />
-                <param name="onload" value="true" />
-            </feature>
-        </config-file>
-        <header-file src="src/osx/CDVFile.h" />
-        <source-file src="src/osx/CDVFile.m" />
-        <header-file src="src/osx/CDVLocalFilesystem.h" />
-        <source-file src="src/osx/CDVLocalFilesystem.m" />
-
-        <!-- osx specific file apis -->
-        <js-module src="www/osx/FileSystem.js" name="osxFileSystem">
-            <merges target="FileSystem" />
-        </js-module>
-
-        <js-module src="www/fileSystems-roots.js" name="fileSystems-roots">
-            <runs/>
-        </js-module>
-
-        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
-            <merges target="cordova" />
-            <runs/>
-        </js-module>
-    </platform>
-
-    <!-- windows -->
-    <platform name="windows">
-        <js-module src="src/windows/FileProxy.js" name="FileProxy">
-            <runs />
-        </js-module>
-
-        <js-module src="www/fileSystemPaths.js" name="fileSystemPaths">
-            <merges target="cordova" />
-            <runs/>
-        </js-module>
     </platform>
 
     <platform name="browser">
