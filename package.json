@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-file",
-  "version": "8.1.4-dev",
+  "version": "9.0.0-dev",
   "description": "Cordova File Plugin",
   "types": "./types/index.d.ts",
   "cordova": {
@@ -8,9 +8,7 @@
     "platforms": [
       "android",
       "browser",
-      "ios",
-      "osx",
-      "windows"
+      "ios"
     ]
   },
   "repository": "github:apache/cordova-plugin-file",
@@ -21,9 +19,7 @@
     "ecosystem:cordova",
     "cordova-android",
     "cordova-browser",
-    "cordova-ios",
-    "cordova-osx",
-    "cordova-windows"
+    "cordova-ios"
   ],
   "scripts": {
     "test": "npm run lint",
@@ -43,6 +39,11 @@
         "cordova-android": ">=12.0.0"
       },
       "9.0.0": {
+        "cordova-android": ">=13.0.0",
+        "cordova-ios": ">=6.2.0",
+        "cordova": ">=11.0.0"
+      },
+      "10.0.0": {
         "cordova": ">100"
       }
     }
