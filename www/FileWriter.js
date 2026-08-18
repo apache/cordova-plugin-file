@@ -111,11 +111,9 @@ FileWriter.prototype.abort = function () {
 FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
     const that = this;
     const supportsBinary = (typeof window.Blob !== 'undefined' && typeof window.ArrayBuffer !== 'undefined');
-    /* eslint-disable no-undef */
-    const isProxySupportBlobNatively = cordova.platformId === 'windows';
 
     // Check to see if the incoming data is a blob
-    if (data instanceof File || (!isProxySupportBlobNatively && supportsBinary && data instanceof Blob)) {
+    if (data instanceof File || (supportsBinary && data instanceof Blob)) {
         const fileReader = new FileReader();
         /* eslint-enable no-undef */
         fileReader.onload = function () {
