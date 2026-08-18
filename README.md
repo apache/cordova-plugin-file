@@ -1,4 +1,5 @@
 ---
+# cordova-docs build metadata
 title: File
 description: Read/write files on the device.
 ---
@@ -23,7 +24,15 @@ description: Read/write files on the device.
 
 # cordova-plugin-file
 
-[![Android Testsuite](https://github.com/apache/cordova-plugin-file/actions/workflows/android.yml/badge.svg)](https://github.com/apache/cordova-plugin-file/actions/workflows/android.yml) [![Chrome Testsuite](https://github.com/apache/cordova-plugin-file/actions/workflows/chrome.yml/badge.svg)](https://github.com/apache/cordova-plugin-file/actions/workflows/chrome.yml) [![iOS Testsuite](https://github.com/apache/cordova-plugin-file/actions/workflows/ios.yml/badge.svg)](https://github.com/apache/cordova-plugin-file/actions/workflows/ios.yml) [![Lint Test](https://github.com/apache/cordova-plugin-file/actions/workflows/lint.yml/badge.svg)](https://github.com/apache/cordova-plugin-file/actions/workflows/lint.yml)
+[![npm - Latest](https://img.shields.io/npm/v/cordova-plugin-file/latest?label=Latest%20Release%20(npm))](https://npmjs.com/package/cordova-plugin-file)
+[![GitHub](https://img.shields.io/github/package-json/v/apache/cordova-plugin-file?label=Development%20(Git))](https://github.com/apache/cordova-plugin-file)
+
+[![GitHub - Node Workflow](https://github.com/apache/cordova-plugin-file/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/apache/cordova-plugin-file/actions/workflows/ci.yml?query=branch%3Amaster)
+[![Android Testsuite](https://github.com/apache/cordova-plugin-file/actions/workflows/android.yml/badge.svg)](https://github.com/apache/cordova-plugin-file/actions/workflows/android.yml)
+[![Chrome Testsuite](https://github.com/apache/cordova-plugin-file/actions/workflows/chrome.yml/badge.svg)](https://github.com/apache/cordova-plugin-file/actions/workflows/chrome.yml)
+[![iOS Testsuite](https://github.com/apache/cordova-plugin-file/actions/workflows/ios.yml/badge.svg)](https://github.com/apache/cordova-plugin-file/actions/workflows/ios.yml)
+[![Lint Test](https://github.com/apache/cordova-plugin-file/actions/workflows/lint.yml/badge.svg)](https://github.com/apache/cordova-plugin-file/actions/workflows/lint.yml)
+[![GitHub - Release Audit Workflow](https://github.com/apache/cordova-plugin-file/actions/workflows/release-audit.yml/badge.svg?branch=master)](https://github.com/apache/cordova-plugin-file/actions/workflows/release-audit.yml?query=branch%3Amaster)
 
 This plugin implements a File API allowing read/write access to files residing on the device, based on the following W3C specifications:
 
