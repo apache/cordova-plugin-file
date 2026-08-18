@@ -132,7 +132,11 @@ exports.defineAutoTests = function () {
         const deleteEntry = function (name, success, error) {
             // deletes entry, if it exists
             // entry.remove success callback is required: http://www.w3.org/TR/2011/WD-file-system-api-20110419/#the-entry-interface
-            success = success || function () {};
+            // Cordova success callbacks may receive a value such as "OK", which Jasmine treats as an error for done().
+            const successCallback = success || function () {};
+            success = function () {
+                successCallback();
+            };
             error = error || failed.bind(null, success, 'deleteEntry failed.');
 
             window.resolveLocalFileSystemURL(root.nativeURL + '/' + name, function (entry) {
@@ -146,7 +150,11 @@ exports.defineAutoTests = function () {
         // deletes file, if it exists, then invokes callback
         const deleteFile = function (fileName, callback) {
             // entry.remove success callback is required: http://www.w3.org/TR/2011/WD-file-system-api-20110419/#the-entry-interface
-            callback = callback || function () {};
+            // Cordova success callbacks may receive a value such as "OK", which Jasmine treats as an error for done().
+            const successCallback = callback || function () {};
+            callback = function () {
+                successCallback();
+            };
 
             root.getFile(fileName, null, // remove file system entry
                 function (entry) {
@@ -3342,6 +3350,8 @@ exports.defineAutoTests = function () {
                      * location, we can pass that to ft.download() to make sure that previously-stored
                      * paths are still valid.
                      */
+                    // On iOS, toURL() may return an app:// URL for the WebView, but this legacy API needs file://.
+                    const pathURL = cordova.platformId === 'ios' ? entry.nativeURL : entry.toURL();
                     cordova.exec(function (localPath) { // eslint-disable-line no-undef
                         window.resolveLocalFileSystemURL('file://' + encodeURI(localPath), function (fileEntry) {
                             expect(fileEntry.toURL()).toEqual(originalEntry.toURL());
@@ -3349,7 +3359,7 @@ exports.defineAutoTests = function () {
                             deleteFile(localFilename);
                             done();
                         }, failed.bind(null, done, 'window.resolveLocalFileSystemURL - Error resolving URI: file://' + encodeURI(localPath)));
-                    }, done, 'File', '_getLocalFilesystemPath', [entry.toURL()]);
+                    }, done, 'File', '_getLocalFilesystemPath', [pathURL]);
                 }, failed.bind(null, done, 'root.getFile - Error creating file: ' + localFilename));
             });
         });
@@ -3886,7 +3896,10 @@ exports.defineAutoTests = function () {
                             parent.removeRecursively(function () {
                                 root.getDirectory(parentDirName, { create: false }, failed.bind(this, done, 'root.getDirectory - unexpected success callback : ' + parentDirName), function () {
                                     parent.getFile(nestedFileName, { create: false }, failed.bind(this, done, 'getFile - unexpected success callback : ' + nestedFileName), function () {
-                                        parent.getDirectory(nestedDirName, { create: false }, failed.bind(this, done, 'getDirectory - unexpected success callback : ' + nestedDirName), done);
+                                        // Ignore the expected FileError; passing it to Jasmine's done() would mark the spec as failed.
+                                        parent.getDirectory(nestedDirName, { create: false }, failed.bind(this, done, 'getDirectory - unexpected success callback : ' + nestedDirName), function () {
+                                            done();
+                                        });
                                     });
                                 });
                             }, failed.bind(this, done, 'removeRecursively - Error removing directory : ' + parentDirName));
@@ -4009,11 +4022,10 @@ exports.defineAutoTests = function () {
 
         // Content and Asset URLs
         if (cordova.platformId === 'android') { // eslint-disable-line no-undef
-            describe('content: URLs', function () {
+            xdescribe('content: URLs', function () {
                 // content:// scheme URLs appear to not work when the app is served through http(s)://
                 // This might be related to the AssetLoader not being able to intercept...
                 // For now, these tests will be skipped to not affect any test results.
-                pending();
 
                 // Warning: Default HelloWorld www directory structure is required for these tests (www/index.html at least)
                 function testContentCopy (src, done) {
