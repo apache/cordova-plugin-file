@@ -106,7 +106,7 @@ public class LocalFilesystem extends Filesystem {
 
     @Override
     public JSONObject getFileForLocalURL(LocalFilesystemURL inputURL,
-            String path, JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
+                                         String path, JSONObject options, boolean directory) throws FileExistsException, IOException, TypeMismatchException, EncodingException, JSONException {
         boolean create = false;
         boolean exclusive = false;
 
@@ -148,8 +148,7 @@ public class LocalFilesystem extends Filesystem {
             if (!fp.exists()) {
                 throw new FileExistsException("create fails");
             }
-        }
-        else {
+        } else {
             if (!fp.exists()) {
                 throw new FileNotFoundException("path does not exist");
             }
@@ -324,7 +323,7 @@ public class LocalFilesystem extends Filesystem {
 
     @Override
     public JSONObject copyFileToURL(LocalFilesystemURL destURL, String newName,
-            Filesystem srcFs, LocalFilesystemURL srcURL, boolean move) throws IOException, InvalidModificationException, JSONException, NoModificationAllowedException, FileExistsException {
+                                    Filesystem srcFs, LocalFilesystemURL srcURL, boolean move) throws IOException, InvalidModificationException, JSONException, NoModificationAllowedException, FileExistsException {
 
         // Check to see if the destination directory exists
         String newParent = this.filesystemPathForURL(destURL);
@@ -371,7 +370,7 @@ public class LocalFilesystem extends Filesystem {
 
     @Override
     public long writeToFileAtURL(LocalFilesystemURL inputURL, String data,
-            int offset, boolean isBinary) throws IOException, NoModificationAllowedException {
+                                 int offset, boolean isBinary) throws IOException, NoModificationAllowedException {
 
         boolean append = false;
         if (offset > 0) {
@@ -386,8 +385,7 @@ public class LocalFilesystem extends Filesystem {
             rawData = data.getBytes(Charset.defaultCharset());
         }
         ByteArrayInputStream in = new ByteArrayInputStream(rawData);
-        try
-        {
+        try {
             byte buff[] = new byte[rawData.length];
             String absolutePath = filesystemPathForURL(inputURL);
             FileOutputStream out = new FileOutputStream(absolutePath, append);
@@ -402,9 +400,7 @@ public class LocalFilesystem extends Filesystem {
             if (isPublicDirectory(absolutePath)) {
                 broadcastNewFile(Uri.fromFile(new File(absolutePath)));
             }
-        }
-        catch (NullPointerException e)
-        {
+        } catch (NullPointerException e) {
             // This is a bug in the Android implementation of the Java Stack
             NoModificationAllowedException realException = new NoModificationAllowedException(inputURL.toString());
             realException.initCause(e);
@@ -419,7 +415,7 @@ public class LocalFilesystem extends Filesystem {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Lollipop has a bug where SD cards are null.
             for (File f : context.getExternalMediaDirs()) {
-                if(f != null && absolutePath.startsWith(f.getAbsolutePath())) {
+                if (f != null && absolutePath.startsWith(f.getAbsolutePath())) {
                     return true;
                 }
             }
@@ -429,7 +425,7 @@ public class LocalFilesystem extends Filesystem {
         return absolutePath.startsWith(extPath);
     }
 
-     /**
+    /**
      * Send broadcast of new file so files appear over MTP
      */
     private void broadcastNewFile(Uri nativeUri) {
