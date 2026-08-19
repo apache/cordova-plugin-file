@@ -583,11 +583,18 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
     [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
 
-//encode path with percent escapes
+/**
+ * Encode a complete URI with percent escapes. Keep ':' unescaped so the
+ * cdvfile:// scheme remains recognizable after decoding an already-encoded URI.
+ */
 -(NSString *)encodePath:(NSString *)path
 {
     NSString *decodedPath = [path stringByRemovingPercentEncoding]; //decode incase it's already encoded to avoid encoding twice
-    return [decodedPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]];
+    NSMutableCharacterSet *allowedCharacters = [[NSCharacterSet URLPathAllowedCharacterSet] mutableCopy];
+    // URLPathAllowedCharacterSet would escape the ':' in the URI scheme,
+    // so we add it back to the allowed characters.
+    [allowedCharacters addCharactersInString:@":"];
+    return [decodedPath stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
 }
 
 
