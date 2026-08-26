@@ -54,7 +54,7 @@
         };
         // sanity check for 'not:valid:filename' or '/not:valid:filename'
         // file.spec.12 window.resolveLocalFileSystemURI should error (ENCODING_ERR) when resolving invalid URI with leading /.
-        if (!uri || uri.split(':').length > 2) {
+        if (!uri || uri.split(':').length > 3) {
             setTimeout(function () {
                 fail(FileError.ENCODING_ERR);
             }, 0);
