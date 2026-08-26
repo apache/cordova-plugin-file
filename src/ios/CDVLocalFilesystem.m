@@ -551,8 +551,13 @@
                     // can't copy dir into self
                     errCode = INVALID_MODIFICATION_ERR;
                 } else if (bNewExists) {
-                    // the full destination should NOT already exist if a copy
-                    errCode = PATH_EXISTS_ERR;
+                    // first try to remove the existing file
+                    bSuccess = [fileMgr removeItemAtPath:newFileSystemPath error:&error];
+
+                    if (bSuccess) {
+                        // then copy the new one
+                        bSuccess = [fileMgr copyItemAtPath:srcFullPath toPath:newFileSystemPath error:&error];
+                    }
                 } else {
                     bSuccess = [fileMgr copyItemAtPath:srcFullPath toPath:newFileSystemPath error:&error];
                 }
