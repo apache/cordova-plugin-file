@@ -162,7 +162,7 @@ public class ContentFilesystem extends Filesystem {
 
     @Override
     public long writeToFileAtURL(LocalFilesystemURL inputURL, String data,
-            int offset, boolean isBinary) throws NoModificationAllowedException {
+            long offset, boolean isBinary) throws NoModificationAllowedException {
         throw new NoModificationAllowedException("Couldn't write to file given its content URI");
     }
     @Override

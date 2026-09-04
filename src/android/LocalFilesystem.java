@@ -371,7 +371,7 @@ public class LocalFilesystem extends Filesystem {
 
     @Override
     public long writeToFileAtURL(LocalFilesystemURL inputURL, String data,
-            int offset, boolean isBinary) throws IOException, NoModificationAllowedException {
+            long offset, boolean isBinary) throws IOException, NoModificationAllowedException {
 
         boolean append = false;
         if (offset > 0) {
