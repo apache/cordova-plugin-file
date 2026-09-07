@@ -346,7 +346,7 @@ public class FileUtils extends CordovaPlugin {
                     String fname = args.getString(0);
                     String nativeURL = resolveLocalFileSystemURI(fname).getString("nativeURL");
                     String data = args.getString(1);
-                    int offset = args.getInt(2);
+                    long offset = args.getLong(2);
                     Boolean isBinary = args.getBoolean(3);
 
                     if (needPermission(nativeURL, WRITE)) {
@@ -362,7 +362,7 @@ public class FileUtils extends CordovaPlugin {
             threadhelper(new FileOp() {
                 public void run(JSONArray args) throws JSONException, FileNotFoundException, IOException, NoModificationAllowedException {
                     String fname = args.getString(0);
-                    int offset = args.getInt(1);
+                    long offset = args.getLong(1);
                     long fileSize = truncateFile(fname, offset);
                     callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, fileSize));
                 }
@@ -1133,7 +1133,7 @@ public class FileUtils extends CordovaPlugin {
      * @param isBinary True if the file contents are base64-encoded binary data
      */
     /**/
-    public long write(String srcURLstr, String data, int offset, boolean isBinary) throws FileNotFoundException, IOException, NoModificationAllowedException {
+    public long write(String srcURLstr, String data, long offset, boolean isBinary) throws FileNotFoundException, IOException, NoModificationAllowedException {
         try {
             LocalFilesystemURL inputURL = LocalFilesystemURL.parse(srcURLstr);
             Filesystem fs = this.filesystemForURL(inputURL);
@@ -1213,7 +1213,7 @@ public class FileUtils extends CordovaPlugin {
                         public void run(JSONArray args) throws JSONException, FileNotFoundException, IOException, NoModificationAllowedException {
                             String fname = args.getString(0);
                             String data = args.getString(1);
-                            int offset = args.getInt(2);
+                            long offset = args.getLong(2);
                             Boolean isBinary = args.getBoolean(3);
                             long fileSize = write(fname, data, offset, isBinary);
                             req.getCallbackContext().sendPluginResult(new PluginResult(PluginResult.Status.OK, fileSize));

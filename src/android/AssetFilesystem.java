@@ -261,7 +261,7 @@ public class AssetFilesystem extends Filesystem {
     }
 
     @Override
-    long writeToFileAtURL(LocalFilesystemURL inputURL, String data, int offset, boolean isBinary) throws NoModificationAllowedException, IOException {
+    long writeToFileAtURL(LocalFilesystemURL inputURL, String data, long offset, boolean isBinary) throws NoModificationAllowedException, IOException {
         throw new NoModificationAllowedException("Assets are read-only");
     }
 

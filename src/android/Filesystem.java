@@ -293,7 +293,7 @@ public abstract class Filesystem {
         }
     }
 
-    abstract long writeToFileAtURL(LocalFilesystemURL inputURL, String data, int offset,
+    abstract long writeToFileAtURL(LocalFilesystemURL inputURL, String data, long offset,
             boolean isBinary) throws NoModificationAllowedException, IOException;
 
     abstract long truncateFileAtURL(LocalFilesystemURL inputURL, long size)
