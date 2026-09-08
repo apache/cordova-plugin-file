@@ -20,7 +20,11 @@
 #import <Cordova/CDV.h>
 #import "CDVFile.h"
 #import "CDVLocalFilesystem.h"
+// AssetsLibrary was deprecated in iOS 9 and is unavailable when the app's
+// minimum deployment target is iOS 26 or later.
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < 260000
 #import "CDVAssetLibraryFilesystem.h"
+#endif
 #import <objc/message.h>
 
 static NSString* toBase64(NSData* data) {
@@ -89,9 +93,12 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         if (pathComponents != nil && pathComponents.count > 1) {
             return [pathComponents objectAtIndex:1];
         }
-    } else if ([[uri scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
+    }
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < 260000
+    else if ([[uri scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
         return @"assets-library";
     }
+#endif
     return nil;
 }
 
@@ -114,9 +121,12 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
             return @"";
         }
         return [path substringFromIndex:slashRange.location];
-    } else if ([[uri scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
+    }
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < 260000
+    else if ([[uri scheme] isEqualToString:kCDVAssetsLibraryScheme]) {
         return [[uri absoluteString] substringFromIndex:[kCDVAssetsLibraryScheme length]+2];
     }
+#endif
     return nil;
 }
 
@@ -366,7 +376,9 @@ NSString* const kCDVFilesystemURLPrefix = @"cdvfile";
         NSAssert(false,
             @"File plugin configuration error: Please set iosPersistentFileLocation in config.xml to one of \"library\" (for new applications) or \"compatibility\" (for compatibility with previous versions)");
     }
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < 260000
     [self registerFilesystem:[[CDVAssetLibraryFilesystem alloc] initWithName:@"assets-library"]];
+#endif
 
     [self registerExtraFileSystems:[self getExtraFileSystemsPreference:self.viewController]
                   fromAvailableSet:[self getAvailableFileSystems]];
