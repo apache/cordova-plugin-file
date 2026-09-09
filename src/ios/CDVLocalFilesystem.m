@@ -122,10 +122,17 @@
     return [self filesystemPathForFullPath:url.fullPath];
 }
 
+/**
+ * CDVLocalFilesystem represents any registered local filesystem, such as
+ * temporary, persistent, documents, or bundle storage. Its public URL form is
+ * a cdvfile URI containing the filesystem name and the relative path.
+ * Escape the path before adding the cdvfile URI scheme and authority; the path
+ * must be encoded separately because it does not contain the URI scheme.
+ */
 - (CDVFilesystemURL *)URLforFullPath:(NSString *)fullPath
 {
     if (fullPath) {
-        NSString* escapedPath = [fullPath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        NSString* escapedPath = [fullPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]];
         if ([fullPath hasPrefix:@"/"]) {
             return [CDVFilesystemURL fileSystemURLWithString:[NSString stringWithFormat:@"%@://localhost/%@%@", kCDVFilesystemURLPrefix, self.name, escapedPath]];
         }
