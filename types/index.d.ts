@@ -20,50 +20,51 @@ interface Window {
         successCallback: (fileSystem: FileSystem) => void,
         errorCallback?: (fileError: FileError) => void): void;
     /**
-     * Look up file system Entry referred to by local URL.
+     * Look up file system FileSystemEntry referred to by local URL.
      * @param string url       URL referring to a local file or directory
-     * @param successCallback  invoked with Entry object corresponding to URL
+     * @param successCallback  invoked with FileSystemEntry object corresponding to URL
      * @param errorCallback    invoked if error occurs retrieving file system entry
      */
     resolveLocalFileSystemURL(url: string,
-        successCallback: (entry: Entry) => void,
+        successCallback: (entry: FileSystemEntry) => void,
         errorCallback?: (error: FileError) => void): void;
     /**
-     * Look up file system Entry referred to by local URI.
+     * Look up file system FileSystemEntry referred to by local URI.
      * @param string uri       URI referring to a local file or directory
-     * @param successCallback  invoked with Entry object corresponding to URI
+     * @param successCallback  invoked with FileSystemEntry object corresponding to URI
      * @param errorCallback    invoked if error occurs retrieving file system entry
      */
     resolveLocalFileSystemURI(uri: string,
-        successCallback: (entry: Entry) => void,
+        successCallback: (entry: FileSystemEntry) => void,
         errorCallback?: (error: FileError) => void): void;
     TEMPORARY: number;
     PERSISTENT: number;
 }
 
 /** This interface represents a file system. */
-interface FileSystem {
-    /* The name of the file system, unique across the list of exposed file systems. */
-    name: string;
-    /** The root directory of the file system. */
-    root: DirectoryEntry;
-}
+// Commented in order to avoid conflicts with lib.dom.d.ts
+// interface FileSystem {
+//     /* The name of the file system, unique across the list of exposed file systems. */
+//     name: string;
+//     /** The root directory of the file system. */
+//     root: FileSystemDirectoryEntry;
+// }
 
 /**
  * An abstract interface representing entries in a file system,
- * each of which may be a File or DirectoryEntry.
+ * each of which may be a File or FileSystemDirectoryEntry.
  */
-interface Entry {
-    /** Entry is a file. */
-    isFile: boolean;
-    /** Entry is a directory. */
-    isDirectory: boolean;
+interface FileSystemEntry {
+    /** FileSystemEntry is a file. */
+    // isFile: boolean;
+    /** FileSystemEntry is a directory. */
+    // isDirectory: boolean;
     /** The name of the entry, excluding the path leading to it. */
-    name: string;
+    // name: string;
     /** The full absolute path from the root to the entry. */
-    fullPath: string;
+    // fullPath: string;
     /** The file system on which the entry resides. */
-    filesystem: FileSystem;
+    // filesystem: FileSystem;
     nativeURL: string;
     /**
      * Look up metadata about this entry.
@@ -82,13 +83,13 @@ interface Entry {
      * A move of a file on top of an existing file must attempt to delete and replace that file.
      * A move of a directory on top of an existing empty directory must attempt to delete and replace that directory.
      * @param parent  The directory to which to move the entry.
-     * @param newName The new name of the entry. Defaults to the Entry's current name if unspecified.
-     * @param successCallback A callback that is called with the Entry for the new location.
+     * @param newName The new name of the entry. Defaults to the FileSystemEntry's current name if unspecified.
+     * @param successCallback A callback that is called with the FileSystemEntry for the new location.
      * @param errorCallback   A callback that is called when errors happen.
      */
-    moveTo(parent: DirectoryEntry,
+    moveTo(parent: FileSystemDirectoryEntry,
         newName?: string,
-        successCallback?: (entry: Entry) => void,
+        successCallback?: (entry: FileSystemEntry) => void,
         errorCallback?: (error: FileError) => void): void;
     /**
      * Copy an entry to a different location on the file system. It is an error to try to:
@@ -101,13 +102,13 @@ interface Entry {
      *     A copy of a directory on top of an existing empty directory must attempt to delete and replace that directory.
      * Directory copies are always recursive--that is, they copy all contents of the directory.
      * @param parent The directory to which to move the entry.
-     * @param newName The new name of the entry. Defaults to the Entry's current name if unspecified.
-     * @param successCallback A callback that is called with the Entry for the new object.
+     * @param newName The new name of the entry. Defaults to the FileSystemEntry's current name if unspecified.
+     * @param successCallback A callback that is called with the FileSystemEntry for the new object.
      * @param errorCallback A callback that is called when errors happen.
      */
-    copyTo(parent: DirectoryEntry,
+    copyTo(parent: FileSystemDirectoryEntry,
         newName?: string,
-        successCallback?: (entry: Entry) => void,
+        successCallback?: (entry: FileSystemEntry) => void,
         errorCallback?: (error: FileError) => void): void;
     /**
      * Returns a URL that can be used as the src attribute of a <video> or <audio> tag.
@@ -128,11 +129,11 @@ interface Entry {
     remove(successCallback: () => void,
         errorCallback?: (error: FileError) => void): void;
     /**
-     * Look up the parent DirectoryEntry containing this Entry. If this Entry is the root of its filesystem, its parent is itself.
+     * Look up the parent FileSystemDirectoryEntry containing this FileSystemEntry. If this FileSystemEntry is the root of its filesystem, its parent is itself.
      * @param successCallback A callback that is called with the time of the last modification.
      * @param errorCallback   A callback that is called when errors happen.
      */
-    getParent(successCallback: (entry: Entry) => void,
+    getParent(successCallback: (entry: FileSystemEntry) => void,
         errorCallback?: (error: FileError) => void): void;
 }
 
@@ -145,42 +146,42 @@ interface Metadata {
 }
 
 /** This interface represents a directory on a file system. */
-interface DirectoryEntry extends Entry {
+interface FileSystemDirectoryEntry extends FileSystemEntry {
     /**
      * Creates a new DirectoryReader to read Entries from this Directory.
      */
     createReader(): DirectoryReader;
     /**
      * Creates or looks up a file.
-     * @param path    Either an absolute path or a relative path from this DirectoryEntry
+     * @param path    Either an absolute path or a relative path from this FileSystemDirectoryEntry
      *                to the file to be looked up or created.
      *                It is an error to attempt to create a file whose immediate parent does not yet exist.
      * @param options If create and exclusive are both true, and the path already exists, getFile must fail.
-     *                If create is true, the path doesn't exist, and no other error occurs, getFile must create it as a zero-length file and return a corresponding FileEntry.
+     *                If create is true, the path doesn't exist, and no other error occurs, getFile must create it as a zero-length file and return a corresponding FileSystemFileEntry.
      *                If create is not true and the path doesn't exist, getFile must fail.
      *                If create is not true and the path exists, but is a directory, getFile must fail.
-     *                Otherwise, if no other error occurs, getFile must return a FileEntry corresponding to path.
+     *                Otherwise, if no other error occurs, getFile must return a FileSystemFileEntry corresponding to path.
      * @param successCallback A callback that is called to return the File selected or created.
      * @param errorCallback   A callback that is called when errors happen.
      */
     getFile(path: string, options?: Flags,
-        successCallback?: (entry: FileEntry) => void,
+        successCallback?: (entry: FileSystemFileEntry) => void,
         errorCallback?: (error: FileError) => void): void;
     /**
      * Creates or looks up a directory.
-     * @param path    Either an absolute path or a relative path from this DirectoryEntry
+     * @param path    Either an absolute path or a relative path from this FileSystemDirectoryEntry
      *                to the directory to be looked up or created.
      *                It is an error to attempt to create a directory whose immediate parent does not yet exist.
      * @param options If create and exclusive are both true and the path already exists, getDirectory must fail.
-     *                If create is true, the path doesn't exist, and no other error occurs, getDirectory must create and return a corresponding DirectoryEntry.
+     *                If create is true, the path doesn't exist, and no other error occurs, getDirectory must create and return a corresponding FileSystemDirectoryEntry.
      *                If create is not true and the path doesn't exist, getDirectory must fail.
      *                If create is not true and the path exists, but is a file, getDirectory must fail.
-     *                Otherwise, if no other error occurs, getDirectory must return a DirectoryEntry corresponding to path.
+     *                Otherwise, if no other error occurs, getDirectory must return a FileSystemDirectoryEntry corresponding to path.
      * @param successCallback A callback that is called to return the Directory selected or created.
      * @param errorCallback   A callback that is called when errors happen.
      */
     getDirectory(path: string, options?: Flags,
-        successCallback?: (entry: DirectoryEntry) => void,
+        successCallback?: (entry: FileSystemDirectoryEntry) => void,
         errorCallback?: (error: FileError) => void): void;
     /**
      * Deletes a directory and all of its contents, if any. In the event of an error (e.g. trying
@@ -223,14 +224,14 @@ interface DirectoryReader {
      * @param errorCallback   A callback indicating that there was an error reading from the Directory.
      */
     readEntries(
-        successCallback: (entries: Entry[]) => void,
+        successCallback: (entries: FileSystemEntry[]) => void,
         errorCallback?: (error: FileError) => void): void;
 }
 
 /** This interface represents a file on a file system. */
-interface FileEntry extends Entry {
+interface FileSystemFileEntry extends FileSystemEntry {
     /**
-     * Creates a new FileWriter associated with the file that this FileEntry represents.
+     * Creates a new FileWriter associated with the file that this FileSystemFileEntry represents.
      * @param successCallback A callback that is called with the new FileWriter.
      * @param errorCallback   A callback that is called when errors happen.
      */
@@ -238,7 +239,7 @@ interface FileEntry extends Entry {
         writer: FileWriter) => void,
         errorCallback?: (error: FileError) => void): void;
     /**
-     * Returns a File that represents the current state of the file that this FileEntry represents.
+     * Returns a File that represents the current state of the file that this FileSystemFileEntry represents.
      * @param successCallback A callback that is called with the File.
      * @param errorCallback   A callback that is called when errors happen.
      */
