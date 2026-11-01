@@ -164,6 +164,7 @@ to config.xml in order for the application to find previously stored files.
             <merges target="cordova" />
             <runs/>
         </js-module>
+        <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference" />
     </platform>
 
     <!-- ios -->
