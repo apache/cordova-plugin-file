@@ -62,6 +62,16 @@ Although the object is in the global scope, it is not available to applications 
 
     cordova plugin add cordova-plugin-file
 
+By default the plugin replaces `window.File`, `window.FileReader`, and `window.ProgressEvent`. To keep those standard constructors and use the plugin's versions as `FilePlugin.File`, `FilePlugin.FileReader`, and `FilePlugin.ProgressEvent`, set `WEB_SAFE` to `true`:
+
+```xml
+<plugin name="cordova-plugin-file">
+    <variable name="WEB_SAFE" value="true" />
+</plugin>
+```
+
+The same switch from the CLI is `cordova plugin add cordova-plugin-file --variable WEB_SAFE=true`. Omit the variable, or set it to `false`, and the plugin clobbers `window` as before. The value is applied the next time the project is prepared, including the copies under `platforms/` that the WebView loads. Re-add a local `file:` plugin after pulling this change so the project picks up the hook.
+
 ## Supported Platforms
 
 - Android

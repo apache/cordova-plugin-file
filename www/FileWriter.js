@@ -23,6 +23,8 @@ const exec = require('cordova/exec');
 const FileError = require('./FileError');
 const FileReader = require('./FileReader');
 const ProgressEvent = require('./ProgressEvent');
+// window when WEB_SAFE is off, window.FilePlugin when it is on.
+const PluginRoot = require('./pluginRoot');
 
 /**
  * This class writes to the mobile device file system.
@@ -113,7 +115,7 @@ FileWriter.prototype.write = function (data, isPendingBlobReadResult) {
     const supportsBinary = (typeof window.Blob !== 'undefined' && typeof window.ArrayBuffer !== 'undefined');
 
     // Check to see if the incoming data is a blob
-    if (data instanceof File || (supportsBinary && data instanceof Blob)) {
+    if (data instanceof PluginRoot.File || (supportsBinary && data instanceof Blob)) {
         const fileReader = new FileReader();
         /* eslint-enable no-undef */
         fileReader.onload = function () {

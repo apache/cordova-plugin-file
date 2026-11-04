@@ -31,3 +31,7 @@ globals:
 overrides:
   - files: [tests/**/*.js]
     extends: '@cordova/eslint-config/node-tests'
+  - files: [hooks/**/*.js]
+    env:
+      node: true
+      browser: false
