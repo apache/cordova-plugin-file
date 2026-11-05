@@ -24,6 +24,8 @@ const modulemapper = require('cordova/modulemapper');
 const utils = require('cordova/utils');
 const FileError = require('./FileError');
 const ProgressEvent = require('./ProgressEvent');
+// Snapshot the host FileReader before this module is clobbered onto window.
+require('./webSafeOriginals').FileReader = window.FileReader;
 const origFileReader = modulemapper.getOriginalSymbol(window, 'FileReader');
 
 /**

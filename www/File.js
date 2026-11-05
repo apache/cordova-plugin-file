@@ -28,6 +28,9 @@
  * size {Number} size of the file in bytes
  */
 
+// Snapshot the host File constructor before this module is clobbered onto window.
+require('./webSafeOriginals').File = window.File;
+
 const File = function (name, localURL, type, lastModifiedDate, size) {
     this.name = name || '';
     this.localURL = localURL || null;

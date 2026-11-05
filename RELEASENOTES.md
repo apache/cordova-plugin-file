@@ -20,6 +20,16 @@
 -->
 # Release Notes
 
+### 9.0.0-dev
+
+**Features:**
+
+* Add an optional `WEB_SAFE` install variable. When `true`, `File`, `FileReader`, and `ProgressEvent` stay the standard constructors on `window`. The plugin constructors are exposed as `FilePlugin.File`, `FilePlugin.FileReader`, and `FilePlugin.ProgressEvent`.
+
+**Fixes:**
+
+* Apply `WEB_SAFE` to the platform copies Cordova serves. The WebView loads those files.
+
 ### 8.1.3 (Nov 13, 2024)
 
 **Fixes:**

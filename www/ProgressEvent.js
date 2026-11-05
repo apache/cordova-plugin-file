@@ -19,6 +19,9 @@
  *
 */
 
+// Snapshot the host ProgressEvent before this module is clobbered onto window.
+require('./webSafeOriginals').ProgressEvent = window.ProgressEvent;
+
 // If ProgressEvent exists in global context, use it already, otherwise use our own polyfill
 // Feature test: See if we can instantiate a native ProgressEvent;
 // if so, use that approach,
