@@ -32,7 +32,7 @@ const Metadata = function (metadata) {
         this.modificationTime = null;
         this.size = 0;
     } else {
-        /* Backwards compatiblity with platforms that only return a timestamp */
+        /* Backwards compatibility with platforms that only return a timestamp */
         this.modificationTime = new Date(metadata);
     }
 };
