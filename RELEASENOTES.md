@@ -529,7 +529,7 @@ Warning: Contains a regression! Use 8.1.2 instead
 * [CB-5403](https://issues.apache.org/jira/browse/CB-5403): Backwards-compatibility with file:// urls where possible
 * [CB-5407](https://issues.apache.org/jira/browse/CB-5407): Fixes for ContentFilesystem
 * Android: Add method for testing backwards-compatibility of filetransfer plugin
-* iOS: Add method for testing backwards-compatiblity of filetransfer plugin
+* iOS: Add method for testing backwards-compatibility of filetransfer plugin
 * Android: Updates to allow FileTransfer to continue to work
 * Android: Clean up unclosed file objects
 * [CB-5407](https://issues.apache.org/jira/browse/CB-5407): Cleanup
